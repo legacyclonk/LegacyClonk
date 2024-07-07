@@ -243,7 +243,7 @@ public:
 
 	void DenumeratePointer();
 
-	StdStrBuf GetDataString() const;
+	std::string GetDataString() const;
 
 	inline bool ConvertTo(C4V_Type vtToType, bool fStrict = true) // convert to dest type
 	{

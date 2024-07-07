@@ -290,14 +290,15 @@ bool C4LeagueClient::Start(const C4Network2Reference &Ref)
 	eCurrAction = C4LA_Start;
 	C4LeagueRequestHead Head(eCurrAction);
 	Head.SetChecksum("-----");
-	StdStrBuf QueryText = DecompileToBuf<StdCompilerINIWrite>(
+
+	std::string queryText{DecompileToBuf<StdCompilerINIWrite>(
 		mkInsertAdapt(
 			mkNamingAdapt(Head, "Request"),
 			mkNamingAdapt(mkDecompileAdapt(Ref), "Reference"),
-			false));
-	ModifyForChecksum(&QueryText, "-----");
+			false))};
+	ModifyForChecksum(queryText, "-----");
 	// Perform query
-	return Query(QueryText.getData(), false);
+	return Query(queryText, false);
 }
 
 bool C4LeagueClient::GetStartReply(StdStrBuf *pMessage, StdStrBuf *pLeague, StdStrBuf *pStreamingAddr, int32_t *pSeed, int32_t *pMaxPlayers)
@@ -325,7 +326,7 @@ bool C4LeagueClient::GetStartReply(StdStrBuf *pMessage, StdStrBuf *pLeague, StdS
 	if (!Head.getCSID() || !*Head.getCSID())
 	{
 		if (pMessage)
-			pMessage->Copy(LoadResStr("IDS_LGA_INVALIDRESPONSE3"));
+			pMessage->Copy(LoadResStr(C4ResStrTableKey::IDS_LGA_INVALIDRESPONSE3));
 		return false;
 	}
 	// So save back CSID
@@ -340,14 +341,14 @@ bool C4LeagueClient::Update(const C4Network2Reference &Ref)
 	eCurrAction = C4LA_Update;
 	C4LeagueRequestHead Head(eCurrAction, CSID.getData());
 	Head.SetChecksum("-----");
-	StdStrBuf QueryText = DecompileToBuf<StdCompilerINIWrite>(
+	std::string queryText{DecompileToBuf<StdCompilerINIWrite>(
 		mkInsertAdapt(
 			mkNamingAdapt(Head, "Request"),
 			mkNamingAdapt(mkDecompileAdapt(Ref), "Reference"),
-			false));
-	ModifyForChecksum(&QueryText, "-----");
+			false))};
+	ModifyForChecksum(queryText, "-----");
 	// Perform query
-	return Query(QueryText.getData(), false);
+	return Query(queryText, false);
 }
 
 bool C4LeagueClient::GetUpdateReply(StdStrBuf *pMessage, C4ClientPlayerInfos *pPlayerLeagueInfos)
@@ -372,14 +373,14 @@ bool C4LeagueClient::End(const C4Network2Reference &Ref, const char *szRecordNam
 	eCurrAction = C4LA_End;
 	C4LeagueRequestHeadEnd Head(eCurrAction, CSID.getData(), szRecordName, pRecordSHA);
 	Head.SetChecksum("-----");
-	StdStrBuf QueryText = DecompileToBuf<StdCompilerINIWrite>(
+	std::string queryText{DecompileToBuf<StdCompilerINIWrite>(
 		mkInsertAdapt(
 			mkNamingAdapt(Head, "Request"),
 			mkNamingAdapt(mkDecompileAdapt(Ref), "Reference"),
-			false));
-	ModifyForChecksum(&QueryText, "-----");
+			false))};
+	ModifyForChecksum(queryText, "-----");
 	// Perform query
-	return Query(QueryText.getData(), false);
+	return Query(queryText, false);
 }
 
 bool C4LeagueClient::GetEndReply(StdStrBuf *pMessage, C4RoundResultsPlayers *pRoundResults)
@@ -409,14 +410,14 @@ bool C4LeagueClient::Auth(const C4PlayerInfo &PlrInfo, const char *szAccount, co
 	if (szNewPassword)
 		Head.SetNewPassword(szNewPassword);
 	// Create query
-	StdStrBuf QueryText = DecompileToBuf<StdCompilerINIWrite>(
+	std::string queryText{DecompileToBuf<StdCompilerINIWrite>(
 		mkInsertAdapt(
 			mkNamingAdapt(Head, "Request"),
 			mkNamingAdapt(mkDecompileAdapt(PlrInfo), "PlrInfo"),
-			false));
-	ModifyForChecksum(&QueryText, "-----");
+			false))};
+	ModifyForChecksum(queryText, "-----");
 	// Perform query
-	return Query(QueryText.getData(), false);
+	return Query(queryText, false);
 }
 
 bool C4LeagueClient::GetAuthReply(StdStrBuf *pMessage, StdStrBuf *pAUID, StdStrBuf *pAccount, bool *pRegister)
@@ -437,7 +438,7 @@ bool C4LeagueClient::GetAuthReply(StdStrBuf *pMessage, StdStrBuf *pAUID, StdStrB
 	// Check AUID
 	if (!Head.getAUID() || !*Head.getAUID())
 	{
-		pMessage->Ref(LoadResStr("IDS_MSG_LEAGUESERVERREPLYWITHOUTA"));
+		pMessage->Ref(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUESERVERREPLYWITHOUTA));
 		return false;
 	}
 	// Success
@@ -455,14 +456,14 @@ bool C4LeagueClient::AuthCheck(const C4PlayerInfo &PlrInfo)
 	C4LeagueRequestHead Head(eCurrAction, CSID.getData(), PlrInfo.getAuthID());
 	Head.SetChecksum("-----");
 	// Create query
-	StdStrBuf QueryText = DecompileToBuf<StdCompilerINIWrite>(
+	std::string queryText{DecompileToBuf<StdCompilerINIWrite>(
 		mkInsertAdapt(
 			mkNamingAdapt(Head, "Request"),
 			mkNamingAdapt(mkDecompileAdapt(PlrInfo), "PlrInfo"),
-			false));
-	ModifyForChecksum(&QueryText, "-----");
+			false))};
+	ModifyForChecksum(queryText, "-----");
 	// Perform query
-	return Query(QueryText.getData(), false);
+	return Query(queryText, false);
 }
 
 bool C4LeagueClient::GetAuthCheckReply(StdStrBuf *pMessage, const char *szLeague, C4PlayerInfo *pPlrInfo)
@@ -486,14 +487,14 @@ bool C4LeagueClient::ReportDisconnect(const C4ClientPlayerInfos &rFeedbackClient
 	C4LeagueReportDisconnectHead Head(CSID.getData(), eReason);
 	Head.SetChecksum("-----");
 	// Create query
-	StdStrBuf QueryText = DecompileToBuf<StdCompilerINIWrite>(
+	std::string queryText{DecompileToBuf<StdCompilerINIWrite>(
 		mkInsertAdapt(
 			mkNamingAdapt(Head, "Request"),
 			mkNamingAdapt(DisconnectData(FBIDList, rFeedbackClient), "PlayerInfos"),
-			false));
-	ModifyForChecksum(&QueryText, "-----");
+			false))};
+	ModifyForChecksum(queryText, "-----");
 	// Perform query
-	return Query(QueryText.getData(), false);
+	return Query(queryText, false);
 }
 
 bool C4LeagueClient::GetReportDisconnectReply(StdStrBuf *pMessage)
@@ -509,10 +510,10 @@ bool C4LeagueClient::GetReportDisconnectReply(StdStrBuf *pMessage)
 	return Head.isSuccess();
 }
 
-void C4LeagueClient::ModifyForChecksum(StdStrBuf *pData, const char *szReplace)
+void C4LeagueClient::ModifyForChecksum(std::string &data, const char *replace)
 {
-	char *pReplace = strstr(pData->getMData(), szReplace);
-	ModifyForChecksum(pData->getData(), pData->getLength(), pReplace, 0x7A69, 0xF0FF);
+	char *const ptr{std::strstr(data.data(), replace)};
+	ModifyForChecksum(data.c_str(), data.size(), ptr, 0x7A69, 0xF0FF);
 }
 
 void C4LeagueClient::ModifyForChecksum(const void *pData, size_t iDataSize, char *pReplace, uint32_t iChecksum, uint32_t iCheckMask)
@@ -547,7 +548,7 @@ void C4LeagueClient::ModifyForChecksum(const void *pData, size_t iDataSize, char
 // *** C4LeagueSignupDialog
 
 C4LeagueSignupDialog::C4LeagueSignupDialog(const char *szPlayerName, const char *szLeagueName, const char *szLeagueServerName, const char *szAccountPref, const char *szPassPref, bool fWarnThirdParty, bool fRegister)
-	: C4GUI::Dialog(C4GUI_MessageDlgWdt, 100 /* will be resized as needed */, FormatString(LoadResStr("IDS_DLG_LEAGUESIGNUPON"), szLeagueServerName).getData(), false), strPlayerName(szPlayerName, false)
+	: C4GUI::Dialog(C4GUI_MessageDlgWdt, 100 /* will be resized as needed */, LoadResStr(C4ResStrTableKey::IDS_DLG_LEAGUESIGNUPON, szLeagueServerName).c_str(), false), strPlayerName(szPlayerName, false)
 {
 	// get positions
 	C4GUI::ComponentAligner caMain(GetClientRect(), C4GUI_DefDlgIndent, C4GUI_DefDlgIndent, true);
@@ -557,12 +558,9 @@ C4LeagueSignupDialog::C4LeagueSignupDialog(const char *szPlayerName, const char 
 	caMain.GetFromRight(C4GUI_IconWdt / 2);
 	// place message label
 	// use text with line breaks
-	StdStrBuf sMsg, sMsgBroken;
-	if (fRegister)
-		sMsg.Format(LoadResStr("IDS_MSG_LEAGUE_REGISTRATION"), szPlayerName);
-	else
-		sMsg.Format(LoadResStr("IDS_MSG_PASSWORDFORPLAYER"), szPlayerName);
-	int32_t iLabelHgt = C4GUI::GetRes()->TextFont.BreakMessage(sMsg.getData(), caMain.GetInnerWidth(), &sMsgBroken, true);
+	const std::string msg{LoadResStrChoice(fRegister, C4ResStrTableKey::IDS_MSG_LEAGUE_REGISTRATION, C4ResStrTableKey::IDS_MSG_PASSWORDFORPLAYER, szPlayerName)};
+	StdStrBuf sMsgBroken;
+	int32_t iLabelHgt = C4GUI::GetRes()->TextFont.BreakMessage(msg.c_str(), caMain.GetInnerWidth(), &sMsgBroken, true);
 	C4GUI::Label *pLblMessage = new C4GUI::Label(sMsgBroken.getData(), caMain.GetFromTop(iLabelHgt), ALeft, C4GUI_MessageFontClr, &C4GUI::GetRes()->TextFont);
 	AddElement(pLblMessage);
 	// registering and no account pref available
@@ -571,22 +569,22 @@ C4LeagueSignupDialog::C4LeagueSignupDialog(const char *szPlayerName, const char 
 		szAccountPref = szPlayerName;
 	// place username input box
 	bool fSideEdits = true; int iCtrlHeight;
-	StdStrBuf sAccountTxt; sAccountTxt.Copy(LoadResStr("IDS_CTL_LEAGUE_ACCOUNT"));
+	StdStrBuf sAccountTxt; sAccountTxt.Copy(LoadResStr(C4ResStrTableKey::IDS_CTL_LEAGUE_ACCOUNT));
 	C4GUI::LabeledEdit::GetControlSize(nullptr, &iCtrlHeight, sAccountTxt.getData(), nullptr, fSideEdits);
 	AddElement(pEdtAccount = new C4GUI::LabeledEdit(caMain.GetFromTop(iCtrlHeight), sAccountTxt.getData(), fSideEdits, szAccountPref));
 	// registering? Make password field optional
 	if (fRegister)
 	{
 		// place the checkbox
-		const char *szChkPasswordCaption = LoadResStr("IDS_CTL_LEAGUE_CHK_PLRPW");
+		const char *szChkPasswordCaption = LoadResStr(C4ResStrTableKey::IDS_CTL_LEAGUE_CHK_PLRPW);
 		C4GUI::CheckBox::GetStandardCheckBoxSize(nullptr, &iCtrlHeight, szChkPasswordCaption, nullptr);
 		AddElement(pChkPassword = new C4GUI::CheckBox(caMain.GetFromTop(iCtrlHeight), szChkPasswordCaption, false));
 		pChkPassword->SetOnChecked(new C4GUI::CallbackHandlerNoPar<C4LeagueSignupDialog>(this, &C4LeagueSignupDialog::OnChkPassword));
-		pChkPassword->SetToolTip(LoadResStr("IDS_DESC_LEAGUECHECKPASSWORD"));
+		pChkPassword->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_LEAGUECHECKPASSWORD));
 		// place password edit boxes
 		C4GUI::ComponentAligner caTemp = caMain;
-		const char *szEdtPassCaption = LoadResStr("IDS_CTL_LEAGUE_PLRPW");
-		const char *szEdtPass2Caption = LoadResStr("IDS_CTL_LEAGUE_PLRPW2");
+		const char *szEdtPassCaption = LoadResStr(C4ResStrTableKey::IDS_CTL_LEAGUE_PLRPW);
+		const char *szEdtPass2Caption = LoadResStr(C4ResStrTableKey::IDS_CTL_LEAGUE_PLRPW2);
 		C4GUI::LabeledEdit::GetControlSize(nullptr, &iCtrlHeight, szEdtPassCaption, nullptr, fSideEdits);
 		AddElement(pEdtPass = new C4GUI::LabeledEdit(caTemp.GetFromTop(iCtrlHeight), szEdtPassCaption, fSideEdits, szPassPref));
 		AddElement(pEdtPass2 = new C4GUI::LabeledEdit(caTemp.GetFromTop(iCtrlHeight), szEdtPass2Caption, fSideEdits, szPassPref));
@@ -601,7 +599,7 @@ C4LeagueSignupDialog::C4LeagueSignupDialog(const char *szPlayerName, const char 
 		// No password checkbox
 		pChkPassword = nullptr;
 		// But a password edit box
-		const char *szEdtPassCaption = LoadResStr("IDS_CTL_LEAGUE_PLRPW");
+		const char *szEdtPassCaption = LoadResStr(C4ResStrTableKey::IDS_CTL_LEAGUE_PLRPW);
 		C4GUI::LabeledEdit::GetControlSize(nullptr, &iCtrlHeight, szEdtPassCaption, nullptr, fSideEdits);
 		AddElement(pEdtPass = new C4GUI::LabeledEdit(caMain.GetFromTop(iCtrlHeight), szEdtPassCaption, fSideEdits, szPassPref));
 		// No second password edit box
@@ -634,7 +632,7 @@ void C4LeagueSignupDialog::UserClose(bool fOK)
 	if (!fOK)
 	{
 		Dialog::UserClose(fOK);
-		Game.pGUI->ShowMessageModal(FormatString(LoadResStr("IDS_MSG_LEAGUESIGNUPCANCELLED"), strPlayerName.getData()).getData(), LoadResStr("IDS_DLG_LEAGUESIGNUP"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Notify);
+		Game.pGUI->ShowMessageModal(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUESIGNUPCANCELLED, strPlayerName.getData()).c_str(), LoadResStr(C4ResStrTableKey::IDS_DLG_LEAGUESIGNUP), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Notify);
 		return;
 	}
 	// Check for empty account name
@@ -642,21 +640,21 @@ void C4LeagueSignupDialog::UserClose(bool fOK)
 	if (!szAccount || !*szAccount)
 	{
 		SetFocus(pEdtAccount->GetEdit(), false);
-		Game.pGUI->ShowMessageModal(LoadResStr("IDS_MSG_LEAGUEMISSINGUSERNAME"), LoadResStr("IDS_DLG_INVALIDENTRY"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+		Game.pGUI->ShowMessageModal(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEMISSINGUSERNAME), LoadResStr(C4ResStrTableKey::IDS_DLG_INVALIDENTRY), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 		return;
 	}
 	// Username contains invalid characters
 	if (SCharCountEx(szAccount, C4League_Name_Valid_Characters) != SLen(szAccount))
 	{
 		SetFocus(pEdtAccount->GetEdit(), false);
-		Game.pGUI->ShowMessageModal(LoadResStr("IDS_MSG_LEAGUEINVALIDUSERNAME"), LoadResStr("IDS_DLG_INVALIDENTRY"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+		Game.pGUI->ShowMessageModal(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEINVALIDUSERNAME), LoadResStr(C4ResStrTableKey::IDS_DLG_INVALIDENTRY), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 		return;
 	}
 	// Username is too short
 	if (SLen(szAccount) < 3)
 	{
 		SetFocus(pEdtAccount->GetEdit(), false);
-		Game.pGUI->ShowMessageModal(LoadResStr("IDS_MSG_LEAGUEUSERNAMETOOSHORT"), LoadResStr("IDS_DLG_INVALIDENTRY"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+		Game.pGUI->ShowMessageModal(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEUSERNAMETOOSHORT), LoadResStr(C4ResStrTableKey::IDS_DLG_INVALIDENTRY), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 		return;
 	}
 	// Check password
@@ -667,7 +665,7 @@ void C4LeagueSignupDialog::UserClose(bool fOK)
 		if (!szPassword || !*szPassword)
 		{
 			SetFocus(pEdtPass->GetEdit(), false);
-			Game.pGUI->ShowMessageModal(LoadResStr("IDS_MSG_LEAGUEMISSINGPASSWORD"), LoadResStr("IDS_DLG_INVALIDENTRY"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+			Game.pGUI->ShowMessageModal(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEMISSINGPASSWORD), LoadResStr(C4ResStrTableKey::IDS_DLG_INVALIDENTRY), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return;
 		}
 		// Check second password
@@ -675,7 +673,7 @@ void C4LeagueSignupDialog::UserClose(bool fOK)
 		{
 			SetFocus(pEdtPass2->GetEdit(), false);
 			pEdtPass2->GetEdit()->SetText("", false);
-			Game.pGUI->ShowMessageModal(LoadResStr("IDS_MSG_LEAGUEMISMATCHPASSWORD"), LoadResStr("IDS_DLG_INVALIDENTRY"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+			Game.pGUI->ShowMessageModal(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEMISMATCHPASSWORD), LoadResStr(C4ResStrTableKey::IDS_DLG_INVALIDENTRY), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return;
 		}
 	}

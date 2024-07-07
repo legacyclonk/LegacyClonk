@@ -170,8 +170,8 @@ bool C4ObjectInfo::Save(C4Group &hGroup, bool fStoreTiny, C4DefList *pDefs)
 				RemoveExtension(Filename);
 				int32_t iFinNum = GetTrailingNumber(Filename), iLen = SLen(Filename);
 				while (iLen && Inside(Filename[iLen - 1], '0', '9')) --iLen;
-				if (iLen > _MAX_PATH - 22) { LogF("Error generating unique filename for %s(%s): Path overflow", Name, hGroup.GetFullName().getData()); break; }
-				snprintf(Filename + iLen, 22, "%d", iFinNum + 1);
+				if (iLen > _MAX_PATH - 22) { LogNTr(spdlog::level::err, "Error generating unique filename for {}({}): Path overflow", Name, hGroup.GetFullName().getData()); break; }
+				*std::to_chars(Filename + iLen, Filename + std::size(Filename) - 1, iFinNum + 1).ptr = '\0';
 				EnforceExtension(Filename, "c4i");
 			}
 		}
@@ -184,7 +184,7 @@ bool C4ObjectInfo::Save(C4Group &hGroup, bool fStoreTiny, C4DefList *pDefs)
 				else
 				{
 					// could not rename. Not fatal; just use old file
-					LogF("Error adjusting crew info for %s into %s: Rename error from %s to %s!", Name, hGroup.GetFullName().getData(), Filename, szTempGroup);
+					LogNTr(spdlog::level::err, "Error adjusting crew info for {} into {}: Rename error from {} to {}!", Name, hGroup.GetFullName().getData(), Filename, szTempGroup);
 				}
 		}
 	}

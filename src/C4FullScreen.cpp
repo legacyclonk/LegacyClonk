@@ -30,6 +30,8 @@
 #include <C4Player.h>
 #include <C4GameOverDlg.h>
 
+#include <format>
+
 #ifdef _WIN32
 #include "res/engine_resource.h"
 
@@ -523,9 +525,8 @@ bool C4FullScreen::ViewportCheck()
 			// Activate mouse control
 			Game.MouseControl.Init(iPlrNum);
 			// Display message for how to open observer menu (this message will be cleared if any owned viewport opens)
-			StdStrBuf sKey;
-			sKey.Format("<c ffff00><%s></c>", Game.KeyboardInput.GetKeyCodeNameByKeyName("FullscreenMenuOpen", false).getData());
-			Game.GraphicsSystem.FlashMessage(FormatString(LoadResStr("IDS_MSG_PRESSORPUSHANYGAMEPADBUTT"), sKey.getData()).getData());
+			const std::string key{std::format("<c ffff00><{}></c>", Game.KeyboardInput.GetKeyCodeNameByKeyName("FullscreenMenuOpen", false))};
+			Game.GraphicsSystem.FlashMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_PRESSORPUSHANYGAMEPADBUTT, key).c_str());
 		}
 		break;
 	// One viewport: do nothing

@@ -59,8 +59,8 @@ C4Application::~C4Application()
 {
 	// clear gamepad
 	delete pGamePadControl;
-	// Close log
-	CloseLog();
+	// flush loggers
+	spdlog::apply_all([](const auto &logger) { logger->flush(); });
 	// Launch editor
 	if (launchEditor)
 	{
@@ -99,7 +99,7 @@ void C4Application::DoInit()
 		else
 		{
 			// default config corrupted: Restore default
-			Log("Warning: Configuration corrupted - restoring default!\n");
+			spdlog::warn("Configuration corrupted - restoring default!");
 			Config.Default();
 			Config.Save();
 			Config.Load();
@@ -113,7 +113,7 @@ void C4Application::DoInit()
 	C4Group_SetSortList(C4CFN_FLS);
 
 	// Open log
-	OpenLog();
+	LogSystem.OpenLog();
 
 	// init system group
 	if (!SystemGroup.Open(C4CFN_System))
@@ -134,8 +134,8 @@ void C4Application::DoInit()
 	// Load language string table
 	if (!Languages.LoadLanguage(Config.General.LanguageEx))
 		// No language table was loaded - bad luck...
-		if (!IsResStrTableLoaded())
-			Log("WARNING: No language string table loaded!");
+		if (!ResStrTable)
+			spdlog::warn("No language string table loaded!");
 
 	// Parse command line
 	Game.ParseCommandLine(GetCommandLine());
@@ -192,17 +192,17 @@ void C4Application::DoInit()
 	// init timers (needs window)
 	if (!InitTimer())
 	{
-		LogFatal(LoadResStr("IDS_ERR_TIMER"));
-		Clear(); throw StartupException{GetFatalError()};
+		LogFatal(C4ResStrTableKey::IDS_ERR_TIMER);
+		Clear(); throw StartupException{LogSystem.GetFatalErrorString()};
 	}
 
 	// Engine header message
-	Log(C4ENGINEINFOLONG);
-	LogF("Version: %s %s", C4VERSION, C4_OS);
+	spdlog::info(C4ENGINEINFOLONG);
+	spdlog::info("Version: " C4VERSION " " C4_OS);
 
 	// Initialize OpenGL
 	DDraw = DDrawInit(this, Config.Graphics.Engine);
-	if (!DDraw) { LogFatal(LoadResStr("IDS_ERR_DDRAW")); Clear(); throw StartupException{GetFatalError()}; }
+	if (!DDraw) { LogFatal(C4ResStrTableKey::IDS_ERR_DDRAW); Clear(); throw StartupException{LogSystem.GetFatalErrorString()}; }
 
 #if defined(_WIN32) && !defined(USE_CONSOLE)
 	// Register clonk file classes - notice: this will only work if we have administrator rights
@@ -231,7 +231,7 @@ bool C4Application::PreInit()
 	{
 		if (!Game.GraphicsSystem.InitLoaderScreen(C4CFN_StartupBackgroundMain))
 		{
-			LogFatal(LoadResStr("IDS_PRC_ERRLOADER")); return false;
+			LogFatal(C4ResStrTableKey::IDS_PRC_ERRLOADER); return false;
 		}
 	}
 
@@ -250,8 +250,8 @@ bool C4Application::PreInit()
 	}
 	catch (const std::runtime_error &e)
 	{
-		Log(e.what());
-		Log(LoadResStr("IDS_PRC_NOAUDIO"));
+		spdlog::error(e.what());
+		Log(C4ResStrTableKey::IDS_PRC_NOAUDIO);
 	}
 #endif
 
@@ -273,7 +273,7 @@ bool C4Application::PreInit()
 	}
 	catch (const std::runtime_error &e)
 	{
-		LogSilentF("Failed to initialize toast system: %s", e.what());
+		spdlog::warn("Failed to initialize toast system: {}", e.what());
 	}
 
 	Game.SetInitProgress(fDoUseStartupDialog ? 30.0f : 3.0f);
@@ -298,8 +298,8 @@ void C4Application::Clear()
 	// Close timers
 	sec1TimerCallbacks.clear();
 	// Log
-	if (IsResStrTableLoaded()) // Avoid (double and undefined) message on (second?) shutdown...
-		Log(LoadResStr("IDS_PRC_DEINIT"));
+	if (ResStrTable) // Avoid (double and undefined) message on (second?) shutdown...
+		Log(C4ResStrTableKey::IDS_PRC_DEINIT);
 	// Clear external language packs and string table
 	Languages.Clear();
 	Languages.ClearLanguage();
@@ -418,7 +418,7 @@ void C4Application::Execute()
 #else
 		AppState = C4AS_Game;
 		// if no scenario or direct join has been specified, get game startup parameters by startup dialog
-		Game.Parameters.ScenarioTitle.CopyValidated(LoadResStr("IDS_PRC_INITIALIZE"));
+		Game.Parameters.ScenarioTitle.CopyValidated(LoadResStr(C4ResStrTableKey::IDS_PRC_INITIALIZE));
 		if (!C4Startup::Execute()) { Quit(); --iRecursionCount; return; }
 		AppState = C4AS_StartGame;
 #endif
@@ -618,9 +618,9 @@ void C4Application::OnCommand(const char *szCmd)
 				// timeout given?
 				int32_t iTimeout = Config.Lobby.CountdownTime;
 				if (!Game.Network.isHost())
-					Log(LoadResStr("IDS_MSG_CMD_HOSTONLY"));
+					Log(C4ResStrTableKey::IDS_MSG_CMD_HOSTONLY);
 				else if (szPar && (!sscanf(szPar, "%d", &iTimeout) || iTimeout < 0))
-					Log(LoadResStr("IDS_MSG_CMD_START_USAGE"));
+					Log(C4ResStrTableKey::IDS_MSG_CMD_START_USAGE);
 				else
 					// start new countdown (aborts previous if necessary)
 					Game.Network.StartLobbyCountdown(iTimeout);

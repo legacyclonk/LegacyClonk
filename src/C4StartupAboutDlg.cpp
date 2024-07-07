@@ -64,7 +64,7 @@ static struct DeveloperList : public PersonList
 
 		for (auto &p : developers)
 		{
-			textbox->AddTextLine(p.nick ? FormatString("%s <c f7f76f>(%s)</c>", p.name, p.nick).getData() : p.name, &font, C4GUI_MessageFontClr, false, true);
+			textbox->AddTextLine(p.nick ? std::format("{} <c f7f76f>({})</c>", p.name, p.nick).c_str() : p.name, &font, C4GUI_MessageFontClr, false, true);
 		}
 	}
 
@@ -249,7 +249,7 @@ namespace
 
 // C4StartupAboutDlg
 
-C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg(LoadResStr("IDS_DLG_ABOUT"))
+C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg(LoadResStr(C4ResStrTableKey::IDS_DLG_ABOUT))
 {
 	// ctor
 	UpdateSize();
@@ -265,11 +265,11 @@ C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg(LoadResStr("IDS_DLG_ABOUT"
 		caButtons.GetFromBottom(rTrademarkFont.GetLineHeight()), ARight, 0xffffffff, &rTrademarkFont));
 
 	int32_t iButtonWidth = caButtons.GetInnerWidth() / 4;
-	AddElement(btn = new C4GUI::CallbackButton<C4StartupAboutDlg>(LoadResStr("IDS_BTN_BACK"), caButtons.GetGridCell(0,3,0,1,iButtonWidth,C4GUI_ButtonHgt,true), &C4StartupAboutDlg::OnBackBtn));
-	btn->SetToolTip(LoadResStr("IDS_DLGTIP_BACKMAIN"));
-	AddElement(btn = new C4GUI::CallbackButton<C4StartupAboutDlg>(LoadResStr("IDS_BTN_CHECKFORUPDATES"), caButtons.GetGridCell(2,4,0,1,iButtonWidth,C4GUI_ButtonHgt,true), &C4StartupAboutDlg::OnUpdateBtn));
-	btn->SetToolTip(LoadResStr("IDS_DESC_CHECKONLINEFORNEWVERSIONS"));
-	AddElement(btnAdvance = new C4GUI::CallbackButton<C4StartupAboutDlg>(LoadResStr("IDS_BTN_LICENSES"),
+	AddElement(btn = new C4GUI::CallbackButton<C4StartupAboutDlg>(LoadResStr(C4ResStrTableKey::IDS_BTN_BACK), caButtons.GetGridCell(0,3,0,1,iButtonWidth,C4GUI_ButtonHgt,true), &C4StartupAboutDlg::OnBackBtn));
+	btn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_BACKMAIN));
+	AddElement(btn = new C4GUI::CallbackButton<C4StartupAboutDlg>(LoadResStr(C4ResStrTableKey::IDS_BTN_CHECKFORUPDATES), caButtons.GetGridCell(2,4,0,1,iButtonWidth,C4GUI_ButtonHgt,true), &C4StartupAboutDlg::OnUpdateBtn));
+	btn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_CHECKONLINEFORNEWVERSIONS));
+	AddElement(btnAdvance = new C4GUI::CallbackButton<C4StartupAboutDlg>(LoadResStr(C4ResStrTableKey::IDS_BTN_LICENSES),
 		caButtons.GetGridCell(3,4,0,1,iButtonWidth,C4GUI_ButtonHgt,true), &C4StartupAboutDlg::OnAdvanceButton));
 
 	using ElementVector = decltype(aboutPages)::value_type;

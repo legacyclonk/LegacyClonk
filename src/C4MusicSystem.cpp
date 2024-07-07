@@ -96,7 +96,7 @@ void C4MusicSystem::Play(const char *const songname, const bool loop)
 	// Stop old music
 	Stop();
 
-	LogF(LoadResStr("IDS_PRC_PLAYMUSIC"), GetFilename(newSong->name.c_str()));
+	Log(C4ResStrTableKey::IDS_PRC_PLAYMUSIC, GetFilename(newSong->name.c_str()));
 
 	// Load and play music file
 	try
@@ -115,8 +115,7 @@ void C4MusicSystem::Play(const char *const songname, const bool loop)
 
 	catch (const std::runtime_error &e)
 	{
-		LogF("Cannot play music file %s:", newSong->name.c_str());
-		Log(e.what());
+		LogNTr(spdlog::level::err, "Cannot play music file {}: {}", newSong->name, e.what());
 		ClearPlayingSong();
 		return;
 	}
@@ -164,7 +163,7 @@ void C4MusicSystem::PlayScenarioMusic(C4Group &group)
 	for (const auto &musicDir : musicDirs)
 	{
 		LoadDir(musicDir.c_str());
-		LogF(LoadResStr("IDS_PRC_LOCALMUSIC"), Config.AtExeRelativePath(musicDir.c_str()));
+		Log(C4ResStrTableKey::IDS_PRC_LOCALMUSIC, Config.AtExeRelativePath(musicDir.c_str()));
 	}
 
 	if (Config.Sound.RXMusic)
@@ -274,7 +273,7 @@ bool C4MusicSystem::ToggleOnOff(const bool changeConfig)
 
 	if (Game.IsRunning)
 	{
-		Game.GraphicsSystem.FlashMessageOnOff(LoadResStr("IDS_CTL_MUSIC"), enabled);
+		Game.GraphicsSystem.FlashMessageOnOff(LoadResStr(C4ResStrTableKey::IDS_CTL_MUSIC), enabled);
 	}
 	return enabled;
 }
@@ -370,7 +369,7 @@ void C4MusicSystem::LoadDir(const char *const path)
 	if (!success) success = dirGroup.Open(dir.c_str());
 	if (!success)
 	{
-		LogF(LoadResStr("IDS_PRC_MUSICFILENOTFOUND"), path);
+		Log(C4ResStrTableKey::IDS_PRC_MUSICFILENOTFOUND, path);
 		return;
 	}
 

@@ -63,7 +63,7 @@ public:
 		// Load the font
 		FT_Error e;
 		if (e = FT_New_Face(library, filepathname, 0, &face))
-			throw std::runtime_error(std::string("Cannot load ") + filepathname + ": " + FormatString("%d", e).getData());
+			throw std::runtime_error(std::format("Cannot load {}: {}", filepathname, e));
 	}
 
 	CStdVectorFont(const StdBuf &Data)
@@ -74,7 +74,7 @@ public:
 		// Load the font
 		FT_Error e;
 		if (e = FT_New_Memory_Face(library, static_cast<const FT_Byte *>(Data.getData()), Data.getSize(), 0, &face))
-			throw std::runtime_error(std::string("Cannot load font: ") + FormatString("%d", e).getData());
+			throw std::runtime_error(std::format("Cannot load font: {}", e));
 	}
 
 	~CStdVectorFont()
@@ -440,8 +440,8 @@ void CStdFont::Init(CStdVectorFont &VectorFont, uint32_t dwHeight, uint32_t dwFo
 	fPrerenderedFont = false;
 	if (0) for (int i = 0; i < iNumFontSfcs; ++i)
 	{
-		StdStrBuf pngfilename = FormatString("%s%i%s_%d.png", szFontName, dwHeight, fDoShadow ? "_shadow" : "", i);
-		psfcFontData[i]->SavePNG(pngfilename.getData(), true, false, false);
+		const std::string pngFilename{std::format("{}{}{}_{}.png", szFontName, dwHeight, fDoShadow ? "_shadow" : "", i)};
+		psfcFontData[i]->SavePNG(pngFilename.c_str(), true, false, false);
 	}
 }
 
@@ -775,7 +775,10 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 					while (*lastLine == '<' && markup.Read(&lastLine));
 					if (*lastLine) ++lastLine;
 				}
-				(*pOut) += markup.ToCloseMarkup() + "\n" + markup.ToMarkup() + tempPart;
+				pOut->Append(markup.ToCloseMarkup().c_str());
+				pOut->AppendChar('\n');
+				pOut->Append(markup.ToMarkup().c_str());
+				pOut->Append(tempPart);
 			}
 			// calc next line usage
 			iX -= iXBreak;

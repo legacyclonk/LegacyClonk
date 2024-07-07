@@ -86,9 +86,9 @@ bool C4EditCursor::Init()
 #ifdef WITH_DEVELOPER_MODE
 	menuContext = gtk_menu_new();
 
-	itemDelete =       gtk_menu_item_new_with_label(LoadResStrUtf8("IDS_MNU_DELETE").getData());
-	itemDuplicate =    gtk_menu_item_new_with_label(LoadResStrUtf8("IDS_MNU_DUPLICATE").getData());
-	itemGrabContents = gtk_menu_item_new_with_label(LoadResStrUtf8("IDS_MNU_CONTENTS").getData());
+	itemDelete =       gtk_menu_item_new_with_label(LoadResStrUtf8(C4ResStrTableKey::IDS_MNU_DELETE).getData());
+	itemDuplicate =    gtk_menu_item_new_with_label(LoadResStrUtf8(C4ResStrTableKey::IDS_MNU_DUPLICATE).getData());
+	itemGrabContents = gtk_menu_item_new_with_label(LoadResStrUtf8(C4ResStrTableKey::IDS_MNU_CONTENTS).getData());
 	itemProperties =   gtk_menu_item_new_with_label(""); // Set dynamically in DoContextMenu
 
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuContext), itemDelete);
@@ -162,26 +162,26 @@ bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
 
 bool C4EditCursor::UpdateStatusBar()
 {
-	StdStrBuf text{""};
+	std::string text;
 	switch (Mode)
 	{
 	case C4CNS_ModePlay:
 		if (Game.MouseControl.GetCaption())
 		{
-			const std::string caption{Game.MouseControl.GetCaption()};
-			text = caption.substr(0, caption.find('|')).c_str();
+			std::string caption{Game.MouseControl.GetCaption()};
+			text = std::move(caption).substr(0, caption.find('|'));
 		}
 		break;
 
 	case C4CNS_ModeEdit:
-		text = FormatString("%i/%i (%s)", X, Y, (Target ? (Target->GetName()) : LoadResStr("IDS_CNS_NOTHING")));
+		text = std::format("{}/{} ({})", X, Y, (Target ? (Target->GetName()) : LoadResStr(C4ResStrTableKey::IDS_CNS_NOTHING)));
 		break;
 
 	case C4CNS_ModeDraw:
-		text = FormatString("%i/%i (%s)", X, Y, (MatValid(GBackMat(X, Y)) ? Game.Material.Map[GBackMat(X, Y)].Name : LoadResStr("IDS_CNS_NOTHING")));
+		text = std::format("{}/{} ({})", X, Y, (MatValid(GBackMat(X, Y)) ? Game.Material.Map[GBackMat(X, Y)].Name : LoadResStr(C4ResStrTableKey::IDS_CNS_NOTHING)));
 		break;
 	}
-	return Console.UpdateCursorBar(text.getData());
+	return Console.UpdateCursorBar(text.c_str());
 }
 
 void C4EditCursor::OnSelectionChanged()
@@ -228,7 +228,7 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 		case C4TLS_Fill:
 			if (Game.HaltCount)
 			{
-				Hold = false; Console.Message(LoadResStr("IDS_CNS_FILLNOHALT")); return false;
+				Hold = false; Console.Message(LoadResStr(C4ResStrTableKey::IDS_CNS_FILLNOHALT)); return false;
 			}
 			break;
 		case C4TLS_Picker: ApplyToolPicker(); break;
@@ -589,10 +589,10 @@ bool C4EditCursor::DoContextMenu()
 	SetMenuItemEnable(hContext, IDM_VIEWPORT_DUPLICATE,  fObjectSelected && Console.Editing);
 	SetMenuItemEnable(hContext, IDM_VIEWPORT_CONTENTS,   fObjectSelected && Selection.GetObject()->Contents.ObjectCount() && Console.Editing);
 	SetMenuItemEnable(hContext, IDM_VIEWPORT_PROPERTIES, Mode != C4CNS_ModePlay);
-	SetMenuItemText(hContext, IDM_VIEWPORT_DELETE,     LoadResStr("IDS_MNU_DELETE"));
-	SetMenuItemText(hContext, IDM_VIEWPORT_DUPLICATE,  LoadResStr("IDS_MNU_DUPLICATE"));
-	SetMenuItemText(hContext, IDM_VIEWPORT_CONTENTS,   LoadResStr("IDS_MNU_CONTENTS"));
-	SetMenuItemText(hContext, IDM_VIEWPORT_PROPERTIES, LoadResStr((Mode == C4CNS_ModeEdit) ? "IDS_CNS_PROPERTIES" : "IDS_CNS_TOOLS"));
+	SetMenuItemText(hContext, IDM_VIEWPORT_DELETE,     LoadResStr(C4ResStrTableKey::IDS_MNU_DELETE));
+	SetMenuItemText(hContext, IDM_VIEWPORT_DUPLICATE,  LoadResStr(C4ResStrTableKey::IDS_MNU_DUPLICATE));
+	SetMenuItemText(hContext, IDM_VIEWPORT_CONTENTS,   LoadResStr(C4ResStrTableKey::IDS_MNU_CONTENTS));
+	SetMenuItemText(hContext, IDM_VIEWPORT_PROPERTIES, LoadResStrChoice(Mode == C4CNS_ModeEdit, C4ResStrTableKey::IDS_CNS_PROPERTIES, C4ResStrTableKey::IDS_CNS_TOOLS));
 	int32_t iItem = TrackPopupMenu(
 		hContext,
 		TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON | TPM_NONOTIFY,
@@ -613,7 +613,7 @@ bool C4EditCursor::DoContextMenu()
 	gtk_widget_set_sensitive(itemProperties,   Mode != C4CNS_ModePlay);
 
 	GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(itemProperties)));
-	gtk_label_set_text(label, LoadResStrUtf8((Mode == C4CNS_ModeEdit) ? "IDS_CNS_PROPERTIES" : "IDS_CNS_TOOLS").getData());
+	gtk_label_set_text(label, LoadResStrUtf8Choice(Mode == C4CNS_ModeEdit, C4ResStrTableKey::IDS_CNS_PROPERTIES, C4ResStrTableKey::IDS_CNS_TOOLS).getData());
 
 	gtk_menu_popup_at_pointer(GTK_MENU(menuContext), nullptr);
 #endif
@@ -668,7 +668,7 @@ bool C4EditCursor::EditingOK()
 	if (!Console.Editing)
 	{
 		Hold = false;
-		Console.Message(LoadResStr("IDS_CNS_NONETEDIT"));
+		Console.Message(LoadResStr(C4ResStrTableKey::IDS_CNS_NONETEDIT));
 		return false;
 	}
 	return true;

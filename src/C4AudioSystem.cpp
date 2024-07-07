@@ -34,7 +34,7 @@ C4AudioSystem *C4AudioSystem::NewInstance(
 	}
 	catch (const std::runtime_error &e)
 	{
-		Log(e.what());
+		CreateLogger("C4AudioSystem")->error(e.what());
 	}
 #endif
 	return new C4AudioSystemNone{};

@@ -165,11 +165,11 @@ void C4GameControlNetwork::DoInput(const C4Control &Input) // by main thread
 	{
 		if (!fHost)
 			if (!pNetwork->Clients.SendMsgToHost(CtrlPkt))
-				Application.InteractiveThread.ThreadLog("Failed to send control to host!");
+				pParent->GetLogger()->error("Failed to send control to host!");
 	}
 	// decentral mode: always broadcast to everybody
 	else if (!pNetwork->Clients.BroadcastMsgToClients(CtrlPkt))
-		Application.InteractiveThread.ThreadLog("Failed to broadcast control!");
+		pParent->GetLogger()->error("Failed to broadcast control!");
 	// add to list
 	AddCtrl(pCtrl);
 	// ok, control is sent for this control tick
@@ -195,7 +195,7 @@ void C4GameControlNetwork::DoInput(C4PacketType eCtrlType, C4ControlPacket *pCtr
 			// Client: send to host
 			if (!Game.Network.Clients.SendMsgToHost(MkC4NetIOPacket(PID_ControlPkt, CtrlPkt)))
 			{
-				LogFatal("Network: could not send direct control packet!"); break;
+				LogFatalNTr("Network: could not send direct control packet!"); break;
 			}
 			delete pCtrl;
 		}
@@ -229,7 +229,7 @@ void C4GameControlNetwork::DoInput(C4PacketType eCtrlType, C4ControlPacket *pCtr
 		// Send to all clients
 		if (!Game.Network.Clients.BroadcastMsgToClients(MkC4NetIOPacket(PID_ControlPkt, CtrlPkt)))
 		{
-			LogFatal("Network: could not send direct control packet!"); break;
+			LogFatalNTr("Network: could not send direct control packet!"); break;
 		}
 		// Exec at once
 		pParent->ExecControlPacket(eCtrlType, pCtrl);
@@ -291,7 +291,7 @@ void C4GameControlNetwork::ExecSyncControl(int32_t iControlTick) // by main thre
 		pParent->ExecControl(Control);
 	else if (pParent->ControlTick > iControlTick)
 		// The host should make sure this doesn't happen.
-		LogF("Network: Fatal: got sync control to execute for ctrl tick %d, but already in ctrl tick %d!", iControlTick, pParent->ControlTick);
+		pParent->GetLogger()->error("Fatal: got sync control to execute for ctrl tick {}, but already in ctrl tick {}!", iControlTick, pParent->ControlTick);
 	else
 		// This sync control must be executed later, so safe it back
 		AddSyncCtrlToQueue(Control, iControlTick);
@@ -441,7 +441,7 @@ void C4GameControlNetwork::CalcPerformance(int32_t iCtrlTick)
 		if (getControlPreSend() != iBestPreSend)
 		{
 			setControlPreSend(iBestPreSend);
-			Game.GraphicsSystem.FlashMessage(FormatString("PreSend: %d  - TargetFPS: %d", iBestPreSend, iTargetFPS).getData());
+			Game.GraphicsSystem.FlashMessage(std::format("PreSend: {}  - TargetFPS: {}", iBestPreSend, iTargetFPS).c_str());
 		}
 	}
 }
@@ -709,7 +709,7 @@ void C4GameControlNetwork::CheckCompleteCtrl(bool fSetEvent) // by both
 				break;
 		}
 		// preexecute to check if it's ready for execute
-		if (!pComplete->getControl().PreExecute())
+		if (!pComplete->getControl().PreExecute(pParent->GetLogger()))
 			break;
 		// ok, control for this tick is ready
 		iControlReady++;
@@ -725,7 +725,7 @@ void C4GameControlNetwork::CheckCompleteCtrl(bool fSetEvent) // by both
 		(!fActivated || iControlSent > iControlReady) &&
 		timeGetTime() >= iNextControlReqeust)
 	{
-		Application.InteractiveThread.ThreadLogSF("Network: Recovering: Requesting control for tick %d...", iControlReady + 1);
+		pParent->GetLogger()->info("Recovering: Requesting control for tick {}...", iControlReady + 1);
 		// make request
 		C4NetIOPacket Pkt = MkC4NetIOPacket(PID_ControlReq, C4PacketControlReq(iControlReady + 1));
 		// send control requests
@@ -805,7 +805,7 @@ void C4GameControlNetwork::ExecQueuedSyncCtrl() // by main thread
 	// security
 	while (pSyncCtrlQueue && pSyncCtrlQueue->getCtrlTick() < pParent->ControlTick)
 	{
-		LogF("Network: Fatal: got sync control to execute for ctrl tick %d, but already in ctrl tick %d!", pSyncCtrlQueue->getCtrlTick(), pParent->ControlTick);
+		pParent->GetLogger()->error("Fatal: got sync control to execute for ctrl tick {}, but already in ctrl tick {}!", pSyncCtrlQueue->getCtrlTick(), pParent->ControlTick);
 		// remove it
 		C4GameControlPacket *pPkt = pSyncCtrlQueue;
 		pSyncCtrlQueue = pPkt->pNext;

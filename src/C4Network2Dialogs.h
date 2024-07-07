@@ -140,7 +140,7 @@ private:
 	private:
 		// precondition: GetClient() != nullptr
 		void UpdateMuteButton();
-		const StdStrBuf GetNameLabel() const;
+		std::string GetNameLabel() const;
 	};
 
 	class ConnectionListItem : public ListItem

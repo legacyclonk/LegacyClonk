@@ -689,7 +689,7 @@ void CStdGL::BlitLandscape(C4Surface *const sfcSource, C4Surface *const sfcSourc
 
 bool CStdGL::CreateDirectDraw()
 {
-	Log("  Using OpenGL...");
+	logger->info("Using OpenGL...");
 	return true;
 }
 
@@ -701,7 +701,7 @@ CStdGLCtx *CStdGL::CreateContext(CStdWindow *const pWindow, CStdApp *const pApp)
 #ifdef USE_SDL_MAINLOOP
 	if (SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1) != 0)
 	{
-		LogF("  SDL: Enabling context sharing failed: %s", SDL_GetError());
+		logger->error("SDL: Enabling context sharing failed: {}", SDL_GetError());
 	}
 #endif
 
@@ -709,7 +709,7 @@ CStdGLCtx *CStdGL::CreateContext(CStdWindow *const pWindow, CStdApp *const pApp)
 	const auto pCtx = new CStdGLCtx();
 	if (!pCtx->Init(pWindow, pApp))
 	{
-		delete pCtx; Error("  gl: Error creating secondary context!"); return nullptr;
+		delete pCtx; logger->error("Error creating secondary context!"); return nullptr;
 	}
 	// done
 	return pCtx;
@@ -724,7 +724,7 @@ CStdGLCtx *CStdGL::CreateContext(const HWND hWindow, CStdApp *const pApp)
 	const auto pCtx = new CStdGLCtx();
 	if (!pCtx->Init(nullptr, pApp, hWindow))
 	{
-		delete pCtx; Error("  gl: Error creating secondary context!"); return nullptr;
+		delete pCtx; logger->error("Error creating secondary context!"); return nullptr;
 	}
 	// done
 	return pCtx;
@@ -739,7 +739,11 @@ bool CStdGL::CreatePrimarySurfaces()
 	lpPrimary->AttachSfc(nullptr);
 
 	// create+select gl context
-	if (!MainCtx.Init(pApp->pWindow, pApp)) return Error("  gl: Error initializing context");
+	if (!MainCtx.Init(pApp->pWindow, pApp))
+	{
+		logger->error("Error initializing context");
+		return false;
+	}
 
 	// done, init device stuff
 	return RestoreDeviceObjects();
@@ -986,7 +990,7 @@ bool CStdGL::RestoreDeviceObjects()
 		}
 		catch (const CStdRenderException &e)
 		{
-			LogFatal(e.what());
+			LogFatalNTr(e.what());
 			return Active = false;
 		}
 	}

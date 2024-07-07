@@ -85,7 +85,7 @@ bool C4DefGraphics::LoadGraphics(C4Group &hGroup, const char *szFilename, const 
 			{
 				const char *szFn = szFilenamePNG ? szFilenamePNG : szFilename;
 				if (!szFn) szFn = "???";
-				DebugLogF("    Gfx loading error in %s: %s (%d x %d) doesn't match overlay %s (%d x %d) - invalid file or size mismatch",
+				DebugLog(spdlog::level::err, "Gfx loading error in {}: {} ({} x {}) doesn't match overlay {} ({} x {}) - invalid file or size mismatch",
 					hGroup.GetFullName().getData(), szFn, Bitmap ? Bitmap->Wdt : -1, Bitmap ? Bitmap->Hgt : -1,
 					szOverlayPNG, BitmapClr->Wdt, BitmapClr->Hgt);
 				delete BitmapClr; BitmapClr = nullptr;
@@ -297,7 +297,7 @@ void C4DefGraphicsAdapt::CompileFunc(StdCompiler *pComp)
 		C4Def *pDef = Game.Defs.ID2Def(id);
 		// search def-graphics
 		if (!pDef || !(pDefGraphics = pDef->Graphics.Get(Name.getData())))
-			pComp->excCorrupt("DefGraphics: could not find graphics \"%s\" in %s(%s)!", Name.getData(), C4IdText(id), pDef ? pDef->Name.getData() : "def not found");
+			pComp->excCorrupt("DefGraphics: could not find graphics \"{}\" in {}({})!", Name.getData(), C4IdText(id), pDef ? pDef->Name.getData() : "def not found");
 	}
 }
 

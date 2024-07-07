@@ -93,7 +93,7 @@ void StdCompilerWarnCallback(void *pData, const char *szPosition, const char *sz
 {
 	const char *szName = reinterpret_cast<const char *>(pData);
 	if (!szPosition || !*szPosition)
-		DebugLogF("WARNING: %s (in %s)", szError, szName);
+		DebugLog(spdlog::level::warn ,"{} (in {})", szError, szName);
 	else
-		DebugLogF("WARNING: %s (in %s, %s)", szError, szPosition, szName);
+		DebugLog(spdlog::level::warn, "{} (in {}, {})", szError, szPosition, szName);
 }

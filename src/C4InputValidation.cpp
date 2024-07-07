@@ -18,7 +18,6 @@
 // user input validation functions
 
 #include <C4InputValidation.h>
-#include <C4Log.h>
 #include <C4Config.h>
 
 #ifdef C4ENGINE

@@ -82,7 +82,11 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *pApp, HWND hWindow)
 
 	// get DC
 	hDC = GetDC(hWindow);
-	if (!hDC) return !!pGL->Error("  gl: Error getting DC");
+	if (!hDC)
+	{
+		pGL->logger->error("Error getting DC");
+		return false;
+	}
 
 	// pixel format
 	PIXELFORMATDESCRIPTOR pfd{};
@@ -94,28 +98,50 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *pApp, HWND hWindow)
 	pfd.cDepthBits = 0;
 	pfd.iLayerType = PFD_MAIN_PLANE;
 	const auto pixelFormat = ChoosePixelFormat(hDC, &pfd);
-	if (pixelFormat == 0) return !!pGL->Error("  gl: Error getting pixel format");
-	if (!SetPixelFormat(hDC, pixelFormat, &pfd)) pGL->Error("  gl: Error setting pixel format");
+	if (pixelFormat == 0)
+	{
+		pGL->logger->error("Error getting pixel format");
+		return false;
+	}
+
+	if (!SetPixelFormat(hDC, pixelFormat, &pfd))
+	{
+		pGL->logger->error("Error setting pixel format");
+		return false;
+	}
 
 	// create context
-	hrc = wglCreateContext(hDC); if (!hrc) return !!pGL->Error("  gl: Error creating gl context");
+	hrc = wglCreateContext(hDC);
+	if (!hrc)
+	{
+		pGL->logger->error("Error creating context");
+		return false;
+	}
 
 	// share textures
 	if (this != &pGL->MainCtx)
 	{
-		if (!wglShareLists(pGL->MainCtx.hrc, hrc)) pGL->Error("  gl: Textures for secondary context not available");
+		if (!wglShareLists(pGL->MainCtx.hrc, hrc))
+		{
+			pGL->logger->error("Textures for secondary context not available");
+			return false;
+		}
 		return true;
 	}
 
 	// select
-	if (!Select()) return !!pGL->Error("  gl: Unable to select context");
+	if (!Select())
+	{
+		pGL->logger->error("Unable to select context");
+		return false;
+	}
 
 	// init extensions
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
 	{
 		// Problem: glewInit failed, something is seriously wrong.
-		pGL->Error(reinterpret_cast<const char *>(glewGetErrorString(err)));
+		pGL->logger->error(reinterpret_cast<const char *>(glewGetErrorString(err)));
 	}
 	// success
 	return true;
@@ -188,7 +214,7 @@ bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 		if (!GetDeviceGammaRamp(hDC, DefRamp.red))
 		{
 			DefRamp.Default();
-			Log("  Error getting default gamma ramp; using standard");
+			logger->error("Error getting default gamma ramp; using standard");
 		}
 		ReleaseDC(pWindow->GetRenderWindow(), hDC);
 		return true;
@@ -201,7 +227,7 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
 	if (!MainCtx.hDC || (!Active && !fForce)) return false;
 	if (!SetDeviceGammaRamp(MainCtx.hDC, ramp.red))
 	{
-		LogSilentF("Error setting gamma ramp: %x", ::GetLastError());
+		logger->error("Error setting gamma ramp: {:02x}", ::GetLastError());
 	}
 	return true;
 }
@@ -240,17 +266,25 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 	if (!ctx)
 		ctx = glXCreateContext(pWindow->dpy, reinterpret_cast<XVisualInfo *>(pWindow->Info), pGL->MainCtx.ctx, False);
 	// No luck at all?
-	if (!ctx) return pGL->Error("  gl: Unable to create context");
+	if (!ctx)
+	{
+		pGL->logger->error("Unable to create context");
+		return false;
+	}
 
 	if (this == &pGL->MainCtx)
 	{
-		if (!Select(true)) return pGL->Error("  gl: Unable to select context");
+		if (!Select(true))
+		{
+			pGL->logger->error("Unable to select context");
+			return false;
+		}
 		// init extensions
 		GLenum err = glewInit();
 		if (GLEW_OK != err)
 		{
 			// Problem: glewInit failed, something is seriously wrong.
-			pGL->Error(reinterpret_cast<const char *>(glewGetErrorString(err)));
+			pGL->logger->error(reinterpret_cast<const char *>(glewGetErrorString(err)));
 		}
 	}
 	return true;
@@ -261,18 +295,17 @@ bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 	// safety
 	if (!pGL || !ctx)
 	{
-		if (verbose) pGL->Error("  gl: pGL is zero");
 		return false;
 	}
 	if (!pGL->lpPrimary)
 	{
-		if (verbose) pGL->Error("  gl: lpPrimary is zero");
+		if (verbose) pGL->logger->error("lpPrimary is zero");
 		return false;
 	}
 	// make context current
 	if (!pWindow->renderwnd || !glXMakeCurrent(pWindow->dpy, pWindow->renderwnd, ctx))
 	{
-		if (verbose) pGL->Error("  gl: glXMakeCurrent failed");
+		if (verbose) pGL->logger->error("glXMakeCurrent failed");
 		return false;
 	}
 
@@ -293,7 +326,7 @@ bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 		// however, the wrong size might have been assumed
 		if (!pGL->UpdateClipper())
 		{
-			if (verbose) pGL->Error("  gl: UpdateClipper failed");
+			if (verbose) pGL->logger->error("UpdateClipper failed");
 			return false;
 		}
 	}
@@ -361,7 +394,7 @@ bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 		if (gammasize != 256)
 		{
 			DefRamp.Set(0x000000, 0x808080, 0xffffff, gammasize, nullptr);
-			LogF("  Size of GammaRamp is %d, not 256", gammasize);
+			logger->warn("Size of GammaRamp is {}, not 256", gammasize);
 		}
 
 		// store default gamma
@@ -369,13 +402,13 @@ bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 			DefRamp.red, DefRamp.green, DefRamp.blue))
 		{
 			DefRamp.Default();
-			Log("  Error getting default gamma ramp; using standard");
+			logger->error("Error getting default gamma ramp; using standard");
 		}
 	}
 	else
 	{
 		DefRamp.Default();
-		Log("  Size of GammaRamp is 0, using default ramp");
+		logger->warn("Size of GammaRamp is 0, using default ramp");
 	}
 
 	Gamma.Set(0x000000, 0x808080, 0xffffff, DefRamp.GetSize(), &DefRamp);
@@ -408,7 +441,8 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 	ctx = SDL_GL_CreateContext(pWindow->sdlWindow);
 	if (!ctx)
 	{
-		return pGL->Error(FormatString("  gl: Unable to create context: %s", SDL_GetError()).getData());
+		pGL->logger->error("Unable to create context: {}", SDL_GetError());
+		return false;
 	}
 	// store window
 	this->pWindow = pWindow;
@@ -417,13 +451,17 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 	if (this == &pGL->MainCtx)
 	{
 		// No luck at all?
-		if (!Select(true)) return pGL->Error("  gl: Unable to select context");
+		if (!Select(true))
+		{
+			pGL->logger->error("Unable to select context");
+			return false;
+		}
 		// init extensions
 		GLenum err = glewInit();
 		if (GLEW_OK != err)
 		{
 			// Problem: glewInit failed, something is seriously wrong.
-			pGL->Error(reinterpret_cast<const char *>(glewGetErrorString(err)));
+			pGL->logger->error(reinterpret_cast<const char *>(glewGetErrorString(err)));
 		}
 	}
 	return true;
@@ -449,7 +487,7 @@ bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 		// however, the wrong size might have been assumed
 		if (!pGL->UpdateClipper())
 		{
-			if (verbose) pGL->Error("  gl: UpdateClipper failed");
+			if (verbose) pGL->logger->error("UpdateClipper failed");
 			return false;
 		}
 	}

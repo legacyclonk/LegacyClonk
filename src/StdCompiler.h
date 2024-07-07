@@ -185,7 +185,7 @@ public:
 
 	// * Position
 	// May return information about the current position of compilation (used for errors and warnings)
-	virtual StdStrBuf getPosition() const { return StdStrBuf(); }
+	virtual std::string getPosition() const { return ""; }
 
 	// * Passes
 	virtual void Begin() {}
@@ -253,57 +253,57 @@ public:
 	class Exception : public std::runtime_error
 	{
 	protected:
-		Exception(StdStrBuf &&Pos, StdStrBuf &&Msg) : runtime_error{Msg.getData()}, Pos(std::forward<StdStrBuf>(Pos)) {}
+		Exception(std::string pos, std::string msg) : runtime_error{std::move(msg)}, Pos{std::move(pos)} {}
 
 	private:
 		// do not copy
 		Exception(const Exception &Exc) = delete;
 
 	public:
-		StdStrBuf Pos;
+		std::string Pos;
 	};
 
 	class NotFoundException : public Exception
 	{
 		friend class StdCompiler;
 
-		NotFoundException(StdStrBuf &&Pos, StdStrBuf &&Msg) : Exception(std::forward<StdStrBuf>(Pos), std::forward<StdStrBuf>(Msg)) {}
+		NotFoundException(std::string pos, std::string msg) : Exception(std::move(pos), std::move(msg)) {}
 	};
 
 	class EOFException : public Exception
 	{
 		friend class StdCompiler;
 
-		EOFException(StdStrBuf &&Pos, StdStrBuf &&Msg) : Exception(std::forward<StdStrBuf>(Pos), std::forward<StdStrBuf>(Msg)) {}
+		EOFException(std::string pos, std::string msg) : Exception(std::move(pos), std::move(msg)) {}
 	};
 
 	class CorruptException : public Exception
 	{
 		friend class StdCompiler;
 
-		CorruptException(StdStrBuf &&Pos, StdStrBuf &&Msg) : Exception(std::forward<StdStrBuf>(Pos), std::forward<StdStrBuf>(Msg)) {}
+		CorruptException(std::string pos, std::string msg) : Exception(std::move(pos), std::move(msg)) {}
 	};
 
 	// Throw helpers (might redirect)
 	template<typename... Args>
-	void excNotFound(const char *szMessage, Args... args)
+	void excNotFound(const std::string_view message, Args... args)
 	{
 		// Throw the appropriate exception
-		throw NotFoundException(getPosition(), FormatString(szMessage, args...));
+		throw NotFoundException(getPosition(), std::vformat(message, std::make_format_args(args...)));
 	}
 
 	template<typename... Args>
-	void excEOF(const char *szMessage = "EOF", Args... args)
+	void excEOF(const std::string_view message = "EOF", Args... args)
 	{
 		// Throw the appropriate exception
-		throw EOFException(getPosition(), FormatString(szMessage, args...));
+		throw EOFException(getPosition(), std::vformat(message, std::make_format_args(args...)));
 	}
 
 	template<typename... Args>
-	void excCorrupt(const char *szMessage, Args... args)
+	void excCorrupt(const std::string_view message, Args... args)
 	{
 		// Throw the appropriate exception
-		throw CorruptException(getPosition(), FormatString(szMessage, args...));
+		throw CorruptException(getPosition(), std::vformat(message, std::make_format_args(args...)));
 	}
 
 public:
@@ -312,14 +312,12 @@ public:
 	void setWarnCallback(WarnCBT pnWarnCB, void *pData) { pWarnCB = pnWarnCB; pWarnData = pData; }
 
 	template<typename... Args>
-	void Warn(const char *szWarning, Args... args)
+	void Warn(const std::format_string<Args...> fmt, Args &&...args)
 	{
 		// Got warning callback?
 		if (!pWarnCB) return;
-		// Format message
-		StdStrBuf Msg; Msg.Format(szWarning, args...);
 		// do callback
-		(*pWarnCB)(pWarnData, getPosition().getData(), Msg.getData());
+		(*pWarnCB)(pWarnData, getPosition().c_str(), std::format(fmt, std::forward<Args>(args)...).c_str());
 	}
 
 private:
@@ -338,8 +336,8 @@ public:
 };
 
 // Standard compile funcs
-template <class T> requires (std::is_class_v<T> || std::is_union_v<T>)
-inline void CompileFunc(T &rStruct, StdCompiler *pComp)
+template <class T, typename... Args> requires (std::is_class_v<T> || std::is_union_v<T>)
+inline void CompileFunc(T &rStruct, StdCompiler *pComp, Args &&...args)
 {
 	// If the compiler doesn't like this line, you tried to compile
 	// something the compiler doesn't know how to handle.
@@ -349,12 +347,17 @@ inline void CompileFunc(T &rStruct, StdCompiler *pComp)
 	// b) You are trying to compile a pointer. Use a PtrAdapt instead.
 	// c) You are trying to compile a simple value that has no
 	//    fixed representation (float, int). Use safe types instead.
-	rStruct.CompileFunc(pComp);
+	rStruct.CompileFunc(pComp, std::forward<Args>(args)...);
 }
 
-inline void CompileFunc(std::string &s, StdCompiler *comp)
+inline void CompileFunc(std::string &s, StdCompiler *comp, const StdCompiler::RawCompileType type = StdCompiler::RCT_Escaped)
 {
-	comp->String(s);
+	comp->String(s, type);
+}
+
+inline void CompileFunc(std::string &s, StdCompiler *comp, const int type = 0)
+{
+	comp->String(s, static_cast<StdCompiler::RawCompileType>(type));
 }
 
 template <class T>
@@ -498,7 +501,7 @@ public:
 	virtual void Raw(void *pData, size_t iSize, RawCompileType eType = RCT_Escaped) override;
 
 	// Position
-	virtual StdStrBuf getPosition() const override;
+	virtual std::string getPosition() const override;
 
 	// Passes
 	virtual void Begin() override;
@@ -547,8 +550,8 @@ class StdCompilerINIWrite : public StdCompiler
 {
 public:
 	// Input
-	typedef StdStrBuf OutT;
-	inline const OutT &getOutput() { return Buf; }
+	typedef std::string OutT;
+	inline const OutT &getOutput() { return buf; }
 
 	// Properties
 	virtual bool hasNaming() override { return true; }
@@ -582,7 +585,7 @@ public:
 
 protected:
 	// Result
-	StdStrBuf Buf;
+	std::string buf;
 
 	// Naming stack
 	struct Naming
@@ -648,7 +651,7 @@ public:
 	virtual void Raw(void *pData, size_t iSize, RawCompileType eType = RCT_Escaped) override;
 
 	// Position
-	virtual StdStrBuf getPosition() const override;
+	virtual std::string getPosition() const override;
 
 	// Passes
 	virtual void Begin() override;

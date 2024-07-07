@@ -31,7 +31,7 @@ bool C4AbortGameDialog::is_shown = false;
 // C4GameAbortDlg
 
 C4AbortGameDialog::C4AbortGameDialog()
-	: C4GUI::Dialog((Game.Control.isCtrlHost() || (Game.C4S.Head.Film == 2)) ? 400 : C4GUI::MessageDialog::dsSmall, 100, LoadResStr("IDS_DLG_ABORT"), false), fGameHalted(false)
+	: C4GUI::Dialog((Game.Control.isCtrlHost() || (Game.C4S.Head.Film == 2)) ? 400 : C4GUI::MessageDialog::dsSmall, 100, LoadResStr(C4ResStrTableKey::IDS_DLG_ABORT), false), fGameHalted(false)
 {
 	const auto showRestart = (Game.Control.isCtrlHost() || (Game.C4S.Head.Film == 2));
 
@@ -49,7 +49,7 @@ C4AbortGameDialog::C4AbortGameDialog()
 	caMain.GetFromRight(C4GUI_IconWdt);
 
 	StdStrBuf sMsgBroken;
-	int iMsgHeight = rUseFont.BreakMessage(LoadResStr("IDS_HOLD_ABORT"), caMain.GetInnerWidth(), &sMsgBroken, true);
+	int iMsgHeight = rUseFont.BreakMessage(LoadResStr(C4ResStrTableKey::IDS_HOLD_ABORT), caMain.GetInnerWidth(), &sMsgBroken, true);
 	C4GUI::Label *pLblMessage = new C4GUI::Label("", caMain.GetFromTop(iMsgHeight), ACenter, C4GUI_MessageFontClr, &rUseFont, false);
 	pLblMessage->SetText(sMsgBroken.getData(), false);
 	AddElement(pLblMessage);
@@ -66,7 +66,7 @@ C4AbortGameDialog::C4AbortGameDialog()
 
 	if (showRestart)
 	{
-		AddElement(new C4GUI::CallbackButton<C4AbortGameDialog>(LoadResStr("IDS_BTN_RESTART"), rcBtn, &C4AbortGameDialog::OnRestartBtn, this));
+		AddElement(new C4GUI::CallbackButton<C4AbortGameDialog>(LoadResStr(C4ResStrTableKey::IDS_BTN_RESTART), rcBtn, &C4AbortGameDialog::OnRestartBtn, this));
 		rcBtn.x += C4GUI_DefButton2Wdt + C4GUI_DefButton2HSpace;
 	}
 

@@ -28,20 +28,89 @@
 #include <share.h>
 #endif
 
-FILE *C4LogFile = nullptr;
-time_t C4LogStartTime;
-StdStrBuf sLogFileName;
+#include <ranges>
 
-StdStrBuf sFatalError;
+#include <spdlog/cfg/helpers.h>
+#include <spdlog/pattern_formatter.h>
+#include <spdlog/sinks/ringbuffer_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
-void OpenLog()
-{
-	// open
-	sLogFileName = C4CFN_Log; int iLog = 2;
 #ifdef _WIN32
-	while (!(C4LogFile = _fsopen(sLogFileName.getData(), "wt", _SH_DENYWR)))
+#include <spdlog/sinks/msvc_sink.h>
+#endif
+
+namespace
+{
+class LogLevelPrefixFormatterFlag : public spdlog::custom_flag_formatter
+{
+public:
+	void format(const spdlog::details::log_msg &msg, const tm &, std::string &dest) override
+	{
+		switch (msg.level)
+		{
+		case spdlog::level::trace:
+			dest += "TRACE: ";
+			break;
+
+		case spdlog::level::debug:
+			dest += "DEBUG: ";
+			break;
+
+		case spdlog::level::info:
+			break;
+
+		case spdlog::level::warn:
+			dest += "WARNING: ";
+			break;
+
+		case spdlog::level::err:
+			dest += "ERROR: ";
+			break;
+
+		case spdlog::level::critical:
+			dest += "CRITICAL: ";
+			break;
+
+		default:
+			std::unreachable();
+		}
+	}
+
+	std::unique_ptr<custom_flag_formatter> clone() const override
+	{
+		return std::make_unique<LogLevelPrefixFormatterFlag>();
+	}
+};
+
+
+class LoggerNameIfExistsFormatterFlag : public spdlog::custom_flag_formatter
+{
+public:
+	void format(const spdlog::details::log_msg &msg, const tm &, std::string &dest) override
+	{
+		if (!msg.logger_name.empty())
+		{
+			dest += std::format("[{}] ", msg.logger_name);
+		}
+	}
+
+	std::unique_ptr<custom_flag_formatter> clone() const override
+	{
+		return std::make_unique<LoggerNameIfExistsFormatterFlag>();
+	}
+};
+
+}
+
+C4LogSystem::LogSink::LogSink()
+{
+	std::string logFileName{C4CFN_Log};
+	// open
+	int iLog = 2;
+#ifdef _WIN32
+	while (!(file = _fsopen(logFileName.c_str(), "wt", _SH_DENYWR)))
 #else
-	while (!(C4LogFile = fopen(sLogFileName.getData(), "wb")))
+	while (!(file = fopen(logFileName.c_str(), "wb")))
 #endif
 	{
 		if (errno == EACCES)
@@ -59,216 +128,278 @@ void OpenLog()
 		}
 
 		// try different name
-		sLogFileName.Format(C4CFN_LogEx, iLog++);
+		logFileName = std::format(C4CFN_LogEx, iLog++);
 	}
-	// save start time
-	time(&C4LogStartTime);
 }
 
-bool CloseLog()
+C4LogSystem::LogSink::~LogSink()
 {
-	// close
-	if (C4LogFile) fclose(C4LogFile); C4LogFile = nullptr;
-	// ok
+	std::fclose(file);
+}
+
+void C4LogSystem::LogSink::sink_it_(const spdlog::details::log_msg &msg)
+{
+	std::string formatted;
+	formatter_->format(msg, formatted);
+	std::fwrite(formatted.data(), sizeof(char), formatted.size(), file);
+}
+
+void C4LogSystem::LogSink::flush_()
+{
+	std::fflush(file);
+}
+
+C4LogSystem::GuiSink::GuiSink(const spdlog::level::level_enum level, const bool showLoggerNameInGui)
+{
+	set_level(level);
+
+	auto guiFormatter = std::make_unique<spdlog::pattern_formatter>();
+	guiFormatter->add_flag<LogLevelPrefixFormatterFlag>('*');
+
+	if (showLoggerNameInGui)
+	{
+		guiFormatter->add_flag<LoggerNameIfExistsFormatterFlag>('~').set_pattern("%~%*%v");
+	}
+	else
+	{
+		guiFormatter->set_pattern("%*%v");
+	}
+
+	set_formatter(std::move(guiFormatter));
+}
+
+void C4LogSystem::GuiSink::sink_it_(const spdlog::details::log_msg &msg)
+{
+	std::string formatted;
+	formatter_->format(msg, formatted);
+
+	if (Application.IsMainThread())
+	{
+		DoLog(formatted);
+	}
+	else
+	{
+		Application.InteractiveThread.ExecuteInMainThread([formatted{std::move(formatted)}, weak{weak_from_this()}]
+		{
+			if (auto strong = weak.lock())
+			{
+				strong->DoLog(formatted);
+			}
+		});
+	}
+}
+
+void C4LogSystem::GuiSink::DoLog(const std::string &message)
+{
+	if (C4GameLobby::MainDlg *const lobby{Game.Network.GetLobby()}; lobby && Game.pGUI)
+	{
+		lobby->OnLog(message.c_str());
+	}
+
+	Console.Out(message.c_str());
+
+	if (Game.GraphicsSystem.MessageBoard.Active)
+	{
+		Game.GraphicsSystem.MessageBoard.AddLog(message.c_str());
+		Game.GraphicsSystem.MessageBoard.LogNotify();
+	}
+}
+
+std::vector<std::string> C4LogSystem::RingbufferSink::TakeMessages()
+{
+	const std::lock_guard lock{mutex_};
+
+	const std::size_t size{ringbuffer.size()};
+	std::vector<std::string> result;
+	result.reserve(size);
+
+	std::ranges::generate_n(std::back_inserter(result), size, [this]
+	{
+		auto &msg = ringbuffer.front();
+		std::string formatted;
+		formatter_->format(msg, formatted);
+
+		ringbuffer.pop_front();
+		return formatted;
+	});
+
+	return result;
+}
+
+void C4LogSystem::RingbufferSink::Clear()
+{
+	const std::lock_guard lock{mutex_};
+	ringbuffer = spdlog::details::circular_q<spdlog::details::log_msg_buffer>{size};
+}
+
+void C4LogSystem::RingbufferSink::sink_it_(const spdlog::details::log_msg &msg)
+{
+	ringbuffer.push_back(spdlog::details::log_msg_buffer{msg});
+}
+
+C4LogSystem::C4LogSystem()
+{
+	spdlog::set_automatic_registration(false);
+
+	const auto logLevel = Game.Verbose ? spdlog::level::debug : spdlog::level::warn;
+
+	loggerSilentGuiSink = std::make_shared<GuiSink>(logLevel, true);
+
+#ifdef _WIN32
+	debugSink = std::make_shared<spdlog::sinks::msvc_sink_mt>();
+	loggerSilent = std::make_shared<spdlog::logger>("", std::initializer_list<spdlog::sink_ptr>{loggerSilentGuiSink, debugSink});
+#else
+	loggerSilent = std::make_shared<spdlog::logger>("", loggerSilentGuiSink);
+#endif
+
+	loggerSilent->set_level(spdlog::level::trace);
+
+	spdlog::set_default_logger(loggerSilent);
+	spdlog::flush_on(spdlog::level::debug);
+
+	logger = loggerSilent;
+
+#ifdef _WIN32
+	loggerDebug = std::make_shared<spdlog::logger>("DebugLog", debugSink);
+#else
+	loggerDebug = std::make_shared<spdlog::logger>("DebugLog");
+#endif
+	loggerDebug->set_level(spdlog::level::trace);
+
+	ringbufferSink = std::make_shared<RingbufferSink>(100);
+	logger->sinks().emplace_back(ringbufferSink);
+}
+
+void C4LogSystem::OpenLog()
+{
+	stdoutSink = std::static_pointer_cast<spdlog::sinks::sink>(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+	stdoutSink->set_level(Game.Verbose ? spdlog::level::debug : spdlog::level::info);
+
+	clonkLogSink = std::make_shared<LogSink>();
+	clonkLogFD = clonkLogSink->GetFD();
+
+	loggerSilent->sinks().emplace_back(stdoutSink);
+	loggerSilent->sinks().emplace_back(clonkLogSink);
+
+	logger = std::make_shared<spdlog::logger>("", loggerSilent->sinks().begin() + 1, loggerSilent->sinks().end());
+	logger->set_level(spdlog::level::trace);
+
+	auto guiSink = std::make_shared<GuiSink>();
+	guiSink->set_pattern("%v");
+
+	logger->sinks().insert(logger->sinks().begin(), std::move(guiSink));
+
+	loggerDebug->sinks().emplace_back(stdoutSink);
+	loggerDebug->sinks().emplace_back(clonkLogSink);
+	loggerDebug->sinks().emplace_back(ringbufferSink);
+
+	loggerDebugGuiSink = std::make_shared<GuiSink>(spdlog::level::off, false);
+	loggerDebug->sinks().insert(loggerDebug->sinks().begin(), loggerDebugGuiSink);
+}
+
+std::shared_ptr<spdlog::logger> C4LogSystem::CreateLogger(std::string name, const C4LogSystemCreateLoggerOptions options)
+{
+	auto newLogger = std::make_shared<spdlog::logger>(std::move(name));
+	newLogger->set_level(spdlog::level::trace);
+
+	if (options.GuiLogLevel != spdlog::level::n_levels && !options.ShowLoggerNameInGui)
+	{
+		newLogger->sinks().emplace_back(loggerSilentGuiSink);
+	}
+	else
+	{
+		const auto level = options.GuiLogLevel != spdlog::level::n_levels ? std::min(options.GuiLogLevel, loggerSilentGuiSink->level()) : loggerSilentGuiSink->level();
+		newLogger->sinks().emplace_back(std::make_shared<GuiSink>(level, options.ShowLoggerNameInGui));
+	}
+
+#ifdef _WIN32
+	newLogger->sinks().emplace_back(debugSink);
+#endif
+
+	newLogger->sinks().emplace_back(stdoutSink);
+	newLogger->sinks().emplace_back(clonkLogSink);
+
+	return newLogger;
+}
+
+std::shared_ptr<spdlog::logger> C4LogSystem::GetOrCreate(std::string name, C4LogSystemCreateLoggerOptions options)
+{
+	const std::lock_guard lock{getOrCreateMutex};
+	if (const auto logger = spdlog::get(name); logger)
+	{
+		return logger;
+	}
+
+	return CreateLogger(std::move(name), std::move(options));
+}
+
+void C4LogSystem::EnableDebugLog(const bool enable)
+{
+	loggerDebugGuiSink->set_level(enable ? spdlog::level::debug : spdlog::level::off);
+}
+
+void C4LogSystem::AddFatalError(std::string message)
+{
+	logger->critical("{}", LoadResStr(C4ResStrTableKey::IDS_ERR_FATAL, message));
+
+	if (!std::ranges::contains(fatalErrors, message))
+	{
+		fatalErrors.emplace_back(std::move(message));
+	}
+}
+
+std::string C4LogSystem::GetFatalErrorString()
+{
+	std::string result;
+	for (const auto &error : fatalErrors)
+	{
+		if (!result.empty())
+		{
+			result += '|';
+		}
+
+		result += error;
+	}
+	return result;
+}
+
+void C4LogSystem::ResetFatalErrors()
+{
+	fatalErrors.clear();
+}
+
+std::vector<std::string> C4LogSystem::GetRingbufferLogEntries()
+{
+	return ringbufferSink->TakeMessages();
+}
+
+void C4LogSystem::ClearRingbuffer()
+{
+	ringbufferSink->Clear();
+}
+
+void LogNTr(const spdlog::level::level_enum level, const std::string_view message)
+{
+	Application.LogSystem.GetLogger()->log(level, message);
+}
+
+void LogFatalNTr(std::string message)
+{
+	Application.LogSystem.AddFatalError(std::move(message));
+}
+
+bool DebugLog(const spdlog::level::level_enum level, const std::string_view message)
+{
+	Application.LogSystem.GetLoggerDebug()->log(level, message);
 	return true;
+}
+
+std::shared_ptr<spdlog::logger> CreateLogger(std::string name, C4LogSystemCreateLoggerOptions options)
+{
+	return Application.LogSystem.CreateLogger(std::move(name), std::move(options));
 }
 
 int GetLogFD()
 {
-	if (C4LogFile)
-		return fileno(C4LogFile);
-	else
-		return -1;
-}
-
-bool LogSilent(const char *szMessage, bool fConsole)
-{
-	// security
-	if (!szMessage) return false;
-
-	if (!Application.IsMainThread())
-	{
-		if (fConsole)
-		{
-			return Application.InteractiveThread.ThreadLog(szMessage);
-		}
-		else
-		{
-			return Application.InteractiveThread.ThreadLogS(szMessage);
-		}
-	}
-
-	// add timestamp
-	StdStrBuf TimeMessage;
-	TimeMessage.SetLength(11 + SLen(szMessage) + 1);
-	strncpy(TimeMessage.getMData(), GetCurrentTimeStamp(false), 10);
-	strncpy(TimeMessage.getMData() + 10, " ", 2);
-
-	// output until all data is written
-	const char *pSrc = szMessage;
-	do
-	{
-		// timestamp will always be that length
-		char *pDest = TimeMessage.getMData() + 11;
-
-		// copy rest of message, skip tags
-		CMarkup Markup(false);
-		while (*pSrc)
-		{
-			Markup.SkipTags(&pSrc);
-			// break on crlf
-			while (*pSrc == '\r') pSrc++;
-			if (*pSrc == '\n') { pSrc++; break; }
-			// copy otherwise
-			if (*pSrc) *pDest++ = *pSrc++;
-		}
-		*pDest++ = '\n'; *pDest = '\0';
-
-#ifdef HAVE_ICONV
-		StdStrBuf Line = Languages.IconvSystem(TimeMessage.getData());
-#else
-		StdStrBuf &Line = TimeMessage;
-#endif
-
-		// Save into log file
-		if (C4LogFile)
-		{
-			fputs(Line.getData(), C4LogFile);
-			fflush(C4LogFile);
-		}
-
-		// Write to console
-		if (fConsole || Game.Verbose)
-		{
-#if !defined(NDEBUG) && defined(_WIN32)
-			// debug: output to VC console
-			OutputDebugString(Line.getData());
-#endif
-			fputs(Line.getData(), stdout);
-			fflush(stdout);
-		}
-	} while (*pSrc);
-
-	return true;
-}
-
-bool LogSilent(const char *szMessage)
-{
-	return LogSilent(szMessage, false);
-}
-
-int iDisableLog = 0;
-
-bool Log(const char *szMessage)
-{
-	if (iDisableLog) return true;
-	// security
-	if (!szMessage) return false;
-
-	if (!Application.IsMainThread())
-	{
-		return Application.InteractiveThread.ThreadLog(szMessage);
-	}
-
-	// Pass on to console
-	Console.Out(szMessage);
-	// pass on to lobby
-	C4GameLobby::MainDlg *pLobby = Game.Network.GetLobby();
-	if (pLobby && Game.pGUI) pLobby->OnLog(szMessage);
-
-	// Add message to log buffer
-	bool fNotifyMsgBoard = false;
-	if (Game.GraphicsSystem.MessageBoard.Active)
-	{
-		Game.GraphicsSystem.MessageBoard.AddLog(szMessage);
-		fNotifyMsgBoard = true;
-	}
-
-	// log
-	LogSilent(szMessage, true);
-
-	// Notify message board
-	if (fNotifyMsgBoard) Game.GraphicsSystem.MessageBoard.LogNotify();
-
-	return true;
-}
-
-bool LogFatal(const char *szMessage)
-{
-	if (!szMessage) szMessage = "(null)";
-	// add to fatal error message stack - if not already in there (avoid duplication)
-	if (!SSearch(sFatalError.getData(), szMessage))
-	{
-		if (!sFatalError.isNull()) sFatalError.AppendChar('|');
-		sFatalError.Append(szMessage);
-	}
-	// write to log - note that Log might overwrite a static buffer also used in szMessage
-	return !!LogF(LoadResStr("IDS_ERR_FATAL"), szMessage);
-}
-
-void ResetFatalError()
-{
-	sFatalError.Clear();
-}
-
-const char *GetFatalError()
-{
-	return sFatalError.getData();
-}
-
-bool DebugLog(const char *strMessage)
-{
-	if (Game.DebugMode)
-		return Log(strMessage);
-	else
-		return LogSilent(strMessage);
-}
-
-size_t GetLogPos()
-{
-	// get current log position
-	return FileSize(sLogFileName.getData());
-}
-
-bool GetLogSection(size_t iStart, size_t iLength, StdStrBuf &rsOut)
-{
-	if (!iLength) { rsOut.Clear(); return true; }
-	// read section from log file
-	CStdFile LogFileRead;
-	char *szBuf, *szBufOrig; size_t iSize; // size exclusing terminator
-	if (!LogFileRead.Load(sLogFileName.getData(), reinterpret_cast<uint8_t **>(&szBuf), &iSize, 1)) return false;
-	szBufOrig = szBuf;
-	// reduce to desired buffer section
-	if (iStart > iSize) iStart = iSize;
-	if (iStart + iLength > iSize) iLength = iSize - iStart;
-	szBuf += iStart; szBuf[iLength] = '\0';
-	// strip timestamps; convert linebreaks to Clonk-linebreaks '|'
-	char *szPosWrite = szBuf; const char *szPosRead = szBuf;
-	while (*szPosRead)
-	{
-		// skip timestamp
-		if (*szPosRead == '[')
-			while (*szPosRead && *szPosRead != ']') { --iSize; ++szPosRead; }
-		// skip whitespace behind timestamp
-		if (!*szPosRead) break;
-		szPosRead++;
-		// copy data until linebreak
-		size_t iLen = 0;
-		while (*szPosRead && *szPosRead != 0x0d && *szPosRead != 0x0a)
-		{
-			++szPosRead; ++iLen;
-		}
-		if (iLen && szPosRead - iLen != szPosWrite) memmove(szPosWrite, szPosRead - iLen, iLen);
-		szPosWrite += iLen;
-		// skip additional linebreaks
-		while (*szPosRead == 0x0d || *szPosRead == 0x0a) ++szPosRead;
-		// write a Clonk-linebreak
-		if (*szPosRead) *szPosWrite++ = '|';
-	}
-	// done; create string buffer from data
-	rsOut.Copy(szBuf, szPosWrite - szBuf);
-	// old buf no longer used
-	delete[] szBufOrig;
-	// done, success
-	return true;
+	return Application.LogSystem.GetLogFD();
 }

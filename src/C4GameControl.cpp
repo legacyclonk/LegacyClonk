@@ -67,10 +67,10 @@ bool C4GameControl::InitNetwork(C4Client *pLocal)
 bool C4GameControl::InitReplay(C4Group &rGroup)
 {
 	// open replay
-	pPlayback = new C4Playback();
+	pPlayback = new C4Playback(logger->clone("C4Playback"));
 	if (!pPlayback->Open(rGroup))
 	{
-		LogFatal(LoadResStr("IDS_ERR_REPLAYREAD"));
+		LogFatal(C4ResStrTableKey::IDS_ERR_REPLAYREAD);
 		delete pPlayback; pPlayback = nullptr;
 		return false;
 	}
@@ -204,6 +204,7 @@ void C4GameControl::Clear()
 {
 	StopRecord();
 	ChangeToLocal();
+	logger = nullptr;
 	Default();
 }
 
@@ -223,6 +224,7 @@ void C4GameControl::Default()
 	DoSync = false;
 	fRecordNeeded = false;
 	pExecutingControl = nullptr;
+	logger = CreateLogger("C4GameControl");
 }
 
 bool C4GameControl::Prepare()
@@ -287,7 +289,7 @@ void C4GameControl::Execute()
 		// control = network input
 		if (!Network.GetControl(&Control, ControlTick))
 		{
-			LogFatal("Network: could not retrieve control from C4GameControlNetwork!");
+			LogFatalNTr("Network: could not retrieve control from C4GameControlNetwork!");
 			return;
 		}
 	}
@@ -303,11 +305,11 @@ void C4GameControl::Execute()
 		pRecord->Rec(Control, Game.FrameCounter);
 
 	// debug: recheck PreExecute
-	assert(Control.PreExecute());
+	assert(Control.PreExecute(logger));
 
 	// execute
 	pExecutingControl = &Control;
-	Control.Execute();
+	Control.Execute(logger);
 	Control.Clear();
 	pExecutingControl = nullptr;
 
@@ -453,7 +455,7 @@ void C4GameControl::DoSyncCheck()
 		else
 		{
 			// check
-			pSyncCheck->Execute();
+			pSyncCheck->Execute(logger);
 			delete pSyncCheck;
 		}
 	}
@@ -466,8 +468,8 @@ void C4GameControl::ExecControl(const C4Control &rCtrl)
 	// nothing to do?
 	if (!rCtrl.firstPkt()) return;
 	// execute it
-	if (!rCtrl.PreExecute()) Log("Control: PreExecute failed for sync control!");
-	rCtrl.Execute();
+	if (!rCtrl.PreExecute(logger)) logger->error("PreExecute failed for sync control!");
+	rCtrl.Execute(logger);
 	// record
 	if (pRecord)
 		pRecord->Rec(rCtrl, Game.FrameCounter);
@@ -476,8 +478,8 @@ void C4GameControl::ExecControl(const C4Control &rCtrl)
 void C4GameControl::ExecControlPacket(C4PacketType eCtrlType, C4ControlPacket *pPkt)
 {
 	// execute it
-	if (!pPkt->PreExecute()) Log("Control: PreExecute failed for direct control!");
-	pPkt->Execute();
+	if (!pPkt->PreExecute(logger)) logger->error("PreExecute failed for direct control!");
+	pPkt->Execute(logger);
 	// record it
 	if (pRecord)
 		pRecord->Rec(eCtrlType, pPkt, Game.FrameCounter);

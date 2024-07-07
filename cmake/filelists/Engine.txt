@@ -246,6 +246,9 @@ src/C4Rect.cpp
 src/C4Rect.h
 src/C4Region.cpp
 src/C4Region.h
+src/C4ResStrTable.cpp
+src/C4ResStrTable.h
+src/C4ResStrTable.txt
 src/C4RoundResults.cpp
 src/C4RoundResults.h
 src/C4Scenario.cpp
@@ -348,8 +351,6 @@ src/StdMarkup.h
 src/StdNoGfx.cpp
 src/StdNoGfx.h
 src/StdPNG.h
-src/StdResStr2.cpp
-src/StdResStr2.h
 src/StdScheduler.cpp
 src/StdScheduler.h
 src/StdSurface8.cpp

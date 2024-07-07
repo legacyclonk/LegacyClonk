@@ -33,6 +33,8 @@
 #include "C4ChatDlg.h"
 #include "C4PlayerInfoListBox.h"
 
+#include <format>
+
 namespace C4GameLobby
 {
 
@@ -45,11 +47,16 @@ void C4PacketCountdown::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(iCountdown, "Countdown", 0));
 }
 
-StdStrBuf C4PacketCountdown::GetCountdownMsg(bool fInitialMsg) const
+std::string C4PacketCountdown::GetCountdownMsg(bool fInitialMsg) const
 {
-	const char *szCountdownMsg;
-	if (iCountdown < AlmostStartCountdownTime && !fInitialMsg) szCountdownMsg = "%d..."; else szCountdownMsg = LoadResStr("IDS_PRC_COUNTDOWN");
-	return FormatString(szCountdownMsg, static_cast<int>(iCountdown));
+	if (iCountdown < AlmostStartCountdownTime && !fInitialMsg)
+	{
+		return std::format("{}...", iCountdown);
+	}
+	else
+	{
+		return LoadResStr(C4ResStrTableKey::IDS_PRC_COUNTDOWN, iCountdown);
+	}
 }
 
 // ScenDescs
@@ -103,7 +110,7 @@ void ScenDesc::Update()
 	}
 	else
 	{
-		pDescBox->AddTextLine(FormatString(LoadResStr("IDS_MSG_SCENARIODESC_LOADING"), static_cast<int>(pRes->getPresentPercent())).getData(),
+		pDescBox->AddTextLine(LoadResStr(C4ResStrTableKey::IDS_MSG_SCENARIODESC_LOADING, static_cast<int>(pRes->getPresentPercent())).c_str(),
 			&rTextFont, C4GUI_MessageFontClr, false, true);
 	}
 	pDescBox->UpdateHeight();
@@ -133,8 +140,8 @@ void ScenDesc::Deactivate()
 
 MainDlg::MainDlg(bool fHost)
 	: C4GUI::FullscreenDialog(!Game.Parameters.ScenarioTitle ?
-	LoadResStr("IDS_DLG_LOBBY") :
-		FormatString("%s - %s", Game.Parameters.ScenarioTitle.getData(), LoadResStr("IDS_DLG_LOBBY")).getData(),
+	LoadResStr(C4ResStrTableKey::IDS_DLG_LOBBY) :
+		std::format("{} - {}", Game.Parameters.ScenarioTitle.getData(), LoadResStr(C4ResStrTableKey::IDS_DLG_LOBBY)).c_str(),
 		Game.Parameters.ScenarioTitle.getData()),
 	pPlayerList(nullptr), pResList(nullptr), pChatBox(nullptr), pRightTabLbl(nullptr), pRightTab(nullptr),
 	pEdt(nullptr), btnRun(nullptr), btnPlayers(nullptr), btnResources(nullptr), btnTeams(nullptr), btnChat(nullptr)
@@ -182,7 +189,7 @@ MainDlg::MainDlg(bool fHost)
 	}
 	// set subtitle ToolTip
 	if (pSubTitle)
-		pSubTitle->SetToolTip(LoadResStr("IDS_DLG_SCENARIOTITLE"));
+		pSubTitle->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLG_SCENARIOTITLE));
 	C4GUI::Label *pLbl;
 	// main screen components
 	C4GUI::ComponentAligner caMain(GetClientRect(), 0, 0, true);
@@ -191,13 +198,13 @@ MainDlg::MainDlg(bool fHost)
 	C4GUI::ComponentAligner caBottom(caMain.GetFromBottom(C4GUI_ButtonHgt + iIndentY1 * 2), iIndentX1, iIndentY1);
 	// add buttons
 	C4GUI::CallbackButton<MainDlg> *btnExit;
-	btnExit = new C4GUI::CallbackButton<MainDlg>(LoadResStr("IDS_DLG_EXIT"), caBottom.GetFromLeft(100), &MainDlg::OnExitBtn);
+	btnExit = new C4GUI::CallbackButton<MainDlg>(LoadResStr(C4ResStrTableKey::IDS_DLG_EXIT), caBottom.GetFromLeft(100), &MainDlg::OnExitBtn);
 	if (fHost)
 	{
-		btnRun = new C4GUI::CallbackButton<MainDlg>(LoadResStr("IDS_DLG_GAMEGO"), caBottom.GetFromRight(100), &MainDlg::OnRunBtn);
+		btnRun = new C4GUI::CallbackButton<MainDlg>(LoadResStr(C4ResStrTableKey::IDS_DLG_GAMEGO), caBottom.GetFromRight(100), &MainDlg::OnRunBtn);
 	}
 
-	checkReady = new C4GUI::CheckBox(caBottom.GetFromRight(110), LoadResStr("IDS_DLG_READY"), false);
+	checkReady = new C4GUI::CheckBox(caBottom.GetFromRight(110), LoadResStr(C4ResStrTableKey::IDS_DLG_READY), false);
 	checkReady->SetOnChecked(new C4GUI::CallbackHandler<MainDlg>(this, &MainDlg::OnReadyCheck));
 
 	if (!fHost)
@@ -211,10 +218,10 @@ MainDlg::MainDlg(bool fHost)
 	pRightTabLbl = new C4GUI::WoodenLabel("", caRight.GetFromTop(C4GUI::WoodenLabel::GetDefaultHeight(&(C4GUI::GetRes()->TextFont))), C4GUI_CaptionFontClr, &C4GUI::GetRes()->TextFont, ALeft);
 	caRight.ExpandTop(iIndentY4 * 2 + 1); // undo margin, so client list is located directly under label
 	pRightTab = new C4GUI::Tabular(caRight.GetAll(), C4GUI::Tabular::tbNone);
-	C4GUI::Tabular::Sheet *pPlayerSheet = pRightTab->AddSheet(FormatString(LoadResStr("IDS_DLG_PLAYERS"), -1, -1).getData());
-	C4GUI::Tabular::Sheet *pResSheet = pRightTab->AddSheet(LoadResStr("IDS_DLG_RESOURCES"));
-	C4GUI::Tabular::Sheet *pOptionsSheet = pRightTab->AddSheet(LoadResStr("IDS_DLG_OPTIONS"));
-	C4GUI::Tabular::Sheet *pScenarioSheet = pRightTab->AddSheet(LoadResStr("IDS_DLG_SCENARIO"));
+	C4GUI::Tabular::Sheet *pPlayerSheet = pRightTab->AddSheet(LoadResStr(C4ResStrTableKey::IDS_DLG_PLAYERS, -1, -1).c_str());
+	C4GUI::Tabular::Sheet *pResSheet = pRightTab->AddSheet(LoadResStr(C4ResStrTableKey::IDS_DLG_RESOURCES));
+	C4GUI::Tabular::Sheet *pOptionsSheet = pRightTab->AddSheet(LoadResStr(C4ResStrTableKey::IDS_DLG_OPTIONS));
+	C4GUI::Tabular::Sheet *pScenarioSheet = pRightTab->AddSheet(LoadResStr(C4ResStrTableKey::IDS_DLG_SCENARIO));
 	pPlayerList = new C4PlayerInfoListBox(pPlayerSheet->GetContainedClientRect(), C4PlayerInfoListBox::PILBM_LobbyClientSort);
 	pPlayerSheet->AddElement(pPlayerList);
 
@@ -232,8 +239,8 @@ MainDlg::MainDlg(bool fHost)
 	if (!Config.General.Preloading)
 	{
 		const C4Rect btnPreloadBounds{resSheetBounds.x, resSheetBounds.Hgt - C4GUI_ButtonHgt, resSheetBounds.Wdt, C4GUI_ButtonHgt};
-		btnPreload = new C4GUI::CallbackButton<MainDlg>{LoadResStr("IDS_DLG_PRELOAD"), btnPreloadBounds, &MainDlg::OnBtnPreload, this};
-		btnPreload->SetToolTip(LoadResStr("IDS_DLGTIP_PRELOAD"));
+		btnPreload = new C4GUI::CallbackButton<MainDlg>{LoadResStr(C4ResStrTableKey::IDS_DLG_PRELOAD), btnPreloadBounds, &MainDlg::OnBtnPreload, this};
+		btnPreload->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_PRELOAD));
 		pResSheet->AddElement(btnPreload);
 	}
 
@@ -263,9 +270,9 @@ MainDlg::MainDlg(bool fHost)
 	C4GUI::ComponentAligner caCenter(caMain.GetAll(), iIndentX2, iIndentY3);
 	// chat input box
 	C4GUI::ComponentAligner caChat(caCenter.GetFromBottom(C4GUI::Edit::GetDefaultEditHeight()), 0, 0);
-	pLbl = new C4GUI::WoodenLabel(LoadResStr("IDS_CTL_CHAT"), caChat.GetFromLeft(40), C4GUI_CaptionFontClr, &C4GUI::GetRes()->TextFont);
+	pLbl = new C4GUI::WoodenLabel(LoadResStr(C4ResStrTableKey::IDS_CTL_CHAT), caChat.GetFromLeft(40), C4GUI_CaptionFontClr, &C4GUI::GetRes()->TextFont);
 	pEdt = new C4GUI::CallbackEdit<MainDlg>(caChat.GetAll(), this, &MainDlg::OnChatInput);
-	pEdt->SetToolTip(LoadResStr("IDS_DLGTIP_CHAT")); pLbl->SetToolTip(LoadResStr("IDS_DLGTIP_CHAT"));
+	pEdt->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_CHAT)); pLbl->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_CHAT));
 	pLbl->SetClickFocusControl(pEdt);
 	// log box
 	pChatBox = new C4GUI::TextWindow(caCenter.GetAll(), 0, 0, 0, 100, 4096, "", false, nullptr, 0, true);
@@ -282,12 +289,12 @@ MainDlg::MainDlg(bool fHost)
 	if (btnChat) AddElement(btnChat);
 
 	AddElement(pRightTab);
-	AddElement(btnExit); btnExit->SetToolTip(LoadResStr("IDS_DLGTIP_EXIT"));
+	AddElement(btnExit); btnExit->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_EXIT));
 	AddElement(pGameOptionButtons);
 	if (fHost)
 	{
 		AddElement(btnRun);
-		btnRun->SetToolTip(LoadResStr("IDS_DLGTIP_GAMEGO"));
+		btnRun->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_GAMEGO));
 	}
 
 	AddElement(checkReady);
@@ -364,16 +371,16 @@ void MainDlg::SetCountdownState(CountdownState eToState, int32_t iTimer)
 		if (!eCountdownState)
 		{
 			// host update start button to be abort button
-			if (btnRun) btnRun->SetText(LoadResStr("IDS_DLG_CANCEL"));
+			if (btnRun) btnRun->SetText(LoadResStr(C4ResStrTableKey::IDS_DLG_CANCEL));
 		}
 	}
 	// countdown abort?
 	if (!eToState)
 	{
 		// host update start button to be start button again
-		if (btnRun) btnRun->SetText(LoadResStr("IDS_DLG_GAMEGO"));
+		if (btnRun) btnRun->SetText(LoadResStr(C4ResStrTableKey::IDS_DLG_GAMEGO));
 		// countdown abort message
-		OnLog(LoadResStr("IDS_PRC_STARTABORTED"), C4GUI_LogFontClr2);
+		OnLog(LoadResStr(C4ResStrTableKey::IDS_PRC_STARTABORTED), C4GUI_LogFontClr2);
 	}
 	// set new state
 	eCountdownState = eToState;
@@ -405,7 +412,7 @@ void MainDlg::OnCountdownPacket(const C4PacketCountdown &Pkt)
 	if (iTimer)
 	{
 		// first countdown message
-		OnLog(Pkt.GetCountdownMsg(!fWasCountdown).getData(), C4GUI_LogFontClr2);
+		OnLog(Pkt.GetCountdownMsg(!fWasCountdown).c_str(), C4GUI_LogFontClr2);
 		StartSoundEffect("Command");
 	}
 }
@@ -451,8 +458,8 @@ void MainDlg::Start(int32_t iCountdownTime)
 	if (Game.C4S.Head.SaveGame)
 		if (Game.PlayerInfos.FindUnassociatedRestoreInfo(Game.RestorePlayerInfos))
 		{
-			StdStrBuf sMsg; sMsg.Ref(LoadResStr("IDS_MSG_NOTALLSAVEGAMEPLAYERSHAVE"));
-			if (!GetScreen()->ShowMessageModal(sMsg.getData(), LoadResStr("IDS_MSG_FREESAVEGAMEPLRS"), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_SavegamePlayer, &Config.Startup.HideMsgPlrNoTakeOver))
+			StdStrBuf sMsg; sMsg.Ref(LoadResStr(C4ResStrTableKey::IDS_MSG_NOTALLSAVEGAMEPLAYERSHAVE));
+			if (!GetScreen()->ShowMessageModal(sMsg.getData(), LoadResStr(C4ResStrTableKey::IDS_MSG_FREESAVEGAMEPLRS), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_SavegamePlayer, &Config.Startup.HideMsgPlrNoTakeOver))
 				return;
 		}
 	// validate countdown time
@@ -509,15 +516,14 @@ C4GUI::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool f
 			if (SEqualNoCase(Command, "/joinplr"))
 			{
 				// compose path from given filename
-				StdStrBuf plrPath;
-				plrPath.Format("%s%s", Config.General.PlayerPath, szPar);
+				const std::string plrPath{std::format("{}{}", Config.General.PlayerPath, szPar)};
 				// player join - check filename
-				if (!ItemExists(plrPath.getData()))
+				if (!ItemExists(plrPath.c_str()))
 				{
-					LobbyError(FormatString(LoadResStr("IDS_MSG_CMD_JOINPLR_NOFILE"), plrPath.getData()).getData());
+					LobbyError(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_JOINPLR_NOFILE, plrPath.c_str()).c_str());
 				}
 				else
-					Game.Network.Players.JoinLocalPlayer(plrPath.getData(), true);
+					Game.Network.Players.JoinLocalPlayer(plrPath.c_str(), true);
 			}
 			else if (SEqualNoCase(Command, "/plrclr"))
 			{
@@ -545,14 +551,14 @@ C4GUI::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool f
 				if (pNfo) pCltNfo = Game.PlayerInfos.GetClientInfoByPlayerID(pNfo->GetID());
 				if (!pCltNfo)
 				{
-					LobbyError(LoadResStr("IDS_MSG_CMD_PLRCLR_NOPLAYER"));
+					LobbyError(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_PLRCLR_NOPLAYER));
 				}
 				else
 				{
 					// may color of this client be set?
 					if (pCltNfo->GetClientID() != idLocalClient && !Game.Network.isHost())
 					{
-						LobbyError(LoadResStr("IDS_MSG_CMD_PLRCLR_NOACCESS"));
+						LobbyError(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_PLRCLR_NOACCESS));
 					}
 					else
 					{
@@ -560,7 +566,7 @@ C4GUI::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool f
 						uint32_t dwNewClr;
 						if (sscanf(szPar, "%x", &dwNewClr) != 1)
 						{
-							LobbyError(LoadResStr("IDS_MSG_CMD_PLRCLR_USAGE"));
+							LobbyError(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_PLRCLR_USAGE));
 						}
 						else
 						{
@@ -585,9 +591,9 @@ C4GUI::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool f
 				// timeout given?
 				int32_t iTimeout = Config.Lobby.CountdownTime;
 				if (!Game.Network.isHost())
-					LobbyError(LoadResStr("IDS_MSG_CMD_HOSTONLY"));
+					LobbyError(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_HOSTONLY));
 				else if (szPar && *szPar && (!sscanf(szPar, "%d", &iTimeout) || iTimeout < 0))
-					LobbyError(LoadResStr("IDS_MSG_CMD_START_USAGE"));
+					LobbyError(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_START_USAGE));
 				else
 				{
 					// abort previous countdown
@@ -599,17 +605,17 @@ C4GUI::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool f
 			else if (SEqualNoCase(Command, "/abort"))
 			{
 				if (!Game.Network.isHost())
-					LobbyError(LoadResStr("IDS_MSG_CMD_HOSTONLY"));
+					LobbyError(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_HOSTONLY));
 				else if (eCountdownState)
 					Game.Network.AbortLobbyCountdown();
 				else
-					LobbyError(LoadResStr("IDS_MSG_CMD_ABORT_NOCOUNTDOWN"));
+					LobbyError(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_ABORT_NOCOUNTDOWN));
 			}
 			else if (SEqualNoCase(Command, "/readycheck"))
 			{
 				if (!Game.Network.isHost())
 				{
-					LobbyError(LoadResStr("IDS_MSG_CMD_HOSTONLY"));
+					LobbyError(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_HOSTONLY));
 				}
 				else if (Config.Cooldowns.ReadyCheck.TryReset())
 				{
@@ -617,31 +623,31 @@ C4GUI::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool f
 				}
 				else
 				{
-					LobbyError(FormatString(LoadResStr("IDS_MSG_CMD_COOLDOWN"), std::to_string(Config.Cooldowns.ReadyCheck.GetRemainingTime().count()).c_str()).getData());
+					LobbyError(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_COOLDOWN, std::to_string(Config.Cooldowns.ReadyCheck.GetRemainingTime().count()).c_str()).c_str());
 				}
 			}
 			else if (SEqualNoCase(Command, "/help"))
 			{
-				Log(LoadResStr("IDS_TEXT_COMMANDSAVAILABLEDURINGLO"));
-				LogF("/start [time] - %s", LoadResStr("IDS_TEXT_STARTTHEROUNDWITHSPECIFIE"));
-				LogF("/abort - %s", LoadResStr("IDS_TEXT_ABORTSTARTCOUNTDOWN"));
-				LogF("/alert - %s", LoadResStr("IDS_TEXT_ALERTTHEHOSTIFTHEHOSTISAW"));
-				LogF("/joinplr [filename] - %s", LoadResStr("IDS_TEXT_JOINALOCALPLAYERFROMTHESP"));
-				LogF("/kick [client] - %s", LoadResStr("IDS_TEXT_KICKTHESPECIFIEDCLIENT"));
-				LogF("/observer [client] - %s", LoadResStr("IDS_TEXT_SETTHESPECIFIEDCLIENTTOOB"));
-				LogF("/me [action] - %s", LoadResStr("IDS_TEXT_PERFORMANACTIONINYOURNAME"));
-				LogF("/sound [sound] - %s", LoadResStr("IDS_TEXT_PLAYASOUNDFROMTHEGLOBALSO"));
-				LogF("/mute [client] - %s", LoadResStr("IDS_NET_MUTE_DESC"));
-				LogF("/unmute [client] - %s", LoadResStr("IDS_NET_UNMUTE_DESC"));
-				LogF("/team [message] - %s", LoadResStr("IDS_MSG_SENDAPRIVATEMESSAGETOYOUR"));
-				LogF("/plrclr [player] [RGB] - %s", LoadResStr("IDS_TEXT_CHANGETHECOLOROFTHESPECIF"));
-				LogF("/plrclr [RGB] - %s", LoadResStr("IDS_TEXT_CHANGEYOUROWNPLAYERCOLOR"));
-				LogF("/set comment [comment] - %s", LoadResStr("IDS_TEXT_SETANEWNETWORKCOMMENT"));
-				LogF("/set password [password] - %s", LoadResStr("IDS_TEXT_SETANEWNETWORKPASSWORD"));
-				LogF("/set faircrew [on/off] - %s", LoadResStr("IDS_TEXT_ENABLEORDISABLEFAIRCREW"));
-				LogF("/set maxplayer [number] - %s", LoadResStr("IDS_TEXT_SETANEWMAXIMUMNUMBEROFPLA"));
-				LogF("/clear - %s", LoadResStr("IDS_MSG_CLEARTHEMESSAGEBOARD"));
-				LogF("/readycheck - %s", LoadResStr("IDS_MSG_READYCHECK"));
+				Log(C4ResStrTableKey::IDS_TEXT_COMMANDSAVAILABLEDURINGLO);
+				LogNTr("/start [time] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_STARTTHEROUNDWITHSPECIFIE));
+				LogNTr("/abort - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_ABORTSTARTCOUNTDOWN));
+				LogNTr("/alert - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_ALERTTHEHOSTIFTHEHOSTISAW));
+				LogNTr("/joinplr [filename] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_JOINALOCALPLAYERFROMTHESP));
+				LogNTr("/kick [client] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_KICKTHESPECIFIEDCLIENT));
+				LogNTr("/observer [client] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETTHESPECIFIEDCLIENTTOOB));
+				LogNTr("/me [action] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_PERFORMANACTIONINYOURNAME));
+				LogNTr("/sound [sound] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_PLAYASOUNDFROMTHEGLOBALSO));
+				LogNTr("/mute [client] - {}", LoadResStr(C4ResStrTableKey::IDS_NET_MUTE_DESC));
+				LogNTr("/unmute [client] - {}", LoadResStr(C4ResStrTableKey::IDS_NET_UNMUTE_DESC));
+				LogNTr("/team [message] - {}", LoadResStr(C4ResStrTableKey::IDS_MSG_SENDAPRIVATEMESSAGETOYOUR));
+				LogNTr("/plrclr [player] [RGB] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_CHANGETHECOLOROFTHESPECIF));
+				LogNTr("/plrclr [RGB] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_CHANGEYOUROWNPLAYERCOLOR));
+				LogNTr("/set comment [comment] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETANEWNETWORKCOMMENT));
+				LogNTr("/set password [password] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETANEWNETWORKPASSWORD));
+				LogNTr("/set faircrew [on/off] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_ENABLEORDISABLEFAIRCREW));
+				LogNTr("/set maxplayer [number] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETANEWMAXIMUMNUMBEROFPLA));
+				LogNTr("/clear - {}", LoadResStr(C4ResStrTableKey::IDS_MSG_CLEARTHEMESSAGEBOARD));
+				LogNTr("/readycheck - {}", LoadResStr(C4ResStrTableKey::IDS_MSG_READYCHECK));
 			}
 			else
 			{
@@ -715,7 +721,7 @@ bool MainDlg::OnMessage(C4Client *pOfClient, const char *szMessage)
 		pChatBox->ScrollToBottom();
 	}
 	// log it
-	LogSilent(szMessage);
+	spdlog::info(szMessage);
 	// done, success
 	return true;
 }
@@ -804,8 +810,8 @@ void MainDlg::UpdatePreloadingGUIState(const bool isComplete)
 
 	if (isComplete)
 	{
-		checkReady->SetToolTip(LoadResStr("IDS_DLGTIP_READY"));
-		checkReady->SetCaption(LoadResStr("IDS_DLG_READY"));
+		checkReady->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_READY));
+		checkReady->SetCaption(LoadResStr(C4ResStrTableKey::IDS_DLG_READY));
 
 		if (Config.General.Preloading)
 		{
@@ -814,8 +820,8 @@ void MainDlg::UpdatePreloadingGUIState(const bool isComplete)
 	}
 	else
 	{
-		checkReady->SetToolTip(LoadResStr("IDS_DLGTIP_READYNOTAVAILABLE"));
-		checkReady->SetCaption(LoadResStr("IDS_DLG_STILLLOADING"));
+		checkReady->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_READYNOTAVAILABLE));
+		checkReady->SetCaption(LoadResStr(C4ResStrTableKey::IDS_DLG_STILLLOADING));
 	}
 }
 
@@ -823,11 +829,11 @@ bool MainDlg::Preload()
 {
 	if (!Game.Preload())
 	{
-		const char *const message{LoadResStr("IDS_ERR_PRELOADING")};
+		const char *const message{LoadResStr(C4ResStrTableKey::IDS_ERR_PRELOADING)};
 
 		// Don't use Log here since we want a red message
 		OnLog(message, C4GUI_ErrorFontClr);
-		LogSilent(message);
+		spdlog::info(message);
 
 		return false;
 	}
@@ -847,8 +853,8 @@ C4GUI::ContextMenu *MainDlg::OnRightTabContext(C4GUI::Element *pLabel, int32_t i
 		new C4GUI::CBMenuHandler<MainDlg>(this, &MainDlg::OnCtxTabPlayers));
 	if (Game.Teams.IsMultiTeams())
 	{
-		StdStrBuf strShowTeamsDesc(LoadResStr("IDS_MSG_SHOWTEAMS_DESC"));
-		pMenu->AddItem(LoadResStr("IDS_MSG_SHOWTEAMS"), strShowTeamsDesc.getData(), C4GUI::Ico_Team,
+		StdStrBuf strShowTeamsDesc(LoadResStr(C4ResStrTableKey::IDS_MSG_SHOWTEAMS_DESC));
+		pMenu->AddItem(LoadResStr(C4ResStrTableKey::IDS_MSG_SHOWTEAMS), strShowTeamsDesc.getData(), C4GUI::Ico_Team,
 			new C4GUI::CBMenuHandler<MainDlg>(this, &MainDlg::OnCtxTabTeams));
 	}
 	pMenu->AddItem(pResSheet->GetTitle(), pResSheet->GetToolTip(), C4GUI::Ico_Resource,
@@ -892,13 +898,13 @@ void MainDlg::OnClientAddPlayer(const char *szFilename, int32_t idClient)
 	// check client number
 	if (idClient != Game.Clients.getLocalID())
 	{
-		LobbyError(FormatString(LoadResStr("IDS_ERR_JOINPLR_NOLOCALCLIENT"), szFilename, idClient).getData());
+		LobbyError(LoadResStr(C4ResStrTableKey::IDS_ERR_JOINPLR_NOLOCALCLIENT, szFilename, idClient).c_str());
 		return;
 	}
 	// player join - check filename
 	if (!ItemExists(szFilename))
 	{
-		LobbyError(FormatString(LoadResStr("IDS_ERR_JOINPLR_NOFILE"), szFilename).getData());
+		LobbyError(LoadResStr(C4ResStrTableKey::IDS_ERR_JOINPLR_NOFILE, szFilename).c_str());
 		return;
 	}
 	// check countdown state
@@ -1041,7 +1047,7 @@ void MainDlg::UpdatePlayerCountDisplay()
 {
 	if (pRightTab)
 	{
-		pRightTab->GetSheet(0)->SetTitle(FormatString(LoadResStr("IDS_DLG_PLAYERS"), Game.PlayerInfos.GetActivePlayerCount(true), Game.Parameters.MaxPlayers).getData());
+		pRightTab->GetSheet(0)->SetTitle(LoadResStr(C4ResStrTableKey::IDS_DLG_PLAYERS, Game.PlayerInfos.GetActivePlayerCount(true), Game.Parameters.MaxPlayers).c_str());
 		if (pRightTab->GetActiveSheetIndex() == SheetIdx_PlayerList)
 		{
 			UpdateRightTabTitle();
@@ -1118,7 +1124,7 @@ Countdown::Countdown(int32_t iStartTimer) : iStartTimer(iStartTimer), pSec1Timer
 	else
 	{
 		// no lobby: Message to log for dedicated/console hosts
-		Log(pck.GetCountdownMsg().getData());
+		LogNTr(pck.GetCountdownMsg());
 	}
 
 	// init timer callback
@@ -1149,7 +1155,7 @@ void Countdown::OnSec1Timer()
 		else if (iStartTimer)
 		{
 			// no lobby: Message to log for dedicated/console hosts
-			Log(pck.GetCountdownMsg().getData());
+			LogNTr(pck.GetCountdownMsg());
 		}
 	}
 	// countdown done
@@ -1158,7 +1164,7 @@ void Countdown::OnSec1Timer()
 		// Dedicated server: if there are not enough players for this game, abort and quit the application
 		if (!Game.Network.GetLobby() && (Game.PlayerInfos.GetPlayerCount() < Game.C4S.GetMinPlayer()))
 		{
-			Log(LoadResStr("IDS_MSG_NOTENOUGHPLAYERSFORTHISRO")); // it would also be nice to send this message to all clients...
+			Log(C4ResStrTableKey::IDS_MSG_NOTENOUGHPLAYERSFORTHISRO); // it would also be nice to send this message to all clients...
 			Application.Quit();
 		}
 		// Start the game
@@ -1182,7 +1188,7 @@ void Countdown::Abort()
 	else
 	{
 		// no lobby: Message to log for dedicated/console hosts
-		Log(LoadResStr("IDS_PRC_STARTABORTED"));
+		Log(C4ResStrTableKey::IDS_PRC_STARTABORTED);
 	}
 }
 

@@ -260,9 +260,9 @@ bool C4ToolsDlg::Open()
 		ToolsDlgProc);
 	if (!hDialog) return false;
 	// Set text
-	SetWindowText(hDialog, LoadResStr("IDS_DLG_TOOLS"));
-	SetDlgItemText(hDialog, IDC_STATICMATERIAL, LoadResStr("IDS_CTL_MATERIAL"));
-	SetDlgItemText(hDialog, IDC_STATICTEXTURE, LoadResStr("IDS_CTL_TEXTURE"));
+	SetWindowText(hDialog, LoadResStr(C4ResStrTableKey::IDS_DLG_TOOLS));
+	SetDlgItemText(hDialog, IDC_STATICMATERIAL, LoadResStr(C4ResStrTableKey::IDS_CTL_MATERIAL));
+	SetDlgItemText(hDialog, IDC_STATICTEXTURE, LoadResStr(C4ResStrTableKey::IDS_CTL_TEXTURE));
 	// Load bitmaps if necessary
 	LoadBitmaps();
 	// create target ctx for OpenGL rendering
@@ -364,7 +364,7 @@ bool C4ToolsDlg::Open()
 		gtk_box_pack_start(GTK_BOX(local_hbox), vbox, TRUE, TRUE, 0); // ???
 		gtk_widget_show_all(hbox);
 
-		C4DevmodeDlg::AddPage(hbox, GTK_WINDOW(Console.window), LoadResStrUtf8("IDS_DLG_TOOLS").getData());
+		C4DevmodeDlg::AddPage(hbox, GTK_WINDOW(Console.window), LoadResStrUtf8(C4ResStrTableKey::IDS_DLG_TOOLS).getData());
 
 		handlerDynamic =   g_signal_connect(G_OBJECT(landscape_dynamic), "toggled",       G_CALLBACK(OnButtonModeDynamic), this);
 		handlerStatic =    g_signal_connect(G_OBJECT(landscape_static),  "toggled",       G_CALLBACK(OnButtonModeStatic),  this);
@@ -799,7 +799,22 @@ void C4ToolsDlg::UpdateLandscapeModeCtrls()
 	SendDlgItemMessage(hDialog, IDC_BUTTONMODEEXACT, BM_SETSTATE, (iMode == C4LSC_Exact), 0);
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONMODEEXACT));
 	// Set dialog caption
-	SetWindowText(hDialog, LoadResStr(iMode == C4LSC_Dynamic ? "IDS_DLG_DYNAMIC" : iMode == C4LSC_Static ? "IDS_DLG_STATIC" : "IDS_DLG_EXACT"));
+	const char *caption;
+	switch (iMode)
+	{
+	case C4LSC_Dynamic:
+		caption = LoadResStr(C4ResStrTableKey::IDS_DLG_EXACT);
+		break;
+
+	case C4LSC_Static:
+		caption = LoadResStr(C4ResStrTableKey::IDS_DLG_EXACT);
+		break;
+
+	default:
+		caption = LoadResStr(C4ResStrTableKey::IDS_DLG_EXACT);
+		break;
+	}
+	SetWindowText(hDialog, caption);
 #elif defined(WITH_DEVELOPER_MODE)
 	g_signal_handler_block(landscape_dynamic, handlerDynamic);
 	g_signal_handler_block(landscape_static,  handlerStatic);
@@ -817,7 +832,23 @@ void C4ToolsDlg::UpdateLandscapeModeCtrls()
 	g_signal_handler_unblock(landscape_static,  handlerStatic);
 	g_signal_handler_unblock(landscape_exact,   handlerExact);
 
-	C4DevmodeDlg::SetTitle(hbox, LoadResStrUtf8(iMode == C4LSC_Dynamic ? "IDS_DLG_DYNAMIC" : iMode == C4LSC_Static ? "IDS_DLG_STATIC" : "IDS_DLG_EXACT").getData());
+	StdStrBuf title;
+	switch (iMode)
+	{
+	case C4LSC_Dynamic:
+		title = LoadResStrUtf8(C4ResStrTableKey::IDS_DLG_EXACT);
+		break;
+
+	case C4LSC_Static:
+		title = LoadResStrUtf8(C4ResStrTableKey::IDS_DLG_EXACT);
+		break;
+
+	default:
+		title = LoadResStrUtf8(C4ResStrTableKey::IDS_DLG_EXACT);
+		break;
+	}
+
+	C4DevmodeDlg::SetTitle(hbox, title.getData());
 #endif
 }
 
@@ -828,7 +859,7 @@ bool C4ToolsDlg::SetLandscapeMode(int32_t iMode, bool fThroughControl)
 	if (iLastMode == C4LSC_Exact)
 		if (iMode == C4LSC_Static)
 			if (!fThroughControl)
-				if (!Console.Message(LoadResStr("IDS_CNS_EXACTTOSTATIC"), true))
+				if (!Console.Message(LoadResStr(C4ResStrTableKey::IDS_CNS_EXACTTOSTATIC), true))
 					return false;
 	// send as control
 	if (!fThroughControl)

@@ -24,6 +24,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include <ranges>
 #include <utility>
 
 // *** C4FindObject

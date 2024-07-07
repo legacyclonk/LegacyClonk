@@ -82,7 +82,7 @@ C4SoundSystem::C4SoundSystem()
 	}
 	else
 	{
-		Log(LoadResStr("IDS_PRC_NOSND"));
+		Log(C4ResStrTableKey::IDS_PRC_NOSND);
 	}
 }
 
@@ -129,7 +129,7 @@ void C4SoundSystem::LoadEffects(C4Group &group)
 			}
 			catch (const std::runtime_error &e)
 			{
-				LogF("WARNING: Could not load sound effect \"%s/%s\": %s", group.GetFullName().getData(), filename, e.what());
+				LogNTr(spdlog::level::err, "Could not load sound effect \"{}/{}\": {}", group.GetFullName().getData(), filename, e.what());
 			}
 		}
 	}
@@ -228,7 +228,7 @@ bool C4SoundSystem::Instance::Execute(const bool justStarted)
 	}
 	catch (const std::runtime_error &e)
 	{
-		LogSilent(e.what());
+		spdlog::error(e.what());
 		return false;
 	}
 

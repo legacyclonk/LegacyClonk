@@ -588,40 +588,6 @@ public:
 		return true;
 	}
 
-	template<typename... Args>
-	void Format(const char *format, Args... args)
-	{
-		Clear();
-		AppendFormat(format, args...);
-	}
-
-	void AppendFormat(const char *format)
-	{
-		Append(format);
-	}
-
-	template<typename... Args>
-	void AppendFormat(const char *format, Args... args)
-	{
-		static_assert(std::conjunction_v<std::is_trivial<Args>...>, "Cannot pass arguments of non-trivial types");
-
-		if (!IsSafeFormatString(format))
-		{
-			BREAKPOINT_HERE;
-			format = "<UNSAFE FORMAT STRING>";
-		}
-
-		const auto start{getLength()};
-		const auto neededBytes{snprintf(nullptr, 0, format, args...)};
-		if (neededBytes == -1)
-		{
-			return;
-		}
-
-		SetSize(start + neededBytes + 1);
-		snprintf(getMPtr(start), neededBytes + 1, format, args...);
-	}
-
 	StdStrBuf copyPart(size_t iStart, size_t inSize) const
 	{
 		assert(iStart + inSize <= iSize);
@@ -656,15 +622,5 @@ public:
 	bool TrimSpaces(); // kill spaces at beginning and end. Return if changed.
 
 	// * Compiling
-
 	void CompileFunc(class StdCompiler *pComp, int iRawType = 0);
 };
-
-// Wrappers
-template<typename... Args>
-extern StdStrBuf FormatString(const char *format, Args... args)
-{
-	StdStrBuf buf;
-	buf.Format(format, args...);
-	return buf;
-}

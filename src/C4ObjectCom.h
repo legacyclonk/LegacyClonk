@@ -36,7 +36,7 @@ int32_t Coms2ComDir(int32_t iComs);
 bool ComDirLike(int32_t iComDir, int32_t iSample);
 const char *ComName(int32_t iCom);
 int32_t ComOrder(int32_t iCom);
-StdStrBuf PlrControlKeyName(int32_t iPlayer, int32_t iControl, bool fShort);
+std::string PlrControlKeyName(int32_t iPlayer, int32_t iControl, bool fShort);
 
 const int32_t ComOrderNum = 24;
 

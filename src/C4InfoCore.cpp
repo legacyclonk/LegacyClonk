@@ -131,10 +131,15 @@ bool C4PlayerInfoCore::Load(C4Group &hGroup)
 
 bool C4PlayerInfoCore::Save(C4Group &hGroup)
 {
-	StdStrBuf Source, Name = hGroup.GetFullName(); Name.Append(DirSep C4CFN_PlayerInfoCore);
-	if (!DecompileToBuf_Log<StdCompilerINIWrite>(*this, &Source, Name.getData()))
+	std::string source;
+
+	StdStrBuf name{hGroup.GetFullName()};
+	name.Append(DirSep C4CFN_PlayerInfoCore);
+
+	if (!DecompileToBuf_Log<StdCompilerINIWrite>(*this, &source, name.getData()))
 		return false;
-	if (!hGroup.Add(C4CFN_PlayerInfoCore, Source, false, true))
+	StdStrBuf buf{source.c_str(), source.size()};
+	if (!hGroup.Add(C4CFN_PlayerInfoCore, buf, false, true))
 		return false;
 	hGroup.Delete("C4Player.c4b");
 	return true;
@@ -147,7 +152,7 @@ void C4PlayerInfoCore::CompileFunc(StdCompiler *pComp)
 		pComp->Value(mkNamingAdapt(toC4CStr(PrefName), "Name",             "Neuling"));
 		pComp->Value(mkNamingAdapt(toC4CStr(Comment),  "Comment",          ""));
 		pComp->Value(mkNamingAdapt(Rank,               "Rank",             0));
-		pComp->Value(mkNamingAdapt(toC4CStr(RankName), "RankName",         LoadResStr("IDS_MSG_RANK")));
+		pComp->Value(mkNamingAdapt(toC4CStr(RankName), "RankName",         LoadResStr(C4ResStrTableKey::IDS_MSG_RANK)));
 		pComp->Value(mkNamingAdapt(Score,              "Score",            0));
 		pComp->Value(mkNamingAdapt(Rounds,             "Rounds",           0));
 		pComp->Value(mkNamingAdapt(RoundsWon,          "RoundsWon",        0));
@@ -352,7 +357,7 @@ void C4PhysicalChange::CompileFunc(StdCompiler *pComp)
 	const char *szPhyn = C4PhysicalInfo::GetNameByOffset(mpiOffset);
 	if (szPhyn) SCopy(szPhyn, phyn, C4MaxName); else *phyn = '\0';
 	pComp->Value(mkStringAdapt(phyn, C4MaxName, StdCompiler::RCT_Idtf));
-	if (!C4PhysicalInfo::GetOffsetByName(phyn, &mpiOffset)) pComp->excNotFound("Physical change name \"%s\" not found.", phyn);
+	if (!C4PhysicalInfo::GetOffsetByName(phyn, &mpiOffset)) pComp->excNotFound("Physical change name \"{}\" not found.", phyn);
 	pComp->Separator(StdCompiler::SEP_SET);
 	pComp->Value(PrevVal);
 }
@@ -500,17 +505,18 @@ bool C4ObjectInfoCore::Save(C4Group &hGroup, C4DefList *pDefs)
 	// rank overload by def: Update any NextRank-stuff
 	if (pDefs) UpdateCustomRanks(pDefs);
 
-	StdStrBuf Buf;
+	std::string buf;
 	try
 	{
-		Buf.Take(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*this, "ObjectInfo")));
+		buf = DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*this, "ObjectInfo"));
 	}
 	catch (const StdCompiler::Exception &)
 	{
 		return false;
 	}
 
-	if (!hGroup.Add(C4CFN_ObjectInfoCore, Buf, false, true))
+	StdStrBuf copy{buf.c_str(), buf.size()};
+	if (!hGroup.Add(C4CFN_ObjectInfoCore, copy, false, true))
 	{
 		return false;
 	}

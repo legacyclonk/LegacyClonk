@@ -301,7 +301,7 @@ void MakeTempFilename(char *szFilename)
 	do
 	{
 		cnum++;
-		snprintf(fn_ext, 4, "%03d", cnum);
+		FormatWithNull(std::span<char, 4>{fn_ext, 4}, "{:03}", cnum);
 	} while (FileExists(szFilename) && (cnum < 999));
 }
 
@@ -315,7 +315,7 @@ void MakeTempFilename(StdStrBuf *sFilename)
 	do
 	{
 		cnum++;
-		snprintf(fn_ext, 4, "%03d", cnum);
+		FormatWithNull(std::span<char, 4>{fn_ext, 4}, "{:03}", cnum);
 	} while (FileExists(sFilename->getData()) && (cnum < 999));
 }
 

@@ -213,7 +213,7 @@ void C4IDPacket::CompileFunc(StdCompiler *pComp)
 				break;
 			}
 		if (!pPkt)
-			pComp->excCorrupt("C4IDPacket: could not unpack packet id %02x!", eID);
+			pComp->excCorrupt("C4IDPacket: could not unpack packet id {:02x}!", std::to_underlying(eID));
 	}
 	else if (eID != PID_None)
 		// Just write

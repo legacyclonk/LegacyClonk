@@ -24,6 +24,8 @@
 #include <C4Scenario.h>
 #include <C4Surface.h>
 
+#include <format>
+
 #define C4MC_SizeRes 100 // positions in percent
 #define C4MC_ZoomRes 100 // zoom resolution (-100 to +99)
 
@@ -40,27 +42,27 @@
 
 #define C4MCErr_EOF               "unexpected end of file"
 #define C4MCErr_NoDirGlobal       "can't use directives in local scope"
-#define C4MCErr_UnknownDir        "unknown directive: %s"
+#define C4MCErr_UnknownDir        "unknown directive: {}"
 #define C4MCErr_MapNoGlobal       "can't declare map in local scope"
 #define C4MCErr_OpTypeErr         "operator type mismatch"
 #define C4MCErr_IdtfExp           "identifier expected"
 #define C4MCErr_UnnamedNoGlbl     "unnamed objects not allowed in global scope"
-#define C4MCErr_BlOpenExp         "'{' expected"
+#define C4MCErr_BlOpenExp         "'{{' expected"
 #define C4MCErr_OpsNoGlobal       "operators not allowed in global scope"
 #define C4MCErr_SColonOrOpExp     "';' or operator expected"
 #define C4MCErr_Obj2Exp           "second operand expected"
-#define C4MCErr_ReinstNoGlobal    "can't reinstanciate object '%s' in global scope"
-#define C4MCErr_UnknownObj        "unknown object: %s"
-#define C4MCErr_ReinstUnknown     "can't reinstanciate '%s'; object type is unknown"
-#define C4MCErr_EqSColonBlOpenExp "'=', ';' or '{' expected"
-#define C4MCErr_FieldConstExp     "constant for field '%s' expected"
+#define C4MCErr_ReinstNoGlobal    "can't reinstanciate object '{}' in global scope"
+#define C4MCErr_UnknownObj        "unknown object: {}"
+#define C4MCErr_ReinstUnknown     "can't reinstanciate '{}'; object type is unknown"
+#define C4MCErr_EqSColonBlOpenExp "'=', ';' or '{{' expected"
+#define C4MCErr_FieldConstExp     "constant for field '{}' expected"
 #define C4MCErr_SColonExp         "';' expected"
-#define C4MCErr_Field404          "field '%s' not found"
-#define C4MCErr_FieldValInvalid   "'%s' is not a valid value for this field"
-#define C4MCErr_MatNotFound       "material '%s' not found"
-#define C4MCErr_TexNotFound       "texture '%s' not found"
-#define C4MCErr_AlgoNotFound      "algorithm '%s' not found"
-#define C4MCErr_SFuncNotFound     "script func '%s' not found in scenario script"
+#define C4MCErr_Field404          "field '{}' not found"
+#define C4MCErr_FieldValInvalid   "'{}' is not a valid value for this field"
+#define C4MCErr_MatNotFound       "material '{}' not found"
+#define C4MCErr_TexNotFound       "texture '{}' not found"
+#define C4MCErr_AlgoNotFound      "algorithm '{}' not found"
+#define C4MCErr_SFuncNotFound     "script func '{}' not found in scenario script"
 #define C4MCErr_PointOnlyOvl      "point only allowed in overlays"
 
 // predef
@@ -390,10 +392,16 @@ public:
 class C4MCParserErr
 {
 public:
-	char Msg[C4MaxMessage]; // message string
+	std::string Msg; // message string
 
-	C4MCParserErr(C4MCParser *pParser, const char *szMsg); // construct setting error msg
-	C4MCParserErr(C4MCParser *pParser, const char *szMsg, const char *szPar); // construct setting error msg
+	C4MCParserErr(C4MCParser *pParser, std::string_view msg); // construct setting error msg
+
+	template<typename... Args>
+	C4MCParserErr(C4MCParser *pParser, std::format_string<Args...> fmt, Args &&...args) // construct setting error msg
+		: C4MCParserErr{pParser, std::format(fmt, std::forward<Args>(args)...)}
+	{
+	}
+
 	void show() const; // log error
 };
 

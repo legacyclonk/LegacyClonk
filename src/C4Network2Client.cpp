@@ -32,8 +32,9 @@
 
 // *** C4Network2Client
 
-C4Network2Client::C4Network2Client(C4Client *pClient)
-	: pClient(pClient),
+C4Network2Client::C4Network2Client(std::shared_ptr<spdlog::logger> logger, C4Client *pClient)
+	: logger{std::move(logger)},
+	pClient(pClient),
 	eStatus(NCS_Ready),
 	iLastActivity(0),
 	pMsgConn(nullptr), pDataConn(nullptr),
@@ -176,7 +177,7 @@ bool C4Network2Client::DoConnectAttempt(C4Network2IO *pIO)
 	for (const auto &id : interfaceIDs)
 	{
 		addr.SetScopeId(id);
-		LogSilentF("Network: connecting client %s on %s...", getName(), addr.ToString().getData());
+		logger->info("Network: connecting client {} on {}...", getName(), addr.ToString());
 		if (pIO->Connect(addr, addrProtocol, pClient->getCore()))
 			return true;
 	}
@@ -190,7 +191,7 @@ bool C4Network2Client::DoTCPSimultaneousOpen(C4Network2IO *const pIO, const C4Ne
 	// Did we already bind a socket?
 	if (tcpSimOpenSocket)
 	{
-		LogSilentF("Network: connecting client %s on %s with TCP simultaneous open...", getName(), addr.GetAddr().ToString().getData());
+		logger->info("Network: connecting client {} on {} with TCP simultaneous open...", getName(), addr.GetAddr().ToString());
 		return pIO->ConnectWithSocket(addr.GetAddr(), addr.GetProtocol(), pClient->getCore(), std::move(tcpSimOpenSocket));
 	}
 	else
@@ -204,9 +205,9 @@ bool C4Network2Client::DoTCPSimultaneousOpen(C4Network2IO *const pIO, const C4Ne
 		tcpSimOpenSocket = NetIOTCP->Bind(bindAddr);
 		if (!tcpSimOpenSocket) return false;
 		const auto &boundAddr = tcpSimOpenSocket->GetAddress();
-		LogSilentF("Network: %s TCP simultaneous open request for client %s from %s...",
+		logger->info("Network: {} TCP simultaneous open request for client {} from {}...",
 			(addr.isIPNull() ? "initiating" : "responding to"),
-			getName(), boundAddr.ToString().getData());
+			getName(), boundAddr.ToString());
 		// Send address we bound to to the client.
 		if (!SendMsg(MkC4NetIOPacket(PID_TCPSimOpen, C4PacketTCPSimOpen{
 			pParent->GetLocal()->getID(), C4Network2Address{boundAddr, P_TCP}})))
@@ -415,13 +416,15 @@ C4Network2Client *C4Network2ClientList::GetNextClient(C4Network2Client *pClient)
 	return pClient ? pClient->pNext : pFirst;
 }
 
-void C4Network2ClientList::Init(C4ClientList *pnClientList, bool fnHost)
+void C4Network2ClientList::Init(std::shared_ptr<spdlog::logger> logger, C4ClientList *pnClientList, bool fnHost)
 {
 	// save flag
 	fHost = fnHost;
 	// initialize
 	pClientList = pnClientList;
 	pClientList->InitNetwork(this);
+	// set logger here, because InitNetwork() calls this->Clear()
+	this->logger = std::move(logger);
 }
 
 C4Network2Client *C4Network2ClientList::RegClient(C4Client *pClient)
@@ -436,7 +439,7 @@ C4Network2Client *C4Network2ClientList::RegClient(C4Client *pClient)
 			break;
 	assert(!pLast || pLast->getID() != pClient->getID());
 	// create new client
-	C4Network2Client *pNetClient = new C4Network2Client(pClient);
+	C4Network2Client *pNetClient = new C4Network2Client(logger, pClient);
 	// add to list
 	pNetClient->pNext = pPos;
 	(pLast ? pLast->pNext : pFirst) = pNetClient;
@@ -488,6 +491,7 @@ void C4Network2ClientList::Clear()
 		DeleteClient(pFirst);
 	}
 	pLocal = nullptr;
+	logger.reset();
 }
 
 bool C4Network2ClientList::BroadcastMsgToConnClients(const C4NetIOPacket &rPkt)

@@ -412,11 +412,14 @@ bool C4RoundResults::Save(C4Group &hGroup, const char *szFilename)
 	// decompile
 	try
 	{
-		StdStrBuf Buf = DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*this, "RoundResults"));
+		const std::string buf{DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*this, "RoundResults"))};
 		// save it, if not empty
-		if (Buf.getLength())
-			if (!hGroup.Add(szFilename, Buf, false, true))
+		if (!buf.empty())
+		{
+			StdStrBuf copy{buf.c_str(), buf.size()};
+			if (!hGroup.Add(szFilename, copy, false, true))
 				return false;
+		}
 	}
 	catch (const StdCompiler::Exception &)
 	{

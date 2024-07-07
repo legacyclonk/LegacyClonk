@@ -516,7 +516,6 @@ void CStdDDraw::Default()
 
 void CStdDDraw::Clear()
 {
-	sLastError.Clear();
 	DisableGamma();
 	Active = BlitModulated = fUseClrModMap = false;
 	dwBlitMode = 0;
@@ -929,12 +928,6 @@ bool CStdDDraw::BlitRotate(C4Surface *sfcSource, int fx, int fy, int fwdt, int f
 	return true;
 }
 
-bool CStdDDraw::Error(const char *szMsg)
-{
-	sLastError.Copy(szMsg);
-	Log(szMsg); return false;
-}
-
 bool CStdDDraw::CreatePrimaryClipper()
 {
 	// simply setup primary viewport
@@ -1329,22 +1322,32 @@ CStdDDraw *DDrawInit(CStdApp *pApp, int Engine)
 bool CStdDDraw::Init(CStdApp *pApp)
 {
 	this->pApp = pApp;
+	logger = CreateLogger(std::string{GetEngineName()});
 
-	DebugLog("Init DDraw");
-	DebugLog("  Create DirectDraw...");
+	logger->debug("Init DDraw");
+	logger->debug("  Create DirectDraw...");
 
 	if (!CreateDirectDraw())
-		return Error("  CreateDirectDraw failure.");
+	{
+		logger->error("CreateDirectDraw failure.");
+		return false;
+	}
 
-	DebugLog("  Create Device...");
+	logger->debug("  Create Device...");
 
 	if (!CreatePrimarySurfaces())
-		return Error("  CreateDevice failure.");
+	{
+		logger->error("CreateDevice failure.");
+		return false;
+	}
 
-	DebugLog("  Create Clipper");
+	logger->debug("  Create Clipper");
 
 	if (!CreatePrimaryClipper())
-		return Error("  Clipper failure.");
+	{
+		logger->error("Clipper failure");
+		return false;
+	}
 
 	// store default gamma
 	SaveDefaultGammaRamp(pApp->pWindow);

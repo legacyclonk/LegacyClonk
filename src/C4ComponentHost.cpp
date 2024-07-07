@@ -61,7 +61,8 @@ bool C4ComponentHost::Load(const char *szName,
 	SCopy(szName, Name);
 	SCopy(szFilename, Filename);
 	// Load component - try all segmented filenames
-	char strEntry[_MAX_FNAME + 1], strEntryWithLanguage[_MAX_FNAME + 1];
+	char strEntry[_MAX_FNAME + 1];
+	std::string entryWithLanguage;
 	for (int iFilename = 0; SCopySegment(Filename, iFilename, strEntry, '|', _MAX_FNAME); iFilename++)
 	{
 		// Try to insert all language codes provided into the filename
@@ -69,18 +70,18 @@ bool C4ComponentHost::Load(const char *szName,
 		for (int iLang = 0; SCopySegment(szLanguage ? szLanguage : "", iLang, strCode, ',', 2); iLang++)
 		{
 			// Insert language code
-			ssprintf(strEntryWithLanguage, strEntry, strCode);
-			if (hGroup.LoadEntryString(strEntryWithLanguage, Data))
+			entryWithLanguage = std::vformat(strEntry, std::make_format_args(strCode));
+			if (hGroup.LoadEntryString(entryWithLanguage.c_str(), Data))
 			{
 				if (Config.General.fUTF8) Data.EnsureUnicode();
 				// Store actual filename
-				hGroup.FindEntry(strEntryWithLanguage, Filename);
+				hGroup.FindEntry(entryWithLanguage.c_str(), Filename);
 				CopyFilePathFromGroup(hGroup);
 				// Got it
 				return true;
 			}
 			// Couldn't insert language code anyway - no point in trying other languages
-			if (!SSearch(strEntry, "%s")) break;
+			if (!SSearch(strEntry, "{}")) break;
 		}
 	}
 	// Truncate any additional segments from stored filename
@@ -101,7 +102,8 @@ bool C4ComponentHost::Load(const char *szName,
 	SCopy(szName, Name);
 	SCopy(szFilename, Filename);
 	// Load component - try all segmented filenames
-	char strEntry[_MAX_FNAME + 1], strEntryWithLanguage[_MAX_FNAME + 1];
+	char strEntry[_MAX_FNAME + 1];
+	std::string entryWithLanguage;
 	for (int iFilename = 0; SCopySegment(Filename, iFilename, strEntry, '|', _MAX_FNAME); iFilename++)
 	{
 		// Try to insert all language codes provided into the filename
@@ -109,19 +111,19 @@ bool C4ComponentHost::Load(const char *szName,
 		for (int iLang = 0; SCopySegment(szLanguage ? szLanguage : "", iLang, strCode, ',', 2); iLang++)
 		{
 			// Insert language code
-			ssprintf(strEntryWithLanguage, strEntry, strCode);
-			if (hGroupSet.LoadEntryString(strEntryWithLanguage, Data))
+			entryWithLanguage = std::vformat(strEntry, std::make_format_args(strCode));
+			if (hGroupSet.LoadEntryString(entryWithLanguage.c_str(), Data))
 			{
 				if (Config.General.fUTF8) Data.EnsureUnicode();
 				// Store actual filename
-				C4Group *pGroup = hGroupSet.FindEntry(strEntryWithLanguage);
-				pGroup->FindEntry(strEntryWithLanguage, Filename);
+				C4Group *pGroup = hGroupSet.FindEntry(entryWithLanguage.c_str());
+				pGroup->FindEntry(entryWithLanguage.c_str(), Filename);
 				CopyFilePathFromGroup(*pGroup);
 				// Got it
 				return true;
 			}
 			// Couldn't insert language code anyway - no point in trying other languages
-			if (!SSearch(strEntry, "%s")) break;
+			if (!SSearch(strEntry, "{}")) break;
 		}
 	}
 	// Truncate any additional segments from stored filename
@@ -157,23 +159,24 @@ bool C4ComponentHost::LoadAppend(const char *szName,
 	SCopy(szFilename, Filename);
 
 	// Load component (segmented filename)
-	char str1[_MAX_FNAME + 1], str2[_MAX_FNAME + 1];
+	char str1[_MAX_FNAME + 1];
+	std::string entry;
 	size_t iFileCnt = 0, iFileSizeSum = 0;
 	for (size_t cseg = 0; SCopySegment(Filename, cseg, str1, '|', _MAX_FNAME); cseg++)
 	{
 		char szLang[3] = "";
 		for (size_t clseg = 0; SCopySegment(szLanguage ? szLanguage : "", clseg, szLang, ',', 2); clseg++)
 		{
-			ssprintf(str2, str1, szLang);
+			entry = std::vformat(str1, std::make_format_args(szLang));
 			// Check existance
 			size_t iFileSize;
-			if (hGroup.FindEntry(str2, nullptr, &iFileSize))
+			if (hGroup.FindEntry(entry.c_str(), nullptr, &iFileSize))
 			{
 				iFileCnt++;
 				iFileSizeSum += 1 + iFileSize;
 				break;
 			}
-			if (!SSearch(str1, "%s")) break;
+			if (!SSearch(str1, "{}")) break;
 		}
 	}
 
@@ -190,10 +193,10 @@ bool C4ComponentHost::LoadAppend(const char *szName,
 		char szLang[3] = "";
 		for (size_t clseg = 0; SCopySegment(szLanguage ? szLanguage : "", clseg, szLang, ',', 2); clseg++)
 		{
-			ssprintf(str2, str1, szLang);
+			entry = std::vformat(str1, std::make_format_args(szLang));
 			// Load data
 			char *pTemp;
-			if (hGroup.LoadEntry(str2, &pTemp, nullptr, 1))
+			if (hGroup.LoadEntry(entry.c_str(), &pTemp, nullptr, 1))
 			{
 				*pPos++ = '\n';
 				SCopy(pTemp, pPos, Data.getPtr(Data.getLength()) - pPos);
@@ -202,7 +205,7 @@ bool C4ComponentHost::LoadAppend(const char *szName,
 				break;
 			}
 			delete[] pTemp;
-			if (!SSearch(str1, "%s")) break;
+			if (!SSearch(str1, "{}")) break;
 		}
 	}
 
@@ -277,8 +280,8 @@ INT_PTR CALLBACK C4ComponentHost::ComponentDlgProc(const HWND hDlg, const UINT m
 
 		SetWindowLongPtr(hDlg, DWLP_USER, lParam);
 		SetWindowText(hDlg, componentHost.Name);
-		SetDlgItemText(hDlg, IDOK, LoadResStr("IDS_BTN_OK"));
-		SetDlgItemText(hDlg, IDCANCEL, LoadResStr("IDS_BTN_CANCEL"));
+		SetDlgItemText(hDlg, IDOK, LoadResStr(C4ResStrTableKey::IDS_BTN_OK));
+		SetDlgItemText(hDlg, IDCANCEL, LoadResStr(C4ResStrTableKey::IDS_BTN_CANCEL));
 
 		if (const char *const data{componentHost.GetData()}; data)
 		{

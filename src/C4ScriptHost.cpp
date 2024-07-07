@@ -56,7 +56,7 @@ bool C4ScriptHost::Load(const char *szName, C4Group &hGroup, const char *szFilen
 	if (pStringTable && fLoadTable)
 		pStringTable->LoadEx("StringTbl", hGroup, C4CFN_ScriptStringTbl, szLanguage);
 	// set name
-	ScriptName.Format("%s" DirSep "%s", hGroup.GetFullName().getData(), Filename);
+	ScriptName = std::format("{}" DirSep "{}", hGroup.GetFullName().getData(), Filename);
 	// preparse script
 	MakeScript();
 	// Success
@@ -97,7 +97,7 @@ int32_t C4ScriptHost::GetControlMethod(int32_t com, int32_t first, int32_t secon
 	return ((first >> com) & 0x01) | (((second >> com) & 0x01) << 1);
 }
 
-void C4ScriptHost::GetControlMethodMask(const char *szFunctionFormat, int32_t &first, int32_t &second)
+void C4ScriptHost::GetControlMethodMask(const std::format_string<const char *> functionFormat, int32_t &first, int32_t &second)
 {
 	first = second = 0;
 
@@ -108,7 +108,7 @@ void C4ScriptHost::GetControlMethodMask(const char *szFunctionFormat, int32_t &f
 	char szFunction[256 + 1];
 	for (iCom = 0; iCom < ComOrderNum; iCom++)
 	{
-		sprintf(szFunction, szFunctionFormat, ComName(ComOrder(iCom)));
+		FormatWithNull(szFunction, functionFormat, ComName(ComOrder(iCom)));
 		C4AulScriptFunc *func = GetSFunc(szFunction);
 
 		if (func)
@@ -151,12 +151,15 @@ bool C4ScriptHost::ReloadScript(const char *szPath)
 const char *C4ScriptHost::GetControlDesc(const char *szFunctionFormat, int32_t iCom, C4ID *pidImage, int32_t *piImagePhase)
 {
 	// Compose script function
-	char szFunction[256 + 1];
-	sprintf(szFunction, szFunctionFormat, ComName(iCom));
+	const char *const comName{ComName(iCom)};
+	std::string function{std::vformat(szFunctionFormat, std::make_format_args(comName))};
 	// Remove failsafe indicator
-	if (szFunction[0] == '~') memmove(szFunction, szFunction + 1, sizeof(szFunction) - 1);
+	if (function.starts_with('~'))
+	{
+		function.erase(function.begin());
+	}
 	// Find function reference
-	C4AulScriptFunc *pFn = GetSFunc(szFunction);
+	C4AulScriptFunc *pFn = GetSFunc(function.c_str());
 	// Get image id
 	if (pidImage) { *pidImage = idDef; if (pFn) *pidImage = pFn->idImage; }
 	// Get image phase
@@ -191,10 +194,10 @@ void C4DefScriptHost::AfterLink()
 		for (int32_t cnt = 0; cnt < Def->ActNum; cnt++)
 		{
 			C4ActionDef *pad = &Def->ActMap[cnt];
-			sprintf(WhereStr, "Action %s: StartCall", pad->Name); pad->StartCall = GetSFuncWarn(pad->SStartCall, CallAccess, WhereStr);
-			sprintf(WhereStr, "Action %s: PhaseCall", pad->Name); pad->PhaseCall = GetSFuncWarn(pad->SPhaseCall, CallAccess, WhereStr);
-			sprintf(WhereStr, "Action %s: EndCall",   pad->Name); pad->EndCall   = GetSFuncWarn(pad->SEndCall,   CallAccess, WhereStr);
-			sprintf(WhereStr, "Action %s: AbortCall", pad->Name); pad->AbortCall = GetSFuncWarn(pad->SAbortCall, CallAccess, WhereStr);
+			FormatWithNull(WhereStr, "Action {}: StartCall", pad->Name); pad->StartCall = GetSFuncWarn(pad->SStartCall, CallAccess, WhereStr);
+			FormatWithNull(WhereStr, "Action {}: PhaseCall", pad->Name); pad->PhaseCall = GetSFuncWarn(pad->SPhaseCall, CallAccess, WhereStr);
+			FormatWithNull(WhereStr, "Action {}: EndCall",   pad->Name); pad->EndCall   = GetSFuncWarn(pad->SEndCall,   CallAccess, WhereStr);
+			FormatWithNull(WhereStr, "Action {}: AbortCall", pad->Name); pad->AbortCall = GetSFuncWarn(pad->SAbortCall, CallAccess, WhereStr);
 		}
 		Def->TimerCall = GetSFuncWarn(Def->STimerCall, CallAccess, "TimerCall");
 	}
@@ -222,7 +225,7 @@ bool C4GameScriptHost::Execute()
 	char buffer[500];
 	if (Go && !Tick10)
 	{
-		sprintf(buffer, PSF_Script, Counter++);
+		FormatWithNull(buffer, PSF_Script, Counter++);
 		return static_cast<bool>(Call(buffer));
 	}
 	return false;

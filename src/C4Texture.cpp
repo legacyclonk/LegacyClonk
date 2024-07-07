@@ -29,6 +29,8 @@
 #include <C4Landscape.h>
 #include <C4Wrappers.h>
 
+#include <format>
+
 C4Texture::C4Texture()
 {
 	Name[0] = 0;
@@ -69,7 +71,7 @@ bool C4TexMapEntry::Init()
 	iMaterialIndex = Game.Material.Get(Material.getData());
 	if (!MatValid(iMaterialIndex))
 	{
-		DebugLogF("Error initializing material %s-%s: Invalid material!", Material.getData(), Texture.getData());
+		DebugLog(spdlog::level::err, "Error initializing material {}-{}: Invalid material!", Material.getData(), Texture.getData());
 		return false;
 	}
 	pMaterial = &Game.Material.Map[iMaterialIndex];
@@ -82,7 +84,7 @@ bool C4TexMapEntry::Init()
 	C4Texture *sfcTexture = Game.TextureMap.GetTexture(szTexture);
 	if (!sfcTexture)
 	{
-		DebugLogF("Error initializing material %s-%s: Invalid texture!", Material.getData(), Texture.getData());
+		DebugLog(spdlog::level::err, "Error initializing material {}-{}: Invalid texture!", Material.getData(), Texture.getData());
 		Clear();
 		return false;
 	}
@@ -233,7 +235,7 @@ int32_t C4TextureMap::Init()
 		if (!Entry[i].isNull())
 			if (!Entry[i].Init())
 			{
-				LogF("Error in TextureMap initialization at entry %d", static_cast<int>(i));
+				LogNTr(spdlog::level::err, "Error in TextureMap initialization at entry {}", static_cast<int>(i));
 				Entry[i].Clear();
 				iRemoved++;
 			}
@@ -244,30 +246,21 @@ int32_t C4TextureMap::Init()
 bool C4TextureMap::SaveMap(C4Group &hGroup, const char *szEntryName)
 {
 	// build file in memory
-	StdStrBuf sTexMapFile;
-	// add desc
-	sTexMapFile.Append("# Automatically generated texture map" LineFeed);
-	sTexMapFile.Append("# Contains material-texture-combinations added at runtime" LineFeed);
+	std::string texMapFile{"# Automatically generated texture map" LineFeed "# Contains material-texture-combinations added at runtime" LineFeed};
 	// add overload-entries
-	if (fOverloadMaterials) sTexMapFile.Append("# Import materials from global file as well" LineFeed "OverloadMaterials" LineFeed);
-	if (fOverloadTextures) sTexMapFile.Append("# Import textures from global file as well" LineFeed "OverloadTextures" LineFeed);
-	sTexMapFile.Append(LineFeed);
+	if (fOverloadMaterials) texMapFile += "# Import materials from global file as well" LineFeed "OverloadMaterials" LineFeed;
+	if (fOverloadTextures) texMapFile += "# Import textures from global file as well" LineFeed "OverloadTextures" LineFeed;
+	texMapFile += LineFeed;
 	// add entries
 	for (int32_t i = 0; i < C4M_MaxTexIndex; i++)
 		if (!Entry[i].isNull())
 		{
 			// compose line
-			sTexMapFile.AppendFormat("%d=%s-%s" LineFeed, i, Entry[i].GetMaterialName(), Entry[i].GetTextureName());
+			texMapFile += std::format("{}={}-{}" LineFeed, i, Entry[i].GetMaterialName(), Entry[i].GetTextureName());
 		}
-	// create new buffer allocated with new [], because C4Group cannot handle StdStrBuf-buffers
-	size_t iBufSize = sTexMapFile.getLength();
-	uint8_t *pBuf = new uint8_t[iBufSize];
-	memcpy(pBuf, sTexMapFile.getData(), iBufSize);
+	StdStrBuf buf{texMapFile.c_str(), texMapFile.size()};
 	// add to group
-	bool fSuccess = !!hGroup.Add(szEntryName, pBuf, iBufSize, false, true);
-	if (!fSuccess) delete[] pBuf;
-	// done
-	return fSuccess;
+	return hGroup.Add(szEntryName, buf, false, true);
 }
 
 int32_t C4TextureMap::LoadTextures(C4Group &hGroup, C4Group *OverloadFile)
@@ -342,11 +335,11 @@ int32_t C4TextureMap::GetIndex(const char *szMaterial, const char *szTexture, bo
 					fEntriesAdded = true;
 					return byIndex;
 				}
-				if (szErrorIfFailed) DebugLogF("Error getting MatTex %s-%s for %s from TextureMap: Init failed.", szMaterial, szTexture, szErrorIfFailed);
+				if (szErrorIfFailed) DebugLog(spdlog::level::err, "Error getting MatTex {}-{} for {} from TextureMap: Init failed.", szMaterial, szTexture, szErrorIfFailed);
 				return 0;
 			}
 	// Else, fail
-	if (szErrorIfFailed) DebugLogF("Error getting MatTex %s-%s for %s from TextureMap: %s.", szMaterial, szTexture, szErrorIfFailed, fAddIfNotExist ? "Map is full!" : "Entry not found.");
+	if (szErrorIfFailed) DebugLog(spdlog::level::err, "Error getting MatTex {}-{} for {} from TextureMap: {}.", szMaterial, szTexture, szErrorIfFailed, fAddIfNotExist ? "Map is full!" : "Entry not found.");
 	return 0;
 }
 
@@ -368,7 +361,7 @@ int32_t C4TextureMap::GetIndexMatTex(const char *szMaterialTexture, const char *
 	const auto iMaterial = Game.Material.Get(szMaterialTexture);
 	if (!MatValid(iMaterial))
 	{
-		if (szErrorIfFailed) DebugLogF("Error getting MatTex for %s: Invalid material", szErrorIfFailed);
+		if (szErrorIfFailed) DebugLog(spdlog::level::err, "Error getting MatTex for {}: Invalid material", szErrorIfFailed);
 		return 0;
 	}
 	// return default map entry

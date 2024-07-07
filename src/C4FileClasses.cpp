@@ -21,21 +21,23 @@
 
 #include <StdRegistry.h>
 
+#include <format>
+
 #define C4FileClassContentType "application/vnd.clonk.c4group"
 
-bool SetProtocol(const char *szProtocol, const char *szCommand, const char *szModule)
+bool SetProtocol(const char *szProtocol, const std::format_string<const char *&> command, const char *szModule)
 {
 	if (!SetRegClassesRoot(szProtocol, nullptr, "URL: Protocol")) return false;
 	if (!SetRegClassesRoot(szProtocol, "URL Protocol", "")) return false;
 
 	char szCmd[_MAX_PATH + 1], szKey[_MAX_PATH + 1];
-	sprintf(szCmd, szCommand, szModule);
-	sprintf(szKey, "%s\\shell\\open\\command", szProtocol);
+	FormatWithNull(szCmd, command, szModule);
+	FormatWithNull(szKey, "{}\\shell\\open\\command", szProtocol);
 	if (!SetRegClassesRoot(szKey, "", szCmd)) return false;
 
 	char szIconpath[_MAX_PATH + 1];
-	sprintf(szIconpath, "%s,1", szModule);
-	sprintf(szKey, "%s\\DefaultIcon", szProtocol);
+	FormatWithNull(szIconpath, "{},1", szModule);
+	FormatWithNull(szKey, "{}\\DefaultIcon", szProtocol);
 	if (!SetRegClassesRoot(szKey, "", szIconpath)) return false;
 
 	return true;
@@ -55,11 +57,11 @@ bool SetC4FileClasses(const char *szEnginePath)
 	if (!SetRegFileClass("Clonk4.Weblink", "c4l", "Clonk 4 Weblink", szEnginePath, 11, C4FileClassContentType)) return false;
 	if (!SetRegFileClass("Clonk4.Update", "c4u", "Clonk 4 Update", szEnginePath, 13, C4FileClassContentType)) return false;
 
-	if (!SetProtocol("clonk", "%s %%1", szEnginePath)) return false;
+	if (!SetProtocol("clonk", "{} %1", szEnginePath)) return false;
 
 	char strCommand[2048];
 	// c4u application: send to engine
-	sprintf(strCommand, "\"%s\" \"%%1\"", szEnginePath);
+	FormatWithNull(strCommand, "\"{}\" \"%1\"", szEnginePath);
 	if (!SetRegShell("Clonk4.Update", "Update", "Update", strCommand, true)) return false;
 
 	// kill old App Paths registration

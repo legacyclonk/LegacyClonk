@@ -24,7 +24,7 @@
 #include "C4GuiResource.h"
 #include "C4GuiTabular.h"
 #include "StdCompiler.h"
-#include "StdResStr2.h"
+#include "C4ResStrTable.h"
 
 #include <algorithm>
 #include <format>
@@ -237,11 +237,11 @@ struct ConfigDialog::Section
 	std::unordered_map<std::string, Setting, string_hash, std::equal_to<>> settings;
 };
 
-ConfigDialog::C4StartupOptionsAdvancedConfigDialog(std::int32_t width, std::int32_t height) : C4GUI::Dialog{width, height, LoadResStr("IDS_DLG_ADVANCED_SETTINGS"), false}
+ConfigDialog::C4StartupOptionsAdvancedConfigDialog(std::int32_t width, std::int32_t height) : C4GUI::Dialog{width, height, LoadResStr(C4ResStrTableKey::IDS_DLG_ADVANCED_SETTINGS), false}
 {
 	StdCompilerConfigGuiRead comp{this};
-	saveButton = new C4GUI::CallbackButton<ConfigDialog>{LoadResStr("IDS_BTN_SAVE"), {0, 0, 1, 1}, &ConfigDialog::OnSave, this};
-	cancelButton = new C4GUI::CallbackButton<ConfigDialog>{LoadResStr("IDS_BTN_CANCEL"), {0, 0, 1, 1}, &ConfigDialog::OnAbort, this};
+	saveButton = new C4GUI::CallbackButton<ConfigDialog>{LoadResStr(C4ResStrTableKey::IDS_BTN_SAVE), {0, 0, 1, 1}, &ConfigDialog::OnSave, this};
+	cancelButton = new C4GUI::CallbackButton<ConfigDialog>{LoadResStr(C4ResStrTableKey::IDS_BTN_CANCEL), {0, 0, 1, 1}, &ConfigDialog::OnAbort, this};
 	tabs = new C4GUI::Tabular{C4Rect{0, 0, 0, 0}, C4GUI::Tabular::tbLeft};
 	AddElement(tabs);
 	AddElement(saveButton);
@@ -307,7 +307,7 @@ void ConfigDialog::ChangeSection(const char *name)
 
 bool ConfigDialog::ShowModal(C4GUI::Screen *screen)
 {
-	auto warningDialog = new C4GUI::MessageDialog{LoadResStr("IDS_MSG_ADVANCED_SETTINGS_WARNING"), LoadResStr("IDS_DLG_WARNING"), C4GUI::MessageDialog::btnOKAbort, C4GUI::Ico_None, C4GUI::MessageDialog::dsRegular, nullptr, true};
+	auto warningDialog = new C4GUI::MessageDialog{LoadResStr(C4ResStrTableKey::IDS_MSG_ADVANCED_SETTINGS_WARNING), LoadResStr(C4ResStrTableKey::IDS_DLG_WARNING), C4GUI::MessageDialog::btnOKAbort, C4GUI::Ico_None, C4GUI::MessageDialog::dsRegular, nullptr, true};
 	if (!screen->ShowModalDlg(warningDialog))
 	{
 		return false;

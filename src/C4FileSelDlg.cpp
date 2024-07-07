@@ -30,6 +30,8 @@
 #include <shlobj.h>
 #endif
 
+#include <format>
+
 // C4FileSelDlg::ListItem
 
 C4FileSelDlg::ListItem::ListItem(const char *szFilename) : C4GUI::Control(C4Rect(0, 0, 0, 0))
@@ -44,7 +46,7 @@ C4FileSelDlg::ListItem::~ListItem() {}
 C4FileSelDlg::DefaultListItem::DefaultListItem(const char *szFilename, bool fTruncateExtension, bool fCheckbox, bool fGrayed, C4GUI::Icons eIcon)
 	: C4FileSelDlg::ListItem(szFilename), pLbl(nullptr), pCheck(nullptr), pKeyCheck(nullptr), fGrayed(fGrayed)
 {
-	StdStrBuf sLabel; if (szFilename) sLabel.Ref(::GetFilename(szFilename)); else sLabel.Ref(LoadResStr("IDS_CTL_NONE"));
+	StdStrBuf sLabel; if (szFilename) sLabel.Ref(::GetFilename(szFilename)); else sLabel.Ref(LoadResStr(C4ResStrTableKey::IDS_CTL_NONE));
 	if (szFilename && fTruncateExtension)
 	{
 		sLabel.Copy();
@@ -137,7 +139,7 @@ void C4FileSelDlg::InitElements()
 	if (iLocationCount)
 	{
 		C4GUI::ComponentAligner caLocations(caUpperArea.GetFromTop(C4GUI::ComboBox::GetDefaultHeight() + 2 * C4GUI_DefDlgSmallIndent), C4GUI_DefDlgIndent, C4GUI_DefDlgSmallIndent, false);
-		StdStrBuf sText(LoadResStr("IDS_TEXT_LOCATION"), false);
+		StdStrBuf sText(LoadResStr(C4ResStrTableKey::IDS_TEXT_LOCATION), false);
 		AddElement(new C4GUI::Label(sText.getData(), caLocations.GetFromLeft(pUseFont->GetTextWidth(sText.getData())), ALeft));
 		pLocationComboBox = new C4GUI::ComboBox(caLocations.GetAll());
 		pLocationComboBox->SetComboCB(new C4GUI::ComboBox_FillCallback<C4FileSelDlg>(this, &C4FileSelDlg::OnLocationComboFill, &C4FileSelDlg::OnLocationComboSelChange));
@@ -213,7 +215,7 @@ void C4FileSelDlg::UserClose(bool fOK)
 	}
 	else
 	{
-		GetScreen()->ShowErrorMessage(LoadResStr("IDS_ERR_PLEASESELECTAFILEFIRST"));
+		GetScreen()->ShowErrorMessage(LoadResStr(C4ResStrTableKey::IDS_ERR_PLEASESELECTAFILEFIRST));
 	}
 }
 
@@ -266,7 +268,7 @@ void C4FileSelDlg::UpdateFileList()
 	EndFileListUpdate();
 	// path into title
 	const char *szPath = sPath.getData();
-	SetTitle(*szPath ? FormatString("%s [%s]", sTitle.getData(), szPath).getData() : sTitle.getData());
+	SetTitle(*szPath ? std::format("{} [{}]", sTitle.getData(), szPath).c_str() : sTitle.getData());
 	// initial no-selection
 	UpdateSelection();
 }
@@ -382,12 +384,12 @@ void C4FileSelDlg::SetCurrentLocation(int32_t idx, bool fRefresh)
 // C4PlayerSelDlg
 
 C4PlayerSelDlg::C4PlayerSelDlg(C4FileSel_BaseCB *pSelCallback)
-	: C4FileSelDlg(Config.AtExePath(Config.General.PlayerPath), LoadResStr("IDS_MSG_SELECTPLR"), pSelCallback) {}
+	: C4FileSelDlg(Config.AtExePath(Config.General.PlayerPath), LoadResStr(C4ResStrTableKey::IDS_MSG_SELECTPLR), pSelCallback) {}
 
 // C4DefinitionSelDlg
 
 C4DefinitionSelDlg::C4DefinitionSelDlg(C4FileSel_BaseCB *pSelCallback, const std::vector<std::string> &fixedSelection)
-	: C4FileSelDlg(Config.AtExePath(Config.General.DefinitionPath), FormatString(LoadResStr("IDS_MSG_SELECT"), LoadResStr("IDS_DLG_DEFINITIONS")).getData(), pSelCallback), fixedSelection(fixedSelection)
+	: C4FileSelDlg(Config.AtExePath(Config.General.DefinitionPath), LoadResStr(C4ResStrTableKey::IDS_MSG_SELECT, LoadResStr(C4ResStrTableKey::IDS_DLG_DEFINITIONS)).c_str(), pSelCallback), fixedSelection(fixedSelection)
 {
 }
 
@@ -434,7 +436,7 @@ C4PortraitSelDlg::ListItem::ListItem(const char *szFilename) : C4FileSelDlg::Lis
 	}
 	else
 	{
-		sDisplayLabel.Ref(LoadResStr("IDS_MSG_NOPORTRAIT"));
+		sDisplayLabel.Ref(LoadResStr(C4ResStrTableKey::IDS_MSG_NOPORTRAIT));
 	}
 	// insert linebreaks into label text
 	int32_t iLineHgt = std::max<int32_t>(pUseFont->BreakMessage(sDisplayLabel.getData(), ImagePreviewSize - 6, &sFilenameLabelText, false), 1);
@@ -489,7 +491,7 @@ void C4PortraitSelDlg::ListItem::DrawElement(C4FacetEx &cgo)
 		if (!fctImage.Surface)
 		{
 			// not loaded yet
-			lpDDraw->TextOut(LoadResStr("IDS_PRC_INITIALIZE"), C4GUI::GetRes()->MiniFont, 1.0f, cgo.Surface, cgoPicture.X + cgoPicture.Wdt / 2, cgoPicture.Y + (cgoPicture.Hgt - C4GUI::GetRes()->MiniFont.GetLineHeight()) / 2, C4GUI_StatusFontClr, ACenter, false);
+			lpDDraw->TextOut(LoadResStr(C4ResStrTableKey::IDS_PRC_INITIALIZE), C4GUI::GetRes()->MiniFont, 1.0f, cgo.Surface, cgoPicture.X + cgoPicture.Wdt / 2, cgoPicture.Y + (cgoPicture.Hgt - C4GUI::GetRes()->MiniFont.GetLineHeight()) / 2, C4GUI_StatusFontClr, ACenter, false);
 		}
 		else
 		{
@@ -530,30 +532,28 @@ void C4PortraitSelDlg::ImageLoader::Execute()
 // C4PortraitSelDlg
 
 C4PortraitSelDlg::C4PortraitSelDlg(C4FileSel_BaseCB *pSelCallback, bool fSetPicture, bool fSetBigIcon)
-	: C4FileSelDlg(Config.General.ExePath, FormatString(LoadResStr("IDS_MSG_SELECT"), LoadResStr("IDS_TYPE_PORTRAIT")).getData(), pSelCallback, false)
+	: C4FileSelDlg(Config.General.ExePath, LoadResStr(C4ResStrTableKey::IDS_MSG_SELECT, LoadResStr(C4ResStrTableKey::IDS_TYPE_PORTRAIT)).c_str(), pSelCallback, false)
 	, pCheckSetPicture(nullptr), pCheckSetBigIcon(nullptr), fDefSetPicture(fSetPicture), fDefSetBigIcon(fSetBigIcon)
 {
 	char path[_MAX_PATH + 1];
 	// add common picture locations
 	StdStrBuf strLocation;
 	SCopy(Config.AtUserPath(""), path, _MAX_PATH); TruncateBackslash(path);
-	strLocation.Format("%s %s", C4ENGINECAPTION, LoadResStr("IDS_TEXT_USERPATH"));
-	AddLocation(strLocation.getData(), path);
-	strLocation.Format("%s %s", C4ENGINECAPTION, LoadResStr("IDS_TEXT_PROGRAMDIRECTORY"));
-	AddCheckedLocation(strLocation.getData(), Config.General.ExePath);
+	AddLocation(std::format(C4ENGINECAPTION " {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_USERPATH)).c_str(), path);
+	AddCheckedLocation(std::format(C4ENGINECAPTION " {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_PROGRAMDIRECTORY)).c_str(), Config.General.ExePath);
 #ifdef _WIN32
-	if (SHGetSpecialFolderPath(nullptr, path, CSIDL_PERSONAL,         FALSE)) AddCheckedLocation(LoadResStr("IDS_TEXT_MYDOCUMENTS"), path);
-	if (SHGetSpecialFolderPath(nullptr, path, CSIDL_MYPICTURES,       FALSE)) AddCheckedLocation(LoadResStr("IDS_TEXT_MYPICTURES"),  path);
-	if (SHGetSpecialFolderPath(nullptr, path, CSIDL_DESKTOPDIRECTORY, FALSE)) AddCheckedLocation(LoadResStr("IDS_TEXT_DESKTOP"),     path);
+	if (SHGetSpecialFolderPath(nullptr, path, CSIDL_PERSONAL,         FALSE)) AddCheckedLocation(LoadResStr(C4ResStrTableKey::IDS_TEXT_MYDOCUMENTS), path);
+	if (SHGetSpecialFolderPath(nullptr, path, CSIDL_MYPICTURES,       FALSE)) AddCheckedLocation(LoadResStr(C4ResStrTableKey::IDS_TEXT_MYPICTURES),  path);
+	if (SHGetSpecialFolderPath(nullptr, path, CSIDL_DESKTOPDIRECTORY, FALSE)) AddCheckedLocation(LoadResStr(C4ResStrTableKey::IDS_TEXT_DESKTOP),     path);
 #endif
 #ifdef __APPLE__
-	AddCheckedLocation(LoadResStr("IDS_TEXT_HOME"),       getenv("HOME"));
+	AddCheckedLocation(LoadResStr(C4ResStrTableKey::IDS_TEXT_HOME),       getenv("HOME"));
 #else
-	AddCheckedLocation(LoadResStr("IDS_TEXT_HOMEFOLDER"), getenv("HOME"));
+	AddCheckedLocation(LoadResStr(C4ResStrTableKey::IDS_TEXT_HOMEFOLDER), getenv("HOME"));
 #endif
 #ifndef _WIN32
-	sprintf(path, "%s%cDesktop", getenv("HOME"), DirectorySeparator);
-	AddCheckedLocation(LoadResStr("IDS_TEXT_DESKTOP"), path);
+	FormatWithNull(path, "{}" DirSep "Desktop", getenv("HOME"));
+	AddCheckedLocation(LoadResStr(C4ResStrTableKey::IDS_TEXT_DESKTOP), path);
 #endif
 	// build dialog
 	InitElements();
@@ -565,11 +565,11 @@ void C4PortraitSelDlg::AddExtraOptions(const C4Rect &rcOptionsRect)
 {
 	C4GUI::ComponentAligner caOptions(rcOptionsRect, C4GUI_DefDlgIndent, C4GUI_DefDlgSmallIndent, false);
 	CStdFont *pUseFont = &(C4GUI::GetRes()->TextFont);
-	AddElement(new C4GUI::Label(LoadResStr("IDS_CTL_IMPORTIMAGEAS"), caOptions.GetGridCell(0, 3, 0, 1, -1, pUseFont->GetLineHeight(), true), ALeft));
-	AddElement(pCheckSetPicture = new C4GUI::CheckBox(caOptions.GetGridCell(1, 3, 0, 1, -1, pUseFont->GetLineHeight(), true), LoadResStr("IDS_TEXT_PLAYERIMAGE"), fDefSetPicture));
-	pCheckSetPicture->SetToolTip(LoadResStr("IDS_DESC_CHANGESTHEIMAGEYOUSEEINTH"));
-	AddElement(pCheckSetBigIcon = new C4GUI::CheckBox(caOptions.GetGridCell(2, 3, 0, 1, -1, pUseFont->GetLineHeight(), true), LoadResStr("IDS_TEXT_LOBBYICON"), fDefSetPicture));
-	pCheckSetBigIcon->SetToolTip(LoadResStr("IDS_DESC_CHANGESTHEIMAGEYOUSEEINTH2"));
+	AddElement(new C4GUI::Label(LoadResStr(C4ResStrTableKey::IDS_CTL_IMPORTIMAGEAS), caOptions.GetGridCell(0, 3, 0, 1, -1, pUseFont->GetLineHeight(), true), ALeft));
+	AddElement(pCheckSetPicture = new C4GUI::CheckBox(caOptions.GetGridCell(1, 3, 0, 1, -1, pUseFont->GetLineHeight(), true), LoadResStr(C4ResStrTableKey::IDS_TEXT_PLAYERIMAGE), fDefSetPicture));
+	pCheckSetPicture->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_CHANGESTHEIMAGEYOUSEEINTH));
+	AddElement(pCheckSetBigIcon = new C4GUI::CheckBox(caOptions.GetGridCell(2, 3, 0, 1, -1, pUseFont->GetLineHeight(), true), LoadResStr(C4ResStrTableKey::IDS_TEXT_LOBBYICON), fDefSetPicture));
+	pCheckSetBigIcon->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_CHANGESTHEIMAGEYOUSEEINTH2));
 }
 
 void C4PortraitSelDlg::OnClosed(bool fOK)
@@ -607,7 +607,7 @@ bool C4PortraitSelDlg::SelectPortrait(C4GUI::Screen *pOnScreen, std::string &sel
 	// copy some default potraits to UserPath (but only try this once, no real error handling)
 	if (!Config.General.UserPortraitsWritten)
 	{
-		Log("Copying default portraits to user path...");
+		LogNTr(spdlog::level::trace, "Copying default portraits to user path...");
 		C4Group hGroup;
 		if (hGroup.Open(Config.AtExePath(C4CFN_Graphics)))
 		{

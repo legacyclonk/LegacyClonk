@@ -179,7 +179,7 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 	// safety
 	if (!szFontName || !*szFontName)
 	{
-		LogFatal(LoadResStr("IDS_ERR_INITFONTS"));
+		LogFatal(C4ResStrTableKey::IDS_ERR_INITFONTS);
 		return false;
 	}
 	// get font to load
@@ -211,13 +211,13 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 	case C4FT_Main:      szFontString = pFontDef->Font.getData(); break;
 	case C4FT_Caption:   szFontString = pFontDef->CaptionFont.getData(); break;
 	case C4FT_Title:     szFontString = pFontDef->TitleFont.getData(); break;
-	default: LogFatal(LoadResStr("IDS_ERR_INITFONTS")); return false; // invalid call
+	default: LogFatal(C4ResStrTableKey::IDS_ERR_INITFONTS); return false; // invalid call
 	}
 	// font not assigned?
 	if (!*szFontString)
 	{
 		// invalid call or spec
-		LogFatal(LoadResStr("IDS_ERR_INITFONTS")); return false;
+		LogFatal(C4ResStrTableKey::IDS_ERR_INITFONTS); return false;
 	}
 	// get font name
 	char FontFaceName[C4MaxName + 1], FontParam[C4MaxName + 1];
@@ -230,7 +230,7 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 		// if no graphics group is given, do not load yet
 		if (!pGfxGroups)
 		{
-			LogFatal(LoadResStr("IDS_ERR_INITFONTS"));
+			LogFatal(C4ResStrTableKey::IDS_ERR_INITFONTS);
 			return false;
 		}
 		// indent given?
@@ -242,7 +242,7 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 		C4Group *pGrp = pGfxGroups->FindEntry(FontFaceName, nullptr, &iGrpId);
 		if (!pGrp)
 		{
-			LogFatal(LoadResStr("IDS_ERR_INITFONTS"));
+			LogFatal(C4ResStrTableKey::IDS_ERR_INITFONTS);
 			return false;
 		}
 		// check if it's already loaded from that group with that parameters
@@ -253,12 +253,12 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 			{
 				// reloading
 				rFont.Clear();
-				LogF(LoadResStr("IDS_PRC_UPDATEFONT"), FontFaceName, iIndent, 0);
+				Log(C4ResStrTableKey::IDS_PRC_UPDATEFONT, FontFaceName, iIndent, 0);
 			}
 			C4Surface sfc;
 			if (!sfc.Load(*pGrp, FontFaceName))
 			{
-				LogFatal(LoadResStr("IDS_ERR_INITFONTS"));
+				LogFatal(C4ResStrTableKey::IDS_ERR_INITFONTS);
 				return false;
 			}
 			// init font from face
@@ -268,8 +268,8 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 			}
 			catch (std::runtime_error &e)
 			{
-				LogFatal(e.what());
-				LogFatal(LoadResStr("IDS_ERR_INITFONTS"));
+				LogFatalNTr(e.what());
+				LogFatal(C4ResStrTableKey::IDS_ERR_INITFONTS);
 				return false;
 			}
 			rFont.id = iGrpId;
@@ -285,7 +285,7 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 		case C4FT_Main:      iDefFontSize = iSize; break;
 		case C4FT_Caption:   iDefFontSize = iSize * 16 / 14; break;
 		case C4FT_Title:     iDefFontSize = iSize * 22 / 14; break;
-		default: LogFatal(LoadResStr("IDS_ERR_INITFONTS")); return false; // invalid call
+		default: LogFatal(C4ResStrTableKey::IDS_ERR_INITFONTS); return false; // invalid call
 		}
 		// regular font name: let WinGDI or Freetype draw a font with the given parameters
 		// font size given?
@@ -302,7 +302,7 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 			{
 				// reloading
 				rFont.Clear();
-				LogF(LoadResStr("IDS_PRC_UPDATEFONT"), FontFaceName, iDefFontSize, dwDefWeight);
+				Log(C4ResStrTableKey::IDS_PRC_UPDATEFONT, FontFaceName, iDefFontSize, dwDefWeight);
 			}
 			// init with given font name
 			try
@@ -325,20 +325,20 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 					{
 						AddVectorFont(pFont);
 						if (!InitFont(rFont, pFont, iDefFontSize, dwDefWeight, fDoShadow))
-							throw std::runtime_error(FormatString("Error initializing font %s", FontFaceName).getData());
+							throw std::runtime_error(std::format("Error initializing font {}", FontFaceName));
 					}
 					else
 					{
 						delete pFont;
 						// no match for font face found
-						throw std::runtime_error(FormatString("Font face %s undefined", FontFaceName).getData());
+						throw std::runtime_error(std::format("Font face {} undefined", FontFaceName));
 					}
 				}
 			}
 			catch (std::runtime_error &e)
 			{
-				LogFatal(e.what());
-				LogFatal(LoadResStr("IDS_ERR_INITFONTS"));
+				LogFatalNTr(e.what());
+				LogFatal(C4ResStrTableKey::IDS_ERR_INITFONTS);
 				return false;
 			}
 			rFont.id = 0;

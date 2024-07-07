@@ -49,7 +49,7 @@ class C4Network2Client
 	friend class C4Network2ClientList;
 
 public:
-	C4Network2Client(C4Client *pClient);
+	C4Network2Client(std::shared_ptr<spdlog::logger> logger, C4Client *pClient);
 	~C4Network2Client();
 
 protected:
@@ -60,6 +60,8 @@ protected:
 
 		ClientAddress(const C4Network2Address &addr) noexcept : Addr{addr} {}
 	};
+
+	std::shared_ptr<spdlog::logger> logger;
 
 	// client data
 	C4Client *pClient;
@@ -160,6 +162,7 @@ protected:
 	C4Network2Client *pLocal;
 	C4ClientList *pClientList;
 	bool fHost;
+	std::shared_ptr<spdlog::logger> logger;
 
 public:
 	C4Network2Client *GetClientByID(int32_t iID) const;
@@ -170,7 +173,7 @@ public:
 	C4Network2Client *GetHost();
 	C4Network2Client *GetNextClient(C4Network2Client *pClient);
 
-	void Init(C4ClientList *pClientList, bool fHost);
+	void Init(std::shared_ptr<spdlog::logger> logger, C4ClientList *pClientList, bool fHost);
 	C4Network2Client *RegClient(C4Client *pClient);
 	void DeleteClient(C4Network2Client *pClient);
 	void Clear();

@@ -28,7 +28,7 @@
 #endif
 
 #include <C4Log.h>
-#include "StdResStr2.h"
+#include "C4ResStrTable.h"
 
 C4GroupSetNode::C4GroupSetNode(C4GroupSet &rParent, C4GroupSetNode *pPrev, C4Group &rGroup, bool fGrpOwned, int32_t id)
 {
@@ -290,13 +290,13 @@ C4Group *C4GroupSet::RegisterParentFolders(const char *szScenFilename)
 			{
 				if (!pGroup->OpenAsChild(pParentGroup, szParentfolder + iPos))
 				{
-					LogFatal(FormatString("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), szParentfolder + iPos).getData());
+					LogFatalNTr("{}: {}", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), szParentfolder + iPos);
 					delete pGroup; return nullptr;
 				}
 			}
 			else if (!pGroup->Open(szParentfolder + iPos))
 			{
-				LogFatal(FormatString("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), szParentfolder + iPos).getData());
+				LogFatalNTr("{}: {}", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), szParentfolder + iPos);
 				delete pGroup; return nullptr;
 			}
 			// set this group as new parent
@@ -309,7 +309,7 @@ C4Group *C4GroupSet::RegisterParentFolders(const char *szScenFilename)
 				iContentsMask = C4GSCnt_Directory;
 			if (!RegisterGroup(*pParentGroup, true, C4GSPrio_Folder + iGroupIndex++, iContentsMask))
 			{
-				delete pParentGroup; LogFatal("RegGrp: internal error"); return nullptr;
+				delete pParentGroup; LogFatalNTr("RegGrp: internal error"); return nullptr;
 			}
 			// advance by file name length
 			iPos += SLen(szParentfolder + iPos);

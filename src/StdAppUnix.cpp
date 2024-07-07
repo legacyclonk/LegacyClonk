@@ -118,7 +118,7 @@ void CStdApp::Init(const int argc, char **const argv)
 	{
 		xf86vmode_major_version = -1;
 		xf86vmode_minor_version = 0;
-		Log("XF86VidMode Extension missing, resolution switching will not work");
+		LogNTr(spdlog::level::err, "XF86VidMode Extension missing, resolution switching will not work");
 	}
 
 	// So a repeated keypress-event is not preceded with a keyrelease.
@@ -129,7 +129,7 @@ void CStdApp::Init(const int argc, char **const argv)
 	inputMethod = XOpenIM(dpy, nullptr, nullptr, nullptr);
 	if (!inputMethod)
 	{
-		Log("Failed to open input method");
+		LogNTr(spdlog::level::err, "Failed to open input method");
 	}
 
 	const char *names[]{"CLIPBOARD"};
@@ -368,7 +368,7 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 	switch (StdSync::Poll(fds, (checkTimer || timeout != INFINITE) ? tv.tv_usec / 1000 : StdSync::Infinite))
 	{
 	case -1:
-		LogF("poll error: %s", std::strerror(errno));
+		LogNTr(spdlog::level::err, "poll error: {}", std::strerror(errno));
 		return HR_Failure;
 
 	// timeout

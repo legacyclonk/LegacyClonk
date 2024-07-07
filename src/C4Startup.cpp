@@ -95,22 +95,22 @@ bool C4StartupGraphics::InitFonts()
 	const char *szFont = Config.General.RXFontName;
 	if (!Game.FontLoader.InitFont(BookFontCapt, szFont, C4FontLoader::C4FT_Caption, Config.General.RXFontSize, &Game.GraphicsResource.Files, false))
 	{
-		LogFatal("Font Error (1)"); return false;
+		LogFatalNTr("Font Error (1)"); return false;
 	}
 	Game.SetInitProgress(85);
 	if (!Game.FontLoader.InitFont(BookFont, szFont, C4FontLoader::C4FT_Main, Config.General.RXFontSize, &Game.GraphicsResource.Files, false))
 	{
-		LogFatal("Font Error (2)"); return false;
+		LogFatalNTr("Font Error (2)"); return false;
 	}
 	Game.SetInitProgress(90);
 	if (!Game.FontLoader.InitFont(BookFontTitle, szFont, C4FontLoader::C4FT_Title, Config.General.RXFontSize, &Game.GraphicsResource.Files, false))
 	{
-		LogFatal("Font Error (3)"); return false;
+		LogFatalNTr("Font Error (3)"); return false;
 	}
 	Game.SetInitProgress(95);
 	if (!Game.FontLoader.InitFont(BookSmallFont, szFont, C4FontLoader::C4FT_MainSmall, Config.General.RXFontSize, &Game.GraphicsResource.Files, false))
 	{
-		LogFatal("Font Error (4)"); return false;
+		LogFatalNTr("Font Error (4)"); return false;
 	}
 	return true;
 }
@@ -273,24 +273,38 @@ bool C4Startup::DoStartup()
 	if (!SwitchDialog(eLastDlgID)) return false;
 
 	// show error dlg if restart
-	if (Game.fQuitWithError || GetFatalError())
+	if (const std::string fatalError{Application.LogSystem.GetFatalErrorString()}; Game.fQuitWithError || !fatalError.empty())
 	{
 		Game.fQuitWithError = false;
 		// preferred: Show fatal error
-		const char *szErr = GetFatalError();
-		if (szErr)
+		if (!fatalError.empty())
 		{
-			Game.pGUI->ShowMessage(szErr, LoadResStr("IDS_DLG_LOG"), C4GUI::Ico_Error);
+			Application.LogSystem.ClearRingbuffer();
+			Game.pGUI->ShowMessage(fatalError.c_str(), LoadResStr(C4ResStrTableKey::IDS_DLG_LOG), C4GUI::Ico_Error);
 		}
 		else
 		{
-			// fallback to showing complete log
-			StdStrBuf sLastLog;
-			if (GetLogSection(Game.StartupLogPos, Game.QuitLogPos - Game.StartupLogPos, sLastLog))
-				if (!sLastLog.isNull())
-					Game.pGUI->ShowRemoveDlg(new C4GUI::InfoDialog(LoadResStr("IDS_DLG_LOG"), 10, sLastLog));
+			if (const auto logEntries = Application.LogSystem.GetRingbufferLogEntries(); !logEntries.empty())
+			{
+				std::string logEntriesString;
+				for (const auto &error : logEntries)
+				{
+					if (!logEntriesString.empty())
+					{
+						logEntriesString += '|';
+					}
+
+					logEntriesString += error;
+				}
+
+				Game.pGUI->ShowRemoveDlg(new C4GUI::InfoDialog(LoadResStr(C4ResStrTableKey::IDS_DLG_LOG), 10, StdStrBuf{logEntriesString.c_str(), logEntriesString.size(), false}));
+			}
+			else
+			{
+				Game.pGUI->ShowMessage("(no error)", LoadResStr(C4ResStrTableKey::IDS_DLG_LOG), C4GUI::Ico_Error);
+			}
 		}
-		ResetFatalError();
+		Application.LogSystem.ResetFatalErrors();
 	}
 
 	// while state startup: keep looping
@@ -325,7 +339,7 @@ bool C4Startup::DoStartup()
 
 	// reinit keyboard to reflect any config changes that might have been done
 	// this is a good time to do it, because no GUI dialogs are opened
-	if (Game.pGUI) if (!Game.InitKeyboard()) LogFatal(LoadResStr("IDS_ERR_NOKEYBOARD"));
+	if (Game.pGUI) if (!Game.InitKeyboard()) LogFatal(C4ResStrTableKey::IDS_ERR_NOKEYBOARD);
 
 	// all okay; return whether startup finished with a game start selection
 	return !fAborted;
@@ -342,7 +356,7 @@ C4Startup *C4Startup::EnsureLoaded()
 		// load startup specific gfx
 		if (!pStartup->Graphics.Init())
 		{
-			LogFatal(LoadResStr("IDS_ERR_NOGFXSYS")); delete pStartup; return nullptr;
+			LogFatal(C4ResStrTableKey::IDS_ERR_NOGFXSYS); delete pStartup; return nullptr;
 		}
 	}
 	return pInstance;

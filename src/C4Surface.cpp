@@ -28,7 +28,7 @@
 #include <StdGL.h>
 #include <StdJpeg.h>
 #include <StdPNG.h>
-#include "StdResStr2.h"
+#include "C4ResStrTable.h"
 #include <StdDDraw2.h>
 
 #include <algorithm>
@@ -893,7 +893,7 @@ bool C4Surface::Load(C4Group &hGroup, const char *szFilename, bool fOwnPal, bool
 	if (!hGroup.AccessEntry(szFilename))
 	{
 		// file not found
-		if (!fNoErrIfNotFound) LogF("%s: %s%c%s", LoadResStr("IDS_PRC_FILENOTFOUND"), hGroup.GetFullName().getData(), DirectorySeparator, szFilename);
+		if (!fNoErrIfNotFound) LogNTr(spdlog::level::err, "{}: {}" DirSep "{}", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), hGroup.GetFullName().getData(), szFilename);
 		return false;
 	}
 	// determine file type by file extension and load accordingly
@@ -907,7 +907,7 @@ bool C4Surface::Load(C4Group &hGroup, const char *szFilename, bool fOwnPal, bool
 		fSuccess = !!Read(hGroup, fOwnPal);
 	// loading error? log!
 	if (!fSuccess)
-		LogF("%s: %s%c%s", LoadResStr("IDS_ERR_NOFILE"), hGroup.GetFullName().getData(), DirectorySeparator, szFilename);
+		LogNTr(spdlog::level::err, "{}: {}" DirSep "{}", LoadResStr(C4ResStrTableKey::IDS_ERR_NOFILE), hGroup.GetFullName().getData(), szFilename);
 	// done, success
 	return fSuccess;
 }
@@ -931,7 +931,7 @@ bool C4Surface::ReadPNG(CStdStream &hGroup)
 	}
 	catch (const std::runtime_error &e)
 	{
-		LogF("Could not create surface from PNG file: %s", e.what());
+		LogNTr(spdlog::level::err, "Could not create surface from PNG file: {}", e.what());
 		bmp.reset();
 	}
 	// free file data
@@ -1061,7 +1061,7 @@ bool C4Surface::ReadJPEG(CStdStream &hGroup)
 	}
 	catch (const std::runtime_error &e)
 	{
-		LogF("Could not create surface from JPEG file: %s", e.what());
+		LogNTr(spdlog::level::err, "Could not create surface from JPEG file: {}", e.what());
 	}
 
 	// unlock

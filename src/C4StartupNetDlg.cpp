@@ -32,6 +32,7 @@
 #include "C4GuiTabular.h"
 
 #include <cassert>
+#include <format>
 
 // C4StartupNetListEntry
 
@@ -125,9 +126,9 @@ const char *C4StartupNetListEntry::GetQueryTypeName(QueryType eQueryType)
 {
 	switch (eQueryType)
 	{
-	case NRQT_GameDiscovery: return LoadResStr("IDS_NET_QUERY_LOCALNET");
-	case NRQT_Masterserver:  return LoadResStr("IDS_NET_QUERY_MASTERSRV");
-	case NRQT_DirectJoin:    return LoadResStr("IDS_NET_QUERY_DIRECTJOIN");
+	case NRQT_GameDiscovery: return LoadResStr(C4ResStrTableKey::IDS_NET_QUERY_LOCALNET);
+	case NRQT_Masterserver:  return LoadResStr(C4ResStrTableKey::IDS_NET_QUERY_MASTERSRV);
+	case NRQT_DirectJoin:    return LoadResStr(C4ResStrTableKey::IDS_NET_QUERY_DIRECTJOIN);
 	case NRQT_Unknown:
 		assert(!"Unknown QueryType");
 		return "";
@@ -155,8 +156,8 @@ void C4StartupNetListEntry::SetRefQuery(const char *szAddress, enum QueryType eQ
 		return;
 	}
 	// set info
-	sInfoText[0].Format(LoadResStr("IDS_NET_CLIENTONNET"), GetQueryTypeName(eQueryType), pRefClient->getServerName());
-	sInfoText[1].Copy(LoadResStr("IDS_NET_INFOQUERY"));
+	sInfoText[0].Copy(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENTONNET, GetQueryTypeName(eQueryType), pRefClient->getServerName()).c_str());
+	sInfoText[1].Copy(LoadResStr(C4ResStrTableKey::IDS_NET_INFOQUERY));
 	UpdateSmallState(); UpdateText();
 	pRefClient->SetNotify(&Application.InteractiveThread);
 	// masterserver: always on top
@@ -198,7 +199,7 @@ bool C4StartupNetListEntry::Execute()
 			const_cast<C4Facet &>(static_cast<const C4Facet &>(pIcon->GetFacet())) = static_cast<const C4Facet &>(C4Startup::Get()->Graphics.fctNetGetRef);
 			pIcon->SetAnimated(true, 1);
 			pIcon->SetBounds(rctIconLarge);
-			sInfoText[1].Copy(LoadResStr("IDS_NET_INFOQUERY"));
+			sInfoText[1].Copy(LoadResStr(C4ResStrTableKey::IDS_NET_INFOQUERY));
 			iTimeout = 0;
 			QueryReferences();
 			// always keep item even if query failed
@@ -216,7 +217,7 @@ bool C4StartupNetListEntry::Execute()
 		// still requesting - but do not wait forever
 		if (time(nullptr) >= iRequestTimeout)
 		{
-			SetError(LoadResStr("IDS_NET_ERR_REFREQTIMEOUT"), TT_RefReqWait);
+			SetError(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_REFREQTIMEOUT), TT_RefReqWait);
 			pRefClient->Cancel("Timeout");
 			OnRequestFailed();
 		}
@@ -255,14 +256,14 @@ bool C4StartupNetListEntry::OnReference()
 	if (!pRefClient->GetReferences(ppNewRefs, iNewRefCount))
 	{
 		// References could be retrieved but not read
-		SetError(LoadResStr("IDS_NET_ERR_REFINVALID"), TT_RefReqWait);
+		SetError(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_REFINVALID), TT_RefReqWait);
 		delete[] ppNewRefs;
 		return true;
 	}
 	if (!iNewRefCount)
 	{
 		// References retrieved but no game open: Inform user
-		sInfoText[1].Copy(LoadResStr("IDS_NET_INFONOGAME"));
+		sInfoText[1].Copy(LoadResStr(C4ResStrTableKey::IDS_NET_INFONOGAME));
 		UpdateText();
 	}
 	else
@@ -275,7 +276,7 @@ bool C4StartupNetListEntry::OnReference()
 			iPlayerCount += ppNewRefs[i]->Parameters.PlayerInfos.GetActivePlayerCount(false);
 		}
 		// Update text accordingly
-		sInfoText[1].Format(LoadResStr("IDS_NET_INFOGAMES"), static_cast<int>(iNewRefCount), iPlayerCount);
+		sInfoText[1].Copy(LoadResStr(C4ResStrTableKey::IDS_NET_INFOGAMES, static_cast<int>(iNewRefCount), iPlayerCount).c_str());
 		UpdateText();
 	}
 	delete[] ppNewRefs;
@@ -285,7 +286,7 @@ bool C4StartupNetListEntry::OnReference()
 		// show message of the day, if any
 		int32_t iMasterServerMessages = 0;
 		if (pRefClient->GetMessageOfTheDay() && *pRefClient->GetMessageOfTheDay())
-			sInfoText[1 + ++iMasterServerMessages].Format(LoadResStr("IDS_NET_MOTD"), pRefClient->GetMessageOfTheDay());
+			sInfoText[1 + ++iMasterServerMessages].Copy(LoadResStr(C4ResStrTableKey::IDS_NET_MOTD, pRefClient->GetMessageOfTheDay()).c_str());
 		const char *szMotDLink = pRefClient->GetMessageOfTheDayHyperlink();
 		if (szMotDLink && *szMotDLink)
 		{
@@ -305,14 +306,13 @@ bool C4StartupNetListEntry::OnReference()
 			if (newLeagueServer && !SEqual(newLeagueServer, Config.Network.ServerAddress))
 			{
 				// this is a new redirect. Inform the user and auto-change servers if desired
-				StdStrBuf sMessage;
-				sMessage.Format(LoadResStr("IDS_NET_SERVERREDIRECTMSG"), newLeagueServer);
-				if (GetScreen()->ShowMessageModal(sMessage.getData(), LoadResStr("IDS_NET_SERVERREDIRECT"), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_OfficialServer))
+				const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_SERVERREDIRECTMSG, newLeagueServer)};
+				if (GetScreen()->ShowMessageModal(message.c_str(), LoadResStr(C4ResStrTableKey::IDS_NET_SERVERREDIRECT), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_OfficialServer))
 				{
 					// apply new server setting
 					SCopy(newLeagueServer, Config.Network.ServerAddress, CFG_MaxString);
 					Config.Save();
-					GetScreen()->ShowMessageModal(LoadResStr("IDS_NET_SERVERREDIRECTDONE"), LoadResStr("IDS_NET_SERVERREDIRECT"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_OfficialServer);
+					GetScreen()->ShowMessageModal(LoadResStr(C4ResStrTableKey::IDS_NET_SERVERREDIRECTDONE), LoadResStr(C4ResStrTableKey::IDS_NET_SERVERREDIRECT), C4GUI::MessageDialog::btnOK, C4GUI::Ico_OfficialServer);
 					SetTimeout(TT_Refresh);
 					return true;
 				}
@@ -451,45 +451,45 @@ void C4StartupNetListEntry::SetReference(C4Network2Reference *pRef)
 	pIcon->SetBounds(rctIconSmall);
 	int32_t iPlrCnt = pRef->Parameters.PlayerInfos.GetActivePlayerCount(false);
 	C4Client *pHost = pRef->Parameters.Clients.getHost();
-	sInfoText[0].Format(LoadResStr("IDS_NET_REFONCLIENT"), pRef->getTitle(), pHost ? pHost->getName() : "unknown");
-	sInfoText[1].Format(LoadResStr("IDS_NET_INFOPLRSGOALDESC"),
+	sInfoText[0].Copy(LoadResStr(C4ResStrTableKey::IDS_NET_REFONCLIENT, pRef->getTitle(), pHost ? pHost->getName() : "unknown").c_str());
+	sInfoText[1].Copy(LoadResStr(C4ResStrTableKey::IDS_NET_INFOPLRSGOALDESC,
 		static_cast<int>(iPlrCnt),
 		static_cast<int>(pRef->Parameters.MaxPlayers),
-		pRef->Parameters.GetGameGoalString().getData(),
-		StdStrBuf(pRef->getGameStatus().getDescription(), true).getData());
+		pRef->Parameters.GetGameGoalString(),
+		StdStrBuf(pRef->getGameStatus().getDescription(), true).getData()).c_str());
 	if (pRef->getTime() > 0)
 	{
-		StdStrBuf strDuration; strDuration.Format("%02d:%02d:%02d", pRef->getTime() / 3600, (pRef->getTime() % 3600) / 60, pRef->getTime() % 60);
-		sInfoText[1].Append(" - "); sInfoText[1].Append(strDuration);
+		const std::string duration{std::format("{:02}:{:02}:{:02}", pRef->getTime() / 3600, (pRef->getTime() % 3600) / 60, pRef->getTime() % 60)};
+		sInfoText[1].Append(" - "); sInfoText[1].Append(duration.c_str());
 	}
-	sInfoText[2].Format(LoadResStr("IDS_DESC_VERSION"), pRef->getGameVersion().GetString().getData());
-	sInfoText[3].Format("%s: %s", LoadResStr("IDS_CTL_COMMENT"), pRef->getComment());
+	sInfoText[2].Copy(LoadResStr(C4ResStrTableKey::IDS_DESC_VERSION, pRef->getGameVersion().GetString()).c_str());
+	sInfoText[3].Copy(std::format("{}: {}", LoadResStr(C4ResStrTableKey::IDS_CTL_COMMENT), pRef->getComment()).c_str());
 	// password
 	if (pRef->isPasswordNeeded())
-		AddStatusIcon(C4GUI::Ico_Ex_LockedFrontal, LoadResStr("IDS_NET_INFOPASSWORD"));
+		AddStatusIcon(C4GUI::Ico_Ex_LockedFrontal, LoadResStr(C4ResStrTableKey::IDS_NET_INFOPASSWORD));
 	// league
 	if (pRef->Parameters.isLeague())
 		AddStatusIcon(C4GUI::Ico_Ex_League, pRef->Parameters.getLeague());
 	// lobby active
 	if (pRef->getGameStatus().isLobbyActive())
-		AddStatusIcon(C4GUI::Ico_Lobby, LoadResStr("IDS_DESC_EXPECTING"));
+		AddStatusIcon(C4GUI::Ico_Lobby, LoadResStr(C4ResStrTableKey::IDS_DESC_EXPECTING));
 	// game running
 	if (pRef->getGameStatus().isPastLobby())
-		AddStatusIcon(C4GUI::Ico_GameRunning, LoadResStr("IDS_NET_INFOINPROGR"));
+		AddStatusIcon(C4GUI::Ico_GameRunning, LoadResStr(C4ResStrTableKey::IDS_NET_INFOINPROGR));
 	// runtime join
 	if (pRef->isJoinAllowed() && pRef->getGameStatus().isPastLobby()) // A little workaround to determine RuntimeJoin...
-		AddStatusIcon(C4GUI::Ico_RuntimeJoin, LoadResStr("IDS_NET_RUNTIMEJOINFREE"));
+		AddStatusIcon(C4GUI::Ico_RuntimeJoin, LoadResStr(C4ResStrTableKey::IDS_NET_RUNTIMEJOINFREE));
 	// fair crew
 	if (pRef->Parameters.UseFairCrew)
-		AddStatusIcon(C4GUI::Ico_Ex_FairCrew, LoadResStr("IDS_CTL_FAIRCREW_DESC"));
+		AddStatusIcon(C4GUI::Ico_Ex_FairCrew, LoadResStr(C4ResStrTableKey::IDS_CTL_FAIRCREW_DESC));
 	// official server
 	if (pRef->isOfficialServer() && !Config.Network.UseAlternateServer) // Offical server icon is only displayed if references are obtained from official league server
 	{
 		fIsImportant = true;
-		AddStatusIcon(C4GUI::Ico_OfficialServer, LoadResStr("IDS_NET_OFFICIALSERVER"));
+		AddStatusIcon(C4GUI::Ico_OfficialServer, LoadResStr(C4ResStrTableKey::IDS_NET_OFFICIALSERVER));
 	}
 	// list participating player names
-	sInfoText[4].Format("%s: %s", LoadResStr("IDS_CTL_PLAYER"), iPlrCnt ? pRef->Parameters.PlayerInfos.GetActivePlayerNames(false).getData() : LoadResStr("IDS_CTL_NONE"));
+	sInfoText[4].Copy(std::format("{}: {}", LoadResStr(C4ResStrTableKey::IDS_CTL_PLAYER), iPlrCnt ? pRef->Parameters.PlayerInfos.GetActivePlayerNames(false).getData() : LoadResStr(C4ResStrTableKey::IDS_CTL_NONE)).c_str());
 	// disabled if join is not possible for some reason
 	C4GameVersion verThis;
 	if (!pRef->isJoinAllowed() || !(pRef->getGameVersion() == verThis))
@@ -618,7 +618,7 @@ C4Network2Reference *C4StartupNetListEntry::GrabReference()
 
 // C4StartupNetDlg
 
-C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr("IDS_DLG_NETSTART")), iGameDiscoverInterval(0), pMasterserverClient(nullptr), fIsCollapsed(false), fUpdatingList(false), tLastRefresh(0), pChatTitleLabel(nullptr), fIgnoreUpdate(false)
+C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr(C4ResStrTableKey::IDS_DLG_NETSTART)), iGameDiscoverInterval(0), pMasterserverClient(nullptr), fIsCollapsed(false), fUpdatingList(false), tLastRefresh(0), pChatTitleLabel(nullptr), fIgnoreUpdate(false)
 {
 	// key bindings
 	C4CustomKey::CodeList keys;
@@ -648,12 +648,12 @@ C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr("IDS_DLG_NETSTART")
 	if (C4ChatDlg::IsChatEnabled())
 	{
 		btnGameList = new C4GUI::CallbackButton<C4StartupNetDlg, C4GUI::IconButton>(C4GUI::Ico_Ex_GameList, caLeftBtnArea.GetFromTop(iIconSize, iIconSize), '\0', &C4StartupNetDlg::OnBtnGameList);
-		btnGameList->SetToolTip(LoadResStr("IDS_DESC_SHOWSAVAILABLENETWORKGAME"));
-		btnGameList->SetText(LoadResStr("IDS_BTN_GAMES"));
+		btnGameList->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_SHOWSAVAILABLENETWORKGAME));
+		btnGameList->SetText(LoadResStr(C4ResStrTableKey::IDS_BTN_GAMES));
 		AddElement(btnGameList);
 		btnChat = new C4GUI::CallbackButton<C4StartupNetDlg, C4GUI::IconButton>(C4GUI::Ico_Ex_Chat, caLeftBtnArea.GetFromTop(iIconSize, iIconSize), '\0', &C4StartupNetDlg::OnBtnChat);
-		btnChat->SetToolTip(LoadResStr("IDS_DESC_CONNECTSTOANIRCCHATSERVER"));
-		btnChat->SetText(LoadResStr("IDS_BTN_CHAT"));
+		btnChat->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_CONNECTSTOANIRCCHATSERVER));
+		btnChat->SetText(LoadResStr(C4ResStrTableKey::IDS_BTN_CHAT));
 		AddElement(btnChat);
 	}
 	else btnChat = nullptr;
@@ -668,7 +668,7 @@ C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr("IDS_DLG_NETSTART")
 	C4GUI::Tabular::Sheet *pSheetGameList = pMainTabular->AddSheet(nullptr);
 	C4GUI::ComponentAligner caGameList(pSheetGameList->GetContainedClientRect(), 0, 0, false);
 	C4GUI::WoodenLabel *pGameListLbl; int32_t iCaptHgt = C4GUI::WoodenLabel::GetDefaultHeight(&C4GUI::GetRes()->TextFont);
-	pGameListLbl = new C4GUI::WoodenLabel(LoadResStr("IDS_NET_GAMELIST"), caGameList.GetFromTop(iCaptHgt), C4GUI_Caption2FontClr, &C4GUI::GetRes()->TextFont, ALeft);
+	pGameListLbl = new C4GUI::WoodenLabel(LoadResStr(C4ResStrTableKey::IDS_NET_GAMELIST), caGameList.GetFromTop(iCaptHgt), C4GUI_Caption2FontClr, &C4GUI::GetRes()->TextFont, ALeft);
 	pSheetGameList->AddElement(pGameListLbl);
 	pGameSelList = new C4GUI::ListBox(caGameList.GetFromTop(caGameList.GetHeight() - iCaptHgt));
 	pGameSelList->SetDecoration(true, nullptr, true, true);
@@ -678,11 +678,11 @@ C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr("IDS_DLG_NETSTART")
 	pSheetGameList->AddElement(pGameSelList);
 	C4GUI::ComponentAligner caIP(caGameList.GetAll(), 0, 0);
 	C4GUI::WoodenLabel *pIPLbl;
-	const char *szIPLblText = LoadResStr("IDS_NET_IP");
+	const char *szIPLblText = LoadResStr(C4ResStrTableKey::IDS_NET_IP);
 	int32_t iIPWdt = 100, Q;
 	C4GUI::GetRes()->TextFont.GetTextExtent(szIPLblText, iIPWdt, Q, true);
 	pIPLbl = new C4GUI::WoodenLabel(szIPLblText, caIP.GetFromLeft(iIPWdt + 10), C4GUI_Caption2FontClr, &C4GUI::GetRes()->TextFont);
-	const char *szIPTip = LoadResStr("IDS_NET_IP_DESC");
+	const char *szIPTip = LoadResStr(C4ResStrTableKey::IDS_NET_IP_DESC);
 	pIPLbl->SetToolTip(szIPTip);
 	pSheetGameList->AddElement(pIPLbl);
 	pJoinAddressEdt = new C4GUI::CallbackEdit<C4StartupNetDlg>(caIP.GetAll(), this, &C4StartupNetDlg::OnJoinAddressEnter);
@@ -708,24 +708,24 @@ C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr("IDS_DLG_NETSTART")
 
 	// config area
 	btnInternet = new C4GUI::CallbackButton<C4StartupNetDlg, C4GUI::IconButton>(Config.Network.MasterServerSignUp ? C4GUI::Ico_Ex_InternetOn : C4GUI::Ico_Ex_InternetOff, caConfigArea.GetFromTop(iIconSize, iIconSize), '\0', &C4StartupNetDlg::OnBtnInternet);
-	btnInternet->SetToolTip(LoadResStr("IDS_DLGTIP_SEARCHINTERNETGAME"));
-	btnInternet->SetText(LoadResStr("IDS_CTL_INETSERVER"));
+	btnInternet->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_SEARCHINTERNETGAME));
+	btnInternet->SetText(LoadResStr(C4ResStrTableKey::IDS_CTL_INETSERVER));
 	AddElement(btnInternet);
 	btnRecord = new C4GUI::CallbackButton<C4StartupNetDlg, C4GUI::IconButton>(Config.General.Record ? C4GUI::Ico_Ex_RecordOn : C4GUI::Ico_Ex_RecordOff, caConfigArea.GetFromTop(iIconSize, iIconSize), '\0', &C4StartupNetDlg::OnBtnRecord);
-	btnRecord->SetToolTip(LoadResStr("IDS_DLGTIP_RECORD"));
-	btnRecord->SetText(LoadResStr("IDS_CTL_RECORD"));
+	btnRecord->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_RECORD));
+	btnRecord->SetText(LoadResStr(C4ResStrTableKey::IDS_CTL_RECORD));
 	AddElement(btnRecord);
 
 	// button area
 	C4GUI::CallbackButton<C4StartupNetDlg> *btn;
-	AddElement(btn = new C4GUI::CallbackButton<C4StartupNetDlg>(LoadResStr("IDS_BTN_BACK"), caButtons.GetFromLeft(iButtonWidth), &C4StartupNetDlg::OnBackBtn));
-	btn->SetToolTip(LoadResStr("IDS_DLGTIP_BACKMAIN"));
-	AddElement(btnRefresh = new C4GUI::CallbackButton<C4StartupNetDlg>(LoadResStr("IDS_BTN_RELOAD"), caButtons.GetFromLeft(iButtonWidth), &C4StartupNetDlg::OnRefreshBtn));
-	btnRefresh->SetToolTip(LoadResStr("IDS_NET_RELOAD_DESC"));
-	AddElement(btnJoin = new C4GUI::CallbackButton<C4StartupNetDlg>(LoadResStr("IDS_NET_JOINGAME_BTN"), caButtons.GetFromLeft(iButtonWidth), &C4StartupNetDlg::OnJoinGameBtn));
-	btnJoin->SetToolTip(LoadResStr("IDS_NET_JOINGAME_DESC"));
-	AddElement(btn = new C4GUI::CallbackButton<C4StartupNetDlg>(LoadResStr("IDS_NET_NEWGAME"), caButtons.GetFromLeft(iButtonWidth), &C4StartupNetDlg::OnCreateGameBtn));
-	btn->SetToolTip(LoadResStr("IDS_NET_NEWGAME_DESC"));
+	AddElement(btn = new C4GUI::CallbackButton<C4StartupNetDlg>(LoadResStr(C4ResStrTableKey::IDS_BTN_BACK), caButtons.GetFromLeft(iButtonWidth), &C4StartupNetDlg::OnBackBtn));
+	btn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_BACKMAIN));
+	AddElement(btnRefresh = new C4GUI::CallbackButton<C4StartupNetDlg>(LoadResStr(C4ResStrTableKey::IDS_BTN_RELOAD), caButtons.GetFromLeft(iButtonWidth), &C4StartupNetDlg::OnRefreshBtn));
+	btnRefresh->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_NET_RELOAD_DESC));
+	AddElement(btnJoin = new C4GUI::CallbackButton<C4StartupNetDlg>(LoadResStr(C4ResStrTableKey::IDS_NET_JOINGAME_BTN), caButtons.GetFromLeft(iButtonWidth), &C4StartupNetDlg::OnJoinGameBtn));
+	btnJoin->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_NET_JOINGAME_DESC));
+	AddElement(btn = new C4GUI::CallbackButton<C4StartupNetDlg>(LoadResStr(C4ResStrTableKey::IDS_NET_NEWGAME), caButtons.GetFromLeft(iButtonWidth), &C4StartupNetDlg::OnCreateGameBtn));
+	btn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_NET_NEWGAME_DESC));
 
 	// initial dlg mode
 	UpdateDlgMode();
@@ -904,8 +904,7 @@ void C4StartupNetDlg::UpdateList(bool fGotReference)
 	C4NetIO::addr_t Discover;
 	while (DiscoverClient.PopDiscover(Discover))
 	{
-		StdStrBuf Address(Discover.ToString());
-		AddReferenceQuery(Address.getData(), C4StartupNetListEntry::NRQT_GameDiscovery);
+		AddReferenceQuery(Discover.ToString().c_str(), C4StartupNetListEntry::NRQT_GameDiscovery);
 	}
 
 	// check whether view needs to be collapsed or uncollapsed
@@ -991,12 +990,12 @@ bool C4StartupNetDlg::DoOK()
 	}
 	// get currently selected item
 	C4GUI::Element *pSelection = pGameSelList->GetSelectedItem();
-	StdStrBuf strNoJoin(LoadResStr("IDS_NET_NOJOIN"));
+	StdStrBuf strNoJoin(LoadResStr(C4ResStrTableKey::IDS_NET_NOJOIN));
 	if (!pSelection)
 	{
 		// no ref selected: Oh noes!
 		Game.pGUI->ShowMessageModal(
-			LoadResStr("IDS_NET_NOJOIN_NOREF"),
+			LoadResStr(C4ResStrTableKey::IDS_NET_NOJOIN_NOREF),
 			strNoJoin.getData(),
 			C4GUI::MessageDialog::btnOK,
 			C4GUI::Ico_Error);
@@ -1008,7 +1007,7 @@ bool C4StartupNetDlg::DoOK()
 	{
 		// erroneous ref selected: Oh noes!
 		Game.pGUI->ShowMessageModal(
-			FormatString(LoadResStr("IDS_NET_NOJOIN_BADREF"), szError).getData(),
+			LoadResStr(C4ResStrTableKey::IDS_NET_NOJOIN_BADREF, szError).c_str(),
 			strNoJoin.getData(),
 			C4GUI::MessageDialog::btnOK,
 			C4GUI::Ico_Error);
@@ -1020,7 +1019,7 @@ bool C4StartupNetDlg::DoOK()
 	{
 		// something strange has been selected (e.g., a masterserver entry). Error.
 		Game.pGUI->ShowMessageModal(
-			LoadResStr("IDS_NET_NOJOIN_NOREF"),
+			LoadResStr(C4ResStrTableKey::IDS_NET_NOJOIN_NOREF),
 			strNoJoin.getData(),
 			C4GUI::MessageDialog::btnOK,
 			C4GUI::Ico_Error);
@@ -1034,9 +1033,9 @@ bool C4StartupNetDlg::DoOK()
 		if (!(pRef->getGameVersion() == verThis))
 		{
 			Game.pGUI->ShowMessageModal(
-				FormatString(LoadResStr("IDS_NET_NOJOIN_BADVER"),
-					pRef->getGameVersion().GetString().getData(),
-					verThis.GetString().getData()).getData(),
+				LoadResStr(C4ResStrTableKey::IDS_NET_NOJOIN_BADVER,
+					pRef->getGameVersion().GetString(),
+					verThis.GetString()).c_str(),
 				strNoJoin.getData(),
 				C4GUI::MessageDialog::btnOK,
 				C4GUI::Ico_Error);
@@ -1046,7 +1045,7 @@ bool C4StartupNetDlg::DoOK()
 		if (!pRef->isJoinAllowed())
 		{
 			if (!Game.pGUI->ShowMessageModal(
-				LoadResStr("IDS_NET_NOJOIN_NORUNTIME"),
+				LoadResStr(C4ResStrTableKey::IDS_NET_NOJOIN_NORUNTIME),
 				strNoJoin.getData(),
 				C4GUI::MessageDialog::btnYes | C4GUI::MessageDialog::btnNo,
 				C4GUI::Ico_Error))
@@ -1094,9 +1093,9 @@ void C4StartupNetDlg::DoRefresh()
 	// (Re-)Start discovery
 	if (!DiscoverClient.StartDiscovery())
 	{
-		StdStrBuf strNoDiscovery(LoadResStr("IDS_NET_NODISCOVERY"));
+		StdStrBuf strNoDiscovery(LoadResStr(C4ResStrTableKey::IDS_NET_NODISCOVERY));
 		Game.pGUI->ShowMessageModal(
-			FormatString(LoadResStr("IDS_NET_NODISCOVERY_DESC"), DiscoverClient.GetError()).getData(),
+			LoadResStr(C4ResStrTableKey::IDS_NET_NODISCOVERY_DESC, DiscoverClient.GetError()).c_str(),
 			strNoDiscovery.getData(),
 			C4GUI::MessageDialog::btnAbort,
 			C4GUI::Ico_Error);
@@ -1164,5 +1163,5 @@ void C4StartupNetDlg::OnReferenceEntryAdd(C4StartupNetListEntry *pEntry)
 void C4StartupNetDlg::OnChatTitleChange(const StdStrBuf &sNewTitle)
 {
 	// update label
-	if (pChatTitleLabel) pChatTitleLabel->SetText(FormatString("%s - %s", LoadResStr("IDS_DLG_CHAT"), sNewTitle.getData()).getData());
+	if (pChatTitleLabel) pChatTitleLabel->SetText(std::format("{} - {}", LoadResStr(C4ResStrTableKey::IDS_DLG_CHAT), sNewTitle.getData()).c_str());
 }

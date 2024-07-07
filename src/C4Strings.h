@@ -20,7 +20,10 @@
 
 #include <cstddef>
 #include <cstdio>
+#include <format>
 #include <limits>
+#include <span>
+#include <string>
 #include <string_view>
 #include <utility>
 
@@ -100,29 +103,35 @@ int SLineGetCharacters(const char *szText, const char *cpPosition);
 // can match strings like  "*Cl?nk*vour" to "Clonk Endeavour"
 bool SWildcardMatchEx(const char *szString, const char *szWildcard);
 
+template<typename Char, typename Traits>
+std::basic_string<Char, Traits> ReplaceInString(std::basic_string_view<Char, Traits> string, std::basic_string_view<Char, Traits> needle, std::basic_string_view<Char, Traits> value)
+{
+	std::basic_string<Char, Traits> result;
+	std::size_t previousPos{0};
+	std::size_t pos{0};
+
+	string.find(needle);
+
+	for (;;)
+	{
+		previousPos = pos;
+		pos = string.find(needle, pos);
+		if (pos == decltype(string)::npos)
+		{
+			return result;
+		}
+
+		result.append(string, previousPos, pos - previousPos);
+		result.append(value);
+		pos += value.size();
+	}
+
+	result.append(string, previousPos, string.size() - previousPos);
+	return result;
+}
+
 #define LineFeed "\x00D\x00A"
 #define EndOfFile "\x020"
-
-// sprintf wrapper
-
-// format string security
-bool IsSafeFormatString(const char *szFmt);
-
-// secure sprintf
-template <std::size_t N, typename... Args>
-inline int ssprintf(char (&str)[N], const char *fmt, Args... args)
-{
-	// Check parameters
-	if (!IsSafeFormatString(fmt))
-	{
-		BREAKPOINT_HERE;
-		fmt = "<UNSAFE FORMAT STRING>";
-	}
-	// Build string
-	int m = snprintf(str, N, fmt, args...);
-	if (m >= N) { m = N - 1; str[m] = 0; }
-	return m;
-}
 
 template<typename Char, typename Traits = std::char_traits<Char>>
 struct C4NullableBasicStringView
@@ -162,3 +171,29 @@ struct C4NullableBasicStringView
 };
 
 using C4NullableStringView = C4NullableBasicStringView<char>;
+
+template<std::size_t N, typename...Args>
+void FormatWithNull(char(&buf)[N], const std::format_string<Args...> fmt, Args&&...args)
+{
+	*std::format_to_n(buf, N - 1, fmt, std::forward<Args>(args)...).out = '\0';
+}
+
+template<std::size_t N, typename...Args>
+void FormatWithNull(std::array<char, N> &buf, const std::format_string<Args...> fmt, Args&&...args)
+{
+	*std::format_to_n(buf.begin(), N - 1, fmt, std::forward<Args>(args)...).out = '\0';
+}
+
+template<std::size_t N, typename... Args>
+void FormatWithNull(const std::span<char, N> buf, const std::format_string<Args...> fmt, Args &&...args)
+{
+	*std::format_to_n(buf.begin(), buf.size() - 1, fmt, std::forward<Args>(args)...).out = '\0';
+}
+
+namespace C4Strings
+{
+
+template<std::integral T>
+inline constexpr std::size_t NumberOfCharactersForDigits{std::numeric_limits<T>::digits10 + 1};
+
+}

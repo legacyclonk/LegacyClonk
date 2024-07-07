@@ -37,9 +37,9 @@ struct C4GameVersion
 		sEngineName.CopyValidated(szEngine); iVer[0] = iVer1; iVer[1] = iVer2; iVer[2] = iVer3; iVer[3] = iVer4; iBuild = iVerBuild;
 	}
 
-	StdStrBuf GetString() const
+	std::string GetString() const
 	{
-		return FormatString("%s %" PRId32 ".%" PRId32 ".%" PRId32 ".%" PRId32 " [%" PRId32 "]", sEngineName.getData(), iVer[0], iVer[1], iVer[2], iVer[3], iBuild);
+		return std::format("{} {}.{}.{}.{} [{}]", sEngineName.getData(), iVer[0], iVer[1], iVer[2], iVer[3], iBuild);
 	}
 
 	bool operator==(const C4GameVersion &rCmp) const

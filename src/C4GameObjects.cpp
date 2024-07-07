@@ -606,7 +606,7 @@ int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 			if (pObj->Contained)
 				if (!pObj->Contained->Contents.GetLink(pObj))
 				{
-					DebugLogF("Error in Objects.txt: Container of #%d is #%d, but not found in contents list!", pObj->Number, pObj->Contained->Number);
+					DebugLog(spdlog::level::err, "Error in Objects.txt: Container of #{} is #{}, but not found in contents list!", pObj->Number, pObj->Contained->Number);
 					pObj->Contained->Contents.Add(pObj, C4ObjectList::stContents);
 				}
 			// all contents must have contained set; otherwise, remove them!
@@ -616,7 +616,7 @@ int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 				// check double links
 				if (pObj->Contents.GetLink(cLnkCont->Obj) != cLnkCont)
 				{
-					DebugLogF("Error in Objects.txt: Double containment of #%d by #%d!", cLnkCont->Obj->Number, pObj->Number);
+					DebugLog(spdlog::level::err, "Error in Objects.txt: Double containment of #{} by #{}!", cLnkCont->Obj->Number, pObj->Number);
 					// this remove-call will only remove the previous (dobuled) link, so cLnkCont should be save
 					pObj->Contents.Remove(cLnkCont->Obj);
 					// contents checked already
@@ -626,7 +626,7 @@ int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 				if ((pObj2 = cLnkCont->Obj)->Status)
 					if (pObj2->Contained != pObj)
 					{
-						DebugLogF("Error in Objects.txt: Object #%d not in container #%d as referenced!", pObj2->Number, pObj->Number);
+						DebugLog(spdlog::level::err, "Error in Objects.txt: Object #{} not in container #{} as referenced!", pObj2->Number, pObj->Number);
 						pObj2->Contained = pObj;
 					}
 			}
@@ -696,16 +696,16 @@ bool C4GameObjects::Save(const char *szFilename, bool fSaveGame, bool fSaveInact
 	Game.ScriptEngine.Strings.EnumStrings();
 
 	// Decompile objects to buffer
-	StdStrBuf Buffer;
-	bool fSuccess = DecompileToBuf_Log<StdCompilerINIWrite>(mkParAdapt(*this, false, !fSaveGame), &Buffer, szFilename);
+	std::string buffer;
+	bool fSuccess = DecompileToBuf_Log<StdCompilerINIWrite>(mkParAdapt(*this, false, !fSaveGame), &buffer, szFilename);
 
 	// Decompile inactives
 	if (fSaveInactive)
 	{
-		StdStrBuf InactiveBuffer;
-		fSuccess &= DecompileToBuf_Log<StdCompilerINIWrite>(mkParAdapt(InactiveObjects, false, !fSaveGame), &InactiveBuffer, szFilename);
-		Buffer.Append("\r\n");
-		Buffer.Append(InactiveBuffer);
+		std::string inactiveBuffer;
+		fSuccess &= DecompileToBuf_Log<StdCompilerINIWrite>(mkParAdapt(InactiveObjects, false, !fSaveGame), &inactiveBuffer, szFilename);
+		buffer += "\r\n";
+		buffer += std::move(inactiveBuffer);
 	}
 
 	// Denumerate
@@ -717,7 +717,7 @@ bool C4GameObjects::Save(const char *szFilename, bool fSaveGame, bool fSaveInact
 		return false;
 
 	// Write
-	return Buffer.SaveToFile(szFilename);
+	return StdStrBuf{buffer.c_str(), buffer.size(), false}.SaveToFile(szFilename);
 }
 
 void C4GameObjects::UpdateScriptPointers()
@@ -788,7 +788,7 @@ void C4GameObjects::FixObjectOrder()
 			// must have exactly one SortOrder-bit set
 			if (!dwCategory)
 			{
-				DebugLogF("Objects.txt: Object #%d is missing sorting category!", static_cast<int>(pObj->Number));
+				DebugLog(spdlog::level::err, "Objects.txt: Object #{} is missing sorting category!", static_cast<int>(pObj->Number));
 				++pObj->Category; dwCategory = 1;
 			}
 			else
@@ -797,7 +797,7 @@ void C4GameObjects::FixObjectOrder()
 				while (~dwCat2 & 1) { dwCat2 = dwCat2 >> 1; ++i; }
 				if (dwCat2 != 1)
 				{
-					DebugLogF("Objects.txt: Object #%d has invalid sorting category %x!", static_cast<int>(pObj->Number), static_cast<unsigned int>(dwCategory));
+					DebugLog(spdlog::level::err, "Objects.txt: Object #{} has invalid sorting category {:x}!", static_cast<int>(pObj->Number), static_cast<unsigned int>(dwCategory));
 					dwCategory = (1 << i);
 					pObj->Category = (pObj->Category & ~C4D_SortLimit) | dwCategory;
 				}
@@ -808,7 +808,7 @@ void C4GameObjects::FixObjectOrder()
 				// SORT ERROR! (note that pLnkPrev can't be 0)
 				if (pLnkPrev->Obj != pLastWarnObj)
 				{
-					DebugLogF("Objects.txt: Wrong object order of #%d-#%d! (down)", static_cast<int>(pObj->Number), static_cast<int>(pLnkPrev->Obj->Number));
+					DebugLog(spdlog::level::err, "Objects.txt: Wrong object order of #{}-#{}! (down)", static_cast<int>(pObj->Number), static_cast<int>(pLnkPrev->Obj->Number));
 					pLastWarnObj = pLnkPrev->Obj;
 				}
 				pLnk->Obj = pLnkPrev->Obj;
@@ -833,7 +833,7 @@ void C4GameObjects::FixObjectOrder()
 				// SORT ERROR! (note that pLnkPrev can't be 0)
 				if (pLnkPrev->Obj != pLastWarnObj)
 				{
-					DebugLogF("Objects.txt: Wrong object order of #%d-#%d! (up)", static_cast<int>(pObj->Number), static_cast<int>(pLnkPrev->Obj->Number));
+					DebugLog(spdlog::level::err, "Objects.txt: Wrong object order of #{}-#{}! (up)", static_cast<int>(pObj->Number), static_cast<int>(pLnkPrev->Obj->Number));
 					pLastWarnObj = pLnkPrev->Obj;
 				}
 				pLnk->Obj = pLnkPrev->Obj;

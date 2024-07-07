@@ -29,6 +29,8 @@
 #include "C4Viewport.h"
 #include "C4GameOptions.h"
 
+#include <format>
+
 #ifndef _WIN32
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -38,7 +40,7 @@
 // C4Network2ClientDlg
 
 C4Network2ClientDlg::C4Network2ClientDlg(int iForClientID)
-	: iClientID(iForClientID), C4GUI::InfoDialog(LoadResStr("IDS_NET_CLIENT_INFO"), 10)
+	: iClientID(iForClientID), C4GUI::InfoDialog(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO), 10)
 {
 	// initial text update
 	UpdateText();
@@ -53,54 +55,54 @@ void C4Network2ClientDlg::UpdateText()
 	if (!pClient)
 	{
 		// client ID unknown
-		AddLineFmt(LoadResStr("IDS_NET_CLIENT_INFO_UNKNOWNID"), iClientID);
+		AddLine(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_UNKNOWNID, iClientID).c_str());
 	}
 	else
 	{
 		// get client (may be nullptr for local info)
 		C4Network2Client *pNetClient = pClient->getNetClient();
 		// show some info
-		StdStrBuf strActivated(LoadResStr(pClient->isActivated() ? "IDS_MSG_ACTIVE" : "IDS_MSG_INACTIVE"));
-		StdStrBuf strLocal(LoadResStr(pClient->isLocal() ? "IDS_MSG_LOCAL" : "IDS_MSG_REMOTE"));
-		StdStrBuf strHost(LoadResStr(pClient->isHost() ? "IDS_MSG_HOST" : "IDS_MSG_CLIENT"));
-		AddLineFmt(LoadResStr("IDS_NET_CLIENT_INFO_FORMAT"),
-			strActivated.getData(), strLocal.getData(), strHost.getData(),
+		const std::string_view activated{LoadResStrChoice(pClient->isActivated(), C4ResStrTableKey::IDS_MSG_ACTIVE, C4ResStrTableKey::IDS_MSG_INACTIVE)};
+		const std::string_view local{LoadResStrChoice(pClient->isLocal(), C4ResStrTableKey::IDS_MSG_LOCAL, C4ResStrTableKey::IDS_MSG_REMOTE)};
+		const std::string_view host{LoadResStrChoice(pClient->isHost(), C4ResStrTableKey::IDS_MSG_HOST, C4ResStrTableKey::IDS_MSG_CLIENT)};
+		AddLine(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_FORMAT,
+			activated.data(), local.data(), host.data(),
 			pClient->getName(), iClientID,
-			Game.Network.isHost() && pNetClient && !pNetClient->isReady() ? " (!ack)" : "");
+			Game.Network.isHost() && pNetClient && !pNetClient->isReady() ? " (!ack)" : "").c_str());
 		// show addresses
 		int iCnt;
 		if (iCnt = pNetClient->getAddrCnt())
 		{
-			AddLine(LoadResStr("IDS_NET_CLIENT_INFO_ADDRESSES"));
+			AddLine(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_ADDRESSES));
 			for (int i = 0; i < iCnt; ++i)
 			{
 				C4Network2Address addr = pNetClient->getAddr(i);
-				AddLineFmt("  %d: %s",
+				AddLine(std::format("  {}: {}",
 					i, // adress index
-					addr.toString().getData());
+					addr.ToString()).c_str());
 			}
 		}
 		else
-			AddLine(LoadResStr("IDS_NET_CLIENT_INFO_NOADDRESSES"));
+			AddLine(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_NOADDRESSES));
 		// show connection
 		if (pNetClient)
 		{
 			// connections
 			if (pNetClient->isConnected())
 			{
-				AddLineFmt(LoadResStr("IDS_NET_CLIENT_INFO_CONNECTIONS"),
+				AddLine(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_CONNECTIONS,
 					pNetClient->getMsgConn() == pNetClient->getDataConn() ? "Msg/Data" : "Msg",
 					Game.Network.NetIO.getNetIOName(pNetClient->getMsgConn()->getNetClass()),
-					pNetClient->getMsgConn()->getPeerAddr().ToString().getData(),
-					pNetClient->getMsgConn()->getPingTime());
+					pNetClient->getMsgConn()->getPeerAddr().ToString(),
+					pNetClient->getMsgConn()->getPingTime()).c_str());
 				if (pNetClient->getMsgConn() != pNetClient->getDataConn())
-					AddLineFmt(LoadResStr("IDS_NET_CLIENT_INFO_CONNDATA"),
+					AddLine(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_CONNDATA,
 						Game.Network.NetIO.getNetIOName(pNetClient->getDataConn()->getNetClass()),
-						pNetClient->getDataConn()->getPeerAddr().ToString().getData(),
-						pNetClient->getDataConn()->getPingTime());
+						pNetClient->getDataConn()->getPeerAddr().ToString(),
+						pNetClient->getDataConn()->getPingTime()).c_str());
 			}
 			else
-				AddLine(LoadResStr("IDS_NET_CLIENT_INFO_NOCONNECTIONS"));
+				AddLine(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_NOCONNECTIONS));
 		}
 	}
 	// update done
@@ -130,16 +132,16 @@ C4Network2ClientListBox::ClientListItem::ClientListItem(class C4Network2ClientLi
 	pStatusIcon = new C4GUI::Icon(ca.GetFromLeft(iIconSize), fIsHost ? C4GUI::Ico_Host : C4GUI::Ico_Client);
 
 	bool local{pClient->isLocal()};
-	StdStrBuf sNameLabel{GetNameLabel()};
+	const std::string nameLabel{GetNameLabel()};
 
-	pName = new C4GUI::Label(sNameLabel.getData(), iIconSize + IconLabelSpacing, iVerticalIndent, ALeft);
+	pName = new C4GUI::Label(nameLabel.c_str(), iIconSize + IconLabelSpacing, iVerticalIndent, ALeft);
 
 	auto pos = 0;
 	if (Game.Network.isHost() && !fIsHost)
 	{
 		// activate/deactivate and kick btns for clients at host
 		pKickBtn = new C4GUI::CallbackButtonEx<C4Network2ClientListBox::ClientListItem, C4GUI::IconButton>(C4GUI::Ico_Kick, GetToprightCornerRect((std::max)(iIconSize, 16), (std::max)(iIconSize, 16), 2, 1, pos++), 0, this, &ClientListItem::OnButtonKick);
-		pKickBtn->SetToolTip(LoadResStrNoAmp("IDS_NET_KICKCLIENT"));
+		pKickBtn->SetToolTip(LoadResStrNoAmp(C4ResStrTableKey::IDS_NET_KICKCLIENT).c_str());
 
 		if (!startup)
 		{
@@ -152,11 +154,11 @@ C4Network2ClientListBox::ClientListItem::ClientListItem(class C4Network2ClientLi
 	{
 		// mute button
 		pMuteBtn = new C4GUI::CallbackButtonEx<C4Network2ClientListBox::ClientListItem, C4GUI::IconButton>{C4GUI::Ico_Sound, GetToprightCornerRect((std::max)(iIconSize, 16), (std::max)(iIconSize, 16), 2, 1, pos++), 0, this, &ClientListItem::OnButtonToggleMute};
-		pMuteBtn->SetToolTip(FormatString(LoadResStrNoAmp(pClient && pClient->isMuted() ? "IDS_NET_UNMUTE_DESC" : "IDS_NET_MUTE_DESC"), sNameLabel.getData()).getData());
+		pMuteBtn->SetToolTip(LoadResStrNoAmpChoice(pClient && pClient->isMuted(), C4ResStrTableKey::IDS_NET_UNMUTE_DESC, C4ResStrTableKey::IDS_NET_MUTE_DESC).c_str());
 
 		// wait time
 		pPing = new C4GUI::Label("???", GetBounds().Wdt - IconLabelSpacing - pos * 24, iVerticalIndent, ARight);
-		pPing->SetToolTip(LoadResStr("IDS_DESC_CONTROLWAITTIME"));
+		pPing->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_CONTROLWAITTIME));
 	}
 
 	// add components
@@ -194,7 +196,7 @@ void C4Network2ClientListBox::ClientListItem::Update()
 		if (pActivateBtn)
 		{
 			pActivateBtn->SetIcon(fIsActive ? C4GUI::Ico_Active : C4GUI::Ico_Inactive);
-			pActivateBtn->SetToolTip(LoadResStrNoAmp(fIsActive ? "IDS_NET_DEACTIVATECLIENT" : "IDS_NET_ACTIVATECLIENT"));
+			pActivateBtn->SetToolTip(LoadResStrNoAmpChoice(fIsActive, C4ResStrTableKey::IDS_NET_DEACTIVATECLIENT, C4ResStrTableKey::IDS_NET_ACTIVATECLIENT).c_str());
 		}
 	}
 	// update players in tooltip
@@ -259,7 +261,7 @@ void C4Network2ClientListBox::ClientListItem::OnButtonActivate(C4GUI::Control *p
 	// league: Do not deactivate clients with players
 	if (Game.Parameters.isLeague() && Game.Players.GetAtClient(iClientID))
 	{
-		Log(LoadResStr("IDS_LOG_COMMANDNOTALLOWEDINLEAGUE"));
+		Log(C4ResStrTableKey::IDS_LOG_COMMANDNOTALLOWEDINLEAGUE);
 		return;
 	}
 	// change to status that is not currently shown
@@ -273,32 +275,32 @@ void C4Network2ClientListBox::ClientListItem::OnButtonKick(C4GUI::Control *pButt
 	if (Game.Parameters.isLeague() && Game.Players.GetAtClient(iClientID))
 		Game.Network.Vote(VT_Kick, true, iClientID);
 	else
-		Game.Clients.CtrlRemove(GetClient(), LoadResStr(pForDlg->IsStartup() ? "IDS_MSG_KICKFROMSTARTUPDLG" : "IDS_MSG_KICKFROMCLIENTLIST"));
+		Game.Clients.CtrlRemove(GetClient(), LoadResStrChoice(pForDlg->IsStartup(), C4ResStrTableKey::IDS_MSG_KICKFROMSTARTUPDLG, C4ResStrTableKey::IDS_MSG_KICKFROMCLIENTLIST));
 }
 
 void C4Network2ClientListBox::ClientListItem::UpdateMuteButton()
 {
 	auto *client = GetClient();
 	pMuteBtn->SetIcon(client->isMuted() ? C4GUI::Ico_NoSound : C4GUI::Ico_Sound);
-	pMuteBtn->SetToolTip(FormatString(LoadResStrNoAmp(client && client->isMuted() ? "IDS_NET_UNMUTE_DESC" : "IDS_NET_MUTE_DESC"), GetNameLabel().getData()).getData());
+	pMuteBtn->SetToolTip(LoadResStrNoAmpChoice(client && client->isMuted(), C4ResStrTableKey::IDS_NET_UNMUTE_DESC, C4ResStrTableKey::IDS_NET_MUTE_DESC).c_str());
 }
 
-const StdStrBuf C4Network2ClientListBox::ClientListItem::GetNameLabel() const
+std::string C4Network2ClientListBox::ClientListItem::GetNameLabel() const
 {
 	if (auto *client = GetClient(); client)
 	{
 		if (pForDlg->IsStartup())
 		{
-			return StdStrBuf::MakeRef(client->getName());
+			return client->getName();
 		}
 		else
 		{
-			return FormatString("%s:%s", client->getName(), client->getNick());
+			return std::format("{}:{}", client->getName(), client->getNick());
 		}
 	}
 	else
 	{
-		return StdStrBuf::MakeRef("???");
+		return "???";
 	}
 }
 
@@ -321,7 +323,7 @@ C4Network2ClientListBox::ConnectionListItem::ConnectionListItem(class C4Network2
 	if (!Game.Parameters.isLeague())
 	{
 		pDisconnectBtn = new C4GUI::CallbackButtonEx<C4Network2ClientListBox::ConnectionListItem, C4GUI::IconButton>(C4GUI::Ico_Disconnect, ca.GetFromRight(iIconSize, iIconSize), 0, this, &ConnectionListItem::OnButtonDisconnect);
-		pDisconnectBtn->SetToolTip(LoadResStr("IDS_MENU_DISCONNECT"));
+		pDisconnectBtn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_MENU_DISCONNECT));
 	}
 	else
 		pDisconnectBtn = nullptr;
@@ -329,7 +331,7 @@ C4Network2ClientListBox::ConnectionListItem::ConnectionListItem(class C4Network2
 	int32_t sx = 40, sy = iIconSize;
 	rUseFont.GetTextExtent("???? ms", sx, sy, true);
 	pPing = new C4GUI::Label("???", ca.GetFromRight(sx, sy), ARight);
-	pPing->SetToolTip(LoadResStr("IDS_NET_CONTROL_PING"));
+	pPing->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_NET_CONTROL_PING));
 	// main description item
 	pDesc = new C4GUI::Label("???", ca.GetAll(), ALeft);
 	// add components
@@ -377,11 +379,11 @@ void C4Network2ClientListBox::ConnectionListItem::Update()
 	else
 		szConnType = "Data";
 	// display info
-	pDesc->SetText(FormatString("%s: %s (%s l%d)",
+	pDesc->SetText(std::format("{}: {} ({} l{})",
 		szConnType,
 		Game.Network.NetIO.getNetIOName(pConn->getNetClass()),
-		pConn->getPeerAddr().ToString().getData(),
-		pConn->getPacketLoss()).getData());
+		pConn->getPeerAddr().ToString(),
+		pConn->getPacketLoss()).c_str());
 }
 
 void C4Network2ClientListBox::ConnectionListItem::OnButtonDisconnect(C4GUI::Control *pButton)
@@ -494,7 +496,7 @@ namespace
 C4Network2ClientListDlg *C4Network2ClientListDlg::pInstance = nullptr;
 
 C4Network2ClientListDlg::C4Network2ClientListDlg()
-	: Dialog(Game.pGUI->GetPreferredDlgRect().Wdt * 3 / 4, Game.pGUI->GetPreferredDlgRect().Hgt * 3 / 4, LoadResStr("IDS_NET_CAPTION"), false)
+	: Dialog(Game.pGUI->GetPreferredDlgRect().Wdt * 3 / 4, Game.pGUI->GetPreferredDlgRect().Hgt * 3 / 4, LoadResStr(C4ResStrTableKey::IDS_NET_CAPTION), false)
 {
 	// component layout
 	CStdFont *pUseFont = &C4GUI::GetRes()->TextFont;
@@ -529,13 +531,12 @@ C4Network2ClientListDlg::~C4Network2ClientListDlg()
 void C4Network2ClientListDlg::Update()
 {
 	// Compose status text
-	StdStrBuf sStatusText;
-	sStatusText.Format("Tick %d, Behind %d, Rate %d, PreSend %d, ACT: %d",
-		static_cast<int>(Game.Control.ControlTick), static_cast<int>(Game.Control.Network.GetBehind(Game.Control.ControlTick)),
-		static_cast<int>(Game.Control.ControlRate), static_cast<int>(Game.Control.Network.getControlPreSend()),
-		static_cast<int>(Game.Control.Network.getAvgControlSendTime()));
+	const std::string statusText{std::format("Tick {}, Behind {}, Rate {}, PreSend {}, ACT: {}",
+		Game.Control.ControlTick, Game.Control.Network.GetBehind(Game.Control.ControlTick),
+		Game.Control.ControlRate, Game.Control.Network.getControlPreSend(),
+		Game.Control.Network.getAvgControlSendTime())};
 	// Update status label
-	pStatusLabel->SetText(sStatusText.getData());
+	pStatusLabel->SetText(statusText.c_str());
 }
 
 bool C4Network2ClientListDlg::Toggle()
@@ -554,7 +555,7 @@ C4Network2StartWaitDlg::C4Network2StartWaitDlg()
 	: C4GUI::Dialog(
 		Config.Graphics.ResX > 800 ? DialogWidthLarge : DialogWidth,
 		Config.Graphics.ResY > 600 ? DialogHeightLarge : DialogHeight,
-		LoadResStr("IDS_NET_CAPTION"),
+		LoadResStr(C4ResStrTableKey::IDS_NET_CAPTION),
 		false
 	), pClientListBox(nullptr)
 {
@@ -562,7 +563,7 @@ C4Network2StartWaitDlg::C4Network2StartWaitDlg()
 	C4GUI::ComponentAligner caButtonArea(caAll.GetFromBottom(C4GUI_ButtonAreaHgt), 0, 0);
 	// create top label
 	C4GUI::Label *pLbl;
-	AddElement(pLbl = new C4GUI::Label(LoadResStr("IDS_NET_WAITFORSTART"), caAll.GetFromTop(25), ACenter));
+	AddElement(pLbl = new C4GUI::Label(LoadResStr(C4ResStrTableKey::IDS_NET_WAITFORSTART), caAll.GetFromTop(25), ACenter));
 	// create client list box
 	AddElement(pClientListBox = new C4Network2ClientListBox(caAll.GetAll(), true));
 
@@ -570,7 +571,7 @@ C4Network2StartWaitDlg::C4Network2StartWaitDlg()
 	bounds.Wdt = C4GUI_DefButton2Wdt;
 
 	// place restart button
-	AddElement(new C4GUI::CallbackButton<C4Network2StartWaitDlg>{LoadResStr("IDS_BTN_RESTART"), bounds, &C4Network2StartWaitDlg::OnBtnRestart, this});
+	AddElement(new C4GUI::CallbackButton<C4Network2StartWaitDlg>{LoadResStr(C4ResStrTableKey::IDS_BTN_RESTART), bounds, &C4Network2StartWaitDlg::OnBtnRestart, this});
 	bounds.x += C4GUI_DefButton2Wdt + C4GUI_DefButton2HSpace;
 	// place abort button
 	AddElement(C4GUI::newCancelButton(bounds));
@@ -616,7 +617,7 @@ C4GameOptionButtons::C4GameOptionButtons(const C4Rect &rcBounds, bool fNetwork, 
 			fIsDisabled = true;
 		}
 		btnInternet = new C4GUI::CallbackButton<C4GameOptionButtons, C4GUI::IconButton>(fIsInternet ? C4GUI::Ico_Ex_InternetOn : C4GUI::Ico_Ex_InternetOff, caButtons.GetFromLeft(iIconSize, iIconSize), 'I' /* 2do */, &C4GameOptionButtons::OnBtnInternet, this);
-		btnInternet->SetToolTip(LoadResStr("IDS_DLGTIP_STARTINTERNETGAME"));
+		btnInternet->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_STARTINTERNETGAME));
 		btnInternet->SetEnabled(!fIsDisabled);
 		AddElement(btnInternet);
 	}
@@ -628,7 +629,7 @@ C4GameOptionButtons::C4GameOptionButtons(const C4Rect &rcBounds, bool fNetwork, 
 		fIsLeague = fLobby ? Game.Parameters.isLeague() : !!Config.Network.LeagueServerSignUp;
 		eLeagueIcon = fIsLeague ? C4GUI::Ico_Ex_LeagueOn : C4GUI::Ico_Ex_LeagueOff;
 		btnLeague = new C4GUI::CallbackButton<C4GameOptionButtons, C4GUI::IconButton>(eLeagueIcon, caButtons.GetFromLeft(iIconSize, iIconSize), 'L' /* 2do */, &C4GameOptionButtons::OnBtnLeague, this);
-		btnLeague->SetToolTip(LoadResStr("IDS_DLGTIP_STARTLEAGUEGAME"));
+		btnLeague->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_STARTLEAGUEGAME));
 		btnLeague->SetEnabled(fHost && !fLobby);
 		AddElement(btnLeague);
 	}
@@ -636,17 +637,17 @@ C4GameOptionButtons::C4GameOptionButtons(const C4Rect &rcBounds, bool fNetwork, 
 	if (fNetwork && fHost)
 	{
 		btnPassword = new C4GUI::CallbackButton<C4GameOptionButtons, C4GUI::IconButton>(Game.Network.isPassworded() ? C4GUI::Ico_Ex_Locked : C4GUI::Ico_Ex_Unlocked, caButtons.GetFromLeft(iIconSize, iIconSize), 'P' /* 2do */, &C4GameOptionButtons::OnBtnPassword, this);
-		btnPassword->SetToolTip(LoadResStr("IDS_NET_PASSWORD_DESC"));
+		btnPassword->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_NET_PASSWORD_DESC));
 		AddElement(btnPassword);
 		btnComment = new C4GUI::CallbackButton<C4GameOptionButtons, C4GUI::IconButton>(C4GUI::Ico_Ex_Comment, caButtons.GetFromLeft(iIconSize, iIconSize), 'M' /* 2do */, &C4GameOptionButtons::OnBtnComment, this);
-		btnComment->SetToolTip(LoadResStr("IDS_DESC_COMMENTDESCRIPTIONFORTHIS"));
+		btnComment->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_COMMENTDESCRIPTIONFORTHIS));
 		AddElement(btnComment);
 	}
 	else btnPassword = btnComment = nullptr;
 	btnFairCrew = new C4GUI::CallbackButton<C4GameOptionButtons, C4GUI::IconButton>(C4GUI::Ico_Ex_NormalCrew, caButtons.GetFromLeft(iIconSize, iIconSize), 'F' /* 2do */, &C4GameOptionButtons::OnBtnFairCrew, this);
 	btnRecord = new C4GUI::CallbackButton<C4GameOptionButtons, C4GUI::IconButton>(Config.General.Record || fIsLeague ? C4GUI::Ico_Ex_RecordOn : C4GUI::Ico_Ex_RecordOff, caButtons.GetFromLeft(iIconSize, iIconSize), 'R' /* 2do */, &C4GameOptionButtons::OnBtnRecord, this);
 	btnRecord->SetEnabled(!fIsLeague);
-	btnRecord->SetToolTip(LoadResStr("IDS_DLGTIP_RECORD"));
+	btnRecord->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_RECORD));
 	AddElement(btnFairCrew);
 	AddElement(btnRecord);
 	UpdateFairCrewBtn();
@@ -726,7 +727,7 @@ void C4GameOptionButtons::OnBtnPassword(C4GUI::Control *btn)
 	}
 	// password button pressed: Show dialog to set/change current password
 	C4GUI::InputDialog *pDlg;
-	GetScreen()->ShowRemoveDlg(pDlg = new C4GUI::InputDialog(LoadResStr("IDS_MSG_ENTERPASSWORD"), LoadResStr("IDS_DLG_PASSWORD"), C4GUI::Ico_Ex_LockedFrontal, new C4GUI::InputCallback<C4GameOptionButtons>(this, &C4GameOptionButtons::OnPasswordSet), false));
+	GetScreen()->ShowRemoveDlg(pDlg = new C4GUI::InputDialog(LoadResStr(C4ResStrTableKey::IDS_MSG_ENTERPASSWORD), LoadResStr(C4ResStrTableKey::IDS_DLG_PASSWORD), C4GUI::Ico_Ex_LockedFrontal, new C4GUI::InputCallback<C4GameOptionButtons>(this, &C4GameOptionButtons::OnPasswordSet), false));
 	pDlg->SetMaxText(CFG_MaxString);
 	const char *szPassPreset = Game.Network.GetPassword();
 	if (!szPassPreset || !*szPassPreset) szPassPreset = Config.Network.LastPassword;
@@ -762,7 +763,7 @@ void C4GameOptionButtons::OnBtnComment(C4GUI::Control *btn)
 {
 	// password button pressed: Show dialog to set/change current password
 	C4GUI::InputDialog *pDlg;
-	GetScreen()->ShowRemoveDlg(pDlg = new C4GUI::InputDialog(LoadResStr("IDS_CTL_ENTERCOMMENT"), LoadResStr("IDS_CTL_COMMENT"), C4GUI::Ico_Ex_Comment, new C4GUI::InputCallback<C4GameOptionButtons>(this, &C4GameOptionButtons::OnCommentSet), false));
+	GetScreen()->ShowRemoveDlg(pDlg = new C4GUI::InputDialog(LoadResStr(C4ResStrTableKey::IDS_CTL_ENTERCOMMENT), LoadResStr(C4ResStrTableKey::IDS_CTL_COMMENT), C4GUI::Ico_Ex_Comment, new C4GUI::InputCallback<C4GameOptionButtons>(this, &C4GameOptionButtons::OnCommentSet), false));
 	pDlg->SetMaxText(C4MaxComment);
 	pDlg->SetInputText(Config.Network.Comment.getData());
 }
@@ -775,7 +776,7 @@ void C4GameOptionButtons::OnCommentSet(const StdStrBuf &rsNewComment)
 	Config.Network.Comment.CopyValidated(rsNewComment.getData());
 	Game.Network.InvalidateReference();
 	// message feedback
-	Log(LoadResStr("IDS_NET_COMMENTCHANGED"));
+	Log(C4ResStrTableKey::IDS_NET_COMMENTCHANGED);
 	// acoustic feedback
 	C4GUI::GUISound("Connect");
 }
@@ -810,7 +811,7 @@ void C4GameOptionButtons::UpdateFairCrewBtn()
 	btnFairCrew->SetIcon(fChoiceFree ?
 		(!fFairCrew ? C4GUI::Ico_Ex_NormalCrew : C4GUI::Ico_Ex_FairCrew) // fair crew setting by user
 		: (!fFairCrew ? C4GUI::Ico_Ex_NormalCrewGray : C4GUI::Ico_Ex_FairCrewGray)); // fair crew setting by scenario preset or host
-	btnFairCrew->SetToolTip(LoadResStr(fFairCrew ? "IDS_CTL_FAIRCREW_DESC" : "IDS_CTL_NORMALCREW_DESC"));
+	btnFairCrew->SetToolTip(LoadResStrChoice(fFairCrew, C4ResStrTableKey::IDS_CTL_FAIRCREW_DESC, C4ResStrTableKey::IDS_CTL_NORMALCREW_DESC));
 	btnFairCrew->SetEnabled(fChoiceFree);
 }
 
@@ -847,7 +848,7 @@ void C4Chart::DrawElement(C4FacetEx &cgo)
 	int iSeriesCount = pDisplayGraph->GetSeriesCount();
 	if (!iSeriesCount) return;
 	assert(iSeriesCount > 0);
-	StdStrBuf sbuf;
+	std::string sbuf;
 	pDisplayGraph->Update(); // update averages, etc.
 	// calc metrics
 	CStdFont &rFont = C4GUI::GetRes()->MiniFont;
@@ -874,8 +875,8 @@ void C4Chart::DrawElement(C4FacetEx &cgo)
 		iMinVal = ((iMinVal - (iMinVal < 0)) / ddv + (iMinVal < 0)) * ddv;
 	ValueType dv = iMaxVal - iMinVal; TimeType dt = iMaxTime - iMinTime;
 	// axis calculations
-	sbuf.Format("-%d", static_cast<int>((std::max)(Abs(iMaxVal), Abs(iMinVal))));
-	rFont.GetTextExtent(sbuf.getData(), XAxisMinStepWdt, YAxisMinStepHgt, false);
+	sbuf = std::format("-{}", static_cast<int>((std::max)(Abs(iMaxVal), Abs(iMinVal))));
+	rFont.GetTextExtent(sbuf.c_str(), XAxisMinStepWdt, YAxisMinStepHgt, false);
 	YAxisWdt += XAxisMinStepWdt; XAxisHgt += YAxisMinStepHgt;
 	XAxisMinStepWdt += 2; YAxisMinStepHgt += 2;
 	int tw = rcBounds.Wdt - YAxisWdt;
@@ -921,16 +922,16 @@ void C4Chart::DrawElement(C4FacetEx &cgo)
 	{
 		iX = tx + tw * (iTime - iMinTime) / dt;
 		lpDDraw->DrawVerticalLine(cgo.Surface, iX, ty + th + 1, ty + th + AxisMarkerLen, CGray3);
-		sbuf.Format("%d", static_cast<int>(iTime));
-		lpDDraw->TextOut(sbuf.getData(), rFont, 1.0f, cgo.Surface, iX, ty + th + AxisMarkerLen, 0xff7f7f7f, ACenter, false);
+		sbuf = std::to_string(static_cast<int>(iTime));
+		lpDDraw->TextOut(sbuf.c_str(), rFont, 1.0f, cgo.Surface, iX, ty + th + AxisMarkerLen, 0xff7f7f7f, ACenter, false);
 	}
 	iVal = int(((iMinVal - (iMinVal > 0)) / iYAxisSteps + (iMinVal > 0)) * iYAxisSteps);
 	for (; iVal <= iMaxVal; iVal += iYAxisSteps)
 	{
 		iY = ty + th - int((iVal - iMinVal) / dv * th);
 		lpDDraw->DrawHorizontalLine(cgo.Surface, tx - AxisMarkerLen, tx - 1, iY, CGray3);
-		sbuf.Format("%d", static_cast<int>(iVal));
-		lpDDraw->TextOut(sbuf.getData(), rFont, 1.0f, cgo.Surface, tx - AxisMarkerLen, iY - rFont.GetLineHeight() / 2, 0xff7f7f7f, ARight, false);
+		sbuf = std::to_string(static_cast<int>(iVal));
+		lpDDraw->TextOut(sbuf.c_str(), rFont, 1.0f, cgo.Surface, tx - AxisMarkerLen, iY - rFont.GetLineHeight() / 2, 0xff7f7f7f, ARight, false);
 	}
 	// draw graph series(es)
 	int iSeries = 0;
@@ -964,7 +965,7 @@ C4Chart::~C4Chart()
 // singleton
 C4ChartDialog *C4ChartDialog::pChartDlg = nullptr;
 
-C4ChartDialog::C4ChartDialog() : Dialog(DialogWidth, DialogHeight, LoadResStr("IDS_NET_STATISTICS"), false), pChartTabular(nullptr)
+C4ChartDialog::C4ChartDialog() : Dialog(DialogWidth, DialogHeight, LoadResStr(C4ResStrTableKey::IDS_NET_STATISTICS), false), pChartTabular(nullptr)
 {
 	// register singleton
 	pChartDlg = this;

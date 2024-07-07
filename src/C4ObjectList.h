@@ -110,7 +110,7 @@ public:
 	bool AssignInfo();
 	bool ValidateOwners();
 	bool AssignPlrViewRange();
-	StdStrBuf GetNameList(C4DefList &rDefs, uint32_t dwCategory = C4D_All);
+	std::string GetNameList(C4DefList &rDefs, uint32_t dwCategory = C4D_All);
 	bool IsClear() const;
 	bool DenumerateRead();
 	void CompileFunc(StdCompiler *pComp, bool fSaveRefs = true, bool fSkipPlayerObjects = false);

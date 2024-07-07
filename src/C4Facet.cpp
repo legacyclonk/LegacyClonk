@@ -240,19 +240,20 @@ C4Facet C4Facet::Truncate(int32_t iAlign, int32_t iSize)
 void C4Facet::DrawValue(C4Facet &cgo, int32_t iValue, int32_t iSectionX, int32_t iSectionY, int32_t iAlign)
 {
 	if (!lpDDraw) return;
-	char ostr[25]; sprintf(ostr, "%i", iValue);
+	std::array<char, C4Strings::NumberOfCharactersForDigits<std::int32_t> + 1> buf;
+	*std::to_chars(buf.data(), buf.data() + buf.size() - 1, iValue).ptr = '\0';
 	switch (iAlign)
 	{
 	case C4FCT_Center:
 		Draw(cgo, true, iSectionX, iSectionY);
-		lpDDraw->TextOut(ostr, Game.GraphicsResource.FontRegular, 1.0, cgo.Surface,
+		lpDDraw->TextOut(buf.data(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface,
 			cgo.X + cgo.Wdt - 1, cgo.Y + cgo.Hgt - 1, CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
 		break;
 	case C4FCT_Right:
 	{
 		int32_t textwdt, texthgt;
-		Game.GraphicsResource.FontRegular.GetTextExtent(ostr, textwdt, texthgt, false);
-		lpDDraw->TextOut(ostr, Game.GraphicsResource.FontRegular, 1.0, cgo.Surface,
+		Game.GraphicsResource.FontRegular.GetTextExtent(buf.data(), textwdt, texthgt, false);
+		lpDDraw->TextOut(buf.data(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface,
 			cgo.X + cgo.Wdt - 1, cgo.Y, CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
 		cgo.Set(cgo.Surface, cgo.X + cgo.Wdt - 1 - textwdt - 2 * cgo.Hgt, cgo.Y, 2 * cgo.Hgt, cgo.Hgt);
 		Draw(cgo, true, iSectionX, iSectionY);
@@ -264,20 +265,25 @@ void C4Facet::DrawValue(C4Facet &cgo, int32_t iValue, int32_t iSectionX, int32_t
 void C4Facet::DrawValue2(C4Facet &cgo, int32_t iValue1, int32_t iValue2, int32_t iSectionX, int32_t iSectionY, int32_t iAlign, int32_t *piUsedWidth)
 {
 	if (!lpDDraw) return;
-	char ostr[25]; sprintf(ostr, "%i/%i", iValue1, iValue2);
+	std::array<char, C4Strings::NumberOfCharactersForDigits<std::int32_t> * 2 + 1 + 1> buf;
+
+	char *ptr{std::to_chars(buf.data(), buf.data() + std::numeric_limits<std::int32_t>::max_digits10 + 1, iValue1).ptr};
+	*ptr++ = '/';
+	*std::to_chars(ptr, ptr + C4Strings::NumberOfCharactersForDigits<std::int32_t>, iValue2).ptr = '\0';
+
 	switch (iAlign)
 	{
 	case C4FCT_Center:
 		Draw(cgo, true, iSectionX, iSectionY);
-		lpDDraw->TextOut(ostr, Game.GraphicsResource.FontRegular, 1.0, cgo.Surface,
+		lpDDraw->TextOut(buf.data(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface,
 			cgo.X + cgo.Wdt - 1, cgo.Y + cgo.Hgt - 1, CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
 		break;
 	case C4FCT_Right:
 	{
 		int32_t textwdt, texthgt;
-		Game.GraphicsResource.FontRegular.GetTextExtent(ostr, textwdt, texthgt, false);
+		Game.GraphicsResource.FontRegular.GetTextExtent(buf.data(), textwdt, texthgt, false);
 		textwdt += Wdt + 3;
-		lpDDraw->TextOut(ostr, Game.GraphicsResource.FontRegular, 1.0, cgo.Surface,
+		lpDDraw->TextOut(buf.data(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface,
 			cgo.X + cgo.Wdt - 1, cgo.Y, CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
 		cgo.Set(cgo.Surface, cgo.X + cgo.Wdt - textwdt, cgo.Y, 2 * cgo.Hgt, cgo.Hgt);
 		Draw(cgo, true, iSectionX, iSectionY);
@@ -400,16 +406,16 @@ void C4DrawTransform::CompileFunc(StdCompiler *pComp)
 	for (i = 0; i < 6; i++)
 	{
 		if (i) pComp->Separator();
-		StdStrBuf val; if (!fCompiler) val.Format("%g", mat[i]);
+		std::string val; if (!fCompiler) val = fmt::sprintf("%g", mat[i]);
 		pComp->Value(mkParAdapt(val, StdCompiler::RCT_Idtf));
 		if (fCompiler && pComp->hasNaming())
 			if (pComp->Separator(StdCompiler::SEP_PART))
 			{
-				StdStrBuf val2;
+				std::string val2;
 				pComp->Value(mkParAdapt(val2, StdCompiler::RCT_Idtf));
-				val.AppendChar('.'); val.Append(val2);
+				val += '.'; val += val2;
 			}
-		if (fCompiler) sscanf(val.getData(), "%g", &mat[i]);
+		if (fCompiler) sscanf(val.c_str(), "%g", &mat[i]);
 	}
 	pComp->Separator();
 	pComp->Value(FlipDir);
@@ -423,16 +429,16 @@ void C4DrawTransform::CompileFunc(StdCompiler *pComp)
 		}
 		else
 		{
-			StdStrBuf val; if (!fCompiler) val.Format("%g", mat[i]);
+			std::string val; if (!fCompiler) val = fmt::sprintf("%g", mat[i]);
 			pComp->Value(mkParAdapt(val, StdCompiler::RCT_Idtf));
 			if (fCompiler && pComp->hasNaming())
 				if (pComp->Separator(StdCompiler::SEP_PART))
 				{
-					StdStrBuf val2;
+					std::string val2;
 					pComp->Value(mkParAdapt(val2, StdCompiler::RCT_Idtf));
-					val.AppendChar('.'); val.Append(val2);
+					val += '.'; val += val2;
 				}
-			if (fCompiler) sscanf(val.getData(), "%g", &mat[i]);
+			if (fCompiler) sscanf(val.c_str(), "%g", &mat[i]);
 		}
 	}
 }

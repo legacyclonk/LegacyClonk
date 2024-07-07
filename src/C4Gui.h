@@ -36,7 +36,7 @@
 #include "C4Rect.h"
 
 #include "StdFont.h"
-#include "StdResStr2.h"
+#include "C4ResStrTable.h"
 #include "StdWindow.h"
 
 #include <cmath>
@@ -1571,10 +1571,10 @@ public:
 inline Button *newOKIconButton(const C4Rect &bounds, Icons icon) { return new CloseIconButton{bounds, icon, true}; }
 inline Button *newCancelIconButton(const C4Rect &bounds, Icons icon) { return new CloseIconButton{bounds, icon, false}; }
 
-inline Button *newOKButton(const C4Rect &bounds) { return new CloseButton{LoadResStr("IDS_DLG_OK"), bounds, true}; }
-inline Button *newCancelButton(const C4Rect &bounds) { return new CloseButton{LoadResStr("IDS_DLG_CANCEL"), bounds, false}; }
-inline Button *newYesButton(const C4Rect &bounds) { return new CloseButton{LoadResStr("IDS_DLG_YES"), bounds, true}; }
-inline Button *newNoButton(const C4Rect &bounds) { return new CloseButton{LoadResStr("IDS_DLG_NO"), bounds, false}; }
+inline Button *newOKButton(const C4Rect &bounds) { return new CloseButton{LoadResStr(C4ResStrTableKey::IDS_DLG_OK), bounds, true}; }
+inline Button *newCancelButton(const C4Rect &bounds) { return new CloseButton{LoadResStr(C4ResStrTableKey::IDS_DLG_CANCEL), bounds, false}; }
+inline Button *newYesButton(const C4Rect &bounds) { return new CloseButton{LoadResStr(C4ResStrTableKey::IDS_DLG_YES), bounds, true}; }
+inline Button *newNoButton(const C4Rect &bounds) { return new CloseButton{LoadResStr(C4ResStrTableKey::IDS_DLG_NO), bounds, false}; }
 
 class BaseInputCallback
 {

@@ -20,6 +20,7 @@
 #include "Standard.h"
 #include "StdCompiler.h"
 
+#include <charconv>
 #include <chrono>
 #include <limits>
 #include <memory>
@@ -449,7 +450,7 @@ struct StdParameterAdapt
 
 	void CompileFunc(StdCompiler *pComp) const
 	{
-		rObj.CompileFunc(pComp, Par);
+		::CompileFunc(rObj, pComp, Par);
 	}
 
 	// Operators for default checking/setting
@@ -474,7 +475,7 @@ struct StdParameter2Adapt
 
 	void CompileFunc(StdCompiler *pComp) const
 	{
-		rObj.CompileFunc(pComp, rPar1, rPar2);
+		::CompileFunc(rObj, pComp, rPar1, rPar2);
 	}
 
 	// Operators for default checking/setting
@@ -883,7 +884,7 @@ struct StdEnumAdapt
 					}
 				// Not found? Warn
 				if (i >= N || !pName->Name)
-					pComp->Warn("Unknown bit name: %s", Name.getData());
+					pComp->Warn("Unknown bit name: {}", Name.getData());
 			}
 		}
 	}
@@ -976,7 +977,7 @@ struct StdBitfieldAdapt
 						}
 					// Not found? Warn
 					if (i >= N || !pName->Name)
-						pComp->Warn("Unknown bit name: %s", Name.getData());
+						pComp->Warn("Unknown bit name: {}", Name.getData());
 				}
 				// Expect separation
 			} while (pComp->Separator(StdCompiler::SEP_VLINE));
@@ -1033,12 +1034,15 @@ public:
 		for (size_t i = 0; i < iSize; i++)
 		{
 			uint8_t *pByte = reinterpret_cast<uint8_t *>(pData) + i;
-			if (!fCompiler) sprintf(szData, "%02x", *pByte);
+			if (!fCompiler)
+			{
+				*std::to_chars(szData, szData + 2, *pByte, 16).ptr = '\0';
+			}
 			pComp->String(szData, 2, StdCompiler::RCT_Idtf);
 			if (fCompiler)
 			{
 				int b;
-				if (sscanf(szData, "%02x", &b) != 1)
+				if (std::from_chars(szData, szData + 2, b, 16).ec != std::errc{})
 					pComp->excNotFound(i ? "hexadecimal data: bytes missing!" : "hexadecimal data missing!");
 				*pByte = b;
 			}

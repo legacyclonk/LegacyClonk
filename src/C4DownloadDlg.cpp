@@ -26,7 +26,7 @@
 C4GUI::Label *pStatusLabel;
 C4GUI::ProgressBar *pProgressBar;
 
-C4DownloadDlg::C4DownloadDlg(const char *szDLType) : C4GUI::Dialog(C4GUI_ProgressDlgWdt, 100, FormatString(LoadResStr("IDS_CTL_DL_TITLE"), szDLType).getData(), false), szError(nullptr)
+C4DownloadDlg::C4DownloadDlg(const char *szDLType) : C4GUI::Dialog(C4GUI_ProgressDlgWdt, 100, LoadResStr(C4ResStrTableKey::IDS_CTL_DL_TITLE, szDLType).c_str(), false), szError(nullptr)
 {
 #ifdef _WIN32
 	fWinSock = AcquireWinSock();
@@ -79,7 +79,7 @@ void C4DownloadDlg::SetStatus(const char *szNewText, int32_t iProgressPercent)
 	caMain.ExpandLeft(C4GUI_DefDlgIndent * 2 + C4GUI_IconWdt);
 	C4GUI::ComponentAligner caButtonArea(caMain.GetFromTop(C4GUI_ButtonAreaHgt), 0, 0);
 	pCancelBtn->SetBounds(caButtonArea.GetCentered(C4GUI_DefButtonWdt, C4GUI_ButtonHgt));
-	pCancelBtn->SetToolTip(LoadResStr("IDS_DL_CANCEL"));
+	pCancelBtn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DL_CANCEL));
 	// resize to actually needed size
 	SetClientSize(GetClientRect().Wdt, GetClientRect().Hgt - caMain.GetHeight());
 }
@@ -104,7 +104,7 @@ void C4DownloadDlg::OnIdle()
 	if (!HTTPClient.isConnected())
 	{
 		// still connecting
-		sStatus.Ref(LoadResStr("IDS_DL_STATUSCONNECTING"));
+		sStatus.Ref(LoadResStr(C4ResStrTableKey::IDS_DL_STATUSCONNECTING));
 	}
 	else
 	{
@@ -113,23 +113,22 @@ void C4DownloadDlg::OnIdle()
 		if (!iSize)
 		{
 			// file size unknown: No header received.
-			sStatus.Ref(LoadResStr("IDS_PRC_CONNECTED"));
+			sStatus.Ref(LoadResStr(C4ResStrTableKey::IDS_PRC_CONNECTED));
 		}
 		else
 		{
 			// file size known: Download in progress
-			sStatus.Ref(LoadResStr("IDS_CTL_DL_PROGRESS"));
+			sStatus.Ref(LoadResStr(C4ResStrTableKey::IDS_CTL_DL_PROGRESS));
 			iProgress = static_cast<int32_t>(100 * HTTPClient.getDownloadedSize() / iSize);
 		}
 	}
-	const char *szStatusString = LoadResStr("IDS_PRC_DOWNLOADINGFILE");
-	SetStatus(FormatString(szStatusString, GetFilename(HTTPClient.getURL())).getData(), iProgress);
+	SetStatus(LoadResStr(C4ResStrTableKey::IDS_PRC_DOWNLOADINGFILE, GetFilename(HTTPClient.getURL())).c_str(), iProgress);
 }
 
 void C4DownloadDlg::UserClose(bool fOK)
 {
 	// user cancelled
-	HTTPClient.Cancel(LoadResStr("IDS_ERR_USERCANCEL"));
+	HTTPClient.Cancel(LoadResStr(C4ResStrTableKey::IDS_ERR_USERCANCEL));
 }
 
 const char *C4DownloadDlg::GetError()
@@ -150,7 +149,7 @@ bool C4DownloadDlg::ShowModal(C4GUI::Screen *pScreen, const char *szURL, const c
 	// show dlg
 	if (!Show(pScreen, true)) return false;
 	// start query
-	if (!HTTPClient.Query(nullptr, true)) return false;
+	if (!HTTPClient.Query(StdBuf{}, true)) return false;
 	// first time status update
 	OnIdle();
 	// cycle until query is finished or aborted
@@ -159,7 +158,7 @@ bool C4DownloadDlg::ShowModal(C4GUI::Screen *pScreen, const char *szURL, const c
 	if (!HTTPClient.getResultBin().SaveToFile(szSaveAsFilename))
 	{
 		// file saving failed
-		szError = LoadResStr("IDS_FAIL_SAVE");
+		szError = LoadResStr(C4ResStrTableKey::IDS_FAIL_SAVE);
 		return false;
 	}
 	return true;
@@ -168,7 +167,7 @@ bool C4DownloadDlg::ShowModal(C4GUI::Screen *pScreen, const char *szURL, const c
 bool C4DownloadDlg::DownloadFile(const char *szDLType, C4GUI::Screen *pScreen, const char *szURL, const char *szSaveAsFilename, const char *szNotFoundMessage)
 {
 	// log it
-	LogF(LoadResStr("IDS_PRC_DOWNLOADINGFILE"), szURL);
+	Log(C4ResStrTableKey::IDS_PRC_DOWNLOADINGFILE, szURL);
 	// show download dialog
 	C4DownloadDlg *pDlg = new C4DownloadDlg(szDLType);
 	if (!pDlg->ShowModal(pScreen, szURL, szSaveAsFilename))
@@ -179,20 +178,20 @@ bool C4DownloadDlg::DownloadFile(const char *szDLType, C4GUI::Screen *pScreen, c
 			return false;
 		// otherwise, show an appropriate error
 		const char *szError = pDlg->GetError();
-		if (!szError || !*szError) szError = LoadResStr("IDS_PRC_UNKOWNERROR");
-		StdStrBuf sError;
-		sError.Format(LoadResStr("IDS_PRC_DOWNLOADERROR"), GetFilename(szURL), szError);
+		if (!szError || !*szError) szError = LoadResStr(C4ResStrTableKey::IDS_PRC_UNKOWNERROR);
+		std::string error{LoadResStr(C4ResStrTableKey::IDS_PRC_DOWNLOADERROR, GetFilename(szURL), szError)};
 		// it's a 404: display extended message
-		if (SSearch(szError, "404") && szNotFoundMessage)
+		if (error.contains("404") && szNotFoundMessage)
 		{
-			sError.Append("|"); sError.Append(szNotFoundMessage);
+			error += '|';
+			error += szNotFoundMessage;
 		}
 		// display message
-		pScreen->ShowMessageModal(sError.getData(), FormatString(LoadResStr("IDS_CTL_DL_TITLE"), szDLType).getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error, nullptr);
+		pScreen->ShowMessageModal(error.c_str(), LoadResStr(C4ResStrTableKey::IDS_CTL_DL_TITLE, szDLType).c_str(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error, nullptr);
 		delete pDlg;
 		return false;
 	}
-	LogF(LoadResStr("IDS_PRC_DOWNLOADCOMPLETE"), szURL);
+	Log(C4ResStrTableKey::IDS_PRC_DOWNLOADCOMPLETE, szURL);
 	delete pDlg;
 	return true;
 }

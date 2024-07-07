@@ -239,7 +239,7 @@ public:
 	bool GetReportDisconnectReply(StdStrBuf *pMessage);
 
 private:
-	void ModifyForChecksum(StdStrBuf *pData, const char *pReplace);
+	void ModifyForChecksum(std::string &data, const char *replace);
 	void ModifyForChecksum(const void *pData, size_t iDataSize, char *pReplace, uint32_t iChecksum, uint32_t iCheckMask);
 };
 

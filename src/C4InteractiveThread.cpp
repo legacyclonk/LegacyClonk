@@ -91,9 +91,7 @@ bool C4InteractiveThread::PushEvent(C4InteractiveEventType eEvent, std::any data
 	}
 	catch (const std::runtime_error &)
 	{
-		// ThreadLog most likely won't work here, so Log will be used directly in hope
-		// it doesn't screw too much
-		LogFatal("Network: could not post message to main thread!");
+		LogFatalNTr("Network: could not post message to main thread!");
 	}
 
 	return true;
@@ -135,27 +133,6 @@ void C4InteractiveThread::ProcessEvents() // by main thread
 	while (PopEvent(&eEventType, &eventData))
 		switch (eEventType)
 		{
-		// Logging
-		case Ev_Log: case Ev_LogSilent: case Ev_LogFatal:
-		{
-			// Reconstruct the StdStrBuf which allocated the data.
-			auto log = std::any_cast<const StdStrBuf &>(eventData);
-			switch (eEventType)
-			{
-			case Ev_Log:
-				Log(log.getData()); break;
-			case Ev_LogSilent:
-				LogSilent(log.getData()); break;
-			case Ev_LogFatal:
-				LogFatal(log.getData()); break;
-			default:
-				// can't really get here in any sane way
-				assert(!"Unhandled switch case");
-				break;
-			}
-		}
-		break;
-
 		// Execute in main thread
 		case Ev_ExecuteInMainThread:
 			std::any_cast<const std::function<void()> &>(eventData)();
@@ -168,16 +145,4 @@ void C4InteractiveThread::ProcessEvents() // by main thread
 					pCallbacks[eEventType]->OnThreadEvent(eEventType, eventData);
 			// Note that memory might leak if the event wasn't processed....
 		}
-}
-
-bool C4InteractiveThread::ThreadLog(const char *szMessage)
-{
-	// send to main thread
-	return PushEvent(Ev_Log, StdStrBuf{szMessage});
-}
-
-bool C4InteractiveThread::ThreadLogS(const char *szMessage)
-{
-	// send to main thread
-	return PushEvent(Ev_LogSilent, StdStrBuf{szMessage});
 }

@@ -35,6 +35,7 @@
 #include <C4ObjectMenu.h>
 
 #include <cstring>
+#include <format>
 #include <limits>
 #include <utility>
 
@@ -532,11 +533,11 @@ void C4Object::SetOCF()
 #ifndef NDEBUG
 	if (Contained && !Game.Objects.ObjectNumber(Contained))
 	{
-		LogF("Warning: contained in wild object %p!", Contained.Object());
+		LogNTr(spdlog::level::warn, "Contained in wild object {}!", static_cast<void *>(Contained.Object()));
 	}
 	else if (Contained && !Contained->Status)
 	{
-		LogF("Warning: contained in deleted object %p (%s)!", Contained.Object(), Contained->GetName());
+		LogNTr(spdlog::level::warn, "Warning: contained in deleted object {} ({})!", static_cast<void *>(Contained.Object()), Contained->GetName());
 	}
 #endif
 	if (Contained)
@@ -674,11 +675,11 @@ void C4Object::UpdateOCF()
 #ifndef NDEBUG
 	if (Contained && !Game.Objects.ObjectNumber(Contained))
 	{
-		LogF("Warning: contained in wild object %p!", Contained.Object());
+		LogNTr(spdlog::level::warn, "contained in wild object {}!", static_cast<void *>(Contained.Object()));
 	}
 	else if (Contained && !Contained->Status)
 	{
-		LogF("Warning: contained in deleted object %p (%s)!", Contained.Object(), Contained->GetName());
+		LogNTr(spdlog::level::warn, "contained in deleted object {} ({})!", static_cast<void *>(Contained.Object()), Contained->GetName());
 	}
 #endif
 	if (Contained)
@@ -954,7 +955,7 @@ bool C4Object::ExecLife()
 				if (Info->Age != iNewAge)
 				{
 					// message
-					GameMsgObject(FormatString(LoadResStr("IDS_OBJ_BIRTHDAY"), GetName(), iNewAge).getData(), this);
+					GameMsgObject(LoadResStr(C4ResStrTableKey::IDS_OBJ_BIRTHDAY, GetName(), iNewAge).c_str(), this);
 					StartSoundEffect("Trumpet", false, 100, this);
 				}
 
@@ -1630,7 +1631,7 @@ bool C4Object::ActivateEntrance(int32_t by_plr, C4Object *by_obj)
 	{
 		if (ValidPlr(Owner))
 		{
-			GameMsgObject(FormatString(LoadResStr("IDS_OBJ_HOSTILENOENTRANCE"), Game.Players.Get(Owner)->GetName()).getData(), this);
+			GameMsgObject(LoadResStr(C4ResStrTableKey::IDS_OBJ_HOSTILENOENTRANCE, Game.Players.Get(Owner)->GetName()).c_str(), this);
 		}
 		return false;
 	}
@@ -1713,7 +1714,7 @@ bool C4Object::Build(int32_t iLevel, C4Object *pBuilder)
 				// ...tell builder to acquire the material
 				pBuilder->AddCommand(C4CMD_Acquire, nullptr, 0, 0, 50, nullptr, true, NeededMaterial, false, 1);
 			// ...game message if not overloaded
-			Game.Messages.New(C4GM_Target, GetNeededMatStr(pBuilder), pBuilder, pBuilder->Controller);
+			Game.Messages.New(C4GM_Target, StdStrBuf{GetNeededMatStr(pBuilder).c_str()}, pBuilder, pBuilder->Controller);
 		}
 		// Still in need: done/fail
 		return false;
@@ -1799,7 +1800,7 @@ bool C4Object::Push(C4Fixed txdir, C4Fixed dforce, bool fStraighten)
 	if (!Tick35) if (txdir) if (!Def->NoHorizontalMove)
 		if (ContactCheck(x, y)) // Resets t_contact
 		{
-			GameMsgObject(FormatString(LoadResStr("IDS_OBJ_STUCK"), GetName()).getData(), this);
+			GameMsgObject(LoadResStr(C4ResStrTableKey::IDS_OBJ_STUCK, GetName()).c_str(), this);
 			Call(PSF_Stuck);
 		}
 
@@ -1829,7 +1830,7 @@ bool C4Object::Lift(C4Fixed tydir, C4Fixed dforce)
 	if (tydir != -GravAccel)
 		if (ContactCheck(x, y)) // Resets t_contact
 		{
-			GameMsgObject(FormatString(LoadResStr("IDS_OBJ_STUCK"), GetName()).getData(), this);
+			GameMsgObject(LoadResStr(C4ResStrTableKey::IDS_OBJ_STUCK, GetName()).c_str(), this);
 			Call(PSF_Stuck);
 		}
 	return true;
@@ -1859,7 +1860,8 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 {
 	// Variables
 	C4FacetExSurface fctSymbol;
-	char szCaption[256 + 1], szCommand[256 + 1];
+	std::string caption;
+	std::string command;
 	int32_t cnt, iCount;
 	C4Def *pDef;
 	C4Player *pPlayer;
@@ -1879,9 +1881,9 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		// Create symbol
 		fctSymbol.Create(C4SymbolSize, C4SymbolSize);
 		pTarget->Def->Draw(fctSymbol, false, pTarget->Color, pTarget);
-		sprintf(szCaption, LoadResStr("IDS_OBJ_EMPTY"), pTarget->GetName());
+		caption = LoadResStr(C4ResStrTableKey::IDS_OBJ_EMPTY, pTarget->GetName());
 		// Init
-		Menu->Init(fctSymbol, szCaption, this, C4MN_Extra_None, 0, iMenu);
+		Menu->Init(fctSymbol, caption.c_str(), this, C4MN_Extra_None, 0, iMenu);
 		Menu->SetPermanent(true);
 		Menu->SetRefillObject(pTarget);
 		// Success
@@ -1894,7 +1896,7 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		fctSymbol.Create(C4SymbolSize, C4SymbolSize);
 		DrawMenuSymbol(C4MN_Buy, fctSymbol, pTarget->Owner, pTarget);
 		// Init menu
-		Menu->Init(fctSymbol, LoadResStr("IDS_PLR_NOBUY"), this, C4MN_Extra_Value, 0, iMenu);
+		Menu->Init(fctSymbol, LoadResStr(C4ResStrTableKey::IDS_PLR_NOBUY), this, C4MN_Extra_Value, 0, iMenu);
 		Menu->SetPermanent(true);
 		Menu->SetRefillObject(pTarget);
 		// Success
@@ -1906,8 +1908,8 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		// Create symbol & init
 		fctSymbol.Create(C4SymbolSize, C4SymbolSize);
 		DrawMenuSymbol(C4MN_Sell, fctSymbol, pTarget->Owner, pTarget);
-		sprintf(szCaption, LoadResStr("IDS_OBJ_EMPTY"), pTarget->GetName());
-		Menu->Init(fctSymbol, szCaption, this, C4MN_Extra_Value, 0, iMenu);
+		caption = LoadResStr(C4ResStrTableKey::IDS_OBJ_EMPTY, pTarget->GetName());
+		Menu->Init(fctSymbol, caption.c_str(), this, C4MN_Extra_Value, 0, iMenu);
 		Menu->SetPermanent(true);
 		Menu->SetRefillObject(pTarget);
 		// Success
@@ -1922,8 +1924,8 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		// Create symbol & init
 		fctSymbol.Create(C4SymbolSize, C4SymbolSize);
 		pTarget->Def->Draw(fctSymbol, false, pTarget->Color, pTarget);
-		sprintf(szCaption, LoadResStr("IDS_OBJ_EMPTY"), pTarget->GetName());
-		Menu->Init(fctSymbol, szCaption, this, C4MN_Extra_None, 0, iMenu);
+		caption = LoadResStr(C4ResStrTableKey::IDS_OBJ_EMPTY, pTarget->GetName());
+		Menu->Init(fctSymbol, caption.c_str(), this, C4MN_Extra_None, 0, iMenu);
 		Menu->SetPermanent(true);
 		Menu->SetRefillObject(pTarget);
 		// Success
@@ -1957,18 +1959,18 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		fctSymbol.Create(C4SymbolSize, C4SymbolSize);
 		DrawMenuSymbol(C4MN_Construction, fctSymbol, -1, nullptr);
 		// Init menu
-		Menu->Init(fctSymbol, FormatString(LoadResStr("IDS_PLR_NOBKNOW"), pPlayer->GetName()).getData(), this, C4MN_Extra_Components, 0, iMenu);
+		Menu->Init(fctSymbol, LoadResStr(C4ResStrTableKey::IDS_PLR_NOBKNOW, pPlayer->GetName()).c_str(), this, C4MN_Extra_Components, 0, iMenu);
 		// Add player's structure build knowledge
 		for (cnt = 0; pDef = C4Id2Def(pPlayer->Knowledge.GetID(Game.Defs, C4D_Structure, cnt, &iCount)); cnt++)
 		{
 			// Caption
-			sprintf(szCaption, LoadResStr("IDS_MENU_CONSTRUCT"), pDef->GetName());
+			caption = LoadResStr(C4ResStrTableKey::IDS_MENU_CONSTRUCT, pTarget->GetName());
 			// Picture
 			pDef->Picture2Facet(fctSymbol);
 			// Command
-			sprintf(szCommand, "SetCommand(this,\"Construct\",,0,0,,%s)", C4IdText(pDef->id));
+			command = std::format("SetCommand(this, \"Construct\",,0,0,,{}", C4IdText(pDef->id));
 			// Add menu item
-			Menu->AddRefSym(szCaption, fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pDef->GetDesc(), pDef->id);
+			Menu->AddRefSym(caption.c_str(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, pDef->GetDesc(), pDef->id);
 		}
 		// Preselect
 		Menu->SetSelection(iMenuSelect, false, true);
@@ -2157,7 +2159,7 @@ bool C4Object::Promote(int32_t torank, bool fForceRankName)
 	Info->Promote(torank, *pRankSys, fForceRankName);
 	// silent update?
 	if (!pRankSys->GetRankName(torank, false)) return false;
-	GameMsgObject(FormatString(LoadResStr("IDS_OBJ_PROMOTION"), GetName(), Info->sRankName.getData()).getData(), this);
+	GameMsgObject(LoadResStr(C4ResStrTableKey::IDS_OBJ_PROMOTION, GetName(), Info->sRankName.getData()).c_str(), this);
 	StartSoundEffect("Trumpet", 0, 100, this);
 	return true;
 }
@@ -2262,8 +2264,8 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 		C4Command *pCom;
 		int32_t ccx = x, ccy = y;
 		int32_t x1, y1, x2, y2;
-		char szCommand[200];
-		StdStrBuf Cmds;
+		std::string command;
+		std::string commands;
 		int32_t iMoveTos = 0;
 		for (pCom = Command; pCom; pCom = pCom->Next)
 		{
@@ -2280,26 +2282,27 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 				if (x1 > x2) std::swap(x1, x2); if (y1 > y2) std::swap(y1, y2);
 				ccx = pCom->Tx._getInt(); ccy = pCom->Ty;
 				// Message
-				iMoveTos++; szCommand[0] = 0;
+				iMoveTos++;
+				command.clear();
 				break;
 			case C4CMD_Put:
-				sprintf(szCommand, "%s %s to %s", CommandName(pCom->Command), pCom->Target2 ? pCom->Target2->GetName() : pCom->Data ? C4IdText(pCom->Data) : "Content", pCom->Target ? pCom->Target->GetName() : "");
+				command = std::format("{} {} to {}", CommandName(pCom->Command), pCom->Target2 ? pCom->Target2->GetName() : pCom->Data ? C4IdText(pCom->Data) : "Content", pCom->Target ? pCom->Target->GetName() : "");
 				break;
 			case C4CMD_Buy: case C4CMD_Sell:
-				sprintf(szCommand, "%s %s at %s", CommandName(pCom->Command), C4IdText(pCom->Data), pCom->Target ? pCom->Target->GetName() : "closest base");
+				command = std::format("{} {} at {}", CommandName(pCom->Command), C4IdText(pCom->Data), pCom->Target ? pCom->Target->GetName() : "closest base");
 				break;
 			case C4CMD_Acquire:
-				sprintf(szCommand, "%s %s", CommandName(pCom->Command), C4IdText(pCom->Data));
+				command = std::format("{} {}", CommandName(pCom->Command), pCom->Target ? pCom->Target->GetName() : "");
 				break;
 			case C4CMD_Call:
-				sprintf(szCommand, "%s %s in %s", CommandName(pCom->Command), pCom->Text.c_str(), pCom->Target ? pCom->Target->GetName() : "(null)");
+				command = std::format("{} {} in {}", CommandName(pCom->Command), pCom->Text, pCom->Target ? pCom->Target->GetName() : "(null)");
 				break;
 			case C4CMD_Construct:
 				C4Def *pDef; pDef = C4Id2Def(pCom->Data);
-				sprintf(szCommand, "%s %s", CommandName(pCom->Command), pDef ? pDef->GetName() : "");
+				command = std::format("{} {}", CommandName(pCom->Command), pDef ? pDef->GetName() : "");
 				break;
 			case C4CMD_None:
-				szCommand[0] = 0;
+				command.clear();
 				break;
 			case C4CMD_Transfer:
 				// Path
@@ -2310,29 +2313,29 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 				if (x1 > x2) std::swap(x1, x2); if (y1 > y2) std::swap(y1, y2);
 				ccx = pCom->Tx._getInt(); ccy = pCom->Ty;
 				// Message
-				sprintf(szCommand, "%s %s", CommandName(pCom->Command), pCom->Target ? pCom->Target->GetName() : "");
+				command = std::format("{} {}", CommandName(pCom->Command), pCom->Target ? pCom->Target->GetName() : "");
 				break;
 			default:
-				sprintf(szCommand, "%s %s", CommandName(pCom->Command), pCom->Target ? pCom->Target->GetName() : "");
+				command = std::format("{} {}", CommandName(pCom->Command), pCom->Target ? pCom->Target->GetName() : "");
 				break;
 			}
 			// Compose command stack message
-			if (szCommand[0])
+			if (!command.empty())
 			{
 				// End MoveTo stack first
-				if (iMoveTos) { Cmds.AppendChar('|'); Cmds.AppendFormat("%dx MoveTo", iMoveTos); iMoveTos = 0; }
+				if (iMoveTos) { commands += std::format("|{}x MoveTo", std::exchange(iMoveTos, 0)); }
 				// Current message
-				Cmds.AppendChar('|');
-				if (pCom->Finished) Cmds.Append("<i>");
-				Cmds.Append(szCommand);
-				if (pCom->Finished) Cmds.Append("</i>");
+				commands += '|';
+				if (pCom->Finished) commands += "<i>";
+				commands += std::move(command);
+				if (pCom->Finished) commands += "</i>";
 			}
 		}
 		// Open MoveTo stack
-		if (iMoveTos) { Cmds.AppendChar('|'); Cmds.AppendFormat("%dx MoveTo", iMoveTos); iMoveTos = 0; }
+		if (iMoveTos) { commands += std::format("|{}x MoveTo", std::exchange(iMoveTos, 0)); }
 		// Draw message
-		int32_t cmwdt, cmhgt; Game.GraphicsResource.FontRegular.GetTextExtent(Cmds.getData(), cmwdt, cmhgt, true);
-		Application.DDraw->TextOut(Cmds.getData(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + cox - Shape.x, cgo.Y + coy - 10 - cmhgt, CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
+		int32_t cmwdt, cmhgt; Game.GraphicsResource.FontRegular.GetTextExtent(commands.c_str(), cmwdt, cmhgt, true);
+		Application.DDraw->TextOut(commands.c_str(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + cox - Shape.x, cgo.Y + coy - 10 - cmhgt, CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
 	}
 
 	// Don't draw (show solidmask)
@@ -2528,10 +2531,10 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 	{
 		if (Action.Act > ActIdle)
 		{
-			const auto &message = FormatString("%s (%d)", Def->ActMap[Action.Act].Name, Action.Phase);
+			const std::string message{std::format("{} ({})", Def->ActMap[Action.Act].Name, Action.Phase)};
 			int32_t cmwdt, cmhgt;
-			Game.GraphicsResource.FontRegular.GetTextExtent(message.getData(), cmwdt, cmhgt, true);
-			Application.DDraw->TextOut(message.getData(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + cox - Shape.x, cgo.Y + coy - cmhgt, InLiquid ? 0xfa0000FF : CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
+			Game.GraphicsResource.FontRegular.GetTextExtent(message.c_str(), cmwdt, cmhgt, true);
+			Application.DDraw->TextOut(message.c_str(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + cox - Shape.x, cgo.Y + coy - cmhgt, InLiquid ? 0xfa0000FF : CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
 		}
 	}
 
@@ -2565,7 +2568,7 @@ void C4Object::DrawTopFace(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode
 				char szText[C4GM_MaxText + 1];
 				if (Config.Graphics.ShowCrewNames)
 					if (Config.Graphics.ShowCrewCNames)
-						sprintf(szText, "%s (%s)", GetName(), pOwner->GetName());
+						FormatWithNull(szText, "{} ({})", GetName(), pOwner->GetName());
 					else
 						SCopy(pOwner->GetName(), szText);
 				else
@@ -2713,7 +2716,7 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 		Def = Game.Defs.ID2Def(id);
 		if (!Def)
 		{
-			pComp->excNotFound(LoadResStr("IDS_PRC_UNDEFINEDOBJECT"), C4IdText(id)); return;
+			pComp->excNotFound(LoadResStr(C4ResStrTableKey::IDS_PRC_UNDEFINEDOBJECT, C4IdText(id))); return;
 		}
 	}
 
@@ -2806,8 +2809,8 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 			for (int i = 1; ; i++)
 			{
 				// Every command has its own naming environment
-				StdStrBuf Naming = FormatString("Command%d", i);
-				pComp->Value(mkNamingPtrAdapt(pCmd ? pCmd->Next : Command, Naming.getData()));
+				const std::string naming{std::format("Command{}", i)};
+				pComp->Value(mkNamingPtrAdapt(pCmd ? pCmd->Next : Command, naming.c_str()));
 				// Last command?
 				pCmd = (pCmd ? pCmd->Next : Command);
 				if (!pCmd)
@@ -2820,8 +2823,8 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 			C4Command *pCmd = Command;
 			for (int i = 1; pCmd; i++, pCmd = pCmd->Next)
 			{
-				StdStrBuf Naming = FormatString("Command%d", i);
-				pComp->Value(mkNamingAdapt(*pCmd, Naming.getData()));
+				const std::string naming{std::format("Command{}", i)};
+				pComp->Value(mkNamingAdapt(*pCmd, naming.c_str()));
 			}
 		}
 
@@ -2941,7 +2944,7 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 		int32_t com = COM_Down_D;
 		if (Game.Players.Get(Controller)->ControlStyle) com = COM_Down;
 
-		tObj->DrawCommand(cgoBottom, C4FCT_Right, nullptr, com, pRegions, Owner, FormatString(LoadResStr("IDS_CON_BUILD"), tObj->GetName()).getData(), &ccgo);
+		tObj->DrawCommand(cgoBottom, C4FCT_Right, nullptr, com, pRegions, Owner, LoadResStr(C4ResStrTableKey::IDS_CON_BUILD, tObj->GetName()).c_str(), &ccgo);
 		tObj->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), false, tObj->Color, tObj);
 		Game.GraphicsResource.fctBuild.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), true);
 	}
@@ -2957,7 +2960,7 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 			else if (ComOrder(cnt) == COM_Down_D)
 			{
 				// Let Go
-				Action.Target->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Down_D, pRegions, Owner, FormatString(LoadResStr("IDS_CON_UNGRAB"), Action.Target->GetName()).getData(), &ccgo);
+				Action.Target->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Down_D, pRegions, Owner, LoadResStr(C4ResStrTableKey::IDS_CON_UNGRAB, Action.Target->GetName()).c_str(), &ccgo);
 				Action.Target->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), false, Action.Target->Color, Action.Target);
 				Game.GraphicsResource.fctHand.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), true, 6);
 			}
@@ -2966,14 +2969,14 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 				// Put
 				if ((tObj = Contents.GetObject()) && (Action.Target->Def->GrabPutGet & C4D_Grab_Put))
 				{
-					Action.Target->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Throw, pRegions, Owner, FormatString(LoadResStr("IDS_CON_PUT"), tObj->GetName(), Action.Target->GetName()).getData(), &ccgo);
+					Action.Target->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Throw, pRegions, Owner, LoadResStr(C4ResStrTableKey::IDS_CON_PUT, tObj->GetName(), Action.Target->GetName()).c_str(), &ccgo);
 					tObj->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), false, tObj->Color, tObj);
 					Game.GraphicsResource.fctHand.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), true, 0);
 				}
 				// Get
 				else if (Action.Target->Contents.ListIDCount(C4D_Get) && (Action.Target->Def->GrabPutGet & C4D_Grab_Get))
 				{
-					Action.Target->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Throw, pRegions, Owner, FormatString(LoadResStr("IDS_CON_GET"), Action.Target->GetName()).getData(), &ccgo);
+					Action.Target->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Throw, pRegions, Owner, LoadResStr(C4ResStrTableKey::IDS_CON_GET, Action.Target->GetName()).c_str(), &ccgo);
 					Action.Target->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), false, Action.Target->Color, Action.Target);
 					Game.GraphicsResource.fctHand.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), true, 1);
 				}
@@ -2997,7 +3000,7 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 		if (!fContainedDownOverride)
 		{
 			DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Down, pRegions, Owner,
-				LoadResStr("IDS_CON_EXIT"), &ccgo);
+				LoadResStr(C4ResStrTableKey::IDS_CON_EXIT), &ccgo);
 			Game.GraphicsResource.fctExit.Draw(ccgo);
 		}
 		// Contained base commands
@@ -3006,13 +3009,13 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 			// Sell
 			if (Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_Sell)
 			{
-				Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Dig, pRegions, Owner, LoadResStr("IDS_CON_SELL"), &ccgo);
+				Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Dig, pRegions, Owner, LoadResStr(C4ResStrTableKey::IDS_CON_SELL), &ccgo);
 				DrawMenuSymbol(C4MN_Sell, ccgo, Contained->Base, Contained);
 			}
 			// Buy
 			if (Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_Buy)
 			{
-				Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Up, pRegions, Owner, LoadResStr("IDS_CON_BUY"), &ccgo);
+				Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Up, pRegions, Owner, LoadResStr(C4ResStrTableKey::IDS_CON_BUY), &ccgo);
 				DrawMenuSymbol(C4MN_Buy, ccgo, Contained->Base, Contained);
 			}
 		}
@@ -3024,14 +3027,14 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 			// carlo: Direct get ("Take2")
 			if (!fContainedRightOverride)
 			{
-				Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Right, pRegions, Owner, FormatString(LoadResStr("IDS_CON_GET"), Contained->GetName()).getData(), &ccgo);
+				Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Right, pRegions, Owner, LoadResStr(C4ResStrTableKey::IDS_CON_GET, Contained->GetName()).c_str(), &ccgo);
 				Contained->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), false, Contained->Color, Contained);
 				Game.GraphicsResource.fctHand.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), true, 1);
 			}
 			// carlo: Get ("Take")
 			if (!fContainedLeftOverride)
 			{
-				Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Left, pRegions, Owner, FormatString(LoadResStr("IDS_CON_ACTIVATEFROM"), Contained->GetName()).getData(), &ccgo);
+				Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Left, pRegions, Owner, LoadResStr(C4ResStrTableKey::IDS_CON_ACTIVATEFROM, Contained->GetName()).c_str(), &ccgo);
 				Contained->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), false, Contained->Color, Contained);
 				Game.GraphicsResource.fctHand.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), true, 0);
 			}
@@ -3039,14 +3042,14 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 		if (tObj = Contents.GetObject())
 		{
 			// Put
-			Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Throw, pRegions, Owner, FormatString(LoadResStr("IDS_CON_PUT"), tObj->GetName(), Contained->GetName()).getData(), &ccgo);
+			Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Throw, pRegions, Owner, LoadResStr(C4ResStrTableKey::IDS_CON_PUT, tObj->GetName(), Contained->GetName()).c_str(), &ccgo);
 			tObj->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), false, tObj->Color, tObj);
 			Game.GraphicsResource.fctHand.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), true, 0);
 		}
 		else if (nContents)
 		{
 			// Get
-			Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Throw, pRegions, Owner, FormatString(LoadResStr("IDS_CON_ACTIVATEFROM"), Contained->GetName()).getData(), &ccgo);
+			Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Throw, pRegions, Owner, LoadResStr(C4ResStrTableKey::IDS_CON_ACTIVATEFROM, Contained->GetName()).c_str(), &ccgo);
 			Contained->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), false, Contained->Color, Contained);
 			Game.GraphicsResource.fctHand.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), true, 0);
 		}
@@ -3213,7 +3216,7 @@ bool C4Object::ContainedControl(uint8_t byCom)
 			if (Contained->Category & C4D_Structure)
 				return false; // or true? Currently it doesn't matter.
 	// get script function if defined
-	C4AulFunc *sf = Contained->Def->Script.GetSFunc(FormatString(PSF_ContainedControl, ComName(byCom)).getData());
+	C4AulFunc *sf = Contained->Def->Script.GetSFunc(std::format(PSF_ContainedControl, ComName(byCom)).c_str());
 	// in old versions, do hardcoded actions first (until gwe3)
 	// new objects may overload them
 	C4Def *pCDef = Contained->Def;
@@ -3242,7 +3245,7 @@ bool C4Object::ContainedControl(uint8_t byCom)
 		break;
 	case COM_Throw_D:
 		// avoid breaking objects with non-default behavior on ContainedThrow
-		if (Contained->Def->Script.GetSFunc(FormatString(PSF_ContainedControl, ComName(COM_Throw)).getData()))
+		if (Contained->Def->Script.GetSFunc(std::format(PSF_ContainedControl, ComName(COM_Throw)).c_str()))
 		{
 			break;
 		}
@@ -3292,7 +3295,7 @@ bool C4Object::CallControl(C4Player *pPlr, uint8_t byCom, const C4AulParSet &pPa
 {
 	assert(pPlr);
 
-	bool result = static_cast<bool>(Call(FormatString(PSF_Control, ComName(byCom)).getData(), pPars));
+	bool result = static_cast<bool>(Call(std::format(PSF_Control, ComName(byCom)).c_str(), pPars));
 
 	// Call ControlUpdate when using Jump'n'Run control
 	if (pPlr->ControlStyle)
@@ -3522,7 +3525,7 @@ void C4Object::DirectCom(uint8_t byCom, int32_t iData) // By player ObjectCom
 		case COM_Down_D: ObjectComUnGrab(this); break;
 		case COM_Throw_D:
 			// avoid breaking objects with non-default behavior on ControlThrow
-			if (!fGrabControlOverload || !Action.Target || Action.Target->Def->Script.GetSFunc(FormatString(PSF_Control, ComName(COM_Throw)).getData()))
+			if (!fGrabControlOverload || !Action.Target || Action.Target->Def->Script.GetSFunc(std::format(PSF_Control, ComName(COM_Throw)).c_str()))
 			{
 				break;
 			}
@@ -3693,7 +3696,7 @@ void C4Object::AutoStopDirectCom(uint8_t byCom, int32_t iData) // By DirecCom
 		case COM_Down_D:  ObjectComUnGrab(this); break;
 		case COM_Throw_D:
 			// avoid breaking objects with non-default behavior on ControlThrow
-			if (!fGrabControlOverload || !Action.Target || Action.Target->Def->Script.GetSFunc(FormatString(PSF_Control, ComName(COM_Throw)).getData()))
+			if (!fGrabControlOverload || !Action.Target || Action.Target->Def->Script.GetSFunc(std::format(PSF_Control, ComName(COM_Throw)).c_str()))
 			{
 				break;
 			}
@@ -3745,11 +3748,11 @@ C4Object *C4Object::ComposeContents(C4ID id)
 	C4IDList NeededComponents;
 	pDef->GetComponents(&NeededComponents, nullptr, this);
 	// Check for sufficient components
-	StdStrBuf Needs; Needs.Format(LoadResStr("IDS_CON_BUILDMATNEED"), pDef->GetName());
+	std::string needs{LoadResStr(C4ResStrTableKey::IDS_CON_BUILDMATNEED, pDef->GetName())};
 	for (cnt = 0; c_id = NeededComponents.GetID(cnt); cnt++)
 		if (NeededComponents.GetCount(cnt) > Contents.ObjectCount(c_id))
 		{
-			Needs.AppendFormat("|%ix %s", NeededComponents.GetCount(cnt) - Contents.ObjectCount(c_id), C4Id2Def(c_id) ? C4Id2Def(c_id)->GetName() : C4IdText(c_id));
+			needs += std::format("|{}x {}", NeededComponents.GetCount(cnt) - Contents.ObjectCount(c_id), C4Id2Def(c_id) ? C4Id2Def(c_id)->GetName() : C4IdText(c_id));
 			if (!idNeeded) { idNeeded = c_id; iNeeded = NeededComponents.GetCount(cnt) - Contents.ObjectCount(c_id); }
 			fInsufficient = true;
 		}
@@ -3759,7 +3762,7 @@ C4Object *C4Object::ComposeContents(C4ID id)
 		// BuildNeedsMaterial call to object...
 		if (!Call(PSF_BuildNeedsMaterial, {C4VID(idNeeded), C4VInt(iNeeded)}))
 			// ...game message if not overloaded
-			GameMsgObject(Needs.getData(), this);
+			GameMsgObject(needs.c_str(), this);
 		// Return
 		return nullptr;
 	}
@@ -4054,7 +4057,7 @@ void C4Object::DrawCommand(C4Facet &cgoBar, int32_t iAlign, const char *szFuncti
 	// Command
 	if (!fFlash || Tick35 > 15)
 		DrawCommandKey(cgoLeft, iCom, false,
-			Config.Graphics.ShowCommandKeys ? PlrControlKeyName(iPlayer, Com2Control(iCom), true).getData() : nullptr);
+			Config.Graphics.ShowCommandKeys ? PlrControlKeyName(iPlayer, Com2Control(iCom), true).c_str() : nullptr);
 
 	// Region (both symbols)
 	if (pRegions)
@@ -6118,7 +6121,7 @@ StdStrBuf C4Object::GetInfoString()
 		if (!vInfo) continue;
 		// debug: warn for wrong return types
 		if (vInfo.GetType() != C4V_String)
-			DebugLogF("Effect %s(%d) on object %s (#%d) returned wrong info type %d.", pEff->Name, pEff->iNumber, Def->GetName(), Number, vInfo.GetType());
+			DebugLog(spdlog::level::warn, "Effect {}({}) on object {} (#{}) returned wrong info type {}.", pEff->Name, pEff->iNumber, Def->GetName(), Number, std::to_underlying(vInfo.GetType()));
 		// get string val
 		C4String *psInfo = vInfo.getStr(); const char *szEffInfo;
 		if (psInfo && (szEffInfo = psInfo->Data.getData()))
@@ -6205,11 +6208,11 @@ void C4Object::UpdateScriptPointers()
 		pEffects->ReAssignAllCallbackFunctions();
 }
 
-StdStrBuf C4Object::GetNeededMatStr(C4Object *pBuilder)
+std::string C4Object::GetNeededMatStr(C4Object *pBuilder)
 {
 	C4Def *pComponent;
 	int32_t cnt, ncnt;
-	StdStrBuf NeededMats;
+	std::string neededMats;
 
 	C4IDList NeededComponents;
 	Def->GetComponents(&NeededComponents, nullptr, pBuilder);
@@ -6223,24 +6226,19 @@ StdStrBuf C4Object::GetNeededMatStr(C4Object *pBuilder)
 			ncnt = NeededComponents.GetCount(cnt) - Component.GetIDCount(idComponent);
 			if (ncnt > 0)
 			{
-				NeededMats.AppendFormat("|%dx ", ncnt);
-				if ((pComponent = C4Id2Def(idComponent)))
-					NeededMats.Append(pComponent->GetName());
-				else
-					NeededMats.Append(C4IdText(idComponent));
+				neededMats += std::format("|{}x {}", ncnt, (pComponent = C4Id2Def(idComponent)) ? pComponent->GetName() : C4IdText(idComponent));
 			}
 		}
 	}
 
-	StdStrBuf result;
-	if (!!NeededMats)
+	if (!neededMats.empty())
 	{
-		result.Format(LoadResStr("IDS_CON_BUILDMATNEED"), GetName()); result.Append(NeededMats.getData());
+		return LoadResStr(C4ResStrTableKey::IDS_CON_BUILDMATNEED, GetName()).append(std::move(neededMats));
 	}
 	else
-		result.Format(LoadResStr("IDS_CON_BUILDMATNONE"), GetName());
-
-	return result;
+	{
+		return LoadResStr(C4ResStrTableKey::IDS_CON_BUILDMATNONE, GetName());
+	}
 }
 
 bool C4Object::IsPlayerObject(int32_t iPlayerNumber)

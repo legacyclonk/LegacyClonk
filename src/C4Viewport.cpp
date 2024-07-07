@@ -224,7 +224,7 @@ bool C4ViewportWindow::GetPositionData(std::string &id, std::string &subKey, boo
 
 bool C4Viewport::DropFiles(HANDLE hDrop)
 {
-	if (!Console.Editing) { Console.Message(LoadResStr("IDS_CNS_NONETEDIT")); return false; }
+	if (!Console.Editing) { Console.Message(LoadResStr(C4ResStrTableKey::IDS_CNS_NONETEDIT)); return false; }
 
 	int32_t iFileNum = DragQueryFile((HDROP)hDrop, 0xFFFFFFFF, nullptr, 0);
 	POINT pntPoint;
@@ -875,7 +875,7 @@ void C4Viewport::DrawOverlay(C4FacetEx &cgo)
 			{
 				int32_t iSymbolSize = C4SymbolSize * 2 / 3;
 				C4Facet ccgo; ccgo.Set(cgo.Surface, cgo.X + cgo.Wdt - iSymbolSize, cgo.Y + C4SymbolSize + 2 * C4SymbolBorder, iSymbolSize, iSymbolSize); ccgo.Y += iSymbolSize;
-				DrawCommandKey(ccgo, COM_PlayerMenu, false, PlrControlKeyName(Player, Com2Control(COM_PlayerMenu), true).getData());
+				DrawCommandKey(ccgo, COM_PlayerMenu, false, PlrControlKeyName(Player, Com2Control(COM_PlayerMenu), true).c_str());
 			}
 		}
 	}
@@ -970,7 +970,7 @@ void C4Viewport::DrawMenu(C4FacetEx &cgo)
 	// Player eliminated
 	if (pPlr && pPlr->Eliminated)
 	{
-		Application.DDraw->TextOut(FormatString(LoadResStr(pPlr->Surrendered ? "IDS_PLR_SURRENDERED" : "IDS_PLR_ELIMINATED"), pPlr->GetName()).getData(),
+		Application.DDraw->TextOut((pPlr->Surrendered ? LoadResStr(C4ResStrTableKey::IDS_PLR_SURRENDERED, pPlr->GetName()) : LoadResStr(C4ResStrTableKey::IDS_PLR_ELIMINATED, pPlr->GetName())).c_str(),
 			Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + cgo.Wdt / 2, cgo.Y + 2 * cgo.Hgt / 3, 0xfaFF0000, ACenter);
 		return;
 	}
@@ -1348,7 +1348,7 @@ bool C4Viewport::Init(CStdWindow *pParent, CStdApp *pApp, int32_t iPlayer)
 	pWindow = new C4ViewportWindow(this);
 	const auto scale = Application.GetScale();
 	const C4Rect bounds{CStdWindow::DefaultBounds.x, CStdWindow::DefaultBounds.y, static_cast<int32_t>(ceilf(400 * scale)), static_cast<int32_t>(ceilf(250 * scale))};
-	if (!pWindow->Init(pApp, (Player == NO_OWNER) ? LoadResStr("IDS_CNS_VIEWPORT") : Game.Players.Get(Player)->GetName(), bounds, pParent))
+	if (!pWindow->Init(pApp, (Player == NO_OWNER) ? LoadResStr(C4ResStrTableKey::IDS_CNS_VIEWPORT) : Game.Players.Get(Player)->GetName(), bounds, pParent))
 		return false;
 	// Updates
 	UpdateOutputSize();
@@ -1360,7 +1360,7 @@ bool C4Viewport::Init(CStdWindow *pParent, CStdApp *pApp, int32_t iPlayer)
 	return true;
 }
 
-StdStrBuf PlrControlKeyName(int32_t iPlayer, int32_t iControl, bool fShort)
+std::string PlrControlKeyName(int32_t iPlayer, int32_t iControl, bool fShort)
 {
 	// determine player
 	C4Player *pPlr = Game.Players.Get(iPlayer);
@@ -1388,7 +1388,7 @@ StdStrBuf PlrControlKeyName(int32_t iPlayer, int32_t iControl, bool fShort)
 		if (szKeyID) return Game.KeyboardInput.GetKeyCodeNameByKeyName(szKeyID, fShort);
 	}
 	// undefined control
-	return StdStrBuf();
+	return "";
 }
 
 void C4Viewport::DrawPlayerControls(C4FacetEx &cgo)
@@ -1437,7 +1437,7 @@ void C4Viewport::DrawPlayerControls(C4FacetEx &cgo)
 			C4Facet ccgo;
 			ccgo.Set(cgo.Surface, tx + scwdt * (iCtrl % 3), ty + schgt * (iCtrl / 3), scwdt, schgt);
 			DrawControlKey(ccgo, iCtrl, (iLastCtrl == iCtrl) ? 1 : 0,
-				showtext ? PlrControlKeyName(Player, iCtrl, true).getData() : nullptr);
+				showtext ? PlrControlKeyName(Player, iCtrl, true).c_str() : nullptr);
 		}
 }
 
@@ -1517,18 +1517,18 @@ void C4Viewport::DrawMouseButtons(C4FacetEx &cgo)
 	ccgo.Set(cgo.Surface, cgo.X + cgo.Wdt - iSymbolSize, cgo.Y + C4SymbolSize + 2 * C4SymbolBorder, iSymbolSize, iSymbolSize);
 	GfxR->fctKey.Draw(ccgo);
 	GfxR->fctOKCancel.Draw(ccgo, true, 0, 1);
-	if (SetRegions) { rgn.Default(); rgn.Set(ccgo, LoadResStr("IDS_CON_HELP")); rgn.Com = COM_Help; SetRegions->Add(rgn); }
+	if (SetRegions) { rgn.Default(); rgn.Set(ccgo, LoadResStr(C4ResStrTableKey::IDS_CON_HELP)); rgn.Com = COM_Help; SetRegions->Add(rgn); }
 	// Player menu
 	ccgo.Y += iSymbolSize;
-	DrawCommandKey(ccgo, COM_PlayerMenu, false, PlrControlKeyName(Player, Com2Control(COM_PlayerMenu), true).getData());
-	if (SetRegions) { rgn.Default(); rgn.Set(ccgo, LoadResStr("IDS_CON_PLAYERMENU")); rgn.Com = COM_PlayerMenu; SetRegions->Add(rgn); }
+	DrawCommandKey(ccgo, COM_PlayerMenu, false, PlrControlKeyName(Player, Com2Control(COM_PlayerMenu), true).c_str());
+	if (SetRegions) { rgn.Default(); rgn.Set(ccgo, LoadResStr(C4ResStrTableKey::IDS_CON_PLAYERMENU)); rgn.Com = COM_PlayerMenu; SetRegions->Add(rgn); }
 	// Chat
 	if (C4ChatDlg::IsChatActive())
 	{
 		ccgo.Y += iSymbolSize;
 		GfxR->fctKey.Draw(ccgo);
 		C4GUI::Icon::GetIconFacet(C4GUI::Ico_Ex_Chat).Draw(ccgo, true);
-		if (SetRegions) { rgn.Default(); rgn.Set(ccgo, LoadResStr("IDS_DLG_CHAT")); rgn.Com = COM_Chat; SetRegions->Add(rgn); }
+		if (SetRegions) { rgn.Default(); rgn.Set(ccgo, LoadResStr(C4ResStrTableKey::IDS_DLG_CHAT)); rgn.Com = COM_Chat; SetRegions->Add(rgn); }
 	}
 }
 

@@ -56,7 +56,7 @@ void C4ToastLibNotify::AddAction(std::string_view action)
 
 	notify_notification_add_action(
 		notification,
-		FormatString("action-%lu", index).getData(),
+		std::format("action-{}", index).c_str(),
 		C4Language::IconvUtf8(std::string{action}.c_str()).getData(),
 		&C4ToastLibNotify::OnAction,
 		new UserData{this, index},
@@ -88,7 +88,7 @@ void C4ToastLibNotify::Show()
 	{
 		if (error)
 		{
-			LogF("C4ToastLibNotify: Failed to show notification: %s", C4Language::IconvClonk(error->message).getData());
+			LogNTr(spdlog::level::err, "C4ToastLibNotify: Failed to show notification: {}", C4Language::IconvClonk(error->message).getData());
 		}
 		eventHandler->Failed();
 	}
@@ -99,7 +99,7 @@ void C4ToastLibNotify::Hide()
 	g_signal_handler_disconnect(notification, signalClose);
 	if (GError *error{nullptr}; !notify_notification_close(notification, &error) && error)
 	{
-		LogF("C4ToastLibNotify: Failed to hide notification: %s", error->message);
+		LogNTr(spdlog::level::err, "C4ToastLibNotify: Failed to hide notification: {}", error->message);
 	}
 }
 

@@ -29,6 +29,8 @@
 #include <C4Game.h>
 #include <C4FileSelDlg.h>
 
+#include <format>
+
 uint32_t GenerateRandomPlayerColor(int32_t iTry); // in C4PlayerInfoConflicts.cpp
 
 // ListItem
@@ -121,11 +123,10 @@ C4PlayerInfoListBox::PlayerListItem::PlayerListItem(C4PlayerInfoListBox *pForLis
 		// Total playing time (not in team filter because then the second line is taken by the score label)
 		if (!pList->IsTeamFilter())
 		{
-			StdStrBuf sTimeLabelText;
 			C4RoundResultsPlayer *pRoundResultsPlr = Game.RoundResults.GetPlayers().GetByID(idPlayer);
 			uint32_t iTimeTotal = pRoundResultsPlr ? pRoundResultsPlr->GetTotalPlayingTime() : 0 /* unknown - should not happen */;
-			sTimeLabelText.Format(LoadResStr("IDS_CTL_TOTALPLAYINGTIME"), iTimeTotal / 3600, (iTimeTotal / 60) % 60, iTimeTotal % 60);
-			pTimeLabel = new C4GUI::Label(sTimeLabelText.getData(), 0, 0, ARight, dwTextColor, pForListBox->GetCustomFont(), false, true);
+			const std::string timeLabelText{LoadResStr(C4ResStrTableKey::IDS_CTL_TOTALPLAYINGTIME, iTimeTotal / 3600, (iTimeTotal / 60) % 60, iTimeTotal % 60)};
+			pTimeLabel = new C4GUI::Label(timeLabelText.c_str(), 0, 0, ARight, dwTextColor, pForListBox->GetCustomFont(), false, true);
 		}
 		// Extra info set by script
 		C4RoundResultsPlayer *pEvaluationPlayer = Game.RoundResults.GetPlayers().GetByID(idPlayer);
@@ -331,7 +332,7 @@ void C4PlayerInfoListBox::PlayerListItem::UpdateTeam()
 	int32_t idTeam; C4Team *pTeam;
 	C4PlayerInfo *pInfo = GetPlayerInfo();
 	if (!Game.Teams.CanLocalSeeTeam())
-		szTeamName = LoadResStr("IDS_MSG_RNDTEAM");
+		szTeamName = LoadResStr(C4ResStrTableKey::IDS_MSG_RNDTEAM);
 	else if (pInfo)
 		if (idTeam = pInfo->GetTeam())
 			if (pTeam = Game.Teams.GetTeamByID(idTeam))
@@ -368,11 +369,11 @@ void C4PlayerInfoListBox::PlayerListItem::UpdateScoreLabel(C4PlayerInfo *pInfo)
 		{
 			AddElement(pScoreLabel = new C4GUI::Label("", iScoreRightPos, iScoreYPos, ARight, pList->GetTextColor(), pList->GetCustomFont(), false));
 			if (pList->IsEvaluation())
-				pScoreLabel->SetToolTip(LoadResStr("IDS_DESC_OLDANDNEWSCORE"));
+				pScoreLabel->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_OLDANDNEWSCORE));
 			else
-				pScoreLabel->SetToolTip(LoadResStr("IDS_DESC_LEAGUESCOREANDPROJECTEDGA"));
+				pScoreLabel->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_LEAGUESCOREANDPROJECTEDGA));
 		}
-		StdStrBuf sText;
+		std::string text;
 		// Evaluation (GameOver)
 		if (pList->IsEvaluation())
 		{
@@ -386,34 +387,33 @@ void C4PlayerInfoListBox::PlayerListItem::UpdateScoreLabel(C4PlayerInfo *pInfo)
 					int32_t iDiscrepancy = iNewScore - (iOldScore + iScoreGain);
 					if (!iDiscrepancy)
 					{
-						sText.Format("{{Ico:League}}<c afafaf>%d (%+d)</c> %d %s", static_cast<int>(iOldScore), static_cast<int>(iScoreGain), static_cast<int>(iNewScore), LoadResStr("IDS_TEXT_SCORE"));
+						text = std::format("{{{{Ico:League}}}}<c afafaf>{} ({:+})</c> {} {}", iOldScore, iScoreGain, iNewScore, LoadResStr(C4ResStrTableKey::IDS_TEXT_SCORE));
 					}
 					else
 					{
 						// If there's a discrepancy, there must have been some kind of admin intervention during the game - display it in red!
-						sText.Format("{{Ico:League}}<c afafaf>%d (%+d)</c><c ff0000>(%+d)</c> %d %s", static_cast<int>(iOldScore), static_cast<int>(iScoreGain), static_cast<int>(iDiscrepancy), static_cast<int>(iNewScore), LoadResStr("IDS_TEXT_SCORE"));
+						text = std::format("{{{{Ico:League}}}}<c afafaf>{} ({:+})</c><c ff0000>({:+})</c> {} {}", iOldScore, iScoreGain, iDiscrepancy, iNewScore, LoadResStr(C4ResStrTableKey::IDS_TEXT_SCORE));
 					}
 				}
 				// Show old league score only
 				else
 				{
-					sText.Format("{{Ico:League}}<c afafaf>(%d)</c> %s", static_cast<int>(pInfo->getLeagueScore()), LoadResStr("IDS_TEXT_SCORE"));
+					text = std::format("{{{{Ico:League}}}}<c afafaf>({})</c> {}", pInfo->getLeagueScore(), LoadResStr(C4ResStrTableKey::IDS_TEXT_SCORE));
 				}
 			}
 			else if (pRoundResultsPlr && pRoundResultsPlr->IsScoreNewValid() && !Game.RoundResults.SettlementScoreIsHidden())
 			{
 				// new score known
-				sText.Format("{{Ico:Settlement}}<c afafaf>%d (%+d)</c> %d %s", static_cast<int>(pRoundResultsPlr->GetScoreOld()), static_cast<int>(pRoundResultsPlr->GetScoreNew() - pRoundResultsPlr->GetScoreOld()), static_cast<int>(pRoundResultsPlr->GetScoreNew()), LoadResStr("IDS_TEXT_SCORE"));
+				text = std::format("{{{{Ico:Settlement}}}}<c afafaf>{} ({:+})</c> {} {}", pRoundResultsPlr->GetScoreOld(), pRoundResultsPlr->GetScoreNew() - pRoundResultsPlr->GetScoreOld(), pRoundResultsPlr->GetScoreNew(), LoadResStr(C4ResStrTableKey::IDS_TEXT_SCORE));
 			}
 			else if (pRoundResultsPlr && !pRoundResultsPlr->IsScoreNewValid() && !Game.RoundResults.SettlementScoreIsHidden())
 			{
 				// only old score known (e.g., player disconnected)
-				sText.Format("{{Ico:Settlement}}<c afafaf>(%d)</c> %s", static_cast<int>(pRoundResultsPlr->GetScoreOld()), LoadResStr("IDS_TEXT_SCORE"));
+				text = std::format("{{{{Ico:Settlement}}}}<c afafaf>({})</c> {}", pRoundResultsPlr->GetScoreOld(), LoadResStr(C4ResStrTableKey::IDS_TEXT_SCORE));
 			}
 			else
 			{
 				// nothing known. Shouldn't really happen.
-				sText.Ref("");
 			}
 		}
 		// Pre-evaluation (Lobby)
@@ -422,13 +422,13 @@ void C4PlayerInfoListBox::PlayerListItem::UpdateScoreLabel(C4PlayerInfo *pInfo)
 			// Show current league score and projected gain
 			// Don't show if team invisible, so random surprise teams don't get spoiled
 			if (pInfo->IsLeagueProjectedGainValid() && Game.Teams.IsTeamVisible())
-				sText.Format("%d (%+d)", static_cast<int>(pInfo->getLeagueScore()), static_cast<int>(pInfo->GetLeagueProjectedGain()));
+				text = std::format("{} ({:+})", pInfo->getLeagueScore(), pInfo->GetLeagueProjectedGain());
 			// Show current league score only
 			else
-				sText.Format("%d", static_cast<int>(pInfo->getLeagueScore()));
+				text = std::format("{}", pInfo->getLeagueScore());
 		}
 		pScoreLabel->SetX0(iScoreRightPos);
-		pScoreLabel->SetText(sText.getData(), false);
+		pScoreLabel->SetText(text.c_str(), false);
 	}
 	else
 	{
@@ -500,8 +500,8 @@ C4GUI::ContextMenu *C4PlayerInfoListBox::PlayerListItem::OnContext(C4GUI::Elemen
 	{
 		if (pInfo->GetType() != C4PT_Script)
 		{
-			StdStrBuf strTakeOver(LoadResStr("IDS_MSG_TAKEOVERPLR"));
-			pMenu->AddItem(strTakeOver.getData(), LoadResStr("IDS_MSG_TAKEOVERPLR_DESC"), C4GUI::Ico_Player, nullptr,
+			StdStrBuf strTakeOver(LoadResStr(C4ResStrTableKey::IDS_MSG_TAKEOVERPLR));
+			pMenu->AddItem(strTakeOver.getData(), LoadResStr(C4ResStrTableKey::IDS_MSG_TAKEOVERPLR_DESC), C4GUI::Ico_Player, nullptr,
 				new C4GUI::CBContextHandler<PlayerListItem>(this, &PlayerListItem::OnContextTakeOver));
 		}
 	}
@@ -513,8 +513,8 @@ C4GUI::ContextMenu *C4PlayerInfoListBox::PlayerListItem::OnContext(C4GUI::Elemen
 			// player removal (except for joined script players)
 			if (pInfo->GetType() != C4PT_Script || !pInfo->GetAssociatedSavegamePlayerID())
 			{
-				StdStrBuf strRemove(LoadResStr("IDS_MSG_REMOVEPLR"));
-				pMenu->AddItem(strRemove.getData(), LoadResStr("IDS_MSG_REMOVEPLR_DESC"), C4GUI::Ico_Close,
+				StdStrBuf strRemove(LoadResStr(C4ResStrTableKey::IDS_MSG_REMOVEPLR));
+				pMenu->AddItem(strRemove.getData(), LoadResStr(C4ResStrTableKey::IDS_MSG_REMOVEPLR_DESC), C4GUI::Ico_Close,
 					new C4GUI::CBMenuHandler<PlayerListItem>(this, &PlayerListItem::OnCtxRemove), nullptr);
 			}
 			// color was changed: Add option to assign a new color
@@ -522,8 +522,8 @@ C4GUI::ContextMenu *C4PlayerInfoListBox::PlayerListItem::OnContext(C4GUI::Elemen
 			assert(pInfo);
 			if (pInfo && pInfo->HasAutoGeneratedColor() && (!Game.Teams.IsTeamColors() || !pInfo->GetTeam()))
 			{
-				StdStrBuf strNewColor(LoadResStr("IDS_MSG_NEWPLRCOLOR"));
-				pMenu->AddItem(strNewColor.getData(), LoadResStr("IDS_MSG_NEWPLRCOLOR_DESC"), C4GUI::Ico_Player,
+				StdStrBuf strNewColor(LoadResStr(C4ResStrTableKey::IDS_MSG_NEWPLRCOLOR));
+				pMenu->AddItem(strNewColor.getData(), LoadResStr(C4ResStrTableKey::IDS_MSG_NEWPLRCOLOR_DESC), C4GUI::Ico_Player,
 					new C4GUI::CBMenuHandler<PlayerListItem>(this, &PlayerListItem::OnCtxNewColor), nullptr);
 			}
 		}
@@ -545,7 +545,7 @@ C4GUI::ContextMenu *C4PlayerInfoListBox::PlayerListItem::OnContextTakeOver(C4GUI
 			if (!pInfo->HasJoinIssued())
 				if (!pInfo->GetAssociatedSavegamePlayerID())
 				{
-					pMenu->AddItem(FormatString(LoadResStr("IDS_MSG_USINGPLR"), pInfo->GetName()).getData(), LoadResStr("IDS_MSG_USINGPLR_DESC"), C4GUI::Ico_Player,
+					pMenu->AddItem(LoadResStr(C4ResStrTableKey::IDS_MSG_USINGPLR, pInfo->GetName()).c_str(), LoadResStr(C4ResStrTableKey::IDS_MSG_USINGPLR_DESC), C4GUI::Ico_Player,
 						new C4GUI::CBMenuHandlerEx<PlayerListItem, int32_t>(this, &PlayerListItem::OnCtxTakeOver, pInfo->GetID()));
 				}
 	}
@@ -655,7 +655,7 @@ void C4PlayerInfoListBox::PlayerListItem::Update()
 	{
 		UpdateScoreLabel(pNfo);
 		// update name + color
-		StdStrBuf sShowName(pNfo->GetLobbyName());
+		std::string showName{pNfo->GetLobbyName().getData()};
 		if (pList->IsEvaluation())
 		{
 			bool fShowWinners = (pList->GetMode() != PILBM_EvaluationNoWinners);
@@ -663,7 +663,7 @@ void C4PlayerInfoListBox::PlayerListItem::Update()
 			// Append "winner" or "loser" to player name
 			if (fShowWinners)
 			{
-				sShowName.Take(FormatString("%s (%s)", sShowName.getData(), LoadResStr(fHasWon ? "IDS_CTL_WON" : "IDS_CTL_LOST")));
+				showName = std::format("{} ({})", showName, LoadResStrChoice(fHasWon, C4ResStrTableKey::IDS_CTL_WON, C4ResStrTableKey::IDS_CTL_LOST));
 			}
 			// evaluation: Golden color+background for winners; gray for losers or no winner show
 			if (fHasWon)
@@ -682,7 +682,7 @@ void C4PlayerInfoListBox::PlayerListItem::Update()
 			// lobby: Label color by player color
 			pNameLabel->SetColor(pNfo->GetLobbyColor());
 		}
-		pNameLabel->SetText(sShowName.getData(), false);
+		pNameLabel->SetText(showName.c_str(), false);
 	}
 }
 
@@ -763,7 +763,7 @@ C4PlayerInfoListBox::ClientListItem::ClientListItem(C4PlayerInfoListBox *pForLis
 	AddElement(pStatusIcon); AddElement(pNameLabel);
 	if (btnAddPlayer) AddElement(btnAddPlayer);
 	// tooltip (same for all components for now. separate tooltip for status icon later?)
-	SetToolTip(FormatString("Client %s (%s)", rClientInfo.getName(), rClientInfo.getNick()).getData());
+	SetToolTip(std::format("Client {} ({})", rClientInfo.getName(), rClientInfo.getNick()).c_str());
 	// insert into listbox at correct order
 	// (will eventually get resized horizontally and moved)
 	pForListBox->InsertElement(this, pInsertBefore);
@@ -794,7 +794,7 @@ void C4PlayerInfoListBox::ClientListItem::SetPing(int32_t iToPing)
 	if (!pPingLabel)
 	{
 		pPingLabel = new C4GUI::Label(text.c_str(), GetBounds().Wdt, 0, ARight, C4GUI_MessageFontClr);
-		pPingLabel->SetToolTip(LoadResStr("IDS_DLGTIP_PING"));
+		pPingLabel->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_PING));
 		AddElement(pPingLabel);
 	}
 	else
@@ -812,7 +812,7 @@ void C4PlayerInfoListBox::ClientListItem::UpdateInfo()
 		StdStrBuf sCaption;
 		if (pNetClient->isConnected())
 		{
-			sCaption.Format("(%d%%) %s", Game.Network.ResList.GetClientProgress(pClient->getID()), pClient->getName());
+			sCaption.Copy(std::format("({}%) {}", Game.Network.ResList.GetClientProgress(pClient->getID()), pClient->getName()).c_str());
 		}
 		else
 		{
@@ -924,9 +924,9 @@ C4GUI::ContextMenu *C4PlayerInfoListBox::ClientListItem::OnContext(C4GUI::Elemen
 	// create context menu
 	C4GUI::ContextMenu *pMenu = new C4GUI::ContextMenu();
 	// helper function
-	auto AddMenuItem = [this, pMenu](const char *text, const char *description, auto callbackFn)
+	auto AddMenuItem = [this, pMenu](const char *const text, const char *const description, auto callbackFn)
 	{
-		pMenu->AddItem(LoadResStr(text), LoadResStr(description), C4GUI::Ico_None,
+		pMenu->AddItem(text, description, C4GUI::Ico_None,
 			new C4GUI::CBMenuHandler<ClientListItem>{this, callbackFn});
 	};
 
@@ -934,17 +934,17 @@ C4GUI::ContextMenu *C4PlayerInfoListBox::ClientListItem::OnContext(C4GUI::Elemen
 	if (!pClient->isLocal())
 	{
 		bool muted = pClient->isMuted();
-		AddMenuItem(muted ? "IDS_NET_UNMUTE" : "IDS_NET_MUTE", muted ? "IDS_NET_UNMUTE_DESC" : "IDS_NET_MUTE_DESC", &ClientListItem::OnCtxToggleMute);
+		AddMenuItem(LoadResStrChoice(muted, C4ResStrTableKey::IDS_NET_UNMUTE, C4ResStrTableKey::IDS_NET_MUTE), LoadResStrChoice(muted, C4ResStrTableKey::IDS_NET_UNMUTE_DESC, C4ResStrTableKey::IDS_NET_MUTE_DESC), &ClientListItem::OnCtxToggleMute);
 	}
 
 	// host options
 	if (Game.Network.isHost() && GetNetClient())
 	{
-		AddMenuItem("IDS_NET_KICKCLIENT", "IDS_NET_KICKCLIENT_DESC", &ClientListItem::OnCtxKick);
-		AddMenuItem(pClient->isActivated() ? "IDS_NET_DEACTIVATECLIENT" : "IDS_NET_ACTIVATECLIENT", "IDS_NET_ACTIVATECLIENT_DESC", &ClientListItem::OnCtxActivate);
+		AddMenuItem(LoadResStr(C4ResStrTableKey::IDS_NET_KICKCLIENT), LoadResStr(C4ResStrTableKey::IDS_NET_KICKCLIENT_DESC), &ClientListItem::OnCtxKick);
+		AddMenuItem(LoadResStrChoice(pClient->isActivated(), C4ResStrTableKey::IDS_NET_DEACTIVATECLIENT, C4ResStrTableKey::IDS_NET_ACTIVATECLIENT), LoadResStr(C4ResStrTableKey::IDS_NET_ACTIVATECLIENT_DESC), &ClientListItem::OnCtxActivate);
 	}
 	// info
-	AddMenuItem("IDS_NET_CLIENTINFO", "IDS_NET_CLIENTINFO_DESC", &ClientListItem::OnCtxInfo);
+	AddMenuItem(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENTINFO), LoadResStr(C4ResStrTableKey::IDS_NET_CLIENTINFO_DESC), &ClientListItem::OnCtxInfo);
 	// open it
 	return pMenu;
 }
@@ -954,7 +954,7 @@ void C4PlayerInfoListBox::ClientListItem::OnCtxKick(C4GUI::Element *pListItem)
 	// host only
 	if (!Game.Network.isEnabled() || !Game.Network.isHost()) return;
 	// add control
-	Game.Clients.CtrlRemove(GetClient(), LoadResStr("IDS_MSG_KICKFROMLOBBY"));
+	Game.Clients.CtrlRemove(GetClient(), LoadResStr(C4ResStrTableKey::IDS_MSG_KICKFROMLOBBY));
 }
 
 void C4PlayerInfoListBox::ClientListItem::OnCtxActivate(C4GUI::Element *pListItem)
@@ -994,7 +994,7 @@ C4PlayerInfoListBox::TeamListItem::TeamListItem(C4PlayerInfoListBox *pForListBox
 	const char *szTeamName;
 	C4Team *pTeam = nullptr;
 	if (idTeam == TEAMID_Unknown)
-		szTeamName = LoadResStr("IDS_MSG_RNDTEAM");
+		szTeamName = LoadResStr(C4ResStrTableKey::IDS_MSG_RNDTEAM);
 	else
 	{
 		pTeam = Game.Teams.GetTeamByID(idTeam); assert(pTeam);
@@ -1030,7 +1030,7 @@ C4PlayerInfoListBox::TeamListItem::TeamListItem(C4PlayerInfoListBox *pForListBox
 	// add components
 	AddElement(pIcon); AddElement(pNameLabel);
 	// tooltip
-	SetToolTip(FormatString(LoadResStr("IDS_DESC_TEAM"), szTeamName).getData());
+	SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_TEAM, szTeamName).c_str());
 	// insert into listbox at correct order
 	// (will eventually get resized horizontally and moved)
 	pForListBox->InsertElement(this, pInsertBefore);
@@ -1119,7 +1119,7 @@ C4PlayerInfoListBox::FreeSavegamePlayersListItem::FreeSavegamePlayersListItem(C4
 	int32_t iIconSize = C4GUI::GetRes()->TextFont.GetLineHeight();
 	// create subcomponents
 	pIcon = new C4GUI::Icon(C4Rect(0, 0, iIconSize, iIconSize), C4GUI::Ico_SavegamePlayer);
-	pNameLabel = new C4GUI::Label(LoadResStr("IDS_MSG_FREESAVEGAMEPLRS"), iIconSize + IconLabelSpacing, 0, ALeft);
+	pNameLabel = new C4GUI::Label(LoadResStr(C4ResStrTableKey::IDS_MSG_FREESAVEGAMEPLRS), iIconSize + IconLabelSpacing, 0, ALeft);
 	// calc own bounds
 	C4Rect rcOwnBounds = pNameLabel->GetBounds();
 	rcOwnBounds.Wdt += rcOwnBounds.x; rcOwnBounds.x = 0;
@@ -1128,7 +1128,7 @@ C4PlayerInfoListBox::FreeSavegamePlayersListItem::FreeSavegamePlayersListItem(C4
 	// add components
 	AddElement(pIcon); AddElement(pNameLabel);
 	// tooltip
-	SetToolTip(LoadResStr("IDS_DESC_UNASSOCIATEDSAVEGAMEPLAYE"));
+	SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_UNASSOCIATEDSAVEGAMEPLAYE));
 	// insert into listbox at correct order
 	// (will eventually get resized horizontally and moved)
 	pForListBox->InsertElement(this, pInsertBefore);
@@ -1153,7 +1153,7 @@ C4PlayerInfoListBox::ScriptPlayersListItem::ScriptPlayersListItem(C4PlayerInfoLi
 	int32_t iIconSize = C4GUI::GetRes()->TextFont.GetLineHeight();
 	// create subcomponents
 	pIcon = new C4GUI::Icon(C4Rect(0, 0, iIconSize, iIconSize), C4GUI::Ico_Record);
-	pNameLabel = new C4GUI::Label(LoadResStr("IDS_CTL_SCRIPTPLAYERS"), iIconSize + IconLabelSpacing, 0, ALeft);
+	pNameLabel = new C4GUI::Label(LoadResStr(C4ResStrTableKey::IDS_CTL_SCRIPTPLAYERS), iIconSize + IconLabelSpacing, 0, ALeft);
 	btnAddPlayer = nullptr;
 	if (Game.Control.isCtrlHost())
 	{
@@ -1168,7 +1168,7 @@ C4PlayerInfoListBox::ScriptPlayersListItem::ScriptPlayersListItem(C4PlayerInfoLi
 	AddElement(pIcon); AddElement(pNameLabel);
 	if (btnAddPlayer) AddElement(btnAddPlayer);
 	// tooltip
-	SetToolTip(LoadResStr("IDS_DESC_PLAYERSCONTROLLEDBYCOMPUT"));
+	SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_PLAYERSCONTROLLEDBYCOMPUT));
 	// insert into listbox at correct order
 	// (will eventually get resized horizontally and moved)
 	pForListBox->InsertElement(this, pInsertBefore);
@@ -1219,7 +1219,7 @@ C4PlayerInfoListBox::ReplayPlayersListItem::ReplayPlayersListItem(C4PlayerInfoLi
 	int32_t iIconSize = C4GUI::GetRes()->TextFont.GetLineHeight();
 	// create subcomponents
 	pIcon = new C4GUI::Icon(C4Rect(0, 0, iIconSize, iIconSize), C4GUI::Ico_Record);
-	pNameLabel = new C4GUI::Label(LoadResStr("IDS_MSG_REPLAYPLRS"), iIconSize + IconLabelSpacing, 0, ALeft);
+	pNameLabel = new C4GUI::Label(LoadResStr(C4ResStrTableKey::IDS_MSG_REPLAYPLRS), iIconSize + IconLabelSpacing, 0, ALeft);
 	// calc own bounds
 	C4Rect rcOwnBounds = pNameLabel->GetBounds();
 	rcOwnBounds.Wdt += rcOwnBounds.x; rcOwnBounds.x = 0;
@@ -1228,7 +1228,7 @@ C4PlayerInfoListBox::ReplayPlayersListItem::ReplayPlayersListItem(C4PlayerInfoLi
 	// add components
 	AddElement(pIcon); AddElement(pNameLabel);
 	// tooltip
-	SetToolTip(LoadResStr("IDS_MSG_REPLAYPLRS_DESC"));
+	SetToolTip(LoadResStr(C4ResStrTableKey::IDS_MSG_REPLAYPLRS_DESC));
 	// insert into listbox at correct order
 	// (will eventually get resized horizontally and moved)
 	pForListBox->InsertElement(this, pInsertBefore);

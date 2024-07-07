@@ -155,7 +155,7 @@ void C4LSectors::Remove(C4Object *pObj)
 	if (!pSct->Objects.Remove(pObj))
 	{
 #ifndef NDEBUG
-		LogF("WARNING: Object %d of type %s deleted but not found in pos sector list!", pObj->Number, C4IdText(pObj->id));
+		LogNTr(spdlog::level::warn, "Object {} of type {} deleted but not found in pos sector list!", pObj->Number, C4IdText(pObj->id));
 #endif
 		// if it was not found in owning sector, it must be somewhere else. yeah...
 		bool fFound = false;
@@ -204,10 +204,10 @@ int C4LSectors::getShapeSum() const
 
 void C4LSectors::Dump()
 {
-	LogSilent(DecompileToBuf<StdCompilerINIWrite>(
+	spdlog::debug(DecompileToBuf<StdCompilerINIWrite>(
 		mkNamingAdapt(
 			mkArrayAdaptS(Sectors, Size),
-			"Sector")).getData());
+			"Sector")));
 }
 
 bool C4LSectors::CheckSort()

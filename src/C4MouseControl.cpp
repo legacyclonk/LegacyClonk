@@ -29,6 +29,8 @@
 #include <C4Player.h>
 #include "C4ChatDlg.h"
 
+#include <format>
+
 const int32_t C4MC_Drag_None      = 0,
               C4MC_Drag_Selecting = 1,
               C4MC_Drag_Moving    = 2,
@@ -92,7 +94,7 @@ void C4MouseControl::Default()
 	pPlayer = nullptr;
 	Viewport = nullptr;
 	Cursor = DownCursor = 0;
-	Caption.Clear();
+	Caption.clear();
 	IsHelpCaption = false;
 	CaptionBottomY = 0;
 	VpX = VpY = X = Y = DownX = DownY = DownOffsetX = DownOffsetY = ViewX = ViewY = 0;
@@ -203,7 +205,7 @@ void C4MouseControl::Move(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKe
 	// Active
 	if (!Active || !fMouseOwned) return;
 	// Execute caption
-	if (KeepCaption) KeepCaption--; else { Caption.Clear(); IsHelpCaption = false; CaptionBottomY = 0; }
+	if (KeepCaption) KeepCaption--; else { Caption.clear(); IsHelpCaption = false; CaptionBottomY = 0; }
 	// Check player
 	if ((Player > NO_OWNER) && !(pPlayer = Game.Players.Get(Player))) { Active = false; return; }
 	// Check viewport
@@ -413,20 +415,20 @@ void C4MouseControl::Draw(C4FacetEx &cgo)
 	}
 
 	// Draw caption
-	if (Caption)
+	if (!Caption.empty())
 	{
 		if (IsHelpCaption && Game.pGUI)
 		{
 			// Help: Tooltip style
 			C4FacetEx cgoTip; cgoTip = static_cast<const C4Facet &>(cgo);
-			C4GUI::Screen::DrawToolTip(Caption.getData(), cgoTip, cgo.X + VpX, cgo.Y + VpY);
+			C4GUI::Screen::DrawToolTip(Caption.c_str(), cgoTip, cgo.X + VpX, cgo.Y + VpY);
 		}
 		else
 		{
 			// Otherwise red mouse control style
 			int32_t iWdt, iHgt;
-			Game.GraphicsResource.FontRegular.GetTextExtent(Caption.getData(), iWdt, iHgt, true);
-			Application.DDraw->TextOut(Caption.getData(), Game.GraphicsResource.FontRegular, 1.0,
+			Game.GraphicsResource.FontRegular.GetTextExtent(Caption.c_str(), iWdt, iHgt, true);
+			Application.DDraw->TextOut(Caption.c_str(), Game.GraphicsResource.FontRegular, 1.0,
 				cgo.Surface,
 				cgo.X + BoundBy<int32_t>(VpX, iWdt / 2 + 1, cgo.Wdt - iWdt / 2 - 1),
 				cgo.Y + std::min<int32_t>(CaptionBottomY ? CaptionBottomY - iHgt - 1 : VpY + 13, cgo.Hgt - iHgt),
@@ -541,42 +543,63 @@ void C4MouseControl::UpdateCursorTarget()
 	if (Cursor == iLastCursor)
 	{
 		TimeOnTargetObject++;
-		if (TimeOnTargetObject >= C4MC_Time_on_Target)
+		if (TimeOnTargetObject >= C4MC_Time_on_Target && !KeepCaption)
 		{
-			const char *idCaption = nullptr;
-			const char *szName = "";
-			bool fDouble = false;
-			C4Def *pDef;
-			if (TargetObject) szName = TargetObject->GetName();
+			const char *const targetObjectName{TargetObject ? TargetObject->GetName() : ""};
 			// Target caption by cursor
 			switch (Cursor)
 			{
-			case C4MC_Cursor_Select:                               idCaption = "IDS_CON_SELECT";                  break;
-			case C4MC_Cursor_JumpLeft: case C4MC_Cursor_JumpRight: idCaption = "IDS_CON_JUMP";                    break;
-			case C4MC_Cursor_Grab:                                 idCaption = "IDS_CON_GRAB";    fDouble = true; break;
-			case C4MC_Cursor_Ungrab:                               idCaption = "IDS_CON_UNGRAB";  fDouble = true; break;
-			case C4MC_Cursor_Build:                                idCaption = "IDS_CON_BUILD";   fDouble = true; break;
-			case C4MC_Cursor_Chop:                                 idCaption = "IDS_CON_CHOP";    fDouble = true; break;
-			case C4MC_Cursor_Object:                               idCaption = "IDS_CON_COLLECT"; fDouble = true; break;
-			case C4MC_Cursor_DigObject:                            idCaption = "IDS_CON_DIGOUT";  fDouble = true; break;
-			case C4MC_Cursor_Enter:                                idCaption = "IDS_CON_ENTER";   fDouble = true; break;
-			case C4MC_Cursor_Attack:                               idCaption = "IDS_CON_ATTACK";  fDouble = true; break;
-			case C4MC_Cursor_Help:                                 idCaption = "IDS_CON_NAME";                    break;
+			case C4MC_Cursor_Select:
+				SetCaption<C4ResStrTableKey::IDS_CON_SELECT>(TargetObject, false);
+				break;
+
+			case C4MC_Cursor_JumpLeft:
+			case C4MC_Cursor_JumpRight:
+				SetCaption<C4ResStrTableKey::IDS_CON_JUMP>(false);
+				break;
+
+			case C4MC_Cursor_Grab:
+				SetCaption<C4ResStrTableKey::IDS_CON_GRAB>(TargetObject, true);
+				break;
+
+			case C4MC_Cursor_Ungrab:
+				SetCaption<C4ResStrTableKey::IDS_CON_UNGRAB>(TargetObject, true);
+				break;
+
+			case C4MC_Cursor_Build:
+				SetCaption<C4ResStrTableKey::IDS_CON_BUILD>(TargetObject, true);
+				break;
+
+			case C4MC_Cursor_Chop:
+				SetCaption<C4ResStrTableKey::IDS_CON_CHOP>(TargetObject, true);
+				break;
+
+			case C4MC_Cursor_Object:
+				SetCaption<C4ResStrTableKey::IDS_CON_COLLECT>(TargetObject, true);
+				break;
+
+			case C4MC_Cursor_DigObject:
+				SetCaption<C4ResStrTableKey::IDS_CON_DIGOUT>(TargetObject, true);
+				break;
+
+			case C4MC_Cursor_Enter:
+				SetCaption<C4ResStrTableKey::IDS_CON_ENTER>(TargetObject, true);
+				break;
+
+			case C4MC_Cursor_Attack:
+				SetCaption<C4ResStrTableKey::IDS_CON_ATTACK>(TargetObject, true);
+				break;
+
+			case C4MC_Cursor_Help:
+				SetCaption<C4ResStrTableKey::IDS_CON_HELP>(false);
+				break;
+
 			case C4MC_Cursor_DigMaterial:
 				if (MatValid(GBackMat(X, Y)))
-					if (pDef = C4Id2Def(Game.Material.Map[GBackMat(X, Y)].Dig2Object))
-					{
-						idCaption = "IDS_CON_DIGOUT"; fDouble = true; szName = pDef->GetName();
-					}
+				{
+					SetCaption<C4ResStrTableKey::IDS_CON_DIGOUT>(C4Id2Def(Game.Material.Map[GBackMat(X, Y)].Dig2Object), true);
+				}
 				break;
-			}
-			// Set caption
-			if (idCaption) if (!KeepCaption)
-			{
-				// Caption by cursor
-				Caption.Format(LoadResStr(idCaption), szName);
-				if (fDouble) { Caption.AppendChar('|'); Caption.Append(LoadResStr("IDS_CON_DOUBLECLICK")); }
-				IsHelpCaption = false;
 			}
 		}
 	}
@@ -684,7 +707,7 @@ void C4MouseControl::UpdateTargetRegion()
 		Drag = C4MC_Drag_None; DownCursor = C4MC_Cursor_Nothing;
 	}
 	// Caption
-	Caption.Copy(TargetRegion->Caption);
+	Caption = TargetRegion->Caption;
 	IsHelpCaption = false;
 	CaptionBottomY = TargetRegion->Y; KeepCaption = 0;
 	// Help region caption by region target object
@@ -692,9 +715,9 @@ void C4MouseControl::UpdateTargetRegion()
 		if (TargetRegion->Target)
 		{
 			if (TargetRegion->Target->Def->GetDesc())
-				Caption.Format("%s: %s", TargetRegion->Target->GetName(), TargetRegion->Target->Def->GetDesc());
+				Caption = std::format("{}: {}", TargetRegion->Target->GetName(), TargetRegion->Target->Def->GetDesc());
 			else
-				Caption.Copy(TargetRegion->Target->GetName());
+				Caption = TargetRegion->Target->GetName();
 			IsHelpCaption = true;
 		}
 	// MoveOverCom (on region change)
@@ -731,12 +754,12 @@ bool C4MouseControl::UpdatePutTarget(bool fVehicle)
 		{
 			if (Selection.ObjectCount() > 1)
 				// Multiple object name
-				sName.Format("%d %s", Selection.ObjectCount(), LoadResStr(fVehicle ? "IDS_CON_VEHICLES" : "IDS_CON_ITEMS"));
+				sName.Copy(std::format("{} {}", Selection.ObjectCount(), LoadResStrChoice(fVehicle, C4ResStrTableKey::IDS_CON_VEHICLES, C4ResStrTableKey::IDS_CON_ITEMS)).c_str());
 			else
 				// Single object name
 				sName.Ref(Selection.GetObject()->GetName());
 			// Set caption
-			Caption.Format(LoadResStr(fVehicle ? "IDS_CON_VEHICLEPUT" : "IDS_CON_PUT"), sName.getData(), TargetObject->GetName());
+			Caption = fVehicle ? LoadResStr(C4ResStrTableKey::IDS_CON_VEHICLEPUT, sName.getData(), TargetObject->GetName()) : LoadResStr(C4ResStrTableKey::IDS_CON_PUT, sName.getData(), TargetObject->GetName());
 			IsHelpCaption = false;
 		}
 		// Put target found
@@ -1112,10 +1135,10 @@ void C4MouseControl::LeftUpDragNone()
 		if (DownTarget)
 		{
 			if (DownTarget->Def->GetDesc())
-				Caption.Format("%s: %s", DownTarget->GetName(), DownTarget->Def->GetDesc());
+				Caption = std::format("{}: {}", DownTarget->GetName(), DownTarget->Def->GetDesc());
 			else
-				Caption.Copy(DownTarget->GetName());
-			KeepCaption = Caption.getLength() / 2;
+				Caption = DownTarget->GetName();
+			KeepCaption = Caption.size() / 2;
 			IsHelpCaption = true;
 		}
 		break;
@@ -1289,7 +1312,7 @@ void C4MouseControl::HideCursor()
 
 const char *C4MouseControl::GetCaption()
 {
-	return Caption.getData();
+	return Caption.empty() ? nullptr : Caption.c_str();
 }
 
 C4Object *C4MouseControl::GetTargetObject(int32_t iX, int32_t iY, uint32_t &dwOCF, C4Object *pExclude)
@@ -1333,4 +1356,28 @@ void C4MouseControl::StartConstructionDrag(C4ID id)
 	DragID = id;
 	CreateDragImage(DragID);
 	Selection.Clear();
+}
+
+template<C4ResStrTableKey Id, typename T>
+void C4MouseControl::SetCaption(T *const nameSource, const bool isDouble)
+{
+	Caption = LoadResStr(Id, nameSource ? nameSource->GetName() : "");
+	if (isDouble)
+	{
+		Caption += '|';
+		Caption += LoadResStr(C4ResStrTableKey::IDS_CON_DOUBLECLICK);
+	}
+	IsHelpCaption = false;
+}
+
+template<C4ResStrTableKey Id>
+void C4MouseControl::SetCaption(const bool isDouble)
+{
+	Caption = LoadResStr(Id);
+	if (isDouble)
+	{
+		Caption += '|';
+		Caption += LoadResStr(C4ResStrTableKey::IDS_CON_DOUBLECLICK);
+	}
+	IsHelpCaption = false;
 }

@@ -94,7 +94,7 @@ void C4LangStringTable::ReplaceStrings(const StdStrBuf &rBuf, StdStrBuf &rTarget
 		// found?
 		if (!pStrTblEntry)
 		{
-			LogF("%s: string table entry not found: \"%s\"", FilePath[0] ? FilePath : (szParentFilePath ? szParentFilePath : "Unknown"), szStringName);
+			LogNTr(spdlog::level::warn, "{}: string table entry not found: \"{}\"", FilePath[0] ? FilePath : (szParentFilePath ? szParentFilePath : "Unknown"), szStringName);
 			continue;
 		}
 		// add new replace-position entry

@@ -21,15 +21,15 @@
 #include "C4DelegatedIterable.h"
 #include <C4Group.h>
 #include <C4GroupSet.h>
-#include <StdResStr2.h>
+#include "C4ResStrTable.h"
 
+#include <array>
+#include <string>
 #include <vector>
 
 #ifdef HAVE_ICONV
 #include <iconv.h>
 #endif
-
-const int C4MaxLanguageInfo = 1024;
 
 class C4Language;
 
@@ -38,11 +38,11 @@ class C4LanguageInfo
 	friend class C4Language;
 
 public:
-	char Code[2 + 1];
-	char Name[C4MaxLanguageInfo + 1];
-	char Info[C4MaxLanguageInfo + 1];
-	char Fallback[C4MaxLanguageInfo + 1];
-	char Charset[C4MaxLanguageInfo + 1];
+	std::array<char, 2> Code;
+	std::string Name;
+	std::string Info;
+	std::string Fallback;
+	std::string Charset;
 
 protected:
 	C4LanguageInfo *Next;
@@ -97,7 +97,12 @@ protected:
 
 extern C4Language Languages;
 
-static inline StdStrBuf LoadResStrUtf8(const char *ident)
+static inline StdStrBuf LoadResStrUtf8(const C4ResStrTableKeyFormat<> ident)
 {
 	return Languages.IconvUtf8(LoadResStr(ident));
+}
+
+static inline StdStrBuf LoadResStrUtf8Choice(const bool condition, const C4ResStrTableKeyFormat<> ifTrue, const C4ResStrTableKeyFormat<> ifFalse)
+{
+	return Languages.IconvUtf8(LoadResStrV(condition ? ifTrue.Id : ifFalse.Id));
 }

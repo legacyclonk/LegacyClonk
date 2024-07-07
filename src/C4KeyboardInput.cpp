@@ -56,13 +56,13 @@ C4KeyShiftState C4KeyCodeEx::String2KeyShift(const StdStrBuf &sName)
 	return pCheck->eShift;
 }
 
-StdStrBuf C4KeyCodeEx::KeyShift2String(C4KeyShiftState eShift)
+std::string C4KeyCodeEx::KeyShift2String(C4KeyShiftState eShift)
 {
 	// query map
 	const C4KeyShiftMapEntry *pCheck = KeyShiftMap;
 	while (pCheck->szName)
 		if (eShift == pCheck->eShift) break; else ++pCheck;
-	return StdStrBuf::MakeRef(pCheck->szName);
+	return pCheck->szName;
 }
 
 struct C4KeyCodeMapEntry
@@ -330,7 +330,7 @@ C4KeyCode C4KeyCodeEx::String2KeyCode(const StdStrBuf &sName)
 #endif
 }
 
-StdStrBuf C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bool fShort)
+std::string C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bool fShort)
 {
 	// Gamepad keys
 	if (Key_IsGamepad(wCode))
@@ -339,27 +339,27 @@ StdStrBuf C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bool
 		int iGamepadButton = Key_GetGamepadButton(wCode);
 		switch (iGamepadButton)
 		{
-		case KEY_JOY_Left:  return FormatString("Joy%dLeft",  iGamepad + 1);
-		case KEY_JOY_Up:    return FormatString("Joy%dUp",    iGamepad + 1);
-		case KEY_JOY_Down:  return FormatString("Joy%dDown",  iGamepad + 1);
-		case KEY_JOY_Right: return FormatString("Joy%dRight", iGamepad + 1);
+		case KEY_JOY_Left:  return std::format("Joy{}Left",  iGamepad + 1);
+		case KEY_JOY_Up:    return std::format("Joy{}Up",    iGamepad + 1);
+		case KEY_JOY_Down:  return std::format("Joy{}Down",  iGamepad + 1);
+		case KEY_JOY_Right: return std::format("Joy{}Right", iGamepad + 1);
 		default:
 			if (Key_IsGamepadAxis(wCode))
 			{
 				if (fHumanReadable)
 					// This is still not great, but it is not really possible to assign unknown axes to "left/right" "up/down"...
-					return FormatString("[%d] %s", 1 + Key_GetGamepadAxisIndex(wCode), Key_IsGamepadAxisHigh(wCode) ? "Max" : "Min");
+					return std::format("[{}] {}", 1 + Key_GetGamepadAxisIndex(wCode), Key_IsGamepadAxisHigh(wCode) ? "Max" : "Min");
 				else
-					return FormatString("Joy%dAxis%d%s", iGamepad + 1, Key_GetGamepadAxisIndex(wCode), Key_IsGamepadAxisHigh(wCode) ? "Max" : "Min");
+					return std::format("Joy{}Axis{}{}", iGamepad + 1, Key_GetGamepadAxisIndex(wCode), Key_IsGamepadAxisHigh(wCode) ? "Max" : "Min");
 			}
 			else
 			{
 				// button
 				if (fHumanReadable)
 					// If there should be gamepads around with A B C D... on the buttons, we might create a display option to show letters instead...
-					return FormatString("< %d >", 1 + Key_GetGamepadButtonIndex(wCode));
+					return std::format("< {} >", 1 + Key_GetGamepadButtonIndex(wCode));
 				else
-					return FormatString("Joy%d%c", iGamepad + 1, static_cast<char>(Key_GetGamepadButtonIndex(wCode) + 'A'));
+					return std::format("Joy{}{}", iGamepad + 1, static_cast<char>(Key_GetGamepadButtonIndex(wCode) + 'A'));
 			}
 		}
 	}
@@ -367,38 +367,29 @@ StdStrBuf C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bool
 	// query map
 	const C4KeyCodeMapEntry *pCheck = KeyCodeMap;
 	while (pCheck->szName)
-		if (wCode == pCheck->wCode) return StdStrBuf::MakeRef((pCheck->szShortName && fShort) ? pCheck->szShortName : pCheck->szName); else ++pCheck;
+		if (wCode == pCheck->wCode) return (pCheck->szShortName && fShort) ? pCheck->szShortName : pCheck->szName; else ++pCheck;
 	// not found: Compose as direct code
-	return FormatString("\\x%x", static_cast<uint32_t>(wCode));
+	return std::format("\\x{:x}", static_cast<uint32_t>(wCode));
 #elif defined(USE_X11)
-	return StdStrBuf::MakeRef(XKeysymToString(wCode));
+	return XKeysymToString(wCode);
 #elif defined(USE_SDL_MAINLOOP)
-	return StdStrBuf::MakeRef(SDL_GetScancodeName(static_cast<SDL_Scancode>(wCode)));
+	return SDL_GetScancodeName(static_cast<SDL_Scancode>(wCode));
 #else
-	return StdStrBuf("unknown");
+	return "unknown";
 #endif
 }
 
-StdStrBuf C4KeyCodeEx::ToString(bool fHumanReadable, bool fShort)
+std::string C4KeyCodeEx::ToString(bool fHumanReadable, bool fShort)
 {
-	StdStrBuf sResult;
+	std::string result;
 	// Add shift
 	for (uint32_t dwShiftCheck = KEYS_First; dwShiftCheck <= KEYS_Max; dwShiftCheck <<= 1)
 		if (dwShiftCheck & dwShift)
 		{
-			sResult.Append(KeyShift2String(static_cast<C4KeyShiftState>(dwShiftCheck)));
-			sResult.AppendChar('+');
+			result = std::format("{}+", KeyShift2String(static_cast<C4KeyShiftState>(dwShiftCheck)));
 		}
-	// Add key
-	if (sResult.getLength())
-	{
-		sResult.Append(KeyCode2String(Key, fHumanReadable, fShort));
-		return sResult;
-	}
-	else
-	{
-		return KeyCode2String(Key, fHumanReadable, fShort);
-	}
+
+	return result.append(KeyCode2String(Key, fHumanReadable, fShort));
 }
 
 // C4KeyCodeEx
@@ -417,7 +408,7 @@ void C4KeyCodeEx::CompileFunc(StdCompiler *pComp)
 			// try to convert to shift state
 			C4KeyShiftState eAddState = String2KeyShift(sCode);
 			if (eAddState == KEYS_Undefined)
-				pComp->excCorrupt("undefined key shift state: %s", sCode.getData());
+				pComp->excCorrupt("undefined key shift state: {}", sCode.getData());
 			dwSetShift |= eAddState;
 		}
 		// any code given? Otherwise, keep default
@@ -426,7 +417,7 @@ void C4KeyCodeEx::CompileFunc(StdCompiler *pComp)
 			// last section: convert to key code
 			C4KeyCode eCode = String2KeyCode(sCode);
 			if (eCode == KEY_Undefined)
-				pComp->excCorrupt("undefined key code: %s", sCode.getData());
+				pComp->excCorrupt("undefined key code: {}", sCode.getData());
 			dwShift = dwSetShift;
 			Key = eCode;
 		}
@@ -790,7 +781,7 @@ bool C4KeyboardInput::LoadCustomConfig()
 	if (!GrpExtra.LoadEntryString(C4CFN_KeyConfig, sFileContentsString)) return false;
 	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(*this, sFileContentsString, "Custom keys from" C4CFN_Extra DirSep C4CFN_KeyConfig))
 		return false;
-	LogF(LoadResStr("IDS_PRC_LOADEDKEYCONF"), C4CFN_Extra DirSep C4CFN_KeyConfig);
+	Log(C4ResStrTableKey::IDS_PRC_LOADEDKEYCONF, C4CFN_Extra DirSep C4CFN_KeyConfig);
 	return true;
 }
 
@@ -800,7 +791,7 @@ C4CustomKey *C4KeyboardInput::GetKeyByName(const char *szKeyName)
 	if (i == KeysByName.end()) return nullptr; else return (*i).second;
 }
 
-StdStrBuf C4KeyboardInput::GetKeyCodeNameByKeyName(const char *szKeyName, bool fShort, int32_t iIndex)
+std::string C4KeyboardInput::GetKeyCodeNameByKeyName(const char *szKeyName, bool fShort, int32_t iIndex)
 {
 	C4CustomKey *pKey = GetKeyByName(szKeyName);
 	if (pKey)
@@ -813,7 +804,7 @@ StdStrBuf C4KeyboardInput::GetKeyCodeNameByKeyName(const char *szKeyName, bool f
 		}
 	}
 	// Error
-	return StdStrBuf();
+	return "";
 }
 
 C4KeyboardInput &C4KeyboardInput_Init()

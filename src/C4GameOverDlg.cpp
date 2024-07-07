@@ -27,6 +27,8 @@
 #include <C4PlayerInfo.h>
 #include <C4PlayerInfoListBox.h>
 
+#include <format>
+
 // C4GoalDisplay
 
 C4GoalDisplay::GoalPicture::GoalPicture(const C4Rect &rcBounds, C4ID idGoal, bool fFulfilled)
@@ -44,12 +46,8 @@ C4GoalDisplay::GoalPicture::GoalPicture(const C4Rect &rcBounds, C4ID idGoal, boo
 		strGoalDesc.Copy(pGoalDef->GetDesc());
 	}
 	// get tooltip
-	StdStrBuf sToolTip;
-	if (fFulfilled)
-		sToolTip.Format(LoadResStr("IDS_DESC_GOALFULFILLED"), strGoalName.getData(), strGoalDesc.getData());
-	else
-		sToolTip.Format(LoadResStr("IDS_DESC_GOALNOTFULFILLED"), strGoalName.getData(), strGoalDesc.getData());
-	SetToolTip(sToolTip.getData());
+	const std::string toolTip{LoadResStrChoice(fFulfilled, C4ResStrTableKey::IDS_DESC_GOALFULFILLED, C4ResStrTableKey::IDS_DESC_GOALNOTFULFILLED, strGoalName.getData(), strGoalDesc.getData())};
+	SetToolTip(toolTip.c_str());
 	// create buffered picture of goal definition
 	C4Def *pDrawDef = Game.Defs.ID2Def(idGoal);
 	if (pDrawDef)
@@ -116,7 +114,7 @@ bool C4GameOverDlg::is_shown = false;
 
 C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 800) ? (C4GUI::GetScreenWdt() - 10) : std::min<int32_t>(C4GUI::GetScreenWdt() - 150, 800),
 	(C4GUI::GetScreenHgt() < 600) ? (C4GUI::GetScreenHgt() - 10) : std::min<int32_t>(C4GUI::GetScreenHgt() - 150, 600),
-	LoadResStr("IDS_TEXT_EVALUATION"),
+	LoadResStr(C4ResStrTableKey::IDS_TEXT_EVALUATION),
 	false), pNetResultLabel(nullptr), fIsNetDone(false), fIsQuitBtnVisible(false)
 {
 	is_shown = true; // assume dlg will be shown, soon
@@ -177,7 +175,7 @@ C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 800) ? (
 		if (fHasNetResult)
 			szNetResult = Game.RoundResults.GetNetResultString();
 		else
-			szNetResult = LoadResStr("IDS_TEXT_LEAGUEWAITINGFOREVALUATIO");
+			szNetResult = LoadResStr(C4ResStrTableKey::IDS_TEXT_LEAGUEWAITINGFOREVALUATIO);
 		pNetResultLabel = new C4GUI::Label("", caMain.GetFromTop(C4GUI::GetRes()->TextFont.GetLineHeight() * 2, iMainTextWidth), ACenter, C4GUI_Caption2FontClr, nullptr, false, false, true);
 		AddElement(pNetResultLabel);
 		// only add label - contents and fIsNetDone will be set in next update
@@ -232,11 +230,11 @@ C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 800) ? (
 	}
 
 	// add buttons
-	pBtnExit = new C4GUI::CallbackButton<C4GameOverDlg>(LoadResStr("IDS_BTN_ENDROUND"), caBottom.GetGridCell(0, buttonCount, 0, 1, iBottomButtonSize, -1, true), &C4GameOverDlg::OnExitBtn);
-	pBtnExit->SetToolTip(LoadResStr("IDS_DESC_ENDTHEROUND"));
+	pBtnExit = new C4GUI::CallbackButton<C4GameOverDlg>(LoadResStr(C4ResStrTableKey::IDS_BTN_ENDROUND), caBottom.GetGridCell(0, buttonCount, 0, 1, iBottomButtonSize, -1, true), &C4GameOverDlg::OnExitBtn);
+	pBtnExit->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_ENDTHEROUND));
 	AddElement(pBtnExit);
-	pBtnContinue = new C4GUI::CallbackButton<C4GameOverDlg>(LoadResStr("IDS_BTN_CONTINUEGAME"), caBottom.GetGridCell(1, buttonCount, 0, 1, iBottomButtonSize, -1, true), &C4GameOverDlg::OnContinueBtn);
-	pBtnContinue->SetToolTip(LoadResStr("IDS_DESC_CONTINUETHEROUNDWITHNOFUR"));
+	pBtnContinue = new C4GUI::CallbackButton<C4GameOverDlg>(LoadResStr(C4ResStrTableKey::IDS_BTN_CONTINUEGAME), caBottom.GetGridCell(1, buttonCount, 0, 1, iBottomButtonSize, -1, true), &C4GameOverDlg::OnContinueBtn);
+	pBtnContinue->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_CONTINUETHEROUNDWITHNOFUR));
 	AddElement(pBtnContinue);
 
 	// not available for regular replay and network clients, obviously
@@ -245,8 +243,8 @@ C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 800) ? (
 	{
 		if (!hideRestart)
 		{
-			pBtnRestart = new C4GUI::CallbackButton<C4GameOverDlg>(LoadResStr("IDS_BTN_RESTART"), caBottom.GetGridCell(2, buttonCount, 0, 1, iBottomButtonSize, -1, true), &C4GameOverDlg::OnRestartBtn);
-			pBtnRestart->SetToolTip(LoadResStr("IDS_DESC_RESTART"));
+			pBtnRestart = new C4GUI::CallbackButton<C4GameOverDlg>(LoadResStr(C4ResStrTableKey::IDS_BTN_RESTART), caBottom.GetGridCell(2, buttonCount, 0, 1, iBottomButtonSize, -1, true), &C4GameOverDlg::OnRestartBtn);
+			pBtnRestart->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_RESTART));
 			AddElement(pBtnRestart);
 		}
 
@@ -296,7 +294,7 @@ void C4GameOverDlg::SetNetResult(const char *szResultString, C4RoundResults::Net
 	if (fIsStreaming)
 	{
 		sResult.AppendChar('|');
-		sResult.AppendFormat("[!]Transmitting record to league server... (%d kb remaining)", int(iPendingStreamingData / 1024));
+		sResult.Append(std::format("[!]Transmitting record to league server... ({} kb remaining)", iPendingStreamingData / 1024).c_str());
 	}
 	// message linebreak into box
 	StdStrBuf sBrokenResult;

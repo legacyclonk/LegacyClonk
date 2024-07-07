@@ -260,6 +260,19 @@ if (USE_SDL_MIXER AND WIN32)
 	target_compile_definitions(clonk PRIVATE SDL_MAIN_HANDLED)
 endif ()
 
+set(RES_STR_TABLE_INPUT "${CMAKE_SOURCE_DIR}/src/C4ResStrTable.txt")
+set(RES_STR_TABLE_OUTPUT_CPP "${CMAKE_BINARY_DIR}/generated/C4ResStrTableGenerated.cpp")
+set(RES_STR_TABLE_OUTPUT_H "${CMAKE_BINARY_DIR}/generated/C4ResStrTableGenerated.h")
+
+add_custom_command(
+	OUTPUT "${RES_STR_TABLE_OUTPUT_CPP}" "${RES_STR_TABLE_OUTPUT_H}"
+	COMMAND "${CMAKE_COMMAND}" -DINPUT_FILE=${RES_STR_TABLE_INPUT} -DOUTPUT_FILE_CPP=${RES_STR_TABLE_OUTPUT_CPP} -DOUTPUT_FILE_H=${RES_STR_TABLE_OUTPUT_H} -P "${CMAKE_SOURCE_DIR}/cmake/GenerateStringTableFiles.cmake"
+	DEPENDS ${RES_STR_TABLE_INPUT} "${CMAKE_SOURCE_DIR}/cmake/GenerateStringTableFiles.cmake"
+	VERBATIM
+)
+
+target_sources(clonk PUBLIC ${RES_STR_TABLE_OUTPUT_CPP} ${RES_STR_TABLE_OUTPUT_H})
+
 # Add c4group target
 
 append_filelist(C4GROUP_SOURCES C4Group.txt)
@@ -389,6 +402,10 @@ if (USE_SDL_MIXER)
 	find_package(SDL2_mixer REQUIRED)
 	target_link_libraries(clonk SDL2_mixer::SDL2_mixer)
 endif ()
+
+# Link spdlog
+find_package(spdlog REQUIRED)
+target_link_libraries(standard spdlog::spdlog)
 
 # Link Windows Imaging Component
 if (USE_WIC)
@@ -549,6 +566,11 @@ function(set_up_pch TARGET)
 	# Go through each source file of the target
 	get_target_property(SOURCES ${TARGET} SOURCES)
 	foreach(SOURCE ${SOURCES})
+		get_source_file_property(SOURCE_GENERATED ${SOURCE} GENERATED)
+		if (SOURCE_GENERATED)
+			continue()
+		endif ()
+
 		file(STRINGS "${SOURCE}" SOURCE_LINES ENCODING UTF-8)
 		# Include header files that use "#pragma once"
 		if (SOURCE MATCHES ".*\.h$")

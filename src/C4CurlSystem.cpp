@@ -18,7 +18,7 @@
 #include "C4Log.h"
 #include "C4ThreadPool.h"
 #include "StdApp.h"
-#include "StdResStr2.h"
+#include "C4ResStrTable.h"
 
 #include <format>
 #include <ranges>
@@ -60,8 +60,8 @@ C4CurlSystem::GlobalInit::GlobalInit()
 	if (const auto ret = curl_global_init(CURL_GLOBAL_ALL); ret != CURLE_OK)
 	{
 		const char *const error{curl_easy_strerror(ret)};
-		std::string message{std::vformat(LoadResStr("IDS_ERR_CURLGLOBALINIT"), std::make_format_args(error))};
-		Log(message.c_str());
+		std::string message{std::vformat(LoadResStr(C4ResStrTableKey::IDS_ERR_CURLGLOBALINIT), std::make_format_args(error))};
+		LogNTr(message);
 		throw CStdApp::StartupException{std::move(message)};
 	}
 }
@@ -149,8 +149,8 @@ C4CurlSystem::C4CurlSystem()
 {
 	if (!multiHandle)
 	{
-		std::string message{std::vformat(LoadResStr("IDS_ERR_CURLGLOBALINIT"), std::make_format_args("curl_multi_init failed"))};
-		Log(message.c_str());
+		std::string message{std::vformat(LoadResStr(C4ResStrTableKey::IDS_ERR_CURLGLOBALINIT), std::make_format_args("curl_multi_init failed"))};
+		LogNTr(message);
 		throw CStdApp::StartupException{std::move(message)};
 	}
 

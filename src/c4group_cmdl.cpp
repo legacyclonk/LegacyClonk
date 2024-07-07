@@ -39,6 +39,12 @@
 #include <C4Version.h>
 #include <C4Update.h>
 
+#include <format>
+#include <print>
+#include <string_view>
+
+#include <fmt/printf.h>
+
 #include <shellapi.h>
 #include <conio.h>
 
@@ -61,13 +67,13 @@ C4Config *GetCfg() { return &Config; }
 #ifdef _WIN32
 #ifndef NDEBUG
 template<typename... Args>
-int dbg_printf(const char *strMessage, Args... args)
+void dbg_printf(const std::format_string<Args...> fmt, Args &&... args)
 {
 	// Compose formatted message
-	const auto output = FormatString(strMessage, args...);
+	const std::string output{std::format(fmt, std::forward<Args>(args)...)};
 	// Log
-	OutputDebugString(output.getData());
-	return printf(output.getData());
+	OutputDebugString(output.c_str());
+	std::print("{}", output);
 }
 #define printf dbg_printf
 #endif
@@ -85,7 +91,7 @@ bool ProcessGroup(const char *szFilename)
 
 	// Current filename
 	if (!fQuiet)
-		printf("Group: %s\n", szFilename);
+		std::println("Group: {}", szFilename);
 
 	// Open group file
 	if (hGroup.Open(szFilename, true))
@@ -109,13 +115,13 @@ bool ProcessGroup(const char *szFilename)
 					// Add
 					case 'a':
 						if ((iArg + 1 >= argc) || (argv[iArg + 1][0] == '-'))
-							printf("Missing argument for add command\n");
+							std::println("Missing argument for add command");
 						else
 						{
 							if ((argv[iArg][2] == 's') || (argv[iArg][2] && (argv[iArg][3] == 's')))
 							{
 								if ((iArg + 2 >= argc) || (argv[iArg + 2][0] == '-'))
-									printf("Missing argument for add as command\n");
+									std::println("Missing argument for add as command");
 								else
 								{
 									hGroup.Add(argv[iArg + 1], argv[iArg + 2]); iArg += 2;
@@ -134,7 +140,7 @@ bool ProcessGroup(const char *szFilename)
 					// Move
 					case 'm':
 						if ((iArg + 1 >= argc) || (argv[iArg + 1][0] == '-'))
-							printf("Missing argument for move command\n");
+							std::println("Missing argument for move command");
 						else
 #ifdef _WIN32
 						{
@@ -147,13 +153,13 @@ bool ProcessGroup(const char *szFilename)
 					// Extract
 					case 'e':
 						if ((iArg + 1 >= argc) || (argv[iArg + 1][0] == '-'))
-							printf("Missing argument for extract command\n");
+							std::println("Missing argument for extract command");
 						else
 						{
 							if ((argv[iArg][2] == 't') || (argv[iArg][2] && (argv[iArg][3] == 's')))
 							{
 								if ((iArg + 2 >= argc) || (argv[iArg + 2][0] == '-'))
-									printf("Missing argument for extract as command\n");
+									std::println("Missing argument for extract as command");
 								else
 								{
 									hGroup.Extract(argv[iArg + 1], argv[iArg + 2]); iArg += 2;
@@ -168,7 +174,7 @@ bool ProcessGroup(const char *szFilename)
 					// Delete
 					case 'd':
 						if ((iArg + 1 >= argc) || (argv[iArg + 1][0] == '-'))
-							printf("Missing argument for delete command\n");
+							std::println("Missing argument for delete command");
 						else
 						{
 							hGroup.Delete(argv[iArg + 1], fRecursive); iArg++;
@@ -180,7 +186,7 @@ bool ProcessGroup(const char *szFilename)
 						C4Group_SetSortList(nullptr);
 						// Missing argument
 						if ((iArg + 1 >= argc) || (argv[iArg + 1][0] == '-'))
-							printf("Missing argument for sort command\n");
+							std::println("Missing argument for sort command");
 						// Sort, advance to next argument
 						else
 						{
@@ -191,7 +197,7 @@ bool ProcessGroup(const char *szFilename)
 					// Rename
 					case 'r':
 						if ((iArg + 2 >= argc) || (argv[iArg + 1][0] == '-') || (argv[iArg + 2][0] == '-'))
-							printf("Missing argument(s) for rename command\n");
+							std::println("Missing argument(s) for rename command");
 						else
 						{
 							hGroup.Rename(argv[iArg + 1], argv[iArg + 2]); iArg += 2;
@@ -214,74 +220,74 @@ bool ProcessGroup(const char *szFilename)
 						break;
 					// Pack
 					case 'p':
-						printf("Packing...\n");
+						std::println("Packing...");
 						// Close
-						if (!hGroup.Close()) printf("Closing failed: %s\n", hGroup.GetError());
+						if (!hGroup.Close()) std::println("Closing failed: {}", hGroup.GetError());
 						// Pack
-						else if (!C4Group_PackDirectory(szFilename)) printf("Pack failed\n");
+						else if (!C4Group_PackDirectory(szFilename)) std::println("Pack failed");
 						// Reopen
-						else if (!hGroup.Open(szFilename)) printf("Reopen failed: %s\n", hGroup.GetError());
+						else if (!hGroup.Open(szFilename)) std::println("Reopen failed: {}", hGroup.GetError());
 						break;
 					// Unpack
 					case 'u':
-						printf("Unpacking...\n");
+						std::println("Unpacking...");
 						// Close
-						if (!hGroup.Close()) printf("Closing failed: %s\n", hGroup.GetError());
+						if (!hGroup.Close()) std::println("Closing failed: {}", hGroup.GetError());
 						// Unpack
-						else if (!C4Group_UnpackDirectory(szFilename)) printf("Unpack failed\n");
+						else if (!C4Group_UnpackDirectory(szFilename)) std::println("Unpack failed");
 						// Reopen
-						else if (!hGroup.Open(szFilename)) printf("Reopen failed: %s\n", hGroup.GetError());
+						else if (!hGroup.Open(szFilename)) std::println("Reopen failed: {}\n", hGroup.GetError());
 						break;
 					// Unpack
 					case 'x':
-						printf("Exploding...\n");
+						std::println("Exploding...");
 						// Close
-						if (!hGroup.Close()) printf("Closing failed: %s\n", hGroup.GetError());
+						if (!hGroup.Close()) std::println("Closing failed: {}\n", hGroup.GetError());
 						// Explode
-						else if (!C4Group_ExplodeDirectory(szFilename)) printf("Unpack failed\n");
+						else if (!C4Group_ExplodeDirectory(szFilename)) std::println("Unpack failed");
 						// Reopen
-						else if (!hGroup.Open(szFilename)) printf("Reopen failed: %s\n", hGroup.GetError());
+						else if (!hGroup.Open(szFilename)) std::println("Reopen failed: {}", hGroup.GetError());
 						break;
 					// Print maker
 					case 'k':
-						printf("%s\n", hGroup.GetMaker());
+						std::println("{}", hGroup.GetMaker());
 						break;
 					// Generate update
 					case 'g':
 						if ((iArg + 3 >= argc) || (argv[iArg + 1][0] == '-') || (argv[iArg + 2][0] == '-') || (argv[iArg + 3][0] == '-'))
-							printf("Update generation failed: too few arguments\n");
+							std::println("Update generation failed: too few arguments");
 						else
 						{
 							C4UpdatePackage Upd;
 							// Close
-							if (!hGroup.Close()) printf("Closing failed: %s\n", hGroup.GetError());
+							if (!hGroup.Close()) std::println("Closing failed: {}", hGroup.GetError());
 							// generate
 							else if (!Upd.MakeUpdate(argv[iArg + 1], argv[iArg + 2], szFilename, argv[iArg + 3]))
-								printf("Update generation failed.\n");
+								std::println("Update generation failed.");
 							// Reopen
-							else if (!hGroup.Open(szFilename)) printf("Reopen failed: %s\n", hGroup.GetError());
+							else if (!hGroup.Open(szFilename)) std::println("Reopen failed: {}", hGroup.GetError());
 							iArg += 3;
 						}
 						break;
 					// Apply update
 					case 'y':
-						printf("Applying update...\n");
+						std::println("Applying update...");
 						if (C4Group_ApplyUpdate(hGroup))
 						{
 							if (argv[iArg][2] == 'd') fDeleteGroup = true;
 						}
 						else
-							printf("Update failed.\n");
+							std::println("Update failed.");
 						break;
 					// Optimize update generation target
 					case 'z':
 						if ((iArg + 1 >= argc) || (argv[iArg + 1][0] == '-'))
-							printf("Missing parameter for optimization\n");
+							std::println("Missing parameter for optimization");
 						else
 						{
-							printf("Optimizing %s...\n", argv[iArg + 1]);
+							std::println("Optimizing {}...", argv[iArg + 1]);
 							if (!C4UpdatePackage::Optimize(&hGroup, argv[iArg + 1]))
-								printf("Optimization failed.\n");
+								std::println("Optimization failed.");
 							iArg++;
 						}
 						break;
@@ -294,7 +300,7 @@ bool ProcessGroup(const char *szFilename)
 					// Wait
 					case 'w':
 						if ((iArg + 1 >= argc) || (argv[iArg + 1][0] == '-'))
-							printf("Missing argument for wait command\n");
+							std::println("Missing argument for wait command");
 						else
 						{
 							int iMilliseconds = 0;
@@ -302,47 +308,47 @@ bool ProcessGroup(const char *szFilename)
 							// Wait for specified time
 							if (iMilliseconds > 0)
 							{
-								printf("Waiting...\n");
+								std::println("Waiting...");
 								Sleep(iMilliseconds);
 							}
 							// Wait for specified process to end
 							else
 							{
-								printf("Waiting for %s to end", argv[iArg + 1]);
+								std::print("Waiting for {} to end", argv[iArg + 1]);
 								for (int i = 0; FindWindow(nullptr, argv[iArg + 1]) && (i < 5); i++)
 								{
 									Sleep(1000);
-									printf(".");
+									std::print(".");
 								}
-								printf("\n");
+								std::println("");
 							}
 							iArg++;
 						}
 						break;
 					// Undefined
 					default:
-						printf("Unknown command: %s\n", argv[iArg]);
+						std::println("Unknown command: {}", argv[iArg]);
 						break;
 					}
 				}
 				else
 				{
-					printf("Invalid parameter %s\n", argv[iArg]);
+					std::println("Invalid parameter {}", argv[iArg]);
 				}
 			}
 
 		// Error: output status
 		if (!SEqual(hGroup.GetError(), "No Error"))
-			printf("Status: %s\n", hGroup.GetError());
+			std::println("Status: {}", hGroup.GetError());
 
 		// Close group file
 		if (!hGroup.Close())
-			printf("Closing: %s\n", hGroup.GetError());
+			std::println("Closing: {}", hGroup.GetError());
 
 		// Delete group file if desired (i.e. after apply update)
 		if (fDeleteGroup)
 		{
-			printf("Deleting %s...\n", GetFilename(szFilename));
+			std::println("Deleting {}...", GetFilename(szFilename));
 			EraseItem(szFilename);
 		}
 	}
@@ -350,7 +356,7 @@ bool ProcessGroup(const char *szFilename)
 	// Couldn't open group
 	else
 	{
-		printf("Status: %s\n", hGroup.GetError());
+		std::println("Status: {}", hGroup.GetError());
 	}
 
 	// Done
@@ -369,10 +375,10 @@ int RegisterShellExtensions()
 	for (int i = 0; SCopySegment(strClasses, i, strClass); i++)
 	{
 		// Unpack
-		sprintf(strCommand, "\"%s\" \"%%1\" \"-u\"", strModule);
+		FormatWithNull(strCommand, "\"{}\" \"%1\" \"-u\"", strModule);
 		if (!SetRegShell(strClass, "MakeFolder", "C4Group Unpack", strCommand)) return 0;
 		// Explode
-		sprintf(strCommand, "\"%s\" \"%%1\" \"-x\"", strModule);
+		FormatWithNull(strCommand, "\"{}\" \"%1\" \"-x\"", strModule);
 		if (!SetRegShell(strClass, "ExplodeFolder", "C4Group Explode", strCommand)) return 0;
 	}
 	// Directories
@@ -380,7 +386,7 @@ int RegisterShellExtensions()
 	for (int i = 0; SCopySegment(strClasses2, i, strClass); i++)
 	{
 		// Pack
-		sprintf(strCommand, "\"%s\" \"%%1\" \"-p\"", strModule);
+		FormatWithNull(strCommand, "\"{}\" \"%1\" \"-p\"", strModule);
 		if (!SetRegShell(strClass, "MakeGroupFile", "C4Group Pack", strCommand)) return 0;
 	}
 	// Done
@@ -413,10 +419,10 @@ int UnregisterShellExtensions()
 	return 1;
 }
 
-bool Log(const char *msg)
+bool Log(const std::string_view msg)
 {
 	if (!fQuiet)
-		printf("%s\n", msg);
+		std::println("{}", msg);
 	return 1;
 }
 
@@ -425,16 +431,16 @@ bool LogFatal(const char *msg) { return Log(msg); }
 template<typename... Args>
 bool LogF(const char *strMessage, Args... args)
 {
-	return Log(FormatString(strMessage, args...).getData());
+	return Log(fmt::sprintf(strMessage, args...));
 }
 
 void StdCompilerWarnCallback(void *pData, const char *szPosition, const char *szError)
 {
 	const char *szName = reinterpret_cast<const char *>(pData);
 	if (!szPosition || !*szPosition)
-		LogF("WARNING: %s: %s", szName, szError);
+		LogF("WARNING: {}: {}", szName, szError);
 	else
-		LogF("WARNING: %s (%s): %s", szName, szPosition, szError);
+		LogF("WARNING: {} ({}): {}", szName, szPosition, szError);
 }
 
 int main(int argc, char *argv[])
@@ -459,7 +465,7 @@ int main(int argc, char *argv[])
 			// Execute at end
 			case 'x': SCopy(argv[i] + 3, strExecuteAtEnd, _MAX_PATH); break;
 			// Unknown
-			default: printf("Unknown option %s\n", argv[i]); break;
+			default: std::println("Unknown option {}", argv[i]); break;
 			}
 		// Command encountered: no more options expected
 		if (argv[i][0] == '-')
@@ -471,7 +477,7 @@ int main(int argc, char *argv[])
 
 	// Program info
 	if (!fQuiet)
-		printf("LegacyClonk C4Group %s\n", C4VERSION);
+		std::println("LegacyClonk C4Group {}", C4VERSION);
 
 	// Load configuration
 	Config.Init();
@@ -487,7 +493,7 @@ int main(int argc, char *argv[])
 	{
 		char strWorkingDirectory[_MAX_PATH + 1] = "";
 		GetCurrentDirectory(_MAX_PATH, strWorkingDirectory);
-		printf("Location: %s\n", strWorkingDirectory);
+		std::println("Location: {}", strWorkingDirectory);
 	}
 
 	// Store command line parameters
@@ -497,15 +503,15 @@ int main(int argc, char *argv[])
 	// Register shell
 	if (fRegisterShell)
 		if (RegisterShellExtensions())
-			printf("Shell extensions registered.\n");
+			std::println("Shell extensions registered.");
 		else
-			printf("Error registering shell extensions. You might need administrator rights.\n");
+			std::println("Error registering shell extensions. You might need administrator rights.");
 	// Unregister shell
 	if (fUnregisterShell)
 		if (UnregisterShellExtensions())
-			printf("Shell extensions removed.\n");
+			std::println("Shell extensions removed.");
 		else
-			printf("Error removing shell extensions.\n");
+			std::println("Error removing shell extensions.");
 
 	// At least one parameter (filename, not option or command): process file(s)
 	if ((argc > 1) && (argv[1][0] != '/') && (argv[1][0] != '-')) // ...remember filenames cannot start with a forward slash because of options format
@@ -521,43 +527,43 @@ int main(int argc, char *argv[])
 	// Too few parameters: output help (if we didn't register stuff)
 	else if (!fRegisterShell && !fUnregisterShell)
 	{
-		printf("\n");
-		printf("Usage:    c4group group [options] command(s)\n\n");
-		printf("Commands: -a[s] Add [as]  -m Move  -e[t] Extract [to]\n");
-		printf("          -v View  -d Delete  -r Rename  -s Sort\n");
-		printf("          -p Pack  -u Unpack  -x Explode\n");
-		printf("          -k Print maker\n");
-		printf("          -g [source] [target] [title] Make update\n");
-		printf("          -y[d] Apply update [and delete group file]\n");
-		printf("          -z Optimize a group to be similar (smaller update)\n");
-		printf("\n");
-		printf("Options:  /q Quiet /r Recursive /p Prompt at end\n");
-		printf("          /i Register shell /u Unregister shell\n");
-		printf("          /x:<command> Execute shell command when done\n");
-		printf("\n");
-		printf("Examples: c4group pack.c4g -a myfile.dat -v *.dat\n");
-		printf("          c4group pack.c4g -as myfile.dat myfile.bin\n");
-		printf("          c4group pack.c4g -et *.dat \\data\\mydatfiles\\\n");
-		printf("          c4group pack.c4g -et myfile.dat myfile.bak\n");
-		printf("          c4group pack.c4g -s \"*.bin|*.dat\"\n");
-		printf("          c4group pack.c4g -x\n");
-		printf("          c4group pack.c4g /q -k\n");
-		printf("          c4group update.c4u -g ver1.c4f ver2.c4f New_Version\n");
-		printf("          c4group ver1.c4f -z ver2.c4f\n");
-		printf("          c4group /i\n");
+		std::println("");
+		std::println("Usage:    c4group group [options] command(s)\n");
+		std::println("Commands: -a[s] Add [as]  -m Move  -e[t] Extract [to]");
+		std::println("          -v View  -d Delete  -r Rename  -s Sort");
+		std::println("          -p Pack  -u Unpack  -x Explode");
+		std::println("          -k Print maker");
+		std::println("          -g [source] [target] [title] Make update");
+		std::println("          -y[d] Apply update [and delete group file]");
+		std::println("          -z Optimize a group to be similar (smaller update)");
+		std::println("");
+		std::println("Options:  /q Quiet /r Recursive /p Prompt at end");
+		std::println("          /i Register shell /u Unregister shell");
+		std::println("          /x:<command> Execute shell command when done");
+		std::println("");
+		std::println("Examples: c4group pack.c4g -a myfile.dat -v *.dat");
+		std::println("          c4group pack.c4g -as myfile.dat myfile.bin");
+		std::println("          c4group pack.c4g -et *.dat \\data\\mydatfiles\\");
+		std::println("          c4group pack.c4g -et myfile.dat myfile.bak");
+		std::println("          c4group pack.c4g -s \"*.bin|*.dat\"");
+		std::println("          c4group pack.c4g -x");
+		std::println("          c4group pack.c4g /q -k");
+		std::println("          c4group update.c4u -g ver1.c4f ver2.c4f New_Version");
+		std::println("          c4group ver1.c4f -z ver2.c4f");
+		std::println("          c4group /i");
 	}
 
 	// Prompt at end
 	if (fPromptAtEnd)
 	{
-		printf("\nDone. Press any key to continue.\n");
+		std::println("\nDone. Press any key to continue.");
 		_getch();
 	}
 
 	// Execute when done
 	if (strExecuteAtEnd[0])
 	{
-		printf("Executing: %s\n", strExecuteAtEnd);
+		std::println("Executing: {}", strExecuteAtEnd);
 
 		STARTUPINFO startInfo{};
 		startInfo.cb = sizeof(startInfo);

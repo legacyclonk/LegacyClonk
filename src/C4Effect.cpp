@@ -25,18 +25,18 @@
 #include <C4Game.h>
 #include <C4Wrappers.h>
 
+#include <format>
 #include <numbers>
 
 void C4Effect::AssignCallbackFunctions()
 {
 	C4AulScript *pSrcScript = GetCallbackScript();
 	// compose function names and search them
-	char fn[C4AUL_MAX_Identifier + 1];
-	sprintf(fn, PSF_FxStart,  Name); pFnStart  = pSrcScript->GetFuncRecursive(fn);
-	sprintf(fn, PSF_FxStop,   Name); pFnStop   = pSrcScript->GetFuncRecursive(fn);
-	sprintf(fn, PSF_FxTimer,  Name); pFnTimer  = pSrcScript->GetFuncRecursive(fn);
-	sprintf(fn, PSF_FxEffect, Name); pFnEffect = pSrcScript->GetFuncRecursive(fn);
-	sprintf(fn, PSF_FxDamage, Name); pFnDamage = pSrcScript->GetFuncRecursive(fn);
+	pFnStart  = pSrcScript->GetFuncRecursive(std::format(PSF_FxStart, Name).c_str());
+	pFnStop   = pSrcScript->GetFuncRecursive(std::format(PSF_FxStop, Name).c_str());
+	pFnTimer  = pSrcScript->GetFuncRecursive(std::format(PSF_FxTimer, Name).c_str());
+	pFnEffect = pSrcScript->GetFuncRecursive(std::format(PSF_FxEffect, Name).c_str());
+	pFnDamage = pSrcScript->GetFuncRecursive(std::format(PSF_FxDamage, Name).c_str());
 }
 
 C4AulScript *C4Effect::GetCallbackScript()
@@ -429,11 +429,8 @@ C4Value C4Effect::DoCall(C4Object *pObj, const char *szFn, const C4Value &rVal1,
 		pSrcScript = &pDef->Script;
 	else
 		pSrcScript = &Game.ScriptEngine;
-	// compose function name
-	char fn[C4AUL_MAX_Identifier + 1];
-	sprintf(fn, PSF_FxCustom, Name, szFn);
 	// call it
-	C4AulFunc *pFn = pSrcScript->GetFuncRecursive(fn);
+	C4AulFunc *pFn = pSrcScript->GetFuncRecursive(std::format(PSF_FxCustom, Name, szFn).c_str());
 	if (!pFn) return C4Value();
 	return pFn->Exec(pCommandTarget, {C4VObj(pObj), C4VInt(iNumber), rVal1, rVal2, rVal3, rVal4, rVal5, rVal6, rVal7}, passErrors, true, convertNilToIntBool);
 }
@@ -603,7 +600,7 @@ int32_t FnFxFireStart(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 	}
 	else if (!Inside<int32_t>(iFireMode, 1, C4Fx_FireMode_Last))
 	{
-		DebugLogF("Warning: FireMode %d of object %s (%s) is invalid!", iFireMode, pObj->GetName(), pObj->Def->GetName());
+		DebugLog(spdlog::level::warn, "FireMode {} of object {} ({}) is invalid!", iFireMode, pObj->GetName(), pObj->Def->GetName());
 		iFireMode = C4Fx_FireMode_Object;
 	}
 	// store causes in effect vars
@@ -775,7 +772,7 @@ int32_t FnFxFireStop(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_t
 
 C4String *FnFxFireInfo(C4AulContext *ctx, C4Object *pObj, int32_t iNumber)
 {
-	return new C4String(LoadResStr("IDS_OBJ_BURNS"), &Game.ScriptEngine.Strings);
+	return new C4String(LoadResStr(C4ResStrTableKey::IDS_OBJ_BURNS), &Game.ScriptEngine.Strings);
 }
 
 // Some other, internal effects
@@ -860,8 +857,7 @@ void Explosion(int32_t tx, int32_t ty, int32_t level, C4Object *inobj, int32_t i
 {
 	int32_t grade = BoundBy((level / 10) - 1, 1, 3);
 	// Sound
-	StdStrBuf sound = FormatString("Blast%c", '0' + grade);
-	StartSoundEffect(sound.getData(), false, 100, pByObj);
+	StartSoundEffect(std::format("Blast{}", '0' + grade).c_str(), false, 100, pByObj);
 	// Check blast containment
 	C4Object *container = inobj;
 	while (container && !container->Def->ContainBlast) container = container->Contained;

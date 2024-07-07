@@ -62,7 +62,7 @@ bool C4LoaderScreen::Init(const char *szLoaderSpec)
 		GfxGrp.Close();
 		if (!GfxGrp.Open(Config.AtExePath(C4CFN_Graphics)))
 		{
-			LogFatal(FormatString(LoadResStr("IDS_PRC_NOGFXFILE"), C4CFN_Graphics, GfxGrp.GetError()).getData());
+			LogFatal(C4ResStrTableKey::IDS_PRC_NOGFXFILE, C4CFN_Graphics, GfxGrp.GetError());
 			return false;
 		}
 		// seek for png-loaders
@@ -82,7 +82,7 @@ bool C4LoaderScreen::Init(const char *szLoaderSpec)
 		// Not even default loaders available? Fail.
 		if (!iLoaders)
 		{
-			LogFatal(FormatString("No loaders found for loader specification: %s/%s/%s/%s", szLoaderSpecPng, szLoaderSpecBmp, szLoaderSpecJpg, szLoaderSpecJpeg).getData());
+			LogFatalNTr("No loaders found for loader specification: {}/{}/{}/{}", szLoaderSpecPng, szLoaderSpecBmp, szLoaderSpecJpg, szLoaderSpecJpeg);
 			return false;
 		}
 	}

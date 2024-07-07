@@ -89,11 +89,6 @@ int ClonkMain(const HINSTANCE instance, const int cmdShow, const int argc, char 
 		freopen("CONIN$", "r", stdin);
 		freopen("CONOUT$", "w", stdout);
 		freopen("CONOUT$", "w", stderr);
-
-		const HANDLE out{CreateFile(_T("CONOUT$"), GENERIC_READ, FILE_SHARE_READ , nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr)};
-		SetStdHandle(STD_OUTPUT_HANDLE, out);
-		SetStdHandle(STD_ERROR_HANDLE, out);
-		SetStdHandle(STD_INPUT_HANDLE, CreateFile(_T("CONIN$"), GENERIC_READ, FILE_SHARE_READ , nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
 	}
 #endif
 

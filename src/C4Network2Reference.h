@@ -130,7 +130,7 @@ public:
 public:
 	bool Init();
 	bool Query(const StdBuf &Data, bool binary, C4HTTPClient::Headers headers = {});
-	bool Query(const char *szData, bool binary, C4HTTPClient::Headers headers = {}) { return Query(StdBuf::MakeRef(szData, SLen(szData)), binary, std::move(headers)); }
+	bool Query(const std::string_view data, bool binary, C4HTTPClient::Headers headers = {}) { return Query(StdBuf::MakeRef(data.data(), data.size()), binary, std::move(headers)); }
 
 	bool isBusy() const;
 	bool isSuccess() const;

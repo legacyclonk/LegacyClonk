@@ -173,7 +173,6 @@ public:
 	bool fResortAnyObject; // if set, object list will be checked for unsorted objects next frame
 	bool IsRunning; // (NoSave) if set, the game is running; if not, just the startup message board is painted
 	bool PointersDenumerated; // (NoSave) set after object pointers have been denumerated
-	size_t StartupLogPos, QuitLogPos; // current log positions when game was last started and cleared
 	bool fQuitWithError; // if set, game shut down irregularly
 	bool IsMusicEnabled;
 	int32_t iMusicLevel; // scenario-defined music level
@@ -322,7 +321,7 @@ protected:
 	bool GameOverCheck();
 	bool PlaceInEarth(C4ID id);
 	bool Compile(const char *szSource);
-	bool Decompile(StdStrBuf &rBuf, bool fSaveSection, bool fSaveExact);
+	bool Decompile(std::string &buf, bool fSaveSection, bool fSaveExact);
 
 public:
 	void CompileFunc(StdCompiler *pComp, CompileSettings comp);
@@ -373,7 +372,7 @@ const int32_t C4RULE_StructuresNeedEnergy      = 1,
 extern C4Game Game;
 
 // a global wrapper
-inline StdStrBuf GetKeyboardInputName(const char *szKeyName, bool fShort = false, int32_t iIndex = 0)
+inline std::string GetKeyboardInputName(const char *szKeyName, bool fShort = false, int32_t iIndex = 0)
 {
 	return Game.KeyboardInput.GetKeyCodeNameByKeyName(szKeyName, fShort, iIndex);
 }

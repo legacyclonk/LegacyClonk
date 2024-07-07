@@ -125,14 +125,14 @@ bool C4ParticleDef::Load(C4Group &rGrp)
 	{
 		if (!Compile(pSource, Filename.getData()))
 		{
-			DebugLogF("invalid particle def at '%s'", rGrp.GetFullName().getData());
+			DebugLog(spdlog::level::err, "invalid particle def at '{}'", rGrp.GetFullName().getData());
 			delete[] pSource; return false;
 		}
 		delete[] pSource;
 		// load graphics
 		if (!Gfx.Load(rGrp, C4CFN_DefGraphicsPNG))
 		{
-			DebugLogF("particle %s has no valid graphics defined", Name.getData());
+			DebugLog(spdlog::level::err, "particle {} has no valid graphics defined", Name.getData());
 			return false;
 		}
 		// set facet, if assigned - otherwise, assume full surface
@@ -141,7 +141,7 @@ bool C4ParticleDef::Load(C4Group &rGrp)
 		int32_t Q; Gfx.GetPhaseNum(Length, Q);
 		if (!Length)
 		{
-			DebugLogF("invalid facet for particle '%s'", Name.getData());
+			DebugLog(spdlog::level::err, "invalid facet for particle '{}'", Name.getData());
 			return false;
 		}
 		// case fadeout from length
@@ -157,22 +157,22 @@ bool C4ParticleDef::Load(C4Group &rGrp)
 		// get proc pointers
 		if (!(InitProc = ParticleSystem.GetProc(InitFn.getData())))
 		{
-			DebugLogF("init proc for particle '%s' not found: '%s'", Name.getData(), InitFn.getData());
+			DebugLog(spdlog::level::err, "init proc for particle '{}' not found: '{}'", Name.getData(), InitFn.getData());
 			return false;
 		}
 		if (!(ExecProc = ParticleSystem.GetProc(ExecFn.getData())))
 		{
-			DebugLogF("exec proc for particle '%s' not found: '%s'", Name.getData(), ExecFn.getData());
+			DebugLog(spdlog::level::err, "exec proc for particle '{}' not found: '{}'", Name.getData(), ExecFn.getData());
 			return false;
 		}
 		if (CollisionFn && CollisionFn[0]) if (!(CollisionProc = ParticleSystem.GetProc(CollisionFn.getData())))
 		{
-			DebugLogF("collision proc for particle '%s' not found: '%s'", Name.getData(), CollisionFn.getData());
+			DebugLog(spdlog::level::err, "collision proc for particle '{}' not found: '{}'", Name.getData(), CollisionFn.getData());
 			return false;
 		}
 		if (!(DrawProc = ParticleSystem.GetDrawProc(DrawFn.getData())))
 		{
-			DebugLogF("draw proc for particle '%s' not found: '%s'", Name.getData(), DrawFn.getData());
+			DebugLog(spdlog::level::err, "draw proc for particle '{}' not found: '{}'", Name.getData(), DrawFn.getData());
 			return false;
 		}
 		// particle overloading
@@ -181,7 +181,7 @@ bool C4ParticleDef::Load(C4Group &rGrp)
 		{
 			if (Config.Graphics.VerboseObjectLoading >= 1)
 			{
-				char ostr[250]; sprintf(ostr, LoadResStr("IDS_PRC_DEFOVERLOAD"), pDefOverload->Name.getData(), "<particle>"); Log(ostr);
+				Log(C4ResStrTableKey::IDS_PRC_DEFOVERLOAD, pDefOverload->Name.getData(), "<particle>");
 			}
 			delete pDefOverload;
 		}

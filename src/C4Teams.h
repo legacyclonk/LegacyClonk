@@ -214,13 +214,13 @@ public:
 
 private:
 	// team distribution configuration
-	StdStrBuf GetTeamDistName(TeamDist eTeamDist) const;
+	std::string GetTeamDistName(TeamDist eTeamDist) const;
 
 public:
 	void FillTeamDistOptions(C4GUI::ComboBox_FillCB *pFiller) const;
 	void SendSetTeamDist(TeamDist eNewDist);
 	TeamDist GetTeamDist() const { return eTeamDist; }
-	StdStrBuf GetTeamDistString() const;
+	std::string GetTeamDistString() const;
 	bool HasTeamDistOptions() const;
 	void SetTeamDistribution(TeamDist eToVal);
 	void SendSetTeamColors(bool fEnabled);

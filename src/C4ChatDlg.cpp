@@ -27,6 +27,8 @@
 #include "C4InputValidation.h"
 #include "C4Network2IRC.h"
 
+#include <format>
+
 void convUTF8toWindows(StdStrBuf &sText)
 {
 	// workaround until we have UTF-8 support: convert German umlauts and ß
@@ -92,7 +94,7 @@ public:
 	const char *GetIdent() const { return sIdent.getData(); }
 	void SetIdent(const char *szToIdent) { sIdent.Copy(szToIdent); }
 	const char *GetChatTitle() const { return sChatTitle.getData(); }
-	void SetChatTitle(const char *szNewTitle) { sChatTitle.Copy(szNewTitle); }
+	void SetChatTitle(const char *szNewTitle) { sChatTitle = szNewTitle; }
 
 	void AddTextLine(const char *szText, uint32_t dwClr);
 	void DoError(const char *szError);
@@ -162,7 +164,7 @@ void C4ChatControl::ChatSheet::NickItem::Update(class C4Network2IRCUser *pByUser
 	// set name
 	pNameLabel->SetText(pByUser->getName());
 	// tooltip is status+name
-	SetToolTip(FormatString("%s%s", szPrefix, pByUser->getName()).getData());
+	SetToolTip(std::format("{}{}", szPrefix, pByUser->getName()).c_str());
 }
 
 int32_t C4ChatControl::ChatSheet::NickItem::SortFunc(const C4GUI::Element *pEl1, const C4GUI::Element *pEl2, void *)
@@ -193,12 +195,12 @@ C4ChatControl::ChatSheet::ChatSheet(C4ChatControl *pChatControl, const char *szT
 		AddElement(pNickList);
 	}
 	if (eType != CS_Server)
-		pInputLbl = new C4GUI::WoodenLabel(LoadResStr("IDS_DLG_CHAT"), rcDefault, C4GUI_CaptionFontClr, &C4GUI::GetRes()->TextFont);
+		pInputLbl = new C4GUI::WoodenLabel(LoadResStr(C4ResStrTableKey::IDS_DLG_CHAT), rcDefault, C4GUI_CaptionFontClr, &C4GUI::GetRes()->TextFont);
 	pInputEdit = new C4GUI::CallbackEdit<C4ChatControl::ChatSheet>(rcDefault, this, &C4ChatControl::ChatSheet::OnChatInput);
-	pInputEdit->SetToolTip(LoadResStr("IDS_DLGTIP_CHAT"));
+	pInputEdit->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_CHAT));
 	if (pInputLbl)
 	{
-		pInputLbl->SetToolTip(LoadResStr("IDS_DLGTIP_CHAT"));
+		pInputLbl->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_CHAT));
 		pInputLbl->SetClickFocusControl(pInputEdit);
 		AddElement(pInputLbl);
 	}
@@ -345,7 +347,12 @@ void C4ChatControl::ChatSheet::Update(bool fLock)
 			if (!pIRCChan->isUsersLocked()) UpdateUsers(pIRCChan->getUsers());
 			// update topic
 			const char *szTopic = pIRCChan->getTopic();
-			sChatTitle.Format("%s%s%s", sIdent.getData(), szTopic ? ": " : "", szTopic ? szTopic : "");
+			sChatTitle.Append(sIdent);
+			if (szTopic)
+			{
+				sChatTitle.Append(": ");
+				sChatTitle.Append(szTopic);
+			}
 			convUTF8toWindows(sChatTitle);
 		}
 	}
@@ -436,16 +443,16 @@ C4ChatControl::C4ChatControl(C4Network2IRCClient *pnIRCClient) : C4GUI::Window()
 	C4GUI::Tabular::Sheet *pSheetChats = pTabMain->AddSheet(nullptr);
 	// login sheet
 	CStdFont *pUseFont = &C4GUI::GetRes()->TextFont;
-	pSheetLogin->AddElement(pLblLoginNick = new C4GUI::Label(LoadResStr("IDS_CTL_NICK"), rcDefault, ALeft, C4GUI_CaptionFontClr, pUseFont, false, true));
+	pSheetLogin->AddElement(pLblLoginNick = new C4GUI::Label(LoadResStr(C4ResStrTableKey::IDS_CTL_NICK), rcDefault, ALeft, C4GUI_CaptionFontClr, pUseFont, false, true));
 	pSheetLogin->AddElement(pEdtLoginNick = new C4GUI::CallbackEdit<C4ChatControl>(rcDefault, this, &C4ChatControl::OnLoginDataEnter));
-	pSheetLogin->AddElement(pLblLoginPass = new C4GUI::Label(LoadResStr("IDS_CTL_PASSWORDOPTIONAL"), rcDefault, ALeft, C4GUI_CaptionFontClr, pUseFont, false, true));
+	pSheetLogin->AddElement(pLblLoginPass = new C4GUI::Label(LoadResStr(C4ResStrTableKey::IDS_CTL_PASSWORDOPTIONAL), rcDefault, ALeft, C4GUI_CaptionFontClr, pUseFont, false, true));
 	pSheetLogin->AddElement(pEdtLoginPass = new C4GUI::CallbackEdit<C4ChatControl>(rcDefault, this, &C4ChatControl::OnLoginDataEnter));
 	pEdtLoginPass->SetPasswordMask('*');
-	pSheetLogin->AddElement(pLblLoginRealName = new C4GUI::Label(LoadResStr("IDS_CTL_REALNAME"), rcDefault, ALeft, C4GUI_CaptionFontClr, pUseFont, false, true));
+	pSheetLogin->AddElement(pLblLoginRealName = new C4GUI::Label(LoadResStr(C4ResStrTableKey::IDS_CTL_REALNAME), rcDefault, ALeft, C4GUI_CaptionFontClr, pUseFont, false, true));
 	pSheetLogin->AddElement(pEdtLoginRealName = new C4GUI::CallbackEdit<C4ChatControl>(rcDefault, this, &C4ChatControl::OnLoginDataEnter));
-	pSheetLogin->AddElement(pLblLoginChannel = new C4GUI::Label(LoadResStr("IDS_CTL_CHANNEL"), rcDefault, ALeft, C4GUI_CaptionFontClr, pUseFont, false, true));
+	pSheetLogin->AddElement(pLblLoginChannel = new C4GUI::Label(LoadResStr(C4ResStrTableKey::IDS_CTL_CHANNEL), rcDefault, ALeft, C4GUI_CaptionFontClr, pUseFont, false, true));
 	pSheetLogin->AddElement(pEdtLoginChannel = new C4GUI::CallbackEdit<C4ChatControl>(rcDefault, this, &C4ChatControl::OnLoginDataEnter));
-	pSheetLogin->AddElement(pBtnLogin = new C4GUI::CallbackButtonEx<C4ChatControl>(LoadResStr("IDS_BTN_CONNECT"), rcDefault, this, &C4ChatControl::OnConnectBtn));
+	pSheetLogin->AddElement(pBtnLogin = new C4GUI::CallbackButtonEx<C4ChatControl>(LoadResStr(C4ResStrTableKey::IDS_BTN_CONNECT), rcDefault, this, &C4ChatControl::OnConnectBtn));
 	// channel/query tabular
 	pTabChats = new C4GUI::Tabular(rcDefault, C4GUI::Tabular::tbTop);
 	pTabChats->SetSheetMargin(0);
@@ -461,6 +468,7 @@ C4ChatControl::C4ChatControl(C4Network2IRCClient *pnIRCClient) : C4GUI::Window()
 	ClearChatSheets();
 	// set IRC event callback
 	Application.InteractiveThread.SetCallback(Ev_IRC_Message, this);
+	sTitle.Ref("");
 }
 
 C4ChatControl::~C4ChatControl()
@@ -584,19 +592,19 @@ void C4ChatControl::OnConnectBtn(C4GUI::Control *btn)
 	StdStrBuf sServer(Config.IRC.Server);
 	if (C4InVal::ValidateString(sNick, C4InVal::VAL_IRCName))
 	{
-		GetScreen()->ShowErrorMessage(LoadResStr("IDS_ERR_INVALIDNICKNAME"));
+		GetScreen()->ShowErrorMessage(LoadResStr(C4ResStrTableKey::IDS_ERR_INVALIDNICKNAME));
 		GetDlg()->SetFocus(pEdtLoginNick, false);
 		return;
 	}
 	if (sPass.getLength() && C4InVal::ValidateString(sPass, C4InVal::VAL_IRCPass))
 	{
-		GetScreen()->ShowErrorMessage(LoadResStr("IDS_ERR_INVALIDPASSWORDMAX31CHARA"));
+		GetScreen()->ShowErrorMessage(LoadResStr(C4ResStrTableKey::IDS_ERR_INVALIDPASSWORDMAX31CHARA));
 		GetDlg()->SetFocus(pEdtLoginPass, false);
 		return;
 	}
 	if (sChannel.getLength() && C4InVal::ValidateString(sChannel, C4InVal::VAL_IRCChannel))
 	{
-		GetScreen()->ShowErrorMessage(LoadResStr("IDS_ERR_INVALIDCHANNELNAME"));
+		GetScreen()->ShowErrorMessage(LoadResStr(C4ResStrTableKey::IDS_ERR_INVALIDCHANNELNAME));
 		GetDlg()->SetFocus(pEdtLoginChannel, false);
 		return;
 	}
@@ -605,16 +613,15 @@ void C4ChatControl::OnConnectBtn(C4GUI::Control *btn)
 	SCopy(sRealName.getData(), Config.IRC.RealName, CFG_MaxString);
 	SCopy(sChannel.getData(), Config.IRC.Channel, CFG_MaxString);
 	// show chat warning
-	StdStrBuf sWarnMsg;
-	sWarnMsg.Format(LoadResStr("IDS_MSG_YOUAREABOUTTOCONNECTTOAPU"), sServer.getData());
-	if (!GetScreen()->ShowMessageModal(sWarnMsg.getData(), LoadResStr("IDS_MSG_CHATDISCLAIMER"), C4GUI::MessageDialog::btnOKAbort, C4GUI::Ico_Notify, &Config.Startup.HideMsgIRCDangerous))
+	const std::string warnMsg{LoadResStr(C4ResStrTableKey::IDS_MSG_YOUAREABOUTTOCONNECTTOAPU, sServer.getData())};
+	if (!GetScreen()->ShowMessageModal(warnMsg.c_str(), LoadResStr(C4ResStrTableKey::IDS_MSG_CHATDISCLAIMER), C4GUI::MessageDialog::btnOKAbort, C4GUI::Ico_Notify, &Config.Startup.HideMsgIRCDangerous))
 		return;
 	// set up IRC callback
 	pIRCClient->SetNotify(&Application.InteractiveThread);
 	// initiate connection
 	if (!pIRCClient->Connect(sServer.getData(), sNick.getData(), sRealName.getData(), sPass.getData(), sChannel.getData()))
 	{
-		GetScreen()->ShowErrorMessage(FormatString(LoadResStr("IDS_ERR_IRCCONNECTIONFAILED"), pIRCClient->GetError()).getData());
+		GetScreen()->ShowErrorMessage(LoadResStr(C4ResStrTableKey::IDS_ERR_IRCCONNECTIONFAILED, pIRCClient->GetError()).c_str());
 		return;
 	}
 	// enable client execution
@@ -626,7 +633,7 @@ void C4ChatControl::OnConnectBtn(C4GUI::Control *btn)
 	if (pServerSheet)
 	{
 		pServerSheet->SetChatTitle(sServer.getData());
-		pServerSheet->AddTextLine(FormatString(LoadResStr("IDS_NET_CONNECTING"), sServer.getData(), "").getData(), C4GUI_MessageFontClr);
+		pServerSheet->AddTextLine(LoadResStr(C4ResStrTableKey::IDS_NET_CONNECTING, sServer.getData(), "").c_str(), C4GUI_MessageFontClr);
 	}
 	// switch to server window
 	UpdateShownPage();
@@ -761,51 +768,51 @@ void C4ChatControl::Update()
 		if (pChatSheet)
 		{
 			// get message formatting and color
-			StdStrBuf sMsg; uint32_t dwClr = C4GUI_MessageFontClr;
+			std::string msg; uint32_t dwClr = C4GUI_MessageFontClr;
 			switch (pMsg->getType())
 			{
 			case MSG_Server:
-				sMsg.Format("- %s", pMsg->getData());
+				msg = std::format("- {}", pMsg->getData());
 				break;
 
 			case MSG_Status:
-				sMsg.Format("- %s", pMsg->getData());
+				msg = std::format("- {}", pMsg->getData());
 				dwClr = C4GUI_InactMessageFontClr;
 				break;
 
 			case MSG_Notice:
 				if (sUser.getLength())
 					if (sUser != pIRCClient->getUserName())
-						sMsg.Format("-%s- %s", sUser.getData(), pMsg->getData());
+						msg = std::format("-{}- {}", sUser.getData(), pMsg->getData());
 					else
-						sMsg.Format("-> -%s- %s", pMsg->getTarget(), pMsg->getData());
+						msg = std::format("-> -{}- {}", pMsg->getTarget(), pMsg->getData());
 				else
-					sMsg.Format("* %s", pMsg->getData());
+					msg = std::format("* {}", pMsg->getData());
 				dwClr = C4GUI_NotifyFontClr;
 				break;
 
 			case MSG_Message:
 				if (fMsgToService)
-					sMsg.Format("-> *%s* %s", pMsg->getTarget(), pMsg->getData());
+					msg = std::format("-> *{}* {}", pMsg->getTarget(), pMsg->getData());
 				else if (sUser.getLength())
-					sMsg.Format("<%s> %s", sUser.getData(), pMsg->getData());
+					msg = std::format("<{}> {}", sUser.getData(), pMsg->getData());
 				else
-					sMsg.Format("* %s", pMsg->getData());
+					msg = std::format("* {}", pMsg->getData());
 				break;
 
 			case MSG_Action:
 				if (sUser.getLength())
-					sMsg.Format("* %s %s", sUser.getData(), pMsg->getData());
+					msg = std::format("* {} {}", sUser.getData(), pMsg->getData());
 				else
-					sMsg.Format("* %s", pMsg->getData());
+					msg = std::format("* {}", pMsg->getData());
 				break;
 
 			default:
-				sMsg.Format("??? %s", pMsg->getData());
+				msg = std::format("??? {}", pMsg->getData());
 				dwClr = C4GUI_ErrorFontClr;
 				break;
 			}
-			pChatSheet->AddTextLine(sMsg.getData(), dwClr);
+			pChatSheet->AddTextLine(msg.c_str(), dwClr);
 		}
 	}
 	// OK; all messages processed. Delete overflow messages.
@@ -842,11 +849,11 @@ C4ChatControl::ChatSheet *C4ChatControl::OpenQuery(const char *szForNick, bool f
 
 void C4ChatControl::UpdateTitle()
 {
-	StdStrBuf sNewTitle;
+	std::string newTitle;
 	if (pTabMain->GetActiveSheetIndex() == 0)
 	{
 		// login title
-		sNewTitle = LoadResStr("IDS_CHAT_NOTCONNECTED");
+		newTitle = LoadResStr(C4ResStrTableKey::IDS_CHAT_NOTCONNECTED);
 	}
 	else
 	{
@@ -854,15 +861,13 @@ void C4ChatControl::UpdateTitle()
 		ChatSheet *pActiveSheet = GetActiveChatSheet();
 		if (pActiveSheet)
 		{
-			sNewTitle = pActiveSheet->GetChatTitle();
+			newTitle = pActiveSheet->GetChatTitle();
 		}
-		else
-			sNewTitle = "";
 	}
 	// call update proc only if title changed
-	if (sTitle != sNewTitle)
+	if (sTitle.isNull() || newTitle.compare(sTitle.getData()))
 	{
-		sTitle.Take(sNewTitle);
+		sTitle.Copy(newTitle.c_str());
 		if (pTitleChangeBC) pTitleChangeBC->OnOK(sTitle);
 	}
 }
@@ -878,7 +883,7 @@ void C4ChatControl::ClearChatSheets()
 {
 	pTabChats->ClearSheets();
 	// add server sheet
-	pTabChats->AddCustomSheet(new ChatSheet(this, LoadResStr("IDS_CHAT_SERVER"), nullptr, CS_Server));
+	pTabChats->AddCustomSheet(new ChatSheet(this, LoadResStr(C4ResStrTableKey::IDS_CHAT_SERVER), nullptr, CS_Server));
 }
 
 bool C4ChatControl::ProcessInput(const char *szInput, ChatSheet *pChatSheet)
@@ -890,7 +895,7 @@ bool C4ChatControl::ProcessInput(const char *szInput, ChatSheet *pChatSheet)
 	// not connected?
 	if (!pIRCClient->IsConnected())
 	{
-		pChatSheet->DoError(LoadResStr("IDS_ERR_NOTCONNECTEDTOSERVER"));
+		pChatSheet->DoError(LoadResStr(C4ResStrTableKey::IDS_ERR_NOTCONNECTEDTOSERVER));
 		return fResult;
 	}
 	// safety
@@ -927,7 +932,7 @@ bool C4ChatControl::ProcessInput(const char *szInput, ChatSheet *pChatSheet)
 			StdStrBuf sMsg;
 			if (!sParam.SplitAtChar(' ', &sMsg) || !sMsg.getLength())
 			{
-				pChatSheet->DoError(FormatString(LoadResStr("IDS_ERR_INSUFFICIENTPARAMETERS"), sCommand.getData()).getData());
+				pChatSheet->DoError(LoadResStr(C4ResStrTableKey::IDS_ERR_INSUFFICIENTPARAMETERS, sCommand.getData()).c_str());
 			}
 			else
 			{
@@ -940,14 +945,14 @@ bool C4ChatControl::ProcessInput(const char *szInput, ChatSheet *pChatSheet)
 		else if (SEqualNoCase(sCommand.getData(), "raw"))
 		{
 			if (!sParam.getLength())
-				pChatSheet->DoError(FormatString(LoadResStr("IDS_ERR_INSUFFICIENTPARAMETERS"), sCommand.getData()).getData());
+				pChatSheet->DoError(LoadResStr(C4ResStrTableKey::IDS_ERR_INSUFFICIENTPARAMETERS, sCommand.getData()).c_str());
 			else
 				fIRCSuccess = pIRCClient->Send(sParam.getData());
 		}
 		else if (SEqualNoCase(sCommand.getData(), "ns") || SEqualNoCase(sCommand.getData(), "cs") || SEqualNoCase(sCommand.getData(), "ms"))
 		{
 			if (!sParam.getLength())
-				pChatSheet->DoError(FormatString(LoadResStr("IDS_ERR_INSUFFICIENTPARAMETERS"), sCommand.getData()).getData());
+				pChatSheet->DoError(LoadResStr(C4ResStrTableKey::IDS_ERR_INSUFFICIENTPARAMETERS, sCommand.getData()).c_str());
 			else
 			{
 				const char *szMsgTarget;
@@ -960,21 +965,21 @@ bool C4ChatControl::ProcessInput(const char *szInput, ChatSheet *pChatSheet)
 		else if (SEqualNoCase(sCommand.getData(), "query") || SEqualNoCase(sCommand.getData(), "q"))
 		{
 			if (!sParam.getLength())
-				pChatSheet->DoError(FormatString(LoadResStr("IDS_ERR_INSUFFICIENTPARAMETERS"), sCommand.getData()).getData());
+				pChatSheet->DoError(LoadResStr(C4ResStrTableKey::IDS_ERR_INSUFFICIENTPARAMETERS, sCommand.getData()).c_str());
 			else
 				OpenQuery(sParam.getData(), true, nullptr);
 		}
 		else if (SEqualNoCase(sCommand.getData(), "nick"))
 		{
 			if (C4InVal::ValidateString(sParam, C4InVal::VAL_IRCName))
-				pChatSheet->DoError(FormatString(LoadResStr("IDS_ERR_INVALIDNICKNAME2"), sCommand.getData()).getData());
+				pChatSheet->DoError(LoadResStr(C4ResStrTableKey::IDS_ERR_INVALIDNICKNAME2, sCommand.getData()).c_str());
 			else
 				fIRCSuccess = pIRCClient->ChangeNick(sParam.getData());
 		}
 		else
 		{
 			// unknown command
-			pChatSheet->DoError(FormatString(LoadResStr("IDS_ERR_UNKNOWNCMD"), sCommand.getData()).getData());
+			pChatSheet->DoError(LoadResStr(C4ResStrTableKey::IDS_ERR_UNKNOWNCMD, sCommand.getData()).c_str());
 		}
 	}
 	else
@@ -984,7 +989,7 @@ bool C4ChatControl::ProcessInput(const char *szInput, ChatSheet *pChatSheet)
 		SheetType eSheetType = pChatSheet->GetSheetType();
 		if (eSheetType == CS_Server)
 		{
-			pChatSheet->DoError(LoadResStr("IDS_ERR_NOTONACHANNEL"));
+			pChatSheet->DoError(LoadResStr(C4ResStrTableKey::IDS_ERR_NOTONACHANNEL));
 		}
 		else
 		{
@@ -1008,7 +1013,7 @@ void C4ChatControl::UserQueryQuit()
 	// still connected? Then confirm first
 	if (pIRCClient->IsActive())
 	{
-		if (!GetScreen()->ShowMessageModal(LoadResStr("IDS_MSG_DISCONNECTFROMSERVER"), LoadResStr("IDS_DLG_CHAT"), C4GUI::MessageDialog::btnOKAbort, C4GUI::Ico_Confirm, nullptr))
+		if (!GetScreen()->ShowMessageModal(LoadResStr(C4ResStrTableKey::IDS_MSG_DISCONNECTFROMSERVER), LoadResStr(C4ResStrTableKey::IDS_DLG_CHAT), C4GUI::MessageDialog::btnOKAbort, C4GUI::Ico_Confirm, nullptr))
 			return;
 	}
 	// disconnect from server
@@ -1125,5 +1130,5 @@ void C4ChatDlg::UpdateSize()
 
 void C4ChatDlg::OnChatTitleChange(const StdStrBuf &sNewTitle)
 {
-	SetTitle(FormatString("%s - %s", LoadResStr("IDS_DLG_CHAT"), sNewTitle.getData()).getData());
+	SetTitle(std::format("{} - {}", LoadResStr(C4ResStrTableKey::IDS_DLG_CHAT), sNewTitle.getData()).c_str());
 }

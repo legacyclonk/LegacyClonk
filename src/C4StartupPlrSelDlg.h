@@ -84,16 +84,16 @@ private:
 		const char *GetName() const;
 		virtual void SetSelectionInfo(C4GUI::TextWindow *pSelectionInfo) = 0; // clears text field and writes selection info text into it
 		const StdStrBuf &GetFilename() const { return Filename; }
-		virtual StdStrBuf GetDelWarning() = 0;
+		virtual std::string GetDelWarning() = 0;
 		void GrabIcon(C4FacetExSurface &rFromFacet);
 		void GrabPortrait(C4FacetExSurface *pFromFacet);
 
 		virtual bool CheckNameHotkey(const char *c) override; // return whether this item can be selected by entering given char
 
-		class LoadError : public StdStrBuf
+		class LoadError : public std::runtime_error
 		{
 		public:
-			LoadError(StdStrBuf &&rTakeFrom) { Take(rTakeFrom); }
+			using runtime_error::runtime_error;
 		}; // class thrown off load function if load failed
 	};
 
@@ -120,7 +120,7 @@ public:
 		void GrabCustomIcon(C4FacetExSurface &fctGrabFrom);
 		virtual void SetSelectionInfo(C4GUI::TextWindow *pSelectionInfo) override;
 		virtual uint32_t GetColorDw() const override { return Core.PrefColorDw; }
-		virtual StdStrBuf GetDelWarning() override;
+		virtual std::string GetDelWarning() override;
 		bool MoveFilename(const char *szToFilename); // change filename to given
 	};
 
@@ -150,14 +150,14 @@ private:
 		C4GUI::RenameResult DoRenaming(RenameParams par, const char *szNewName);
 
 	private:
-		StdStrBuf GetPhysicalTextLine(int32_t iPhysValue, const char *idsName); // get string for physical info bar
+		std::string GetPhysicalTextLine(int32_t iPhysValue, C4ResStrTableKeyFormat<> idsName); // get string for physical info bar
 
 	public:
 		void UpdateClonkEnabled();
 
 		virtual uint32_t GetColorDw() const override { return dwPlrClr; } // get drawing color for portrait
 		virtual void SetSelectionInfo(C4GUI::TextWindow *pSelectionInfo) override; // clears text field and writes selection info text into it
-		virtual StdStrBuf GetDelWarning() override;
+		virtual std::string GetDelWarning() override;
 		const C4ObjectInfoCore &GetCore() const { return Core; }
 
 		CrewListItem *GetNext() const { return static_cast<CrewListItem *>(ListItem::GetNext()); }

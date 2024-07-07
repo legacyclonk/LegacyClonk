@@ -45,12 +45,13 @@ int C4RankSystem::Init(const char *szRegister,
 	// Check registry for present rank names and set defaults
 #ifdef _WIN32
 	int crank = 0;
-	char rankname[C4MaxName + 1], keyname[30];
+	char rankname[C4MaxName + 1];
+	std::string keyname;
 	bool Checking = true;
 	while (Checking)
 	{
-		sprintf(keyname, "Rank%03d", crank + 1);
-		if (GetRegistryString(Register, keyname, rankname, C4MaxName + 1))
+		keyname = std::format("Rank{:03}", crank + 1);
+		if (GetRegistryString(Register, keyname.c_str(), rankname, C4MaxName + 1))
 		{
 			// Rank present
 			crank++;
@@ -59,7 +60,7 @@ int C4RankSystem::Init(const char *szRegister,
 		{
 			// Rank not defined, check for default
 			if (SCopySegment(szDefRanks, crank, rankname, '|', C4MaxName)
-				&& SetRegistryString(Register, keyname, rankname))
+				&& SetRegistryString(Register, keyname.c_str(), rankname))
 				crank++;
 			else
 				Checking = false;
@@ -200,7 +201,7 @@ StdStrBuf C4RankSystem::GetRankName(int iRank, bool fReturnLastIfOver)
 			// extended rank composed of two parts
 			int iExtension = iRank / iRankNum - 1;
 			iRank = iRank % iRankNum;
-			sResult.Format(pszRankExtensions[iExtension], pszRankNames[iRank]);
+			sResult.Copy(fmt::sprintf(pszRankExtensions[iExtension], pszRankNames[iRank]).c_str());
 		}
 		else
 		{
@@ -213,9 +214,7 @@ StdStrBuf C4RankSystem::GetRankName(int iRank, bool fReturnLastIfOver)
 	// old-style registry fallback
 	while (iRank >= 0)
 	{
-		char keyname[30];
-		sprintf(keyname, "Rank%03d", iRank + 1);
-		if (GetRegistryString(Register, keyname, RankName, C4MaxName + 1))
+		if (GetRegistryString(Register, std::format("Rank{:03}", iRank + 1).c_str(), RankName, C4MaxName + 1))
 			return StdStrBuf(RankName);
 		if (!fReturnLastIfOver) return StdStrBuf();
 		--iRank;

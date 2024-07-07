@@ -99,17 +99,18 @@ bool C4Scenario::Load(C4Group &hGroup, bool fLoadSection)
 
 bool C4Scenario::Save(C4Group &hGroup, bool fSaveSection)
 {
-	StdStrBuf Buf;
+	std::string buf;
 	try
 	{
-		Buf.Take(DecompileToBuf<StdCompilerINIWrite>(mkParAdapt(*this, fSaveSection)));
+		buf = DecompileToBuf<StdCompilerINIWrite>(mkParAdapt(*this, fSaveSection));
 	}
 	catch (const StdCompiler::Exception &)
 	{
 		return false;
 	}
 
-	if (!hGroup.Add(C4CFN_ScenarioCore, Buf, false, true))
+	StdStrBuf copy{buf.c_str(), buf.size()};
+	if (!hGroup.Add(C4CFN_ScenarioCore, copy, false, true))
 	{
 		return false;
 	}
@@ -122,7 +123,7 @@ void C4Scenario::CompileFunc(StdCompiler *pComp, bool fSection)
 	if (!fSection) pComp->Value(mkNamingAdapt(Definitions, "Definitions"));
 	pComp->Value(mkNamingAdapt(mkParAdapt(Game, fSection), "Game"));
 	for (int32_t i = 0; i < C4S_MaxPlayer; i++)
-		pComp->Value(mkNamingAdapt(PlrStart[i], FormatString("Player%d", i + 1).getData()));
+		pComp->Value(mkNamingAdapt(PlrStart[i], std::format("Player{}", i + 1).c_str()));
 
 	const bool newScenario{!Head.C4XVer[0] || CompareVersion(Head.C4XVer[0], Head.C4XVer[1], Head.C4XVer[2], Head.C4XVer[3], Head.C4XVer[4], 4, 6, 5, 0, 0) >= 0};
 	pComp->Value(mkNamingAdapt(mkParAdapt(Landscape, newScenario),   "Landscape"));
@@ -487,7 +488,7 @@ void C4SDefinitions::CompileFunc(StdCompiler *pComp)
 		for (size_t i = 0; i < C4S_MaxDefinitions; ++i)
 		{
 			std::string def;
-			pComp->Value(mkNamingAdapt(mkStringAdaptA(def), FormatString("Definition%zu", i + 1).getData(), ""));
+			pComp->Value(mkNamingAdapt(mkStringAdaptA(def), std::format("Definition{}", i + 1).c_str(), ""));
 
 			if (!def.empty())
 			{

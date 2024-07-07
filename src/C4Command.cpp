@@ -52,22 +52,22 @@ const char *CommandName(int32_t iCommand)
 	return szCommandName[iCommand];
 }
 
-const char *CommandNameID(int32_t iCommand)
+const char *LoadCommandNameResStr(const std::int32_t command)
 {
-	static const char *dwCommandNameID[] =
+	static constexpr C4ResStrTableKeyFormat<> CommandNameIds[]
 	{
-		"IDS_COMM_NONE", "IDS_COMM_FOLLOW", "IDS_COMM_MOVETO", "IDS_COMM_ENTER",
-		"IDS_COMM_EXIT", "IDS_COMM_GRAB", "IDS_COMM_BUILD", "IDS_COMM_THROW", "IDS_COMM_CHOP",
-		"IDS_COMM_UNGRAB", "IDS_COMM_JUMP", "IDS_COMM_WAIT", "IDS_COMM_GET", "IDS_COMM_PUT",
-		"IDS_COMM_DROP", "IDS_COMM_DIG", "IDS_COMM_ACTIVATE", "IDS_COMM_PUSHTO",
-		"IDS_COMM_CONSTRUCT", "IDS_COMM_TRANSFER", "IDS_COMM_ATTACK", "IDS_COMM_CONTEXT",
-		"IDS_COMM_BUY", "IDS_COMM_SELL", "IDS_COMM_ACQUIRE", "IDS_COMM_ENERGY", "IDS_COMM_RETRY",
-		"IDS_CON_HOME", "IDS_COMM_CALL", "IDS_COMM_TAKE", "IDS_COMM_TAKE2"
+		C4ResStrTableKey::IDS_COMM_NONE, C4ResStrTableKey::IDS_COMM_FOLLOW, C4ResStrTableKey::IDS_COMM_MOVETO, C4ResStrTableKey::IDS_COMM_ENTER,
+		C4ResStrTableKey::IDS_COMM_EXIT, C4ResStrTableKey::IDS_COMM_GRAB, C4ResStrTableKey::IDS_COMM_BUILD, C4ResStrTableKey::IDS_COMM_THROW, C4ResStrTableKey::IDS_COMM_CHOP,
+		C4ResStrTableKey::IDS_COMM_UNGRAB, C4ResStrTableKey::IDS_COMM_JUMP, C4ResStrTableKey::IDS_COMM_WAIT, C4ResStrTableKey::IDS_COMM_GET, C4ResStrTableKey::IDS_COMM_PUT,
+		C4ResStrTableKey::IDS_COMM_DROP, C4ResStrTableKey::IDS_COMM_DIG, C4ResStrTableKey::IDS_COMM_ACTIVATE, C4ResStrTableKey::IDS_COMM_PUSHTO,
+		C4ResStrTableKey::IDS_COMM_CONSTRUCT, C4ResStrTableKey::IDS_COMM_TRANSFER, C4ResStrTableKey::IDS_COMM_ATTACK, C4ResStrTableKey::IDS_COMM_CONTEXT,
+		C4ResStrTableKey::IDS_COMM_BUY, C4ResStrTableKey::IDS_COMM_SELL, C4ResStrTableKey::IDS_COMM_ACQUIRE, C4ResStrTableKey::IDS_COMM_ENERGY, C4ResStrTableKey::IDS_COMM_RETRY,
+		C4ResStrTableKey::IDS_CON_HOME, C4ResStrTableKey::IDS_COMM_CALL, C4ResStrTableKey::IDS_COMM_TAKE, C4ResStrTableKey::IDS_COMM_TAKE2
 	};
 
-	if (!Inside<int32_t>(iCommand, C4CMD_First, C4CMD_Last)) return "IDS_COMM_NONE";
+	if (!Inside<int32_t>(command, C4CMD_First, C4CMD_Last)) return LoadResStr(C4ResStrTableKey::IDS_COMM_NONE);
 
-	return dwCommandNameID[iCommand];
+	return LoadResStr(CommandNameIds[command]);
 }
 
 bool InitEnumAdaptCommandEntries()
@@ -831,7 +831,7 @@ void C4Command::Build()
 	// Lost the ability to build? Fail.
 	if (cObj->GetPhysical() && !cObj->GetPhysical()->CanConstruct)
 	{
-		Finish(false, FormatString(LoadResStr("IDS_TEXT_CANTBUILD"), cObj->GetName()).getData());
+		Finish(false, LoadResStr(C4ResStrTableKey::IDS_TEXT_CANTBUILD, cObj->GetName()).c_str());
 		return;
 	}
 	// Target complete: Command fulfilled
@@ -1298,7 +1298,7 @@ bool C4Command::CheckMinimumCon(C4Object *pObj)
 		if (pObj->Category & C4D_SelectKnowledge)
 			if (pObj->GetCon() < FullCon)
 			{
-				Finish(false, FormatString(LoadResStr("IDS_OBJ_NOCONACTIV"), pObj->GetName()).getData());
+				Finish(false, LoadResStr(C4ResStrTableKey::IDS_OBJ_NOCONACTIV, pObj->GetName()).c_str());
 				return true;
 			}
 	return false;
@@ -1692,7 +1692,7 @@ void C4Command::Construct()
 	// Only those who can
 	if (cObj->GetPhysical() && !cObj->GetPhysical()->CanConstruct)
 	{
-		Finish(false, FormatString(LoadResStr("IDS_TEXT_CANTBUILD"), cObj->GetName()).getData());
+		Finish(false, LoadResStr(C4ResStrTableKey::IDS_TEXT_CANTBUILD, cObj->GetName()).c_str());
 		return;
 	}
 	// No target type to construct: open menu & done
@@ -2013,13 +2013,13 @@ void C4Command::Buy()
 	// Material not available for purchase at base: fail
 	if (Game.Players.Get(Target->Base)->HomeBaseMaterial.GetIDCount(Data) <= 0)
 	{
-		Finish(false, FormatString(LoadResStr("IDS_PLR_NOTAVAIL"), pDef->GetName()).getData());
+		Finish(false, LoadResStr(C4ResStrTableKey::IDS_PLR_NOTAVAIL, pDef->GetName()).c_str());
 		return;
 	}
 	// Base owner has not enough funds: fail
 	if (Game.Players.Get(Target->Base)->Wealth < pDef->GetValue(Target, cObj->Owner))
 	{
-		Finish(false, LoadResStr("IDS_PLR_NOWEALTH")); return;
+		Finish(false, LoadResStr(C4ResStrTableKey::IDS_PLR_NOWEALTH)); return;
 	}
 	// Not within target object: enter
 	if (cObj->Contained != Target)
@@ -2190,7 +2190,7 @@ void C4Command::Fail(const char *szFailMessage)
 				C4VID(Target->Component.GetID(0)), C4VInt(Target->Component.GetCount(0))})) // WTF? This is passing current components. Not needed ones!
 				break; // no message
 			if (szFailMessage) break;
-			failMessage = Target->GetNeededMatStr(cObj).getData();
+			failMessage = Target->GetNeededMatStr(cObj);
 			break;
 		case C4CMD_Call:
 		{
@@ -2198,8 +2198,8 @@ void C4Command::Fail(const char *szFailMessage)
 			int32_t l_Command = Command;
 			if (CallFailed()) return;
 			// Fail-function not available or returned zero: standard message
-			SCopy(LoadResStr(CommandNameID(l_Command)), szCommandName);
-			failMessage = FormatString(LoadResStr("IDS_CON_FAILURE"), szCommandName).getData();
+			SCopy(LoadCommandNameResStr(l_Command), szCommandName);
+			failMessage = LoadResStr(C4ResStrTableKey::IDS_CON_FAILURE, szCommandName).c_str();
 			break;
 		}
 		case C4CMD_Exit:
@@ -2213,17 +2213,17 @@ void C4Command::Fail(const char *szFailMessage)
 			// Already has a fail message
 			if (szFailMessage) break;
 			// Fail message with name of target type
-			SCopy(LoadResStr(CommandNameID(Command)), szCommandName);
+			SCopy(LoadCommandNameResStr(Command), szCommandName);
 			C4Def *pDef; pDef = Game.Defs.ID2Def(Data);
-			SCopy(pDef ? pDef->GetName() : LoadResStr("IDS_OBJ_UNKNOWN"), szObjectName, C4MaxName);
-			failMessage = FormatString(LoadResStr("IDS_CON_FAILUREOF"), szCommandName, szObjectName).getData();
+			SCopy(pDef ? pDef->GetName() : LoadResStr(C4ResStrTableKey::IDS_OBJ_UNKNOWN), szObjectName, C4MaxName);
+			failMessage = LoadResStr(C4ResStrTableKey::IDS_CON_FAILUREOF, szCommandName, szObjectName).c_str();
 			break;
 		default:
 			// Already has a fail message
 			if (szFailMessage) break;
 			// Standard no-can-do message
-			SCopy(LoadResStr(CommandNameID(Command)), szCommandName);
-			failMessage = FormatString(LoadResStr("IDS_CON_FAILURE"), szCommandName).getData();
+			SCopy(LoadCommandNameResStr(Command), szCommandName);
+			failMessage = LoadResStr(C4ResStrTableKey::IDS_CON_FAILURE, szCommandName).c_str();
 			break;
 		}
 		if (l_Obj) if (l_Obj->Status && !l_Obj->Def->SilentCommands)
@@ -2430,7 +2430,7 @@ int32_t C4Command::CallFailed()
 	// No function name or no target object: cannot call fail-function
 	if (Text.empty() || !Target) return 0;
 	// Call failed-function
-	return Target->Call(FormatString("~%sFailed", Text.c_str()).getData(),
+	return Target->Call(std::format("~{}Failed", Text).c_str(),
 		{C4VObj(cObj), Tx, C4VInt(Ty), C4VObj(Target2)})._getInt();
 	// Extreme caution notice: the script call might do just about anything
 	// including clearing all commands (including this) i.e. through a call

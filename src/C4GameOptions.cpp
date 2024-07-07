@@ -49,7 +49,7 @@ C4GameOptionsList::OptionDropdown::OptionDropdown(C4GameOptionsList *pForDlg, co
 	if (fTabular)
 	{
 		// tabular layout: Caption label width by largest caption
-		rUseFont.GetTextExtent(LoadResStr("IDS_NET_RUNTIMEJOIN"), iCaptWidth, iCaptHeight, true);
+		rUseFont.GetTextExtent(LoadResStr(C4ResStrTableKey::IDS_NET_RUNTIMEJOIN), iCaptWidth, iCaptHeight, true);
 		iCaptWidth = iCaptWidth * 5 / 4;
 	}
 	else
@@ -64,7 +64,7 @@ C4GameOptionsList::OptionDropdown::OptionDropdown(C4GameOptionsList *pForDlg, co
 	SetBounds(C4Rect(0, 0, pForDlg->GetItemWidth(), (!fTabular) * (iCaptHeight + iVerticalMargin * 2) + iVerticalMargin * 2 + iSelComboHgt));
 	C4GUI::ComponentAligner ca(GetContainedClientRect(), iHorizontalMargin, iVerticalMargin);
 	// create subcomponents
-	AddElement(pCaption = new C4GUI::Label(FormatString("%s:", szCaption).getData(), fTabular ? ca.GetFromLeft(iCaptWidth, iCaptHeight) : ca.GetFromTop(iCaptHeight), ALeft));
+	AddElement(pCaption = new C4GUI::Label(std::format("{}:", szCaption).c_str(), fTabular ? ca.GetFromLeft(iCaptWidth, iCaptHeight) : ca.GetFromTop(iCaptHeight), ALeft));
 	ca.ExpandLeft(-iComboMargin);
 	AddElement(pPrimarySubcomponent = pDropdownList = new C4GUI::ComboBox(ca.GetAll()));
 	pDropdownList->SetReadOnly(fReadOnly);
@@ -77,9 +77,9 @@ C4GameOptionsList::OptionDropdown::OptionDropdown(C4GameOptionsList *pForDlg, co
 
 // Unfortunately, the control mode cannot be changed in the lobby
 C4GameOptionsList::OptionControlMode::OptionControlMode(C4GameOptionsList *pForDlg)
-	: C4GameOptionsList::OptionDropdown(pForDlg, LoadResStr("IDS_TEXT_CONTROLMODE"), !Game.Control.isCtrlHost() || !Game.Control.isNetwork() || !Game.Control.Network.IsEnabled() || !pForDlg->IsRuntime())
+	: C4GameOptionsList::OptionDropdown(pForDlg, LoadResStr(C4ResStrTableKey::IDS_TEXT_CONTROLMODE), !Game.Control.isCtrlHost() || !Game.Control.isNetwork() || !Game.Control.Network.IsEnabled() || !pForDlg->IsRuntime())
 {
-	SetToolTip(LoadResStr("IDS_DESC_CHANGESTHEWAYCONTROLDATAI"));
+	SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_CHANGESTHEWAYCONTROLDATAI));
 }
 
 void C4GameOptionsList::OptionControlMode::DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller)
@@ -87,8 +87,8 @@ void C4GameOptionsList::OptionControlMode::DoDropdownFill(C4GUI::ComboBox_FillCB
 	// change possible?
 	if (!Game.Control.isNetwork() || !Game.Control.Network.IsEnabled() || !Game.Control.isCtrlHost()) return;
 	// add possible modes
-	pFiller->AddEntry(LoadResStr("IDS_NET_CTRLMODE_CENTRAL"), CNM_Central);
-	pFiller->AddEntry(LoadResStr("IDS_NET_CTRLMODE_DECENTRAL"), CNM_Decentral);
+	pFiller->AddEntry(LoadResStr(C4ResStrTableKey::IDS_NET_CTRLMODE_CENTRAL), CNM_Central);
+	pFiller->AddEntry(LoadResStr(C4ResStrTableKey::IDS_NET_CTRLMODE_DECENTRAL), CNM_Decentral);
 	if (!Game.Parameters.isLeague())
 		pFiller->AddEntry("[!]Asynchroner Netzwerkmodus (experimentell!)", CNM_Async);
 }
@@ -106,15 +106,15 @@ void C4GameOptionsList::OptionControlMode::Update()
 {
 	const char *szControlMode;
 	if (!Game.Control.isNetwork() || !Game.Control.Network.IsEnabled())
-		szControlMode = LoadResStr("IDS_NET_NONET");
+		szControlMode = LoadResStr(C4ResStrTableKey::IDS_NET_NONET);
 	else
 	{
 		switch (Game.Control.Network.GetCtrlMode())
 		{
-		case CNM_Central: szControlMode = LoadResStr("IDS_NET_CTRLMODE_CENTRAL"); break;
-		case CNM_Decentral: szControlMode = LoadResStr("IDS_NET_CTRLMODE_DECENTRAL"); break;
+		case CNM_Central: szControlMode = LoadResStr(C4ResStrTableKey::IDS_NET_CTRLMODE_CENTRAL); break;
+		case CNM_Decentral: szControlMode = LoadResStr(C4ResStrTableKey::IDS_NET_CTRLMODE_DECENTRAL); break;
 		case CNM_Async: szControlMode = "[!]Asynchroner Netzwerkmodus (experimentell!)"; break;
-		default: szControlMode = LoadResStr("IDS_NET_CTRLMODE_NONE"); break;
+		default: szControlMode = LoadResStr(C4ResStrTableKey::IDS_NET_CTRLMODE_NONE); break;
 		}
 	}
 	pDropdownList->SetText(szControlMode);
@@ -123,15 +123,15 @@ void C4GameOptionsList::OptionControlMode::Update()
 // C4GameOptionsList::OptionControlRate
 
 C4GameOptionsList::OptionControlRate::OptionControlRate(C4GameOptionsList *pForDlg)
-	: C4GameOptionsList::OptionDropdown(pForDlg, LoadResStr("IDS_CTL_CONTROLRATE"), !Game.Control.isCtrlHost())
+	: C4GameOptionsList::OptionDropdown(pForDlg, LoadResStr(C4ResStrTableKey::IDS_CTL_CONTROLRATE), !Game.Control.isCtrlHost())
 {
-	SetToolTip(LoadResStr("IDS_CTL_CONTROLRATE_DESC"));
+	SetToolTip(LoadResStr(C4ResStrTableKey::IDS_CTL_CONTROLRATE_DESC));
 }
 
 void C4GameOptionsList::OptionControlRate::DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller)
 {
 	for (int i = 1; i < (std::min)(C4MaxControlRate, 10); ++i)
-		pFiller->AddEntry(FormatString("%d", i).getData(), i);
+		pFiller->AddEntry(std::format("{}", i).c_str(), i);
 }
 
 void C4GameOptionsList::OptionControlRate::DoDropdownSelChange(int32_t idNewSelection)
@@ -145,21 +145,21 @@ void C4GameOptionsList::OptionControlRate::DoDropdownSelChange(int32_t idNewSele
 void C4GameOptionsList::OptionControlRate::Update()
 {
 	if (atoi(pDropdownList->GetText().getData()) == Game.Control.ControlRate) return;
-	pDropdownList->SetText(FormatString("%d", Game.Control.ControlRate).getData());
+	pDropdownList->SetText(std::format("{}", Game.Control.ControlRate).c_str());
 }
 
 // C4GameOptionsList::OptionRuntimeJoin
 
 C4GameOptionsList::OptionRuntimeJoin::OptionRuntimeJoin(C4GameOptionsList *pForDlg)
-	: C4GameOptionsList::OptionDropdown(pForDlg, LoadResStr("IDS_NET_RUNTIMEJOIN"), !Game.Network.isHost())
+	: C4GameOptionsList::OptionDropdown(pForDlg, LoadResStr(C4ResStrTableKey::IDS_NET_RUNTIMEJOIN), !Game.Network.isHost())
 {
-	SetToolTip(LoadResStr("IDS_NET_RUNTIMEJOIN_DESC"));
+	SetToolTip(LoadResStr(C4ResStrTableKey::IDS_NET_RUNTIMEJOIN_DESC));
 }
 
 void C4GameOptionsList::OptionRuntimeJoin::DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller)
 {
-	pFiller->AddEntry(LoadResStr("IDS_NET_RUNTIMEJOINBARRED"), 0);
-	pFiller->AddEntry(LoadResStr("IDS_NET_RUNTIMEJOINFREE"), 1);
+	pFiller->AddEntry(LoadResStr(C4ResStrTableKey::IDS_NET_RUNTIMEJOINBARRED), 0);
+	pFiller->AddEntry(LoadResStr(C4ResStrTableKey::IDS_NET_RUNTIMEJOINFREE), 1);
 }
 
 void C4GameOptionsList::OptionRuntimeJoin::DoDropdownSelChange(int32_t idNewSelection)
@@ -174,18 +174,18 @@ void C4GameOptionsList::OptionRuntimeJoin::Update()
 {
 	const char *szText;
 	if (Config.Network.NoRuntimeJoin)
-		szText = LoadResStr("IDS_NET_RUNTIMEJOINBARRED");
+		szText = LoadResStr(C4ResStrTableKey::IDS_NET_RUNTIMEJOINBARRED);
 	else
-		szText = LoadResStr("IDS_NET_RUNTIMEJOINFREE");
+		szText = LoadResStr(C4ResStrTableKey::IDS_NET_RUNTIMEJOINFREE);
 	pDropdownList->SetText(szText);
 }
 
 // C4GameOptionsList::OptionTeamDist
 
 C4GameOptionsList::OptionTeamDist::OptionTeamDist(C4GameOptionsList *pForDlg)
-	: C4GameOptionsList::OptionDropdown(pForDlg, LoadResStr("IDS_MSG_TEAMDIST"), !Game.Control.isCtrlHost()), optionsList{pForDlg}
+	: C4GameOptionsList::OptionDropdown(pForDlg, LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST), !Game.Control.isCtrlHost()), optionsList{pForDlg}
 {
-	SetToolTip(LoadResStr("IDS_MSG_TEAMDIST_DESC"));
+	SetToolTip(LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_DESC));
 }
 
 void C4GameOptionsList::OptionTeamDist::DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller)
@@ -202,22 +202,21 @@ void C4GameOptionsList::OptionTeamDist::DoDropdownSelChange(int32_t idNewSelecti
 
 void C4GameOptionsList::OptionTeamDist::Update()
 {
-	StdStrBuf sOption; sOption.Take(Game.Teams.GetTeamDistString());
-	pDropdownList->SetText(sOption.getData());
+	pDropdownList->SetText(Game.Teams.GetTeamDistString().c_str());
 }
 
 // C4GameOptionsList::OptionTeamColors
 
 C4GameOptionsList::OptionTeamColors::OptionTeamColors(C4GameOptionsList *pForDlg)
-	: C4GameOptionsList::OptionDropdown(pForDlg, LoadResStr("IDS_MSG_TEAMCOLORS"), !Game.Control.isCtrlHost())
+	: C4GameOptionsList::OptionDropdown(pForDlg, LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMCOLORS), !Game.Control.isCtrlHost())
 {
-	SetToolTip(LoadResStr("IDS_MSG_TEAMCOLORS_DESC"));
+	SetToolTip(LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMCOLORS_DESC));
 }
 
 void C4GameOptionsList::OptionTeamColors::DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller)
 {
-	pFiller->AddEntry(LoadResStr("IDS_MSG_ENABLED"), 1);
-	pFiller->AddEntry(LoadResStr("IDS_MSG_DISABLED"), 0);
+	pFiller->AddEntry(LoadResStr(C4ResStrTableKey::IDS_MSG_ENABLED), 1);
+	pFiller->AddEntry(LoadResStr(C4ResStrTableKey::IDS_MSG_DISABLED), 0);
 }
 
 void C4GameOptionsList::OptionTeamColors::DoDropdownSelChange(int32_t idNewSelection)
@@ -228,18 +227,18 @@ void C4GameOptionsList::OptionTeamColors::DoDropdownSelChange(int32_t idNewSelec
 
 void C4GameOptionsList::OptionTeamColors::Update()
 {
-	pDropdownList->SetText(Game.Teams.IsTeamColors() ? LoadResStr("IDS_MSG_ENABLED") : LoadResStr("IDS_MSG_DISABLED"));
+	pDropdownList->SetText(Game.Teams.IsTeamColors() ? LoadResStr(C4ResStrTableKey::IDS_MSG_ENABLED) : LoadResStr(C4ResStrTableKey::IDS_MSG_DISABLED));
 }
 
 C4GameOptionsList::OptionRandomTeamCount::OptionRandomTeamCount(C4GameOptionsList *forDlg)
-	: OptionDropdown(forDlg, LoadResStr("IDS_MSG_RANDOMTEAMCOUNT"), !Game.Network.isHost())
+	: OptionDropdown(forDlg, LoadResStr(C4ResStrTableKey::IDS_MSG_RANDOMTEAMCOUNT), !Game.Network.isHost())
 {
-	SetToolTip(LoadResStr("IDS_MSG_RANDOMTEAMCOUNT_DESC"));
+	SetToolTip(LoadResStr(C4ResStrTableKey::IDS_MSG_RANDOMTEAMCOUNT_DESC));
 }
 
 void C4GameOptionsList::OptionRandomTeamCount::DoDropdownFill(C4GUI::ComboBox_FillCB *filler)
 {
-	filler->AddEntry(LoadResStr("IDS_MSG_TEAMCOUNT_AUTO"), 0, LoadResStr("IDS_MSG_TEAMCOUNT_AUTO_DESC"));
+	filler->AddEntry(LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMCOUNT_AUTO), 0, LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMCOUNT_AUTO_DESC));
 	for (int32_t i = 2, max = Game.Teams.IsAutoGenerateTeams() ? Game.PlayerInfos.GetActivePlayerCount(true) : Game.Teams.GetTeamCount(); i <= max; ++i)
 	{
 		filler->AddEntry(std::to_string(i).c_str(), i);
@@ -254,7 +253,7 @@ void C4GameOptionsList::OptionRandomTeamCount::DoDropdownSelChange(int32_t newSe
 void C4GameOptionsList::OptionRandomTeamCount::Update()
 {
 	const auto count = Game.Teams.GetRandomTeamCount();
-	pDropdownList->SetText(count > 1 ? std::to_string(count).c_str() : LoadResStr("IDS_MSG_TEAMCOUNT_AUTO"));
+	pDropdownList->SetText(count > 1 ? std::to_string(count).c_str() : LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMCOUNT_AUTO));
 }
 
 // C4GameOptionsList

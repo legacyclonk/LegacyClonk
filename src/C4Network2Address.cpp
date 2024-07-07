@@ -324,6 +324,11 @@ void C4Network2EndpointAddress::SetAddress(const StdStrBuf &addr, const AddressF
 	}
 }
 
+void C4Network2EndpointAddress::SetAddress(const std::string &addr, const AddressFamily family)
+{
+	SetAddress(StdStrBuf{addr.c_str(), addr.size(), false}, family);
+}
+
 void C4Network2EndpointAddress::SetAddress(const C4Network2EndpointAddress &addr)
 {
 	SetHost(addr);
@@ -429,7 +434,7 @@ bool C4Network2EndpointAddress::operator==(const C4Network2EndpointAddress &rhs)
 	return false;
 }
 
-StdStrBuf C4Network2HostAddress::ToString(const int flags) const
+std::string C4Network2HostAddress::ToString(const int flags) const
 {
 	if (IsIPv6MappedIPv4()) return AsIPv4().ToString(flags);
 
@@ -444,10 +449,10 @@ StdStrBuf C4Network2HostAddress::ToString(const int flags) const
 	if (::getnameinfo(&gen, GetAddrLen(), buf, sizeof(buf), nullptr, 0, NI_NUMERICHOST) != 0)
 		return {};
 
-	return StdStrBuf{buf, true};
+	return buf;
 }
 
-StdStrBuf C4Network2EndpointAddress::ToString(const int flags) const
+std::string C4Network2EndpointAddress::ToString(const int flags) const
 {
 	if (IsIPv6MappedIPv4()) return AsIPv4().ToString(flags);
 
@@ -456,8 +461,8 @@ StdStrBuf C4Network2EndpointAddress::ToString(const int flags) const
 
 	switch (GetFamily())
 	{
-	case IPv4: return FormatString("%s:%d", C4Network2HostAddress::ToString(flags).getData(), GetPort());
-	case IPv6: return FormatString("[%s]:%d", C4Network2HostAddress::ToString(flags).getData(), GetPort());
+	case IPv4: return std::format("{}:{}", C4Network2HostAddress::ToString(flags), GetPort());
+	case IPv6: return std::format("[{}]:{}", C4Network2HostAddress::ToString(flags), GetPort());
 	case UnknownFamily: ; // fallthrough
 	}
 	assert(!"Shouldn't reach this");
@@ -468,12 +473,12 @@ void C4Network2EndpointAddress::CompileFunc(StdCompiler *const comp)
 {
 	if (!comp->isCompiler())
 	{
-		StdStrBuf val{ToString(TSF_SkipZoneId)};
+		std::string val{ToString(TSF_SkipZoneId)};
 		comp->Value(val);
 	}
 	else
 	{
-		StdStrBuf val;
+		std::string val;
 		comp->Value(val);
 		SetAddress(val);
 	}
@@ -500,15 +505,15 @@ void C4Network2Address::CompileFunc(StdCompiler *const comp)
 	comp->Value(mkDefaultAdapt(addr, C4Network2EndpointAddress{}));
 }
 
-StdStrBuf C4Network2Address::toString() const
+std::string C4Network2Address::ToString() const
 {
 	switch (protocol)
 	{
-	case P_UDP: return FormatString("UDP:%s", addr.ToString().getData());
-	case P_TCP: return FormatString("TCP:%s", addr.ToString().getData());
+	case P_UDP: return std::format("UDP:{}", addr.ToString());
+	case P_TCP: return std::format("TCP:{}", addr.ToString());
 	case P_NONE: ; // fallthrough
 	}
-	return StdStrBuf("INVALID");
+	return "INVALID";
 }
 
 bool C4Network2Address::operator==(const C4Network2Address &addr2) const

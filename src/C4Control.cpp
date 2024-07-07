@@ -30,6 +30,9 @@
 
 #include <cassert>
 #include <cinttypes>
+#include <format>
+
+#include <fmt/printf.h>
 
 // *** C4ControlPacket
 C4ControlPacket::C4ControlPacket()
@@ -67,7 +70,7 @@ void C4Control::Clear()
 	Pkts.Clear();
 }
 
-bool C4Control::PreExecute() const
+bool C4Control::PreExecute(const std::shared_ptr<spdlog::logger> &logger) const
 {
 	bool fReady = true;
 	for (C4IDPacket *pPkt = firstPkt(); pPkt; pPkt = nextPkt(pPkt))
@@ -77,17 +80,17 @@ bool C4Control::PreExecute() const
 		{
 			C4ControlPacket *pCtrlPkt = static_cast<C4ControlPacket *>(pPkt->getPkt());
 			if (pCtrlPkt)
-				fReady &= pCtrlPkt->PreExecute();
+				fReady &= pCtrlPkt->PreExecute(logger);
 		}
 		else
 		{
-			LogF("C4Control::PreExecute: WARNING: Ignoring packet type %2x (not control.)", pPkt->getPktType());
+			logger->warn("C4Control::PreExecute: WARNING: Ignoring packet type {:2x} (not control.)", std::to_underlying(pPkt->getPktType()));
 		}
 	}
 	return fReady;
 }
 
-void C4Control::Execute() const
+void C4Control::Execute(const std::shared_ptr<spdlog::logger> &logger) const
 {
 	for (C4IDPacket *pPkt = firstPkt(); pPkt; pPkt = nextPkt(pPkt))
 	{
@@ -96,11 +99,11 @@ void C4Control::Execute() const
 		{
 			C4ControlPacket *pCtrlPkt = static_cast<C4ControlPacket *>(pPkt->getPkt());
 			if (pCtrlPkt)
-				pCtrlPkt->Execute();
+				pCtrlPkt->Execute(logger);
 		}
 		else
 		{
-			LogF("C4Control::Execute: WARNING: Ignoring packet type %2x (not control.)", pPkt->getPktType());
+			logger->warn("C4Control::Execute: Ignoring packet type {:2x} (not control.)", std::to_underlying(pPkt->getPktType()));
 		}
 	}
 }
@@ -122,7 +125,7 @@ void C4Control::CompileFunc(StdCompiler *pComp)
 
 // *** C4ControlSet
 
-void C4ControlSet::Execute() const
+void C4ControlSet::Execute(const std::shared_ptr<spdlog::logger> &) const
 {
 	switch (eValType)
 	{
@@ -137,7 +140,7 @@ void C4ControlSet::Execute() const
 		if (Game.Control.isCtrlHost() && !Game.Control.isReplay() && Game.Control.isNetwork())
 			Config.Network.ControlRate = Game.Control.ControlRate;
 		// always show msg
-		Game.GraphicsSystem.FlashMessage(FormatString(LoadResStr("IDS_NET_CONTROLRATE"), Game.Control.ControlRate, Game.FrameCounter).getData());
+		Game.GraphicsSystem.FlashMessage(LoadResStr(C4ResStrTableKey::IDS_NET_CONTROLRATE, Game.Control.ControlRate).c_str());
 		break;
 
 	case C4CVT_DisableDebug: // force debug mode disabled
@@ -151,7 +154,7 @@ void C4ControlSet::Execute() const
 		// save flag, log
 		Game.Parameters.AllowDebug = false;
 		const auto *const client = ::Game.Clients.getClientByID(iByClient);
-		LogF("Debug mode forced disabled by %s", client ? client->getName() : "<unknown client>");
+		LogNTr("Debug mode forced disabled by {}", client ? client->getName() : "<unknown client>");
 		break;
 	}
 	break;
@@ -162,13 +165,13 @@ void C4ControlSet::Execute() const
 		// not in league
 		if (Game.Parameters.isLeague())
 		{
-			Log("/set maxplayer disabled in league!");
+			LogNTr("/set maxplayer disabled in league!");
 			C4GUI::GUISound("Error");
 			break;
 		}
 		// set it
 		Game.Parameters.MaxPlayers = iData;
-		LogF("MaxPlayer = %" PRId32, Game.Parameters.MaxPlayers);
+		LogNTr("MaxPlayer = {}", Game.Parameters.MaxPlayers);
 
 		if (auto *const lobby = Game.Network.GetLobby(); lobby)
 		{
@@ -196,7 +199,7 @@ void C4ControlSet::Execute() const
 		// deny setting if it's fixed by scenario
 		if (Game.Parameters.FairCrewForced)
 		{
-			if (Game.Control.isCtrlHost()) Log(LoadResStr("IDS_MSG_NOMODIFYFAIRCREW"));
+			if (Game.Control.isCtrlHost()) Log(C4ResStrTableKey::IDS_MSG_NOMODIFYFAIRCREW);
 			break;
 		}
 		// set new value
@@ -220,10 +223,10 @@ void C4ControlSet::Execute() const
 			if (Game.Parameters.UseFairCrew)
 			{
 				int iRank = Game.Rank.RankByExperience(Game.Parameters.FairCrewStrength);
-				Game.GraphicsSystem.FlashMessage(FormatString(LoadResStr("IDS_MSG_FAIRCREW_ACTIVATED"), Game.Rank.GetRankName(iRank, true).getData()).getData());
+				Game.GraphicsSystem.FlashMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_FAIRCREW_ACTIVATED, Game.Rank.GetRankName(iRank, true).getData()).c_str());
 			}
 			else
-				Game.GraphicsSystem.FlashMessage(LoadResStr("IDS_MSG_FAIRCREW_DEACTIVATED"));
+				Game.GraphicsSystem.FlashMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_FAIRCREW_DEACTIVATED));
 		}
 		// lobby updates
 #ifndef USE_CONSOLE
@@ -252,7 +255,7 @@ void C4ControlSet::CompileFunc(StdCompiler *pComp)
 
 // *** C4ControlScript
 
-void C4ControlScript::Execute() const
+void C4ControlScript::Execute(const std::shared_ptr<spdlog::logger> &) const
 {
 	if (Game.Parameters.isLeague())
 	{
@@ -291,9 +294,9 @@ void C4ControlScript::Execute() const
 	// show messages
 	// print script
 	if (pObj)
-		LogF("-> %s::%s", pObj->Def->GetName(), szScript);
+		LogNTr("-> {}::{}", pObj->Def->GetName(), szScript);
 	else
-		LogF("-> %s", szScript);
+		LogNTr("-> {}", szScript);
 	// print result
 	if (!LocalControl())
 	{
@@ -301,12 +304,12 @@ void C4ControlScript::Execute() const
 		if (Game.Network.isEnabled())
 			pClient = Game.Network.Clients.GetClientByID(iByClient);
 		if (pClient)
-			LogF(" = %s (by %s)", rVal.GetDataString().getData(), pClient->getName());
+			LogNTr(" = {} (by {})", rVal.GetDataString(), pClient->getName());
 		else
-			LogF(" = %s (by client %d)", rVal.GetDataString().getData(), iByClient);
+			LogNTr(" = {} (by client {})", rVal.GetDataString(), iByClient);
 	}
 	else
-		LogF(" = %s", rVal.GetDataString().getData());
+		LogNTr(" = {}", rVal.GetDataString());
 }
 
 void C4ControlScript::CompileFunc(StdCompiler *pComp)
@@ -335,7 +338,7 @@ C4ControlPlayerSelect::C4ControlPlayerSelect(int32_t iPlr, const C4ObjectList &O
 	assert(i == iObjCnt);
 }
 
-void C4ControlPlayerSelect::Execute() const
+void C4ControlPlayerSelect::Execute(const std::shared_ptr<spdlog::logger> &) const
 {
 	// get player
 	C4Player *pPlr = Game.Players.Get(iPlr);
@@ -380,7 +383,7 @@ void C4ControlPlayerSelect::CompileFunc(StdCompiler *pComp)
 
 // *** C4ControlPlayerControl
 
-void C4ControlPlayerControl::Execute() const
+void C4ControlPlayerControl::Execute(const std::shared_ptr<spdlog::logger> &) const
 {
 	C4Player *pPlr = Game.Players.Get(iPlr);
 	if (pPlr)
@@ -407,7 +410,7 @@ C4ControlPlayerCommand::C4ControlPlayerCommand(int32_t iPlr, int32_t iCmd, int32
 	iTarget(Game.Objects.ObjectNumber(pTarget)), iTarget2(Game.Objects.ObjectNumber(pTarget2)),
 	iData(iData), iAddMode(iAddMode) {}
 
-void C4ControlPlayerCommand::Execute() const
+void C4ControlPlayerCommand::Execute(const std::shared_ptr<spdlog::logger> &) const
 {
 	C4Player *pPlr = Game.Players.Get(iPlr);
 	if (pPlr)
@@ -463,7 +466,7 @@ int32_t C4ControlSyncCheck::GetAllCrewPosX()
 	return cpx;
 }
 
-void C4ControlSyncCheck::Execute() const
+void C4ControlSyncCheck::Execute(const std::shared_ptr<spdlog::logger> &) const
 {
 	// control host?
 	if (Game.Control.isCtrlHost()) return;
@@ -494,9 +497,9 @@ void C4ControlSyncCheck::Execute() const
 			const char *szTemp = szThis; szThis = szOther; szOther = szTemp;
 		}
 		// Message
-		LogFatal("Network: Synchronization loss!");
-		LogFatal(FormatString("Network: %s Frm %i Ctrl %i Rnc %i Rn3 %i Cpx %i PXS %i MMi %i Obc %i Oei %i Sct %i", szThis,            Frame,           ControlTick,           RandomCount,           Random3,           AllCrewPosX,           PXSCount,           MassMoverIndex,           ObjectCount,           ObjectEnumerationIndex,           SectShapeSum).getData());
-		LogFatal(FormatString("Network: %s Frm %i Ctrl %i Rnc %i Rn3 %i Cpx %i PXS %i MMi %i Obc %i Oei %i Sct %i", szOther, SyncCheck.Frame, SyncCheck.ControlTick, SyncCheck.RandomCount, SyncCheck.Random3, SyncCheck.AllCrewPosX, SyncCheck.PXSCount, SyncCheck.MassMoverIndex, SyncCheck.ObjectCount, SyncCheck.ObjectEnumerationIndex, SyncCheck.SectShapeSum).getData());
+		LogFatalNTr("Network: Synchronization loss!");
+		LogFatalNTr("Network: {} Frm {} Ctrl {} Rnc {} Rn3 {} Cpx {} PXS {} MMi {} Obc {} Oei {} Sct {}", szThis,            Frame,           ControlTick,           RandomCount,           Random3,           AllCrewPosX,           PXSCount,           MassMoverIndex,           ObjectCount,           ObjectEnumerationIndex,           SectShapeSum);
+		LogFatalNTr("Network: {} Frm {} Ctrl {} Rnc {} Rn3 {} Cpx {} PXS {} MMi {} Obc {} Oei {} Sct {}", szOther, SyncCheck.Frame, SyncCheck.ControlTick, SyncCheck.RandomCount, SyncCheck.Random3, SyncCheck.AllCrewPosX, SyncCheck.PXSCount, SyncCheck.MassMoverIndex, SyncCheck.ObjectCount, SyncCheck.ObjectEnumerationIndex, SyncCheck.SectShapeSum);
 		StartSoundEffect("SyncError");
 #ifndef NDEBUG
 		// Debug safe
@@ -533,7 +536,7 @@ void C4ControlSyncCheck::CompileFunc(StdCompiler *pComp)
 
 // *** C4ControlSynchronize
 
-void C4ControlSynchronize::Execute() const
+void C4ControlSynchronize::Execute(const std::shared_ptr<spdlog::logger> &) const
 {
 	Game.Synchronize(fSavePlrFiles);
 	if (fSyncClearance) Game.SyncClearance();
@@ -548,7 +551,7 @@ void C4ControlSynchronize::CompileFunc(StdCompiler *pComp)
 
 // *** C4ControlClientJoin
 
-void C4ControlClientJoin::Execute() const
+void C4ControlClientJoin::Execute(const std::shared_ptr<spdlog::logger> &) const
 {
 	// host only
 	if (iByClient != C4ClientIDHost) return;
@@ -556,7 +559,7 @@ void C4ControlClientJoin::Execute() const
 	C4Client *pClient = Game.Clients.Add(Core);
 	if (!pClient) return;
 	// log
-	LogF(LoadResStr("IDS_NET_CLIENT_JOIN"), Core.getName());
+	Log(C4ResStrTableKey::IDS_NET_CLIENT_JOIN, Core.getName());
 	// lobby callback
 	C4GameLobby::MainDlg *pLobby = Game.Network.GetLobby();
 	if (pLobby) pLobby->OnClientJoin(pClient);
@@ -572,14 +575,14 @@ void C4ControlClientJoin::CompileFunc(StdCompiler *pComp)
 
 // *** C4Control
 
-void C4ControlClientUpdate::Execute() const
+void C4ControlClientUpdate::Execute(const std::shared_ptr<spdlog::logger> &) const
 {
 	// host only
 	if (iByClient != C4ClientIDHost) return;
 	// find client
 	C4Client *pClient = Game.Clients.getClientByID(iID);
 	if (!pClient) return;
-	StdStrBuf strClient(LoadResStr(pClient->isLocal() ? "IDS_NET_LOCAL_CLIENT" : "IDS_NET_CLIENT"));
+	StdStrBuf strClient(LoadResStrChoice(pClient->isLocal(), C4ResStrTableKey::IDS_NET_LOCAL_CLIENT, C4ResStrTableKey::IDS_NET_CLIENT));
 	// do whatever specified
 	switch (eType)
 	{
@@ -587,7 +590,14 @@ void C4ControlClientUpdate::Execute() const
 		// nothing to do?
 		if (pClient->isActivated() == !!iData) break;
 		// log
-		LogF(LoadResStr(iData ? "IDS_NET_CLIENT_ACTIVATED" : "IDS_NET_CLIENT_DEACTIVATED"), strClient.getData(), pClient->getName());
+		if (iData)
+		{
+			Log(C4ResStrTableKey::IDS_NET_CLIENT_ACTIVATED, strClient.getData(), pClient->getName());
+		}
+		else
+		{
+			Log(C4ResStrTableKey::IDS_NET_CLIENT_DEACTIVATED, strClient.getData(), pClient->getName());
+		}
 		// activate/deactivate
 		pClient->SetActivated(!!iData);
 		// local?
@@ -598,7 +608,7 @@ void C4ControlClientUpdate::Execute() const
 		// nothing to do?
 		if (pClient->isObserver()) break;
 		// log
-		LogF(LoadResStr("IDS_NET_CLIENT_OBSERVE"), strClient.getData(), pClient->getName());
+		Log(C4ResStrTableKey::IDS_NET_CLIENT_OBSERVE, strClient.getData(), pClient->getName());
 		// set observer (will deactivate)
 		pClient->SetObserver();
 		// local?
@@ -624,7 +634,7 @@ void C4ControlClientUpdate::CompileFunc(StdCompiler *pComp)
 
 // *** C4ControlClientRemove
 
-void C4ControlClientRemove::Execute() const
+void C4ControlClientRemove::Execute(const std::shared_ptr<spdlog::logger> &) const
 {
 	// host only
 	if (iByClient != C4ClientIDHost) return;
@@ -638,21 +648,20 @@ void C4ControlClientRemove::Execute() const
 		if (Game.Control.isReplay()) Game.Players.RemoveAtClient(iID, true);
 		return;
 	}
-	StdStrBuf strClient(LoadResStr(pClient->isLocal() ? "IDS_NET_LOCAL_CLIENT" : "IDS_NET_CLIENT"));
+	StdStrBuf strClient(LoadResStrChoice(pClient->isLocal(), C4ResStrTableKey::IDS_NET_LOCAL_CLIENT, C4ResStrTableKey::IDS_NET_CLIENT));
 	// local?
 	if (pClient->isLocal())
 	{
-		StdStrBuf sMsg;
-		sMsg.Format(LoadResStr("IDS_NET_CLIENT_REMOVED"), strClient.getData(), pClient->getName(), strReason.getData());
-		Log(sMsg.getData());
-		Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, sMsg.getData());
+		const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_REMOVED, strClient.getData(), pClient->getName(), strReason.getData())};
+		LogNTr(message);
+		Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, message.c_str());
 		Game.Control.ChangeToLocal();
 		return;
 	}
 	// remove client
 	if (!Game.Clients.Remove(pClient)) return;
 	// log
-	LogF(LoadResStr("IDS_NET_CLIENT_REMOVED"), strClient.getData(), pClient->getName(), strReason.getData());
+	Log(C4ResStrTableKey::IDS_NET_CLIENT_REMOVED, strClient.getData(), pClient->getName(), strReason.getData());
 	// remove all players
 	Game.Players.RemoveAtClient(iID, true);
 	// remove all resources
@@ -692,13 +701,13 @@ C4ControlJoinPlayer::C4ControlJoinPlayer(const char *szFilename, int32_t iAtClie
 	{
 		if (!PlrData.LoadFromFile(szFilename))
 		{
-			LogF("WARNING: Failed loading player data from file %s", szFilename);
+			spdlog::error("Failed loading player data from file {}", szFilename);
 			assert(!"PlrData.LoadFromFile failed");
 		}
 	}
 }
 
-void C4ControlJoinPlayer::Execute() const
+void C4ControlJoinPlayer::Execute(const std::shared_ptr<spdlog::logger> &logger) const
 {
 	const char *szFilename = Filename.getData();
 
@@ -710,7 +719,7 @@ void C4ControlJoinPlayer::Execute() const
 	C4PlayerInfo *pInfo = Game.PlayerInfos.GetPlayerInfoByID(idInfo);
 	if (!pInfo)
 	{
-		LogF("ERROR: Ghost player join: No info for %d", idInfo);
+		logger->error("Ghost player join: No info for {}", idInfo);
 		assert(false);
 		return;
 	}
@@ -724,13 +733,13 @@ void C4ControlJoinPlayer::Execute() const
 		if (PlrData.getSize())
 		{
 			// create temp file
-			StdStrBuf PlayerFilename; PlayerFilename.Format("%s-%s", pClient->getName(), GetFilename(szFilename));
-			PlayerFilename.Ref(Config.AtTempPath(PlayerFilename.getData()));
+			std::string playerFilename{std::format("{}-{}", pClient->getName(), GetFilename(szFilename))};
+			playerFilename = Config.AtTempPath(playerFilename.c_str());
 			// copy to it
-			if (PlrData.SaveToFile(PlayerFilename.getData()))
+			if (PlrData.SaveToFile(playerFilename.c_str()))
 			{
-				Game.JoinPlayer(PlayerFilename.getData(), iAtClient, pClient->getName(), pInfo);
-				EraseFile(PlayerFilename.getData());
+				Game.JoinPlayer(playerFilename.c_str(), iAtClient, pClient->getName(), pInfo);
+				EraseFile(playerFilename.c_str());
 			}
 		}
 		else if (pInfo->GetType() == C4PT_Script)
@@ -741,7 +750,7 @@ void C4ControlJoinPlayer::Execute() const
 		else
 		{
 			// no player data for user player present: Must not happen
-			LogF("ERROR: Ghost player join: No player data for %s", pInfo->GetName());
+			logger->error("Ghost player join: No player data for {}", pInfo->GetName());
 			assert(false);
 			return;
 		}
@@ -756,8 +765,7 @@ void C4ControlJoinPlayer::Execute() const
 	else if (Game.Control.isReplay())
 	{
 		// Expect player in scenario file
-		StdStrBuf PlayerFilename; PlayerFilename.Format("%s" DirSep "%d-%s", Game.ScenarioFilename, ResCore.getID(), GetFilename(ResCore.getFileName()));
-		Game.JoinPlayer(PlayerFilename.getData(), iAtClient, pClient ? pClient->getName() : "Unknown", pInfo);
+		Game.JoinPlayer(std::format("{}" DirSep "{}-{}", Game.ScenarioFilename, ResCore.getID(), GetFilename(ResCore.getFileName())).c_str(), iAtClient, pClient ? pClient->getName() : "Unknown", pInfo);
 	}
 	else
 		// Shouldn't happen
@@ -800,7 +808,7 @@ void C4ControlJoinPlayer::Strip()
 	}
 }
 
-bool C4ControlJoinPlayer::PreExecute() const
+bool C4ControlJoinPlayer::PreExecute(const std::shared_ptr<spdlog::logger> &) const
 {
 	// all data included in control packet?
 	if (!fByRes) return true;
@@ -831,8 +839,8 @@ void C4ControlJoinPlayer::PreRec(C4Record *pRecord)
 		if (C4Group_CopyItem(pRes->getFile(), szTemp.getData()))
 		{
 			// add to record
-			StdStrBuf szTarget = FormatString("%d-%s", ResCore.getID(), GetFilename(ResCore.getFileName()));
-			pRecord->AddFile(szTemp.getData(), szTarget.getData(), true);
+			const std::string target{std::format("{}-{}", ResCore.getID(), GetFilename(ResCore.getFileName()))};
+			pRecord->AddFile(szTemp.getData(), target.c_str(), true);
 		}
 	}
 	else
@@ -866,7 +874,7 @@ C4ControlEMMoveObject::~C4ControlEMMoveObject()
 	delete[] pObjects; pObjects = nullptr;
 }
 
-void C4ControlEMMoveObject::Execute() const
+void C4ControlEMMoveObject::Execute(const std::shared_ptr<spdlog::logger> &logger) const
 {
 	// Ignore in league mode
 	if (Game.Parameters.isLeague())
@@ -931,7 +939,7 @@ void C4ControlEMMoveObject::Execute() const
 		for (int i = 0; i < iObjectNum; ++i)
 		{
 			ScriptCtrl.SetTargetObj(pObjects[i]);
-			ScriptCtrl.Execute();
+			ScriptCtrl.Execute(logger);
 		}
 		break;
 	}
@@ -991,7 +999,7 @@ C4ControlEMDrawTool::C4ControlEMDrawTool(C4ControlEMDrawAction eAction, int32_t 
 	: eAction(eAction), iMode(iMode), iX(iX), iY(iY), iX2(iX2), iY2(iY2), iGrade(iGrade),
 	fIFT(fIFT), Material(szMaterial, true), Texture(szTexture, true) {}
 
-void C4ControlEMDrawTool::Execute() const
+void C4ControlEMDrawTool::Execute(const std::shared_ptr<spdlog::logger> &) const
 {
 	// Ignore in league mode
 	if (Game.Parameters.isLeague())
@@ -1062,7 +1070,7 @@ void C4ControlEMDrawTool::CompileFunc(StdCompiler *pComp)
 
 // *** C4ControlMessage
 
-void C4ControlMessage::Execute() const
+void C4ControlMessage::Execute(const std::shared_ptr<spdlog::logger> &) const
 {
 	const char *szMessage = Message.getData();
 	// get player
@@ -1101,27 +1109,29 @@ void C4ControlMessage::Execute() const
 	case C4CMT_Normal:
 	case C4CMT_Me:
 	{
-		StdStrBuf log;
+		std::string log;
 		// log it
 		if (pPlr)
 		{
 			if (pPlr->AtClient != iByClient) break;
-			log = FormatString((eType == C4CMT_Normal ? (Config.General.UseWhiteIngameChat ? "<c %x><%s></c> %s" : "<c %x><%s> %s") : (Config.General.UseWhiteIngameChat ? "<c %x> * %s</c> %s" : "<c %x> * %s %s")),
-				pPlr->ColorDw, pPlr->GetName(), szMessage);
+			const char *const plrName{pPlr->GetName()};
+			log = std::vformat((eType == C4CMT_Normal ? (Config.General.UseWhiteIngameChat ? "<c {:x}><{}></c> {}" : "<c {:x}><{}> {}") : (Config.General.UseWhiteIngameChat ? "<c {:x}> * {}</c> {}" : "<c {:x}> * {} {}")),
+				std::make_format_args(pPlr->ColorDw, plrName, szMessage));
 		}
 		else
 		{
 			const auto white = pLobby && Config.General.UseWhiteLobbyChat;
 			C4Client *pClient = Game.Clients.getClientByID(iByClient);
-			log = FormatString((eType == C4CMT_Normal ? (white ? "<%s> <c ffffff>%s" : "<%s> %s") : (white ? " * %s <c ffffff>%s" : " * %s %s")),
-				pClient ? pClient->getNick() : "???", szMessage);
+			const char *const nick{pClient ? pClient->getNick() : "???"};
+			log = std::vformat((eType == C4CMT_Normal ? (white ? "<{}> <c ffffff>{}" : "<{}> {}") : (white ? " * {} <c ffffff>{}" : " * {} {}")),
+				std::make_format_args(nick, szMessage));
 		}
 		// 2 lobby
 		if (pLobby)
-			pLobby->OnMessage(Game.Clients.getClientByID(iByClient), log.getData());
+			pLobby->OnMessage(Game.Clients.getClientByID(iByClient), log.c_str());
 		// or 2 log
 		else
-			Log(log.getData());
+			LogNTr(log);
 
 		checkAlert();
 		break;
@@ -1135,10 +1145,10 @@ void C4ControlMessage::Execute() const
 		if (!pViewObject) break;
 		if (Game.C4S.Head.Film == C4SFilm_Cinematic)
 		{
-			StdStrBuf sMessage; sMessage.Format("<%s> %s", pPlr->Cursor ? pPlr->Cursor->GetName() : pPlr->GetName(), szMessage);
+			const std::string message{std::format("<{}> {}", pPlr->Cursor ? pPlr->Cursor->GetName() : pPlr->GetName(), szMessage)};
 			uint32_t dwClr = pPlr->Cursor ? pPlr->Cursor->Color : pPlr->ColorDw;
 			if (!dwClr) dwClr = 0xff;
-			GameMsgObjectDw(sMessage.getData(), pViewObject, dwClr | 0xff000000);
+			GameMsgObjectDw(message.c_str(), pViewObject, dwClr | 0xff000000);
 		}
 		else
 			GameMsgObjectDw(szMessage, pViewObject, pPlr->ColorDw | 0xff000000);
@@ -1155,7 +1165,17 @@ void C4ControlMessage::Execute() const
 			for (int cnt = 0; pLocalPlr = Game.Players.GetLocalByIndex(cnt); cnt++)
 				if (!Hostile(pLocalPlr->Number, iPlayer))
 					break;
-			if (pLocalPlr) LogF(Config.General.UseWhiteIngameChat ? "<c %x>{%s}</c> %s" : "<c %x>{%s} %s", pPlr->ColorDw, pPlr->GetName(), szMessage);
+			if (pLocalPlr)
+			{
+				if (Config.General.UseWhiteIngameChat)
+				{
+					LogNTr("<c {:x}>{{{}}}</c> {}", pPlr->ColorDw, pPlr->GetName(), szMessage);
+				}
+				else
+				{
+					LogNTr("<c {:x}>{{{}}} {}", pPlr->ColorDw, pPlr->GetName(), szMessage);
+				}
+			}
 		}
 		else if (pLobby)
 		{
@@ -1163,8 +1183,9 @@ void C4ControlMessage::Execute() const
 			if (!Game.PlayerInfos.HasSameTeamPlayers(iByClient, Game.Clients.getLocalID())) break;
 			// OK - permit message
 			C4Client *pClient = Game.Clients.getClientByID(iByClient);
+			const char *const nick{pClient ? pClient->getNick() : "???"};
 			pLobby->OnMessage(Game.Clients.getClientByID(iByClient),
-				FormatString(Config.General.UseWhiteLobbyChat ? "{%s} <c ffffff>%s" : "{%s} %s", pClient ? pClient->getNick() : "???", szMessage).getData());
+				std::vformat(Config.General.UseWhiteLobbyChat ? "{{{}}} <c ffffff>{}" : "{{{}}} {}", std::make_format_args(nick, szMessage)).c_str());
 		}
 
 		checkAlert();
@@ -1181,7 +1202,14 @@ void C4ControlMessage::Execute() const
 				break;
 		if (pLocalPlr)
 		{
-			LogF(Config.General.UseWhiteIngameChat ? "<c %x>[%s]</c> %s" : "<c %x>[%s] %s", pPlr->ColorDw, pPlr->GetName(), szMessage);
+			if (Config.General.UseWhiteIngameChat)
+			{
+				LogNTr("<c {:x}>[{}]</c> {}", pPlr->ColorDw, pPlr->GetName(), szMessage);
+			}
+			else
+			{
+				LogNTr("<c {:x}>[{}] {}", pPlr->ColorDw, pPlr->GetName(), szMessage);
+			}
 		}
 
 		checkAlert();
@@ -1211,7 +1239,7 @@ void C4ControlMessage::Execute() const
 		// sender must be host
 		if (!HostControl()) break;
 		// show
-		LogF("Network: %s", szMessage);
+		LogNTr("Network: {}", szMessage);
 		break;
 	}
 
@@ -1233,7 +1261,7 @@ void C4ControlMessage::CompileFunc(StdCompiler *pComp)
 
 // *** C4ControlPlayerInfo
 
-void C4ControlPlayerInfo::Execute() const
+void C4ControlPlayerInfo::Execute(const std::shared_ptr<spdlog::logger> &) const
 {
 	// join to player info list
 	// replay and local control: direct join
@@ -1261,7 +1289,7 @@ void C4ControlPlayerInfo::CompileFunc(StdCompiler *pComp)
 
 // *** C4ControlRemovePlr
 
-void C4ControlRemovePlr::Execute() const
+void C4ControlRemovePlr::Execute(const std::shared_ptr<spdlog::logger> &) const
 {
 	// host only
 	if (iByClient != C4ClientIDHost) return;
@@ -1278,7 +1306,7 @@ void C4ControlRemovePlr::CompileFunc(StdCompiler *pComp)
 
 // *** C4ControlDebugRec
 
-void C4ControlDebugRec::Execute() const {}
+void C4ControlDebugRec::Execute(const std::shared_ptr<spdlog::logger> &) const {}
 
 void C4ControlDebugRec::CompileFunc(StdCompiler *pComp)
 {
@@ -1294,21 +1322,21 @@ StdStrBuf C4ControlVote::getDesc() const
 	switch (eType)
 	{
 	case VT_Cancel:
-		Action.Ref(LoadResStr("IDS_VOTE_CANCELTHEROUND")); break;
+		Action.Ref(LoadResStr(C4ResStrTableKey::IDS_VOTE_CANCELTHEROUND)); break;
 	case VT_Kick:
 		if (iData == iByClient)
-			Action.Ref(LoadResStr("IDS_VOTE_LEAVETHEGAME"));
+			Action.Ref(LoadResStr(C4ResStrTableKey::IDS_VOTE_LEAVETHEGAME));
 		else
 		{
 			C4Client *pTargetClient = Game.Clients.getClientByID(iData);
-			Action.Format(LoadResStr("IDS_VOTE_KICKCLIENT"), pTargetClient ? pTargetClient->getName() : "???");
+			Action.Copy(LoadResStr(C4ResStrTableKey::IDS_VOTE_KICKCLIENT, pTargetClient ? pTargetClient->getName() : "???").c_str());
 		}
 		break;
 	case VT_Pause:
 		if (iData)
-			Action.Ref(LoadResStr("IDS_TEXT_PAUSETHEGAME"));
+			Action.Ref(LoadResStr(C4ResStrTableKey::IDS_TEXT_PAUSETHEGAME));
 		else
-			Action.Ref(LoadResStr("IDS_TEXT_UNPAUSETHEGAME"));
+			Action.Ref(LoadResStr(C4ResStrTableKey::IDS_TEXT_UNPAUSETHEGAME));
 		break;
 	case VT_None:
 		; // fallthrough
@@ -1326,23 +1354,23 @@ StdStrBuf C4ControlVote::getDescWarning() const
 	switch (eType)
 	{
 	case VT_Cancel:
-		Warning.Ref(LoadResStr("IDS_TEXT_WARNINGIFTHEGAMEISCANCELL")); break;
+		Warning.Ref(LoadResStr(C4ResStrTableKey::IDS_TEXT_WARNINGIFTHEGAMEISCANCELL)); break;
 	case VT_Kick:
-		Warning.Ref(LoadResStr("IDS_TEXT_WARNINGNOLEAGUEPOINTSWILL")); break;
+		Warning.Ref(LoadResStr(C4ResStrTableKey::IDS_TEXT_WARNINGNOLEAGUEPOINTSWILL)); break;
 	default:
 		Warning = ""; break;
 	}
 	return Warning;
 }
 
-void C4ControlVote::Execute() const
+void C4ControlVote::Execute(const std::shared_ptr<spdlog::logger> &) const
 {
 	// Log
 	C4Client *pClient = Game.Clients.getClientByID(iByClient);
 	if (fApprove)
-		LogF(LoadResStr("IDS_VOTE_WANTSTO"), pClient->getName(), getDesc().getData());
+		Log(C4ResStrTableKey::IDS_VOTE_WANTSTO, pClient->getName(), getDesc().getData());
 	else
-		LogF(LoadResStr("IDS_VOTE_DOESNOTWANTTO"), pClient->getName(), getDesc().getData());
+		Log(C4ResStrTableKey::IDS_VOTE_DOESNOTWANTTO, pClient->getName(), getDesc().getData());
 	// Save vote back
 	if (Game.Network.isEnabled())
 		Game.Network.AddVote(*this);
@@ -1425,19 +1453,15 @@ void C4ControlVote::CompileFunc(StdCompiler *pComp)
 
 // *** C4ControlVoteEnd
 
-void C4ControlVoteEnd::Execute() const
+void C4ControlVoteEnd::Execute(const std::shared_ptr<spdlog::logger> &) const
 {
 	// End the voting process
 	if (!HostControl()) return;
 	if (Game.Network.isEnabled())
 		Game.Network.EndVote(getType(), isApprove(), getData());
 	// Log
-	StdStrBuf sMsg;
-	if (isApprove())
-		sMsg.Format(LoadResStr("IDS_TEXT_ITWASDECIDEDTO"), getDesc().getData());
-	else
-		sMsg.Format(LoadResStr("IDS_TEXT_ITWASDECIDEDNOTTO"), getDesc().getData());
-	Log(sMsg.getData());
+	const std::string msg{LoadResStrChoice(isApprove(), C4ResStrTableKey::IDS_TEXT_ITWASDECIDEDTO, C4ResStrTableKey::IDS_TEXT_ITWASDECIDEDNOTTO, getDesc().getData())};
+	LogNTr(msg);
 	// Approved?
 	if (!isApprove()) return;
 	// Do it
@@ -1468,14 +1492,14 @@ void C4ControlVoteEnd::Execute() const
 		{
 			C4Client *pClient = Game.Clients.getClientByID(getData());
 			if (pClient)
-				Game.Clients.CtrlRemove(pClient, LoadResStr("IDS_VOTE_VOTEDOUT"));
+				Game.Clients.CtrlRemove(pClient, LoadResStr(C4ResStrTableKey::IDS_VOTE_VOTEDOUT));
 		}
 		// It is ourselves that have been voted out?
 		if (getData() == Game.Clients.getLocalID())
 		{
 			// otherwise, we have been kicked by the host.
 			// Do a regular disconnect and display reason in game over dialog, so the client knows what has happened!
-			Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, FormatString(LoadResStr("IDS_ERR_YOUHAVEBEENREMOVEDBYVOTIN"), sMsg.getData()).getData());
+			Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, LoadResStr(C4ResStrTableKey::IDS_ERR_YOUHAVEBEENREMOVEDBYVOTIN, msg).c_str());
 			Game.Network.Clear();
 			// Game over immediately, so poor player won't continue game alone
 			Game.DoGameOver();
@@ -1510,16 +1534,16 @@ bool C4ControlEMDropDef::Allowed() const
 	return !Game.Parameters.isLeague() && C4Id2Def(id);
 }
 
-StdStrBuf C4ControlEMDropDef::FormatScript() const
+std::string C4ControlEMDropDef::FormatScript() const
 {
 	const auto def = C4Id2Def(id);
 	if (def->Category & C4D_Structure)
-		return FormatString("CreateConstruction(%s,%d,%d,-1,%d,true)", C4IdText(id), x, y, FullCon);
+		return std::format("CreateConstruction({},{},{},-1,{},true)", C4IdText(id), x, y, FullCon);
 	else
-		return FormatString("CreateObject(%s,%d,%d,-1)", C4IdText(id), x, y);
+		return std::format("CreateObject({},{},{},-1)", C4IdText(id), x, y);
 }
 
-void C4ControlInternalScriptBase::Execute() const
+void C4ControlInternalScriptBase::Execute(const std::shared_ptr<spdlog::logger> &) const
 {
 	if (!Allowed()) return;
 
@@ -1536,7 +1560,7 @@ void C4ControlInternalScriptBase::Execute() const
 	else
 		// default: Fallback to global context
 		pScript = &Game.ScriptEngine;
-	pScript->DirectExec(pObj, FormatScript().getData(), "internal script");
+	pScript->DirectExec(pObj, FormatScript().c_str(), "internal script");
 }
 
 void C4ControlInternalPlayerScriptBase::CompileFunc(StdCompiler *pComp)
@@ -1560,13 +1584,13 @@ void C4ControlMessageBoardAnswer::CompileFunc(StdCompiler *pComp)
 	C4ControlInternalPlayerScriptBase::CompileFunc(pComp);
 }
 
-StdStrBuf C4ControlMessageBoardAnswer::FormatScript() const
+std::string C4ControlMessageBoardAnswer::FormatScript() const
 {
-	if (answer.empty()) return FormatString("OnMessageBoardAnswer(Object(%d),%d,)", obj, plr);
+	if (answer.empty()) return std::format("OnMessageBoardAnswer(Object({}),{},)", obj, plr);
 
 	StdStrBuf escapedAnswer(answer.c_str(), false);
 	escapedAnswer.EscapeString();
-	return FormatString("OnMessageBoardAnswer(Object(%d),%d,\"%s\")", obj, plr, escapedAnswer.getData());
+	return std::format("OnMessageBoardAnswer(Object({}),{},\"{}\")", obj, plr, escapedAnswer.getData());
 }
 
 void C4ControlCustomCommand::CompileFunc(StdCompiler *pComp)
@@ -1583,28 +1607,36 @@ bool C4ControlCustomCommand::Allowed() const
 	return Game.IsRunning && Game.MessageInput.GetCommand(command.c_str());
 }
 
-StdStrBuf C4ControlCustomCommand::FormatScript() const
+std::string C4ControlCustomCommand::FormatScript() const
 {
 	// the existence of cmd is checked already in Allowed()
 	const auto cmd = Game.MessageInput.GetCommand(command.c_str());
-	StdStrBuf Script, CmdScript;
+	std::string script;
+	std::string cmdScript;
 	// replace %player% by calling player number
-	if (SSearch(cmd->script.c_str(), "%player%"))
+	if (cmd->script.contains("%player%"))
 	{
-		CmdScript.Copy(cmd->script.c_str());
-		CmdScript.Replace("%player%", FormatString("%d", plr).getData());
+		cmdScript = ReplaceInString(static_cast<std::string_view>(cmd->script), static_cast<std::string_view>("%player%"), static_cast<std::string_view>(std::to_string(plr)));
 	}
 	else
 	{
-		CmdScript.Copy(cmd->script.c_str());
+		cmdScript = cmd->script;
 	}
 	// insert parameters
-	if (SSearch(CmdScript.getData(), "%d"))
+	if (cmdScript.contains("%d"))
 	{
 		// make sure it's a number by converting
-		Script.Format(CmdScript.getData(), atoi(argument.c_str()));
+		std::string_view arg{argument};
+		if (arg.starts_with('+'))
+		{
+			arg.remove_prefix(1);
+		}
+
+		int result{};
+		std::from_chars(arg.data(), arg.data() + arg.size(), result);
+		script = fmt::sprintf(cmdScript, result);
 	}
-	else if (SSearch(CmdScript.getData(), "%s"))
+	else if (cmdScript.contains("%s"))
 	{
 		// Unrestricted parameters?
 		// That's kind of a security risk as it will allow anyone to execute code
@@ -1617,13 +1649,13 @@ StdStrBuf C4ControlCustomCommand::FormatScript() const
 				Par.Copy(argument.c_str());
 				Par.EscapeString();
 				// compose script
-				Script.Format(CmdScript.getData(), Par.getData());
+				script = fmt::sprintf(cmdScript, Par.getData());
 			}
 			break;
 
 			case C4MessageBoardCommand::C4MSGCMDR_Plain:
 				// unescaped
-				Script.Format(CmdScript.getData(), argument.c_str());
+				script = fmt::sprintf(cmdScript, argument);
 				break;
 
 			case C4MessageBoardCommand::C4MSGCMDR_Identifier:
@@ -1636,17 +1668,17 @@ StdStrBuf C4ControlCustomCommand::FormatScript() const
 					par.push_back(c);
 				}
 				// compose script
-				Script.Format(CmdScript.getData(), par.c_str());
+				script = fmt::sprintf(cmdScript, par);
 			}
 			break;
 		}
 	}
 	else
 	{
-		return CmdScript;
+		return cmdScript;
 	}
 
-	return Script;
+	return script;
 }
 
 void C4ControlInitScenarioPlayer::CompileFunc(StdCompiler *pComp)
@@ -1677,6 +1709,6 @@ void C4ControlScript::CheckStrictness(const C4AulScriptStrict strict, StdCompile
 {
 	if (!Inside(std::to_underlying(strict), std::to_underlying(C4AulScriptStrict::NONSTRICT), std::to_underlying(C4AulScriptStrict::MAXSTRICT)))
 	{
-		comp.excCorrupt("Invalid strictness: %hhu", std::to_underlying(strict));
+		comp.excCorrupt("Invalid strictness: {}", std::to_underlying(strict));
 	}
 }

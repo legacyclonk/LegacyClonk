@@ -40,7 +40,7 @@ void ComboBox_FillCB::AddEntry(const char *szText, int32_t id, const char *desc)
 	typedef C4GUI::CBMenuHandlerEx<ComboBox, ComboBox::ComboMenuCBStruct> Handler;
 	Handler *pHandler = new Handler(pCombo, &ComboBox::OnCtxComboSelect);
 	pHandler->SetExtra(ComboBox::ComboMenuCBStruct(szText, id));
-	pDrop->AddItem(szText, desc ? desc : FormatString(LoadResStr("IDS_MSG_SELECT"), szText).getData(), Ico_Empty, pHandler);
+	pDrop->AddItem(szText, desc ? desc : LoadResStr(C4ResStrTableKey::IDS_MSG_SELECT, szText).c_str(), Ico_Empty, pHandler);
 }
 
 bool ComboBox_FillCB::FindEntry(const char *szText)

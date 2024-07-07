@@ -144,11 +144,13 @@ C4AudioSystemSdl::C4AudioSystemSdl(const int maxChannels, const bool preferLinea
 	assert(!instance);
 	instance = this;
 
+	auto logger = CreateLogger("C4AudioSystemSdl");
+
 	// Check SDL_mixer version
 	SDL_version compile_version;
 	MIX_VERSION(&compile_version);
 	const auto link_version = Mix_Linked_Version();
-	LogF("SDL_mixer runtime version is %d.%d.%d (compiled with %d.%d.%d)",
+	logger->info("SDL_mixer runtime version is {}.{}.{} (compiled with {}.{}.{})",
 		link_version->major, link_version->minor, link_version->patch,
 		compile_version.major, compile_version.minor, compile_version.patch);
 
@@ -156,7 +158,7 @@ C4AudioSystemSdl::C4AudioSystemSdl(const int maxChannels, const bool preferLinea
 	if (preferLinearResampling)
 	{
 		if (!SDL_SetHint(SDL_HINT_AUDIO_RESAMPLING_MODE, "linear"))
-			LogF("SDL_SetHint(SDL_HINT_AUDIO_RESAMPLING_MODE, \"linear\") failed");
+			logger->error("SDL_SetHint(SDL_HINT_AUDIO_RESAMPLING_MODE, \"linear\") failed");
 	}
 
 	// Initialize SDL_mixer
@@ -169,7 +171,7 @@ C4AudioSystemSdl::C4AudioSystemSdl(const int maxChannels, const bool preferLinea
 	int channels;
 	Mix_QuerySpec(&frequency, &format, &channels);
 
-	LogSilentF("SDL_mixer device spec: frequency = %d Hz, format = %hu, channels = %d", frequency, format, channels);
+	logger->debug("SDL_mixer device spec: frequency = {} Hz, format = {}, channels = {}", frequency, format, channels);
 
 	Mix_AllocateChannels(maxChannels);
 	Mix_ChannelFinished(ChannelFinished);

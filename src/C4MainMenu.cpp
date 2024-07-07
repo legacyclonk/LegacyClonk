@@ -27,6 +27,8 @@
 #include <C4GameOverDlg.h>
 #include <C4Object.h>
 
+#include <format>
+
 // C4MainMenu
 
 C4MainMenu::C4MainMenu() : C4Menu() // will be re-adjusted later
@@ -66,11 +68,12 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 	// Menu symbol/init
 	if (GfxR->fctPlayerClr.Surface)
 		GfxR->fctPlayerClr.Surface->SetClr(0xff);
-	InitRefSym(GfxR->fctPlayerClr, LoadResStr("IDS_MENU_NOPLRFILES"), iPlayer);
+	InitRefSym(GfxR->fctPlayerClr, LoadResStr(C4ResStrTableKey::IDS_MENU_NOPLRFILES), iPlayer);
+	std::string command;
 	for (DirectoryIterator iter(Config.General.PlayerPath); *iter; ++iter)
 		if (WildcardMatch("*.c4p", *iter))
 		{
-			char szFilename[_MAX_PATH + 1], szCommand[_MAX_PATH + 30 + 1];
+			char szFilename[_MAX_PATH + 1];
 			SCopy(*iter, szFilename, _MAX_PATH);
 			if (DirectoryExists(szFilename)) continue;
 			if (Game.Players.FileInUse(szFilename)) continue;
@@ -89,9 +92,8 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 			// Close group
 			hGroup.Close();
 			// Add player item
-			sprintf(szCommand, "JoinPlayer:%s", szFilename);
-			StdStrBuf sItemText;
-			sItemText.Format(LoadResStr("IDS_MENU_NEWPLAYER"), C4P.PrefName);
+			command = std::format("JoinPlayer:{}", szFilename);
+			const std::string itemText{LoadResStr(C4ResStrTableKey::IDS_MENU_NEWPLAYER, C4P.PrefName)};
 			// No custom portrait: use default player image
 			if (!fctPortrait.Surface)
 			{
@@ -106,7 +108,7 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 			fctSymbol.Create(symbolSize, symbolSize);
 			fctPortraitClr.DrawClr(fctSymbol, true, C4P.PrefColorDw);
 			// Add menu item
-			Add(sItemText.getData(), fctSymbol, szCommand);
+			Add(itemText.c_str(), fctSymbol, command.c_str());
 			// Reset symbol facet (menu holds on to the surface)
 			fctSymbol.Default();
 		}
@@ -149,21 +151,22 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 				fctSymbol.Create(symbolSize, symbolSize);
 				pPlayer->DrawHostility(fctSymbol, iIndex);
 				// Message
-				StdStrBuf sMsg;
-				if (pPlayer->Hostility.GetIDCount(pPlr->Number + 1))
-					sMsg.Format(LoadResStr("IDS_MENU_ATTACK"), pPlr->GetName());
-				else
-					sMsg.Format(LoadResStr("IDS_MENU_NOATTACK"), pPlr->GetName());
+				const std::string msg{LoadResStrChoice(pPlayer->Hostility.GetIDCount(pPlr->Number + 1), C4ResStrTableKey::IDS_MENU_ATTACK, C4ResStrTableKey::IDS_MENU_NOATTACK, pPlr->GetName())};
 				// Command
-				char szCommand[1000];
-				sprintf(szCommand, "SetHostility:%i", pPlr->Number);
+				const std::string command{std::format("SetHostility:{}", pPlr->Number)};
 				// Info caption
-				char szInfoCaption[C4MaxTitle + 1], szFriendly[50], szNot[30] = "";
-				SCopy(LoadResStr(pPlr->Hostility.GetIDCount(pPlayer->Number + 1) ? "IDS_MENU_ATTACKHOSTILE" : "IDS_MENU_ATTACKFRIENDLY"), szFriendly);
-				if (!pPlayer->Hostility.GetIDCount(pPlr->Number + 1)) SCopy(LoadResStr("IDS_MENU_ATTACKNOT"), szNot);
-				sprintf(szInfoCaption, LoadResStr("IDS_MENU_ATTACKINFO"), pPlr->GetName(), szFriendly, szNot);
+				const std::string friendly{LoadResStrChoice(pPlr->Hostility.GetIDCount(pPlayer->Number + 1), C4ResStrTableKey::IDS_MENU_ATTACKHOSTILE, C4ResStrTableKey::IDS_MENU_ATTACKFRIENDLY)};
+				std::string notFriendly;
+
+				if (!pPlayer->Hostility.GetIDCount(pPlr->Number + 1))
+				{
+					notFriendly = LoadResStr(C4ResStrTableKey::IDS_MENU_ATTACKNOT);
+				}
+
+				const std::string infoCaption{LoadResStr(C4ResStrTableKey::IDS_MENU_ATTACKINFO, pPlr->GetName(), friendly, notFriendly)};
+
 				// Add item
-				Add(sMsg.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, szInfoCaption);
+				Add(msg.c_str(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, infoCaption.c_str());
 				fctSymbol.Default();
 			}
 		break;
@@ -220,10 +223,10 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 				sTeamName.Take(pTeam->GetNameWithParticipants());
 			}
 			else
-				sTeamName.Ref(LoadResStr("IDS_PRC_NEWTEAM"));
+				sTeamName.Ref(LoadResStr(C4ResStrTableKey::IDS_PRC_NEWTEAM));
 			const char *szOperation = (Identification == C4MN_TeamSwitch) ? "TeamSwitch" : "TeamSel";
-			Add(sTeamName.getData(), fctSymbol, FormatString("%s:%d", szOperation, pTeam ? pTeam->GetID() : TEAMID_New).getData(),
-				C4MN_Item_NoCount, nullptr, FormatString(LoadResStr("IDS_MSG_JOINTEAM"), sTeamName.getData()).getData(), C4ID(pTeam ? pTeam->GetID() : 0));
+			Add(sTeamName.getData(), fctSymbol, std::format("{}:{}S", szOperation, pTeam ? pTeam->GetID() : TEAMID_New).c_str(),
+				C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MSG_JOINTEAM, sTeamName.getData()).c_str(), C4ID(pTeam ? pTeam->GetID() : 0));
 			fctSymbol.Default();
 		}
 		break;
@@ -238,7 +241,7 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 		if (!pVP) return false;
 		int32_t iInitialSelection = 0;
 		// Add free view
-		AddRefSym(LoadResStr("IDS_MSG_FREEVIEW"), C4GUI::Icon::GetIconFacet(C4GUI::Ico_Star), "Observe:Free", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MSG_FREELYSCROLLAROUNDTHEMAP"));
+		AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MSG_FREEVIEW), C4GUI::Icon::GetIconFacet(C4GUI::Ico_Star), "Observe:Free", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MSG_FREELYSCROLLAROUNDTHEMAP));
 		// Add players
 		C4Player *pPlr; int32_t iIndex;
 		for (iIndex = 0; pPlr = Game.Players.GetByIndex(iIndex); iIndex++)
@@ -252,15 +255,13 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 				// Message
 				StdStrBuf sMsg;
 				uint32_t dwClr = pPlr->ColorDw;
-				sMsg.Format("<c %x>%s</c>", C4GUI::MakeColorReadableOnBlack(dwClr), pPlr->GetName());
+				const std::string msg{std::format("<c {:x}>{}</c>", C4GUI::MakeColorReadableOnBlack(dwClr), pPlr->GetName())};
 				// Command
-				StdStrBuf sCommand;
-				sCommand.Format("Observe:%d", static_cast<int>(pPlr->Number));
+				const std::string command{std::format("Observe:{}", pPlr->Number)};
 				// Info caption
-				StdStrBuf sInfo;
-				sInfo.Format(LoadResStr("IDS_TEXT_FOLLOWVIEWOFPLAYER"), pPlr->GetName());
+				const std::string info{LoadResStr(C4ResStrTableKey::IDS_TEXT_FOLLOWVIEWOFPLAYER, pPlr->GetName())};
 				// Add item
-				Add(sMsg.getData(), fctSymbol, sCommand.getData(), C4MN_Item_NoCount, nullptr, sInfo.getData());
+				Add(msg.c_str(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, info.c_str());
 				fctSymbol.Default();
 				// check if this is the currently selected player
 				if (pVP->GetPlayer() == pPlr->Number) iInitialSelection = GetItemCount() - 1;
@@ -338,7 +339,7 @@ bool C4MainMenu::ActivateGoals(int32_t iPlayer, bool fDoActivate)
 	if (fDoActivate)
 	{
 		// Menu symbol/init
-		InitRefSym(GfxR->fctMenu.GetPhase(4), LoadResStr("IDS_MENU_CPGOALS"), iPlayer);
+		InitRefSym(GfxR->fctMenu.GetPhase(4), LoadResStr(C4ResStrTableKey::IDS_MENU_CPGOALS), iPlayer);
 		SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
 		const auto scale = Application.GetScale();
 		const auto starWidth = Game.GraphicsResource.fctCaptain.Wdt * scale;
@@ -369,8 +370,7 @@ bool C4MainMenu::ActivateGoals(int32_t iPlayer, bool fDoActivate)
 						fctGF.Surface = fctSymbol.Surface;
 						Game.GraphicsResource.fctCaptain.Draw(fctGF);
 					}
-					StdStrBuf Command; Command.Format("Player:Goal:%s", C4IdText(idGoal));
-					Add(pDef->GetName(), fctSymbol, Command.getData(), C4MN_Item_NoCount, nullptr, pDef->GetDesc());
+					Add(pDef->GetName(), fctSymbol, std::format("Player:Goal:{}", C4IdText(idGoal)).c_str(), C4MN_Item_NoCount, nullptr, pDef->GetDesc());
 				}
 		// Go back to options menu on close
 		SetCloseCommand("ActivateMenu:Main");
@@ -384,9 +384,9 @@ bool C4MainMenu::ActivateRules(int32_t iPlayer)
 	const auto symbolSize = GetSymbolSize();
 
 	// Menu symbol/init
-	char Command[256];
+	std::string command;
 	C4FacetExSurface fctSymbol;
-	InitRefSym(GfxR->fctMenu.GetPhase(5), LoadResStr("IDS_MENU_CPRULES"), iPlayer);
+	InitRefSym(GfxR->fctMenu.GetPhase(5), LoadResStr(C4ResStrTableKey::IDS_MENU_CPRULES), iPlayer);
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
 	SetPermanent(false);
 	// Items
@@ -395,8 +395,8 @@ bool C4MainMenu::ActivateRules(int32_t iPlayer)
 		if (pDef = C4Id2Def(idGoal))
 		{
 			fctSymbol.Create(symbolSize, symbolSize); pDef->Draw(fctSymbol);
-			sprintf(Command, "Player:Rule:%s", C4IdText(idGoal));
-			Add(pDef->GetName(), fctSymbol, Command, C4MN_Item_NoCount, nullptr, pDef->GetDesc());
+			command = std::format("Player:Rule:{}", C4IdText(idGoal));
+			Add(pDef->GetName(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, pDef->GetDesc());
 		}
 	// Go back to options menu on close
 	SetCloseCommand("ActivateMenu:Main");
@@ -428,7 +428,7 @@ bool C4MainMenu::ActivateSavegame(int32_t iPlayer)
 	char DirPath[_MAX_PATH + 1];
 	char ScenName[_MAX_PATH + 1]; *ScenName = 0;
 
-	InitRefSym(GfxR->fctMenu.GetPhase(0), LoadResStr("IDS_MENU_CPSAVEGAME"), iPlayer);
+	InitRefSym(GfxR->fctMenu.GetPhase(0), LoadResStr(C4ResStrTableKey::IDS_MENU_CPSAVEGAME), iPlayer);
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
 	SetPermanent(true);
 
@@ -473,25 +473,24 @@ bool C4MainMenu::ActivateSavegame(int32_t iPlayer)
 	// New Style 2007:
 	// * scenarios are saved into ScenName.c4f/ScenName123.c4s to keep umlauts out of filenames
 	// * language titles are stored in folders as title component
-	StdStrBuf strFilename, strTitle;
-	strFilename.Format("%s.c4f%c%s%%d.c4s", ScenName, DirectorySeparator, ScenName);
-	strTitle.Ref(Game.Parameters.ScenarioTitle);
+	const std::string filename{std::format("{}.c4f" DirSep "{}{{}}.c4s", ScenName, ScenName)};
 
 	// Create menu items
-	StdStrBuf strFilenameIndexed, strCommand, strCaption, strSavePath;
+	std::string filenameIndexed;
+	std::string command;
+	std::string savePath;
+
 	for (int32_t i = 1; i <= 10; i++)
 	{
 		// Index filename
-		strFilenameIndexed.Format(strFilename.getData(), i);
+		filenameIndexed = std::vformat(filename, std::make_format_args(i));
 		// Compose commmand
-		strCommand.Format("Save:Game:%s:%s", strFilenameIndexed.getData(), strTitle.getData()); // Notice: the language title might contain ':' and thus confuse the segment list - but C4Menu::MenuCommand will try to handle this...
+		command = std::format("Save:Game:{}:{}", filenameIndexed, Game.Parameters.ScenarioTitle.getData()); // Notice: the language title might contain ':' and thus confuse the segment list - but C4Menu::MenuCommand will try to handle this...
 		// Check free slot
-		strSavePath.Format("%s%c%s", Config.General.SaveGameFolder.getData(), DirectorySeparator, strFilenameIndexed.getData());
-		bool fFree = !C4Group_IsGroup(strSavePath.getData());
-		// Item caption
-		strCaption.Ref(LoadResStr("IDS_MENU_CPSAVEGAME"));
+		savePath = std::format("{}" DirSep "{}", Config.General.SaveGameFolder.getData(), filenameIndexed);
+		bool fFree = !C4Group_IsGroup(savePath.c_str());
 		// add menu item
-		AddRefSym(strCaption.getData(), GfxR->fctMenu.GetPhase(i - 1, fFree ? 2 : 1), strCommand.getData(), C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MENU_CPSAVEGAMEINFO"));
+		AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MENU_CPSAVEGAME), GfxR->fctMenu.GetPhase(i - 1, fFree ? 2 : 1), command.c_str(), C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MENU_CPSAVEGAMEINFO));
 	}
 
 	// Go back to options menu on close
@@ -503,18 +502,17 @@ bool C4MainMenu::ActivateSavegame(int32_t iPlayer)
 bool C4MainMenu::ActivateHost(int32_t iPlayer)
 {
 	// Menu symbol/init
-	InitRefSym(C4GUI::Icon::GetIconFacet(C4GUI::Ico_Disconnect), LoadResStr("IDS_MENU_DISCONNECTCLIENT"), iPlayer, C4MN_Extra_None, 0, 0, C4MN_Style_Context);
+	InitRefSym(C4GUI::Icon::GetIconFacet(C4GUI::Ico_Disconnect), LoadResStr(C4ResStrTableKey::IDS_MENU_DISCONNECTCLIENT), iPlayer, C4MN_Extra_None, 0, 0, C4MN_Style_Context);
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
 	SetPermanent(true);
 	// Clients
 	for (C4Network2Client *pClient = Game.Network.Clients.GetNextClient(nullptr); pClient; pClient = Game.Network.Clients.GetNextClient(pClient))
 	{
 		bool fHost = (pClient->getID() == 0);
-		StdStrBuf strText, strCommand;
-		strText.Format("%s (%s)", pClient->getName(), pClient->getCore().getNick());
-		strCommand.Format("Host:Kick:%d", pClient->getID());
+		const std::string text{std::format("{} ({})", pClient->getName(), pClient->getCore().getNick())};
+		const std::string command{std::format("Host:Kick:{}", pClient->getID())};
 		C4GUI::Icons iIcon = fHost ? C4GUI::Ico_Host : (pClient->isActivated() ? C4GUI::Ico_Client : C4GUI::Ico_ObserverClient);
-		AddRefSym(strText.getData(), C4GUI::Icon::GetIconFacet(iIcon), strCommand.getData());
+		AddRefSym(text.c_str(), C4GUI::Icon::GetIconFacet(iIcon), command.c_str());
 	}
 	// Go back to options menu on close
 	SetCloseCommand("ActivateMenu:Main");
@@ -527,12 +525,12 @@ bool C4MainMenu::ActivateClient(int32_t iPlayer)
 
 	// Menu symbol/init
 	C4FacetExSurface fctSymbol;
-	InitRefSym(C4GUI::Icon::GetIconFacet(C4GUI::Ico_Disconnect), LoadResStr("IDS_MENU_DISCONNECTFROMSERVER"), iPlayer, C4MN_Extra_None, 0, 0, C4MN_Style_Context);
+	InitRefSym(C4GUI::Icon::GetIconFacet(C4GUI::Ico_Disconnect), LoadResStr(C4ResStrTableKey::IDS_MENU_DISCONNECTFROMSERVER), iPlayer, C4MN_Extra_None, 0, 0, C4MN_Style_Context);
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
 	fctSymbol.Create(symbolSize, symbolSize); GfxR->fctOKCancel.Draw(fctSymbol, true, 3, 0);
-	Add(LoadResStr("IDS_BTN_YES"), fctSymbol, "Part");
+	Add(LoadResStr(C4ResStrTableKey::IDS_BTN_YES), fctSymbol, "Part");
 	fctSymbol.Create(symbolSize, symbolSize); GfxR->fctOKCancel.Draw(fctSymbol, true, 1, 0);
-	Add(LoadResStr("IDS_BTN_NO"), fctSymbol, "");
+	Add(LoadResStr(C4ResStrTableKey::IDS_BTN_NO), fctSymbol, "");
 	SetCloseCommand("ActivateMenu:Main");
 	return true;
 }
@@ -542,12 +540,12 @@ bool C4MainMenu::ActivateSurrender(int32_t iPlayer)
 	const auto symbolSize = GetSymbolSize();
 
 	C4FacetExSurface fctSymbol;
-	InitRefSym(C4GUI::Icon::GetIconFacet(C4GUI::Ico_Surrender), LoadResStr("IDS_MENU_SURRENDER"), iPlayer, C4MN_Extra_None, 0, 0, C4MN_Style_Context);
+	InitRefSym(C4GUI::Icon::GetIconFacet(C4GUI::Ico_Surrender), LoadResStr(C4ResStrTableKey::IDS_MENU_SURRENDER), iPlayer, C4MN_Extra_None, 0, 0, C4MN_Style_Context);
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
 	fctSymbol.Create(symbolSize, symbolSize); GfxR->fctOKCancel.Draw(fctSymbol, true, 3, 0);
-	Add(LoadResStr("IDS_BTN_YES"), fctSymbol, "Surrender");
+	Add(LoadResStr(C4ResStrTableKey::IDS_BTN_YES), fctSymbol, "Surrender");
 	fctSymbol.Create(symbolSize, symbolSize); GfxR->fctOKCancel.Draw(fctSymbol, true, 1, 0);
-	Add(LoadResStr("IDS_BTN_NO"), fctSymbol, "");
+	Add(LoadResStr(C4ResStrTableKey::IDS_BTN_NO), fctSymbol, "");
 	SetCloseCommand("ActivateMenu:Main");
 	return true;
 }
@@ -555,24 +553,24 @@ bool C4MainMenu::ActivateSurrender(int32_t iPlayer)
 bool C4MainMenu::ActivateOptions(int32_t iPlayer, int32_t selection)
 {
 	// Menu symbol/init
-	InitRefSym(GfxR->fctOptions.GetPhase(0), LoadResStr("IDS_MNU_OPTIONS"), iPlayer, C4MN_Extra_None, 0, 0, C4MN_Style_Context);
+	InitRefSym(GfxR->fctOptions.GetPhase(0), LoadResStr(C4ResStrTableKey::IDS_MNU_OPTIONS), iPlayer, C4MN_Extra_None, 0, 0, C4MN_Style_Context);
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
 	SetPermanent(true);
 	// Sound
-	AddRefSym(LoadResStr("IDS_DLG_SOUND"), GfxR->fctOptions.GetPhase(17 + Config.Sound.RXSound), "Options:Sound", C4MN_Item_NoCount);
+	AddRefSym(LoadResStr(C4ResStrTableKey::IDS_DLG_SOUND), GfxR->fctOptions.GetPhase(17 + Config.Sound.RXSound), "Options:Sound", C4MN_Item_NoCount);
 	// Music
-	AddRefSym(LoadResStr("IDS_MNU_MUSIC"), GfxR->fctOptions.GetPhase(1 + Config.Sound.RXMusic), "Options:Music", C4MN_Item_NoCount);
+	AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MNU_MUSIC), GfxR->fctOptions.GetPhase(1 + Config.Sound.RXMusic), "Options:Music", C4MN_Item_NoCount);
 	// Mouse control
 	C4Player *pPlr = Game.Players.Get(iPlayer);
 	if (pPlr && !Game.C4S.Head.DisableMouse)
 	{
 		if (pPlr->MouseControl)
-			AddRefSym(LoadResStr("IDS_MNU_MOUSECONTROL"), GfxR->fctOptions.GetPhase(11 + 1), "Options:Mouse");
+			AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MNU_MOUSECONTROL), GfxR->fctOptions.GetPhase(11 + 1), "Options:Mouse");
 		else if (!Game.Players.MouseControlTaken())
-			AddRefSym(LoadResStr("IDS_MNU_MOUSECONTROL"), GfxR->fctOptions.GetPhase(11), "Options:Mouse");
+			AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MNU_MOUSECONTROL), GfxR->fctOptions.GetPhase(11), "Options:Mouse");
 	}
 	// Music
-	AddRefSym(LoadResStr("IDS_MENU_DISPLAY"), GfxR->fctMenu.GetPhase(8), "ActivateMenu:Display");
+	AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MENU_DISPLAY), GfxR->fctMenu.GetPhase(8), "ActivateMenu:Display");
 	// Restore selection
 	SetSelection(selection, false, true);
 	// Go back to main menu on close
@@ -584,48 +582,56 @@ bool C4MainMenu::ActivateOptions(int32_t iPlayer, int32_t selection)
 bool C4MainMenu::ActivateDisplay(int32_t iPlayer, int32_t selection)
 {
 	// Menu symbol/init
-	InitRefSym(GfxR->fctMenu.GetPhase(8), LoadResStr("IDS_MENU_DISPLAY"), iPlayer, C4MN_Extra_None, 0, 0, C4MN_Style_Context);
+	InitRefSym(GfxR->fctMenu.GetPhase(8), LoadResStr(C4ResStrTableKey::IDS_MENU_DISPLAY), iPlayer, C4MN_Extra_None, 0, 0, C4MN_Style_Context);
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
 	SetPermanent(true);
 	// Crew player names
-	AddRefSym(LoadResStr("IDS_MNU_PLAYERNAMES"), GfxR->fctOptions.GetPhase(7 + Config.Graphics.ShowCrewNames), "Display:PlayerNames", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MENU_PLAYERNAMES_DESC"));
+	AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MNU_PLAYERNAMES), GfxR->fctOptions.GetPhase(7 + Config.Graphics.ShowCrewNames), "Display:PlayerNames", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MENU_PLAYERNAMES_DESC));
 	// Crew clonk names
-	AddRefSym(LoadResStr("IDS_MNU_CLONKNAMES"), GfxR->fctOptions.GetPhase(9 + Config.Graphics.ShowCrewCNames), "Display:ClonkNames", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MENU_CLONKNAMES_DESC"));
+	AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MNU_CLONKNAMES), GfxR->fctOptions.GetPhase(9 + Config.Graphics.ShowCrewCNames), "Display:ClonkNames", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MENU_CLONKNAMES_DESC));
 	// Portraits
-	AddRefSym(LoadResStr("IDS_MNU_PORTRAITS"), GfxR->fctOptions.GetPhase(13 + Config.Graphics.ShowPortraits), "Display:Portraits", C4MN_Item_NoCount);
+	AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MNU_PORTRAITS), GfxR->fctOptions.GetPhase(13 + Config.Graphics.ShowPortraits), "Display:Portraits", C4MN_Item_NoCount);
 	// ShowCommands
-	AddRefSym(LoadResStr("IDS_MENU_SHOWCOMMANDS"), GfxR->fctOptions.GetPhase(19 + Config.Graphics.ShowCommands), "Display:ShowCommands", C4MN_Item_NoCount);
+	AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MENU_SHOWCOMMANDS), GfxR->fctOptions.GetPhase(19 + Config.Graphics.ShowCommands), "Display:ShowCommands", C4MN_Item_NoCount);
 	// ShowCommandKeys
-	AddRefSym(LoadResStr("IDS_MENU_SHOWCOMMANDKEYS"), GfxR->fctOptions.GetPhase(21 + Config.Graphics.ShowCommandKeys), "Display:ShowCommandKeys", C4MN_Item_NoCount);
+	AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MENU_SHOWCOMMANDKEYS), GfxR->fctOptions.GetPhase(21 + Config.Graphics.ShowCommandKeys), "Display:ShowCommandKeys", C4MN_Item_NoCount);
 	// Upper Board
 	if (Application.isFullScreen)
 	{
-		std::string text{LoadResStr("IDS_MNU_UPPERBOARD")};
+		std::string text{LoadResStr(C4ResStrTableKey::IDS_MNU_UPPERBOARD)};
 		text += ": ";
-		auto modeName = "???";
+
+		std::string_view modeName;
+
 		if (Config.Graphics.UpperBoard >= C4UpperBoard::First && Config.Graphics.UpperBoard <= C4UpperBoard::Last)
 		{
-			modeName = LoadResStr(std::map<decltype(Config.Graphics.UpperBoard), const char *>
-				{
-					{C4UpperBoard::Full, "IDS_MNU_UPPERBOARD_NORMAL"},
-					{C4UpperBoard::Small, "IDS_MNU_UPPERBOARD_SMALL"},
-					{C4UpperBoard::Mini, "IDS_MNU_UPPERBOARD_MINI"},
-					{C4UpperBoard::Hide, "IDS_MNU_UPPERBOARD_OFF"}
-				}.at(Config.Graphics.UpperBoard)
-			);
+			static constexpr std::array<C4ResStrTableKeyFormat<>, 4> ModeNames
+			{
+				C4ResStrTableKey::IDS_MNU_UPPERBOARD_OFF,
+				C4ResStrTableKey::IDS_MNU_UPPERBOARD_NORMAL,
+				C4ResStrTableKey::IDS_MNU_UPPERBOARD_SMALL,
+				C4ResStrTableKey::IDS_MNU_UPPERBOARD_MINI
+			};
+
+			modeName = LoadResStr(ModeNames[Config.Graphics.UpperBoard]);
 		}
+		else
+		{
+			modeName = "???";
+		}
+
 		text += modeName;
 		AddRefSym(text.c_str(), GfxR->fctOptions.GetPhase(3 + (Config.Graphics.UpperBoard != C4UpperBoard::Hide)), "Display:UpperBoard", C4MN_Item_NoCount);
 	}
 	// FPS
 	if (Application.isFullScreen)
-		AddRefSym(LoadResStr("IDS_MNU_FPS"), GfxR->fctOptions.GetPhase(5 + Config.General.FPS), "Display:FPS", C4MN_Item_NoCount);
+		AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MNU_FPS), GfxR->fctOptions.GetPhase(5 + Config.General.FPS), "Display:FPS", C4MN_Item_NoCount);
 	// Clock
 	if (Application.isFullScreen)
-		AddRefSym(LoadResStr("IDS_MNU_CLOCK"), GfxR->fctOptions.GetPhase(15 + Config.Graphics.ShowClock), "Display:Clock", C4MN_Item_NoCount);
+		AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MNU_CLOCK), GfxR->fctOptions.GetPhase(15 + Config.Graphics.ShowClock), "Display:Clock", C4MN_Item_NoCount);
 	// White chat
 	if (Application.isFullScreen)
-		AddRefSym(LoadResStr("IDS_MNU_WHITECHAT"), GfxR->fctOptions.GetPhase(3 + Config.General.UseWhiteIngameChat), "Display:WhiteChat", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_DESC_WHITECHAT_INGAME"));
+		AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MNU_WHITECHAT), GfxR->fctOptions.GetPhase(3 + Config.General.UseWhiteIngameChat), "Display:WhiteChat", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_DESC_WHITECHAT_INGAME));
 	// Restore selection
 	SetSelection(selection, false, true);
 	// Go back to options menu on close
@@ -644,7 +650,7 @@ bool C4MainMenu::ActivateMain(int32_t iPlayer)
 	C4FacetExSurface fctSymbol;
 	fctSymbol.Create(symbolSize, symbolSize);
 	GfxR->fctOKCancel.Draw(fctSymbol, true, 1, 1);
-	Init(fctSymbol, LoadResStr(pPlr ? "IDS_MENU_CPMAIN" : "IDS_MENU_OBSERVER"), iPlayer, C4MN_Extra_None, 0, 0, C4MN_Style_Context);
+	Init(fctSymbol, LoadResStrChoice(pPlr, C4ResStrTableKey::IDS_MENU_CPMAIN, C4ResStrTableKey::IDS_MENU_OBSERVER), iPlayer, C4MN_Extra_None, 0, 0, C4MN_Style_Context);
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
 	// Goals+Rules (player menu only)
 	// Goal menu can't be shown because of script callbacks
@@ -653,55 +659,55 @@ bool C4MainMenu::ActivateMain(int32_t iPlayer)
 	if (pPlr)
 	{
 		// Goals
-		AddRefSym(LoadResStr("IDS_MENU_CPGOALS"), GfxR->fctMenu.GetPhase(4), "ActivateMenu:Goals", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MENU_CPGOALSINFO"));
+		AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MENU_CPGOALS), GfxR->fctMenu.GetPhase(4), "ActivateMenu:Goals", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MENU_CPGOALSINFO));
 		// Rules
-		AddRefSym(LoadResStr("IDS_MENU_CPRULES"), GfxR->fctMenu.GetPhase(5), "ActivateMenu:Rules", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MENU_CPRULESINFO"));
+		AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MENU_CPRULES), GfxR->fctMenu.GetPhase(5), "ActivateMenu:Rules", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MENU_CPRULESINFO));
 	}
 	// Observer menu in free viewport
 	if (!pPlr)
 	{
-		AddRefSym(LoadResStr("IDS_TEXT_VIEW"), C4GUI::Icon::GetIconFacet(C4GUI::Ico_View), "ActivateMenu:Observer", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_TEXT_DETERMINEPLAYERVIEWTOFOLL"));
+		AddRefSym(LoadResStr(C4ResStrTableKey::IDS_TEXT_VIEW), C4GUI::Icon::GetIconFacet(C4GUI::Ico_View), "ActivateMenu:Observer", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_TEXT_DETERMINEPLAYERVIEWTOFOLL));
 	}
 	// Hostility (player menu only)
 	if (pPlr && (Game.Players.GetCount() > 1))
 	{
 		GfxR->fctFlagClr.Surface->SetClr(0xff0000);
-		AddRefSym(LoadResStr("IDS_MENU_CPATTACK"), GfxR->fctMenu.GetPhase(7), "ActivateMenu:Hostility", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MENU_CPATTACKINFO"));
+		AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MENU_CPATTACK), GfxR->fctMenu.GetPhase(7), "ActivateMenu:Hostility", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MENU_CPATTACKINFO));
 	}
 	// Team change
 	if (pPlr && Game.Teams.IsTeamSwitchAllowed())
 	{
 		C4FacetEx fctTeams; fctTeams = C4GUI::Icon::GetIconFacet(C4GUI::Ico_Team);
-		AddRefSym(LoadResStr("IDS_MSG_SELTEAM"), fctTeams, "ActivateMenu:TeamSel", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MSG_ALLOWSYOUTOJOINADIFFERENT"));
+		AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MSG_SELTEAM), fctTeams, "ActivateMenu:TeamSel", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MSG_ALLOWSYOUTOJOINADIFFERENT));
 	}
 	// Player join
 	if ((Game.Players.GetCount() < Game.Parameters.MaxPlayers) && !Game.Parameters.isLeague())
 	{
-		AddRefSym(LoadResStr("IDS_MENU_CPNEWPLAYER"), GfxR->fctPlayerClr.GetPhase(), "ActivateMenu:NewPlayer", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MENU_CPNEWPLAYERINFO"));
+		AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MENU_CPNEWPLAYER), GfxR->fctPlayerClr.GetPhase(), "ActivateMenu:NewPlayer", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MENU_CPNEWPLAYERINFO));
 	}
 	// Save game (player menu only - should we allow saving games with no players in it?)
 	if (pPlr && (!Game.Network.isEnabled() || Game.Network.isHost()))
 	{
-		AddRefSym(LoadResStr("IDS_MENU_CPSAVEGAME"), GfxR->fctMenu.GetPhase(0), "ActivateMenu:Save:Game", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MENU_CPSAVEGAMEINFO"));
+		AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MENU_CPSAVEGAME), GfxR->fctMenu.GetPhase(0), "ActivateMenu:Save:Game", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MENU_CPSAVEGAMEINFO));
 	}
 	// Options
-	AddRefSym(LoadResStr("IDS_MNU_OPTIONS"), GfxR->fctOptions.GetPhase(0), "ActivateMenu:Options", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MNU_OPTIONSINFO"));
+	AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MNU_OPTIONS), GfxR->fctOptions.GetPhase(0), "ActivateMenu:Options", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MNU_OPTIONSINFO));
 	// Disconnect
 	if (Game.Network.isEnabled())
 	{
 		// Host
 		if (Game.Network.isHost() && Game.Clients.getClient(nullptr))
-			AddRefSym(LoadResStr("IDS_MENU_DISCONNECT"), C4GUI::Icon::GetIconFacet(C4GUI::Ico_Disconnect), "ActivateMenu:Host", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_TEXT_KICKCERTAINCLIENTSFROMTHE"));
+			AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MENU_DISCONNECT), C4GUI::Icon::GetIconFacet(C4GUI::Ico_Disconnect), "ActivateMenu:Host", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_TEXT_KICKCERTAINCLIENTSFROMTHE));
 		// Client
 		if (!Game.Network.isHost())
-			AddRefSym(LoadResStr("IDS_MENU_DISCONNECT"), C4GUI::Icon::GetIconFacet(C4GUI::Ico_Disconnect), "ActivateMenu:Client", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_TEXT_DISCONNECTTHEGAMEFROMTHES"));
+			AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MENU_DISCONNECT), C4GUI::Icon::GetIconFacet(C4GUI::Ico_Disconnect), "ActivateMenu:Client", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_TEXT_DISCONNECTTHEGAMEFROMTHES));
 	}
 	// Surrender (player menu only)
 	if (pPlr)
-		AddRefSym(LoadResStr("IDS_MENU_CPSURRENDER"), C4GUI::Icon::GetIconFacet(C4GUI::Ico_Surrender), "ActivateMenu:Surrender", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MENU_CPSURRENDERINFO"));
+		AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MENU_CPSURRENDER), C4GUI::Icon::GetIconFacet(C4GUI::Ico_Surrender), "ActivateMenu:Surrender", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MENU_CPSURRENDERINFO));
 	// Abort
 	if (Application.isFullScreen)
-		AddRefSym(LoadResStr("IDS_MENU_ABORT"), C4GUI::Icon::GetIconFacet(C4GUI::Ico_Exit), "Abort", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MENU_ABORT_DESC"));
+		AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MENU_ABORT), C4GUI::Icon::GetIconFacet(C4GUI::Ico_Exit), "Abort", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MENU_ABORT_DESC));
 	// No empty menus
 	if (GetItemCount() == 0) Close(false);
 	// Done
@@ -716,7 +722,7 @@ bool C4MainMenu::ActivateHostility(int32_t iPlayer)
 	C4FacetExSurface fctSymbol;
 	fctSymbol.Create(symbolSize, symbolSize);
 	GfxR->fctMenu.GetPhase(7).Draw(fctSymbol);
-	Init(fctSymbol, LoadResStr("IDS_MENU_CPATTACK"), iPlayer, C4MN_Extra_None, 0, C4MN_Hostility);
+	Init(fctSymbol, LoadResStr(C4ResStrTableKey::IDS_MENU_CPATTACK), iPlayer, C4MN_Extra_None, 0, C4MN_Hostility);
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
 	SetPermanent(true);
 	Refill();
@@ -806,7 +812,7 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 			else
 			{
 				C4Client *pClient = Game.Clients.getClientByID(iClientID);
-				if (pClient) Game.Clients.CtrlRemove(pClient, LoadResStr("IDS_MSG_KICKBYMENU"));
+				if (pClient) Game.Clients.CtrlRemove(pClient, LoadResStr(C4ResStrTableKey::IDS_MSG_KICKBYMENU));
 				Close(true);
 			}
 		return true;
@@ -819,7 +825,7 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 				Game.Network.Vote(VT_Kick, true, Game.Control.ClientID());
 			else
 			{
-				Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, LoadResStr("IDS_ERR_GAMELEFTVIAPLAYERMENU"));
+				Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, LoadResStr(C4ResStrTableKey::IDS_ERR_GAMELEFTVIAPLAYERMENU));
 				Game.Network.Clear();
 			}
 		return true;
@@ -946,7 +952,7 @@ bool C4MainMenu::ActivateObserver()
 	// Safety: Viewport lost?
 	if (!Game.GraphicsSystem.GetViewport(NO_OWNER)) return false;
 	// Menu symbol/init
-	InitRefSym(C4GUI::Icon::GetIconFacet(C4GUI::Ico_View), LoadResStr("IDS_TEXT_VIEW"), NO_OWNER, C4MN_Extra_None, 0, C4MN_Observer, C4MN_Style_Context);
+	InitRefSym(C4GUI::Icon::GetIconFacet(C4GUI::Ico_View), LoadResStr(C4ResStrTableKey::IDS_TEXT_VIEW), NO_OWNER, C4MN_Extra_None, 0, C4MN_Observer, C4MN_Style_Context);
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
 	// Players added in Refill
 	Refill();

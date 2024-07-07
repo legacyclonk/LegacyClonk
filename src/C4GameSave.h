@@ -72,7 +72,7 @@ protected:
 
 	// savegame specializations
 	virtual void AdjustCore(C4Scenario &rC4S) {} // set specific C4S values
-	virtual bool WriteDesc(StdStrBuf &sBuf) { return true; } // write desc (contents only)
+	virtual bool WriteDesc(std::string &desc) { return true; } // write desc (contents only)
 	virtual bool SaveComponents() { return true; } // save (or remove) custom components for specialization
 	virtual bool OnSaving() { return true; } // callback for special actions to be performed when saving (like, add sync)
 
@@ -85,15 +85,15 @@ protected:
 
 protected:
 	// some desc writing helpers
-	void WriteDescLineFeed(StdStrBuf &sBuf); // append a line break to desc
-	void WriteDescDate(StdStrBuf &sBuf, bool fRecord = false); // append current date to desc buffer
-	void WriteDescGameTime(StdStrBuf &sBuf); // append game time to desc buffer, if it's >0
-	void WriteDescDefinitions(StdStrBuf &sBuf); // append used definition filenames to desc buffer
-	void WriteDescNetworkClients(StdStrBuf &sBuf); // append current network client list to desc buffer
-	void WriteDescPlayers(StdStrBuf &sBuf, bool fByTeam, int32_t idTeam); // helper func used by WriteDescPlayers: Write all players matching team
-	void WriteDescPlayers(StdStrBuf &sBuf); // append currently participating players to desc buffer
-	void WriteDescLeague(StdStrBuf &sBuf, bool fLeague, const char *strLeagueName); // append league status
-	void WriteDescEngine(StdStrBuf &sBuf); // append engine build
+	void WriteDescLineFeed(std::string &desc); // append a line break to desc
+	void WriteDescDate(std::string &desc, bool fRecord = false); // append current date to desc buffer
+	void WriteDescGameTime(std::string &desc); // append game time to desc buffer, if it's >0
+	void WriteDescDefinitions(std::string &desc); // append used definition filenames to desc buffer
+	void WriteDescNetworkClients(std::string &desc); // append current network client list to desc buffer
+	void WriteDescPlayers(std::string &desc, bool fByTeam, int32_t idTeam); // helper func used by WriteDescPlayers: Write all players matching team
+	void WriteDescPlayers(std::string &desc); // append currently participating players to desc buffer
+	void WriteDescLeague(std::string &desc, bool fLeague, const char *strLeagueName); // append league status
+	void WriteDescEngine(std::string &desc); // append engine build
 
 private:
 	// saving subcalls
@@ -140,7 +140,7 @@ protected:
 	virtual bool GetSaveOrigin() override { return true; } // origin must be saved in savegames
 	virtual bool GetSaveUserPlayerFiles() override { return false; } // user player files are not needed in savegames, because they will be replaced by player files of resuming playerss
 	virtual void AdjustCore(C4Scenario &rC4S) override; // set specific C4S values
-	virtual bool WriteDesc(StdStrBuf &sBuf) override; // write savegame desc (contents only)
+	virtual bool WriteDesc(std::string &desc) override; // write savegame desc (contents only)
 	virtual bool SaveComponents() override; // custom savegame components (title)
 	virtual bool OnSaving() override; // add sync when saving
 };
@@ -166,7 +166,7 @@ protected:
 
 	// savegame specializations
 	virtual void AdjustCore(C4Scenario &rC4S) override; // set specific C4S values
-	virtual bool WriteDesc(StdStrBuf &sBuf) override; // write desc (contents only) - using old-style unchecked string buffers here...
+	virtual bool WriteDesc(std::string &desc) override; // write desc (contents only) - using old-style unchecked string buffers here...
 	virtual bool SaveComponents() override; // custom components: PlayerInfos even if fInitial
 };
 

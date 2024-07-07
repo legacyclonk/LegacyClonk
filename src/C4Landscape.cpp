@@ -1562,7 +1562,7 @@ bool C4Landscape::Load(C4Group &hGroup, bool fLoadSky, bool fSavegame)
 		}
 		catch (const std::runtime_error &e)
 		{
-			LogF("Could not load 32 bit landscape surface from PNG file: %s", e.what());
+			LogNTr(spdlog::level::err, "Could not load 32 bit landscape surface from PNG file: {}", e.what());
 		}
 		if (locked) Surface32->Unlock();
 		UpdateAnimationSurface({0, 0, Width, Height});
@@ -1606,7 +1606,7 @@ bool C4Landscape::Load(C4Group &hGroup, bool fLoadSky, bool fSavegame)
 			int32_t iMat = PixCol2Mat(byPix);
 			if (byPix && !MatValid(iMat))
 			{
-				LogFatal(FormatString("Landscape loading error at (%d/%d): Pixel value %d not a valid material!", static_cast<int>(x), static_cast<int>(y), static_cast<int>(byPix)).getData());
+				LogFatalNTr("Landscape loading error at ({}/{}): Pixel value {} not a valid material!", x, y, byPix);
 				return false;
 			}
 		}
@@ -2144,14 +2144,14 @@ bool ConstructionCheck(C4ID id, int32_t iX, int32_t iY, C4Object *pByObj)
 	if (!(ndef = C4Id2Def(id)))
 	{
 		GetC4IdText(id, idostr);
-		if (pByObj) GameMsgObject(FormatString(LoadResStr("IDS_OBJ_UNDEF"), idostr).getData(), pByObj, FRed);
+		if (pByObj) GameMsgObject(LoadResStr(C4ResStrTableKey::IDS_OBJ_UNDEF, idostr).c_str(), pByObj, FRed);
 		return false;
 	}
 
 	// Constructable?
 	if (!ndef->Constructable)
 	{
-		if (pByObj) GameMsgObject(FormatString(LoadResStr("IDS_OBJ_NOCON"), ndef->GetName()).getData(), pByObj, FRed);
+		if (pByObj) GameMsgObject(LoadResStr(C4ResStrTableKey::IDS_OBJ_NOCON, ndef->GetName()).c_str(), pByObj, FRed);
 		return false;
 	}
 
@@ -2161,12 +2161,12 @@ bool ConstructionCheck(C4ID id, int32_t iX, int32_t iY, C4Object *pByObj)
 	rtx = iX - wdt / 2; rty = iY - hgt;
 	if (Game.Landscape.AreaSolidCount(rtx, rty, wdt, hgt) > (wdt * hgt / 20))
 	{
-		if (pByObj) GameMsgObject(LoadResStr("IDS_OBJ_NOROOM"), pByObj, FRed);
+		if (pByObj) GameMsgObject(LoadResStr(C4ResStrTableKey::IDS_OBJ_NOROOM), pByObj, FRed);
 		return false;
 	}
 	if (Game.Landscape.AreaSolidCount(rtx, rty + hgt, wdt, 5) < (wdt * 2))
 	{
-		if (pByObj) GameMsgObject(LoadResStr("IDS_OBJ_NOLEVEL"), pByObj, FRed);
+		if (pByObj) GameMsgObject(LoadResStr(C4ResStrTableKey::IDS_OBJ_NOLEVEL), pByObj, FRed);
 		return false;
 	}
 
@@ -2174,7 +2174,7 @@ bool ConstructionCheck(C4ID id, int32_t iX, int32_t iY, C4Object *pByObj)
 	C4Object *other;
 	if (other = Game.OverlapObject(rtx, rty, wdt, hgt, ndef->Category))
 	{
-		if (pByObj) GameMsgObject(FormatString(LoadResStr("IDS_OBJ_NOOTHER"), other->GetName()).getData(), pByObj, FRed);
+		if (pByObj) GameMsgObject(LoadResStr(C4ResStrTableKey::IDS_OBJ_NOOTHER, other->GetName()).c_str(), pByObj, FRed);
 		return false;
 	}
 
@@ -2738,7 +2738,7 @@ bool C4Landscape::SetTextureIndex(const char *szMatTex, uint8_t iNewIndex, bool 
 {
 	if (((!szMatTex || !*szMatTex) && !fInsert) || !Inside<int>(iNewIndex, 0x01, 0x7f))
 	{
-		DebugLogF("Cannot insert new texture %s to index %d: Invalid parameters.", szMatTex, static_cast<int>(iNewIndex));
+		DebugLog(spdlog::level::err, "Cannot insert new texture {} to index {}: Invalid parameters.", szMatTex, static_cast<int>(iNewIndex));
 		return false;
 	}
 	// get last mat index - returns zero for not found (valid for insertion mode)
@@ -2753,7 +2753,7 @@ bool C4Landscape::SetTextureIndex(const char *szMatTex, uint8_t iNewIndex, bool 
 		while (Game.TextureMap.GetEntry(byLastMoveIndex))
 			if (--byLastMoveIndex == iNewIndex)
 			{
-				DebugLogF("Cannot insert new texture %s to index %d: No room for insertion.", szMatTex, static_cast<int>(iNewIndex));
+				DebugLog(spdlog::level::err, "Cannot insert new texture {} to index {}: No room for insertion.", szMatTex, static_cast<int>(iNewIndex));
 				return false;
 			}
 		// then move up all other textures first
@@ -2780,7 +2780,7 @@ bool C4Landscape::SetTextureIndex(const char *szMatTex, uint8_t iNewIndex, bool 
 				// new insertion
 				if (!Game.TextureMap.AddEntry(iNewIndex, Material.getData(), Texture.getData()))
 				{
-					LogF("Cannot insert new texture %s to index %d: Texture map entry error", szMatTex, static_cast<int>(iNewIndex));
+					LogNTr(spdlog::level::err, "Cannot insert new texture {} to index {}: Texture map entry error", szMatTex, iNewIndex);
 					return false;
 				}
 			}
@@ -2794,13 +2794,13 @@ bool C4Landscape::SetTextureIndex(const char *szMatTex, uint8_t iNewIndex, bool 
 		const C4TexMapEntry *pOld;
 		if ((pOld = Game.TextureMap.GetEntry(iNewIndex)) && !pOld->isNull())
 		{
-			DebugLogF("Cannot move texture %s to index %d: Index occupied by %s-%s.", szMatTex, static_cast<int>(iNewIndex), pOld->GetMaterialName(), pOld->GetTextureName());
+			DebugLog(spdlog::level::err, "Cannot move texture {} to index {}: Index occupied by {}-{}.", szMatTex, static_cast<int>(iNewIndex), pOld->GetMaterialName(), pOld->GetTextureName());
 			return false;
 		}
 		// must only move existing textures
 		if (!iOldIndex)
 		{
-			DebugLogF("Cannot move texture %s to index %d: Texture not found.", szMatTex, iNewIndex);
+			DebugLog(spdlog::level::err, "Cannot move texture {} to index {}: Texture not found.", szMatTex, iNewIndex);
 			return false;
 		}
 		// update map

@@ -25,13 +25,15 @@
 #include <C4Log.h>
 #include <C4Components.h>
 
+#include <format>
+
 C4AulError::C4AulError() {}
 
 void C4AulError::show() const
 {
 	// simply log error message
-	if (sMessage)
-		DebugLog(sMessage.getData());
+	if (!message.empty())
+		DebugLog(isWarning ? spdlog::level::warn : spdlog::level::err, message);
 }
 
 C4AulFunc::C4AulFunc(C4AulScript *pOwner, const char *pName, bool bAtEnd) :
@@ -145,29 +147,29 @@ C4AulFunc *C4AulFunc::FindSameNameFunc(C4Def *pScope)
 	return pResult;
 }
 
-StdStrBuf C4AulScriptFunc::GetFullName()
+std::string C4AulScriptFunc::GetFullName()
 {
 	// "lost" function?
-	StdStrBuf sOwner;
+	std::string owner;
 	if (!Owner)
 	{
-		sOwner.Ref("(unknown) ");
+		owner = "(unknown) ";
 	}
 	else if (Owner->Def)
 	{
-		sOwner.Format("%s::", C4IdText(Owner->Def->id));
+		owner = std::format("{}::", C4IdText(Owner->Def->id));
 	}
 	else if (Owner->Engine == Owner)
 	{
-		sOwner.Ref("global ");
+		owner = "global ";
 	}
 	else
 	{
-		sOwner.Ref("game ");
+		owner = "game ";
 	}
-	StdStrBuf sResult;
-	sResult.Format("%s%s", sOwner.getData(), Name);
-	return sResult;
+
+	owner += Name;
+	return owner;
 }
 
 C4AulScript::C4AulScript()
@@ -302,7 +304,7 @@ C4AulScriptFunc *C4AulScript::GetSFuncWarn(const char *pIdtf, C4AulAccess AccNee
 	// get func?
 	C4AulScriptFunc *pFn = GetSFunc(pIdtf, AccNeeded, true);
 	if (!pFn)
-		Warn(FormatString("Error getting %s function '%s'", WarnStr, pIdtf).getData(), nullptr);
+		Warn(std::format("Error getting {} function '{}'", WarnStr, pIdtf), nullptr);
 	return pFn;
 }
 
@@ -435,7 +437,7 @@ C4AulScriptEngine::C4AulScriptEngine() :
 {
 	// /me r b engine
 	Engine = this;
-	ScriptName.Ref(C4CFN_System);
+	ScriptName = C4CFN_System;
 	Strict = C4AulScriptStrict::MAXSTRICT;
 
 	Global.Reset();

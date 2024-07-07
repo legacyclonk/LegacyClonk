@@ -27,6 +27,7 @@
 #include <C4ValueList.h>
 #include <C4ValueMap.h>
 #include <C4Id.h>
+#include "C4Log.h"
 #include <C4Script.h>
 #include <C4StringTable.h>
 
@@ -61,11 +62,12 @@ class C4DefList;
 class C4AulError
 {
 protected:
-	StdStrBuf sMessage;
+	std::string message;
+	bool isWarning{false};
 
 public:
 	C4AulError();
-	C4AulError(const C4AulError &Error) { sMessage.Copy(Error.sMessage); }
+	C4AulError(const C4AulError &Error) : message{Error.message}, isWarning{Error.isWarning} {}
 	virtual ~C4AulError() {}
 	virtual void show() const; // present error message
 };
@@ -73,11 +75,11 @@ public:
 // parse error
 class C4AulParseError : public C4AulError
 {
-	C4AulParseError(const char *message, const char *identifier, bool warn);
+	C4AulParseError(std::string_view message, const char *identifier, bool warn);
 
 public:
-	C4AulParseError(C4AulScript *pScript, const char *pMsg, const char *pIdtf = nullptr, bool Warn = false);
-	C4AulParseError(class C4AulParseState *state, const char *pMsg, const char *pIdtf = nullptr, bool Warn = false);
+	C4AulParseError(C4AulScript *pScript, std::string_view msg, const char *pIdtf = nullptr, bool Warn = false);
+	C4AulParseError(class C4AulParseState *state, std::string_view msg, const char *pIdtf = nullptr, bool Warn = false);
 };
 
 // execution error
@@ -86,7 +88,7 @@ class C4AulExecError : public C4AulError
 	C4Object *cObj;
 
 public:
-	C4AulExecError(C4Object *pObj, const char *szError);
+	C4AulExecError(C4Object *pObj, std::string_view error);
 	virtual void show() const override; // present error message
 };
 
@@ -269,7 +271,7 @@ struct C4AulScriptContext : public C4AulContext
 	time_t tTime; // initialized only by profiler if active
 
 	size_t ParCnt() const { return Vars - Pars; }
-	void dump(StdStrBuf Dump = "");
+	void dump(std::string Dump = "");
 };
 
 // base function class
@@ -360,7 +362,7 @@ public:
 
 	void CopyBody(C4AulScriptFunc &FromFunc); // copy script/code, etc from given func
 
-	StdStrBuf GetFullName(); // get a fully classified name (C4ID::Name) for debug output
+	std::string GetFullName(); // get a fully classified name (C4ID::Name) for debug output
 
 	time_t tProfileTime; // internally set by profiler
 
@@ -416,8 +418,11 @@ private:
 
 	// items
 	std::vector<Entry> Times;
+	std::shared_ptr<spdlog::logger> logger;
 
 public:
+	C4AulProfiler(std::shared_ptr<spdlog::logger> logger) : logger{std::move(logger)} {}
+
 	void CollectEntry(C4AulScriptFunc *pFunc, time_t tProfileTime);
 	void Show();
 
@@ -487,7 +492,7 @@ protected:
 	C4AulBCC *GetCodeByPos(size_t iPos) { return Code + iPos; }
 
 public:
-	StdStrBuf ScriptName; // script name
+	std::string ScriptName; // script name
 	C4Def *Def; // owning def file
 	C4ValueMapNames LocalNamed;
 	C4ID idDef; // script id (to resolve includes)
@@ -512,7 +517,7 @@ public:
 	bool IsReady() { return State == ASS_PARSED; } // whether script calls may be done
 
 	// helper functions
-	void Warn(const char *pMsg, const char *pIdtf);
+	void Warn(std::string_view msg, const char *pIdtf);
 
 	friend class C4AulParseError;
 	friend class C4AulFunc;

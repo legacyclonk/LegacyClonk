@@ -296,7 +296,7 @@ void C4PlayerInfoListAttributeConflictResolver::ResolveInInfo()
 			uint32_t dwNewClr;
 			if (++iTries > C4MaxPlayerColorChangeTries)
 			{
-				LogF(LoadResStr("IDS_PRC_NOREPLPLRCLR"), pResolveInfo->GetName() ? pResolveInfo->GetName() : "<NONAME>");
+				Log(C4ResStrTableKey::IDS_PRC_NOREPLPLRCLR, pResolveInfo->GetName() ? pResolveInfo->GetName() : "<NONAME>");
 				// since there's a conflict anyway, change to original
 				pResolveInfo->SetColor(pResolveInfo->GetOriginalColor());
 				break;
@@ -324,7 +324,7 @@ void C4PlayerInfoListAttributeConflictResolver::ResolveInInfo()
 				break;
 			// generate new name by appending an index
 			if (++iTries > C4MaxPlayerNameChangeTries) break;
-			pResolveInfo->SetForcedName(FormatString("%s (%d)", pResolveInfo->GetOriginalName(), iTries + 1).getData());
+			pResolveInfo->SetForcedName(std::format("{} ({})", pResolveInfo->GetOriginalName(), iTries + 1).c_str());
 		}
 	}
 }

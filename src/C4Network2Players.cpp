@@ -178,18 +178,14 @@ void C4Network2Players::HandlePlayerInfoUpdRequest(const class C4ClientPlayerInf
 					if (pExistingClientInfo->GetPlayerInfoByRes(pRes->getResID()))
 					{
 						// double join: simply deny without message
-#ifndef NDEBUG
-						Log("Network: Duplicate player join rejected!");
-#endif
+						LogNTr(spdlog::level::debug, "Network: Duplicate player join rejected!");
 						OwnInfoPacket.RemoveIndexedInfo(iCnt);
 					}
 		}
 		if (!OwnInfoPacket.GetPlayerCount())
 		{
 			// player join request without players: probably all removed because doubled
-#ifndef NDEBUG
-			Log("Network: Empty player join request ignored!");
-#endif
+			LogNTr("Network: Empty player join request ignored!");
 			return;
 		}
 	}
@@ -375,7 +371,7 @@ void C4Network2Players::JoinUnjoinedPlayersInControlQueue(C4ClientPlayerInfos *p
 				{
 					// failure: Non-script players must have a res to join from!
 					const char *szPlrName = pInfo->GetName(); if (!szPlrName) szPlrName = "???";
-					LogF("Network: C4Network2Players::JoinUnjoinedPlayersInControlQueue failed to join player %s!", szPlrName);
+					LogNTr(spdlog::level::err, "Network: C4Network2Players::JoinUnjoinedPlayersInControlQueue failed to join player {}!", szPlrName);
 					continue;
 				}
 			if (pPlrRes)

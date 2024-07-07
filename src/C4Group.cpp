@@ -22,8 +22,11 @@
 
 #include <C4Components.h>
 #include <C4InputValidation.h>
-#include "C4Log.h"
 #include "StdConfig.h"
+
+#ifdef C4ENGINE
+#include "C4Log.h"
+#endif
 
 #ifdef _WIN32
 #include <sys/utime.h>
@@ -41,6 +44,7 @@
 #include <fcntl.h>
 
 #include <cstring>
+#include <print>
 
 // File Sort Lists
 
@@ -916,7 +920,7 @@ bool C4Group::Close()
 		CloseExclusiveMother(); Clear(); return true;
 	}
 
-	if (StdOutput) printf("Writing group file...\n");
+	if (StdOutput) std::println("Writing group file...");
 
 	// Set new version
 	Head.Ver1 = C4GroupFileVer1;
@@ -1327,7 +1331,7 @@ bool C4Group::RewindFilePtr()
 #ifdef C4ENGINE
 	if (szCurrAccessedEntry && !iC4GroupRewindFilePtrNoWarn)
 	{
-		LogF("C4Group::RewindFilePtr() for %s (%s)", szCurrAccessedEntry ? szCurrAccessedEntry : "???", FileName);
+		LogNTr(spdlog::level::debug, "C4Group::RewindFilePtr() for {} ({})", szCurrAccessedEntry ? szCurrAccessedEntry : "???", FileName);
 		szCurrAccessedEntry = nullptr;
 	}
 #endif
@@ -1357,10 +1361,9 @@ bool C4Group::RewindFilePtr()
 
 bool C4Group::View(const char *szFiles)
 {
-	char oformat[100];
 	C4GroupEntry *centry;
 	int fcount = 0, bcount = 0; // Virtual counts
-	int maxfnlen = 0;
+	std::size_t maxFilenameLength{0};
 
 	if (!StdOutput) return false;
 
@@ -1374,11 +1377,10 @@ bool C4Group::View(const char *szFiles)
 	{
 		fcount++;
 		bcount += centry->Size;
-		maxfnlen = (std::max)(maxfnlen, static_cast<int>(SLen(centry->FileName)));
+		maxFilenameLength = std::max(maxFilenameLength, std::strlen(centry->FileName));
 	}
-	sprintf(oformat, "%%%ds %%8ld Bytes %%02d.%%02d.%%02d %%02d:%%02d:%%02d %%s%%08X %%s\n", maxfnlen);
 
-	printf("Maker: %s  Creation: %i  %s\n\rVersion: %d.%d  CRC: %u (%X)\n",
+	std::println("Maker: {}  Creation: {}  {}\n\rVersion: {}.{}  CRC: {} ({:X})",
 		GetMaker(),
 		Head.Creation,
 		GetOriginal() ? "Original" : "",
@@ -1391,10 +1393,10 @@ bool C4Group::View(const char *szFiles)
 		time_t cur_time = centry->Time;
 		tm *pcoretm = localtime(&cur_time);
 		tm coretm;
-		if (pcoretm) coretm = *pcoretm; else printf("(invalid timestamp) ");
+		if (pcoretm) coretm = *pcoretm; else std::print("(invalid timestamp) ");
 		centry->Time = static_cast<int32_t>(cur_time);
 
-		printf(oformat, centry->FileName,
+		std::println("{:>{}} {:8} Bytes {:02}.{:02}.{:02} {:02}:{:02}:{:02} {}{:08X} {}", centry->FileName, maxFilenameLength,
 			centry->Size,
 			coretm.tm_mday, coretm.tm_mon + 1, coretm.tm_year % 100,
 			coretm.tm_hour, coretm.tm_min, coretm.tm_sec,
@@ -1402,7 +1404,7 @@ bool C4Group::View(const char *szFiles)
 			centry->HasCRC ? centry->CRC : 0,
 			centry->ChildGroup ? "(Group)" : (centry->Executable ? "(Executable)" : ""));
 	}
-	printf("%d Entries, %d Bytes\n", fcount, bcount);
+	std::println("{} Entries, {} Bytes", fcount, bcount);
 
 	return true;
 }
@@ -1411,7 +1413,7 @@ bool C4Group::Merge(const char *szFolders)
 {
 	bool fMove = true;
 
-	if (StdOutput) printf("%s...\n", fMove ? "Moving" : "Adding");
+	if (StdOutput) std::println("{}...", fMove ? "Moving" : "Adding");
 
 	// Add files & directories
 	char szFileName[_MAX_FNAME + 1];
@@ -1428,7 +1430,7 @@ bool C4Group::Merge(const char *szFolders)
 			// File count
 			iFileCount++;
 			// Process output & callback
-			if (StdOutput) printf("%s\n", GetFilename(*i));
+			if (StdOutput) std::println("{}", GetFilename(*i));
 			if (fnProcessCallback)
 				fnProcessCallback(GetFilename(*i), 0); // cbytes/tbytes
 			// AddEntryOnDisk
@@ -1437,7 +1439,7 @@ bool C4Group::Merge(const char *szFolders)
 		}
 	}
 
-	if (StdOutput) printf("%d file(s) %s.\n", iFileCount, fMove ? "moved" : "added");
+	if (StdOutput) std::println("{} file(s) {}.", iFileCount, fMove ? "moved" : "added");
 
 	return true;
 }
@@ -1498,7 +1500,7 @@ bool C4Group::Add(const char *szFile, const char *szAddAs)
 {
 	bool fMove = false;
 
-	if (StdOutput) printf("%s %s as %s...\n", fMove ? "Moving" : "Adding", GetFilename(szFile), szAddAs);
+	if (StdOutput) std::println("{} {} as {}...", fMove ? "Moving" : "Adding", GetFilename(szFile), szAddAs);
 
 	return AddEntryOnDisk(szFile, szAddAs, fMove);
 }
@@ -1507,7 +1509,7 @@ bool C4Group::Move(const char *szFile, const char *szAddAs)
 {
 	bool fMove = true;
 
-	if (StdOutput) printf("%s %s as %s...\n", fMove ? "Moving" : "Adding", GetFilename(szFile), szAddAs);
+	if (StdOutput) std::println("{} {} as {}...", fMove ? "Moving" : "Adding", GetFilename(szFile), szAddAs);
 
 	return AddEntryOnDisk(szFile, szAddAs, fMove);
 }
@@ -1534,7 +1536,7 @@ bool C4Group::Delete(const char *szFiles, bool fRecursive)
 	while ((tentry = SearchNextEntry(szFiles)))
 	{
 		// StdOutput
-		if (StdOutput) printf("%s\n", tentry->FileName);
+		if (StdOutput) std::println("{}", tentry->FileName);
 		if (!DeleteEntry(tentry->FileName))
 			return Error("Delete: Could not delete entry");
 		fcount++;
@@ -1557,7 +1559,7 @@ bool C4Group::Delete(const char *szFiles, bool fRecursive)
 
 	// StdOutput
 	if (StdOutput)
-		printf("%d file(s) deleted.\n", fcount);
+		std::println("{} file(s) deleted.", fcount);
 
 	return true; // Would be nicer to return the file count and add up all counts from recursive actions...
 }
@@ -1609,7 +1611,7 @@ bool C4Group::DeleteEntry(const char *szFilename, bool fRecycle)
 	case GRPF_Folder:
 		StdFile.Close();
 		char szPath[_MAX_FNAME + 1];
-		sprintf(szPath, "%s%c%s", FileName, DirectorySeparator, szFilename);
+		FormatWithNull(szPath, "{}" DirSep "{}", FileName, szFilename);
 
 		if (fRecycle)
 		{
@@ -1626,7 +1628,7 @@ bool C4Group::DeleteEntry(const char *szFilename, bool fRecycle)
 
 bool C4Group::Rename(const char *szFile, const char *szNewName)
 {
-	if (StdOutput) printf("Renaming %s to %s...\n", szFile, szNewName);
+	if (StdOutput) std::println("Renaming {} to {}...", szFile, szNewName);
 
 	switch (Status)
 	{
@@ -1672,9 +1674,9 @@ bool C4Group::Extract(const char *szFiles, const char *szExtractTo, const char *
 	// StdOutput
 	if (StdOutput)
 	{
-		printf("Extracting");
-		if (szExtractTo) printf(" to %s", szExtractTo);
-		printf("...\n");
+		std::print("Extracting");
+		if (szExtractTo) std::print(" to {}", szExtractTo);
+		std::println("...");
 	}
 
 	int fcount = 0;
@@ -1695,7 +1697,7 @@ bool C4Group::Extract(const char *szFiles, const char *szExtractTo, const char *
 			// skip?
 			if (C4Group_IsExcluded(tentry->FileName, szExclude)) continue;
 			// Process data & output
-			if (StdOutput) printf("%s\n", tentry->FileName);
+			if (StdOutput) std::println("{}", tentry->FileName);
 			cbytes += tentry->Size;
 			if (fnProcessCallback)
 				fnProcessCallback(tentry->FileName, 100 * cbytes / (std::max)(tbytes, 1));
@@ -1708,7 +1710,7 @@ bool C4Group::Extract(const char *szFiles, const char *szExtractTo, const char *
 		}
 	}
 
-	if (StdOutput) printf("%d file(s) extracted.\n", fcount);
+	if (StdOutput) std::println("{} file(s) extracted.", fcount);
 
 	return true;
 }
@@ -1780,7 +1782,7 @@ bool C4Group::ExtractEntry(const char *szFilename, const char *szExtractTo)
 		break;
 	case GRPF_Folder: // Copy item from folder to target
 		char szPath[_MAX_FNAME + 1];
-		sprintf(szPath, "%s%c%s", FileName, DirectorySeparator, szFilename);
+		FormatWithNull(szPath, "{}" DirSep "{}", FileName, szFilename);
 		if (!CopyItem(szPath, szTargetFName))
 			return Error("ExtractEntry: Cannot copy item");
 		break;
@@ -1908,7 +1910,7 @@ bool C4Group::AccessEntry(const char *szWildCard,
 	bool *fChild)
 {
 #ifdef C4GROUP_DUMP_ACCESS
-	LogF("Group access in %s: %s", GetFullName().getData(), szWildCard);
+	LogNTr(spdlog::level::debug, "Group access in {}: {}", GetFullName().getData(), szWildCard);
 #endif
 	char fname[_MAX_FNAME + 1];
 	if (!FindEntry(szWildCard, fname, &iCurrFileSize, fChild))
@@ -1997,7 +1999,7 @@ bool C4Group::Add(const char *szFiles)
 {
 	bool fMove = false;
 
-	if (StdOutput) printf("%s...\n", fMove ? "Moving" : "Adding");
+	if (StdOutput) std::println("{}...", fMove ? "Moving" : "Adding");
 
 	// Add files & directories
 	char szFileName[_MAX_FNAME + 1];
@@ -2022,7 +2024,7 @@ bool C4Group::Add(const char *szFiles)
 					// File count
 					iFileCount++;
 					// Process output & callback
-					if (StdOutput) printf("%s\n", GetFilename(szFileName));
+					if (StdOutput) std::println("{}", GetFilename(szFileName));
 					if (fnProcessCallback) fnProcessCallback(GetFilename(szFileName), 0); // cbytes/tbytes
 					// AddEntryOnDisk
 					AddEntryOnDisk(szFileName, nullptr, fMove);
@@ -2031,7 +2033,7 @@ bool C4Group::Add(const char *szFiles)
 			_findclose(fdthnd);
 		}
 
-	if (StdOutput) printf("%d file(s) %s.\n", iFileCount, fMove ? "moved" : "added");
+	if (StdOutput) std::println("{} file(s) {}.", iFileCount, fMove ? "moved" : "added");
 
 	return true;
 }
@@ -2040,7 +2042,7 @@ bool C4Group::Move(const char *szFiles)
 {
 	bool fMove = true;
 
-	if (StdOutput) printf("%s...\n", fMove ? "Moving" : "Adding");
+	if (StdOutput) std::println("{}...", fMove ? "Moving" : "Adding");
 
 	// Add files & directories
 	char szFileName[_MAX_FNAME + 1];
@@ -2065,7 +2067,7 @@ bool C4Group::Move(const char *szFiles)
 					// File count
 					iFileCount++;
 					// Process output & callback
-					if (StdOutput) printf("%s\n", GetFilename(szFileName));
+					if (StdOutput) std::println("{}", GetFilename(szFileName));
 					if (fnProcessCallback) fnProcessCallback(GetFilename(szFileName), 0); // cbytes/tbytes
 					// AddEntryOnDisk
 					AddEntryOnDisk(szFileName, nullptr, fMove);
@@ -2074,7 +2076,7 @@ bool C4Group::Move(const char *szFiles)
 			_findclose(fdthnd);
 		}
 
-	if (StdOutput) printf("%d file(s) %s.\n", iFileCount, fMove ? "moved" : "added");
+	if (StdOutput) std::println("{} file(s) {}.", iFileCount, fMove ? "moved" : "added");
 
 	return true;
 }
@@ -2193,7 +2195,7 @@ uint32_t C4Group::EntryTime(const char *szFilename)
 		break;
 	case GRPF_Folder:
 		char szPath[_MAX_FNAME + 1];
-		sprintf(szPath, "%s%c%s", FileName, DirectorySeparator, szFilename);
+		FormatWithNull(szPath, "{}" DirSep "{}", FileName, szFilename);
 		iTime = FileTime(szPath);
 		break;
 	}
@@ -2293,7 +2295,7 @@ bool C4Group::Sort(const char *szSortList)
 
 	if (!szSortList || !szSortList[0]) return false;
 
-	if (StdOutput) printf("Sorting...\n");
+	if (StdOutput) std::println("Sorting...");
 
 	do
 	{
@@ -2388,7 +2390,8 @@ bool C4Group::EnsureChildFilePtr(C4Group *pChild)
 	}
 
 	// Open standard file is not the child file ...or StdFile ptr does not match pChild->FilePtr
-	char szChildPath[_MAX_PATH + 1]; sprintf(szChildPath, "%s%c%s", FileName, DirectorySeparator, GetFilename(pChild->FileName));
+	char szChildPath[_MAX_PATH + 1];
+	FormatWithNull(szChildPath, "{}" DirSep "{}", FileName, GetFilename(pChild->FileName));
 	if (!ItemIdentical(StdFile.Name, szChildPath))
 	{
 		// Reopen correct child stdfile
@@ -2569,29 +2572,29 @@ bool C4Group::OpenMother()
 void C4Group::PrintInternals(const char *szIndent)
 {
 	if (!szIndent) szIndent = "";
-	printf("%sHead.id: '%s'\n", szIndent, Head.id);
-	printf("%sHead.Ver1: %d\n", szIndent, Head.Ver1);
-	printf("%sHead.Ver2: %d\n", szIndent, Head.Ver2);
-	printf("%sHead.Entries: %d\n", szIndent, Head.Entries);
-	printf("%sHead.Maker: '%s'\n", szIndent, Head.Maker);
-	printf("%sHead.Creation: %d\n", szIndent, Head.Creation);
-	printf("%sHead.Original: %d\n", szIndent, Head.Original);
+	std::println("{}Head.id: '{}'", szIndent, Head.id);
+	std::println("{}Head.Ver1: {}", szIndent, Head.Ver1);
+	std::println("{}Head.Ver2: {}", szIndent, Head.Ver2);
+	std::println("{}Head.Entries: {}", szIndent, Head.Entries);
+	std::println("{}Head.Maker: '{}'", szIndent, Head.Maker);
+	std::println("{}Head.Creation: {}", szIndent, Head.Creation);
+	std::println("{}Head.Original: {}", szIndent, Head.Original);
 	for (C4GroupEntry *p = FirstEntry; p; p = p->Next)
 	{
-		printf("%sEntry '%s':\n", szIndent, p->FileName);
-		printf("%s  Packed: %d\n", szIndent, p->Packed);
-		printf("%s  ChildGroup: %d\n", szIndent, p->ChildGroup);
-		printf("%s  Size: %d\n", szIndent, p->Size);
-		printf("%s  __Unused: %d\n", szIndent, p->__Unused);
-		printf("%s  Offset: %d\n", szIndent, p->Offset);
-		printf("%s  Time: %d\n", szIndent, p->Time);
-		printf("%s  HasCRC: %d\n", szIndent, p->HasCRC);
-		printf("%s  CRC: %08X\n", szIndent, p->CRC);
+		std::println("{}Entry '{}':", szIndent, p->FileName);
+		std::println("{}  Packed: {}", szIndent, p->Packed);
+		std::println("{}  ChildGroup: {}", szIndent, p->ChildGroup);
+		std::println("{}  Size: {}", szIndent, p->Size);
+		std::println("{}  __Unused: {}", szIndent, p->__Unused);
+		std::println("{}  Offset: {}", szIndent, p->Offset);
+		std::println("{}  Time: {}", szIndent, p->Time);
+		std::println("{}  HasCRC: {}", szIndent, p->HasCRC);
+		std::println("{}  CRC: {:08X}", szIndent, p->CRC);
 		if (p->ChildGroup)
 		{
 			C4Group hChildGroup;
 			if (hChildGroup.OpenAsChild(this, p->FileName))
-				hChildGroup.PrintInternals(FormatString("%s%s", szIndent, "    ").getData());
+				hChildGroup.PrintInternals(std::format("{}{}", szIndent, "    ").c_str());
 		}
 	}
 }

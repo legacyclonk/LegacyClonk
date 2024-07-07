@@ -23,6 +23,8 @@
 #include <C4Wrappers.h>
 #include <C4Application.h>
 
+#include <format>
+
 C4ObjectList::C4ObjectList() : FirstIter(nullptr)
 {
 	Default();
@@ -348,7 +350,7 @@ void C4ObjectList::DrawIDList(C4Facet &cgo, int iSelection,
 	int32_t iCount;
 	C4Facet cgo2;
 	C4Object *pFirstObj;
-	char szCount[10];
+	std::array<char, C4Strings::NumberOfCharactersForDigits<std::int32_t> + 1 + 1> buf;
 	// objects are sorted in the list already, so just draw them!
 	C4ObjectListIterator iter(*this);
 	while (pFirstObj = iter.GetNext(&iCount))
@@ -358,9 +360,11 @@ void C4ObjectList::DrawIDList(C4Facet &cgo, int iSelection,
 		// draw picture
 		pFirstObj->DrawPicture(cgo2, cSec == iSelection);
 		// Draw count
-		sprintf(szCount, "%dx", iCount);
+		char *const ptr{std::to_chars(buf.data(), buf.data() + buf.size() - 2, iCount).ptr};
+		ptr[0] = 'x';
+		ptr[1] = '\0';
 		if ((iCount != 1) || fDrawOneCounts)
-			Application.DDraw->TextOut(szCount, Game.GraphicsResource.FontRegular, 1.0, cgo2.Surface, cgo2.X + cgo2.Wdt - 1, cgo2.Y + cgo2.Hgt - 1 - Game.GraphicsResource.FontRegular.GetLineHeight(), CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
+			Application.DDraw->TextOut(buf.data(), Game.GraphicsResource.FontRegular, 1.0, cgo2.Surface, cgo2.X + cgo2.Wdt - 1, cgo2.Y + cgo2.Hgt - 1 - Game.GraphicsResource.FontRegular.GetLineHeight(), CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
 		// Region
 		if (pRegions) pRegions->Add(cgo2.X, cgo2.Y, cgo2.Wdt, cgo2.Hgt, pFirstObj->GetName(), iRegionCom, pFirstObj, COM_None, COM_None, pFirstObj->Number);
 		// Next section
@@ -527,10 +531,10 @@ void C4ObjectList::CompileFunc(StdCompiler *pComp, bool fSaveRefs, bool fSkipPla
 				catch (const StdCompiler::Exception &e)
 				{
 					// Failsafe object loading: If an error occurs during object loading, just skip that object and load the next one
-					if (!e.Pos.getLength())
-						LogF("ERROR: Object loading: %s", e.what());
+					if (e.Pos.empty())
+						LogNTr(spdlog::level::err, "Object loading: {}", e.what());
 					else
-						LogF("ERROR: Object loading(%s): %s", e.Pos.getData(), e.what());
+						LogNTr(spdlog::level::err, "Object loading({}): {}", e.Pos, e.what());
 				}
 			}
 		}
@@ -553,20 +557,20 @@ C4Object *C4ObjectList::SafeObjectPointer(int32_t iNumber)
 	return pObj;
 }
 
-StdStrBuf C4ObjectList::GetNameList(C4DefList &rDefs, uint32_t dwCategory)
+std::string C4ObjectList::GetNameList(C4DefList &rDefs, uint32_t dwCategory)
 {
 	int cpos, idcount;
 	C4ID c_id;
 	C4Def *cdef;
-	StdStrBuf Buf;
+	std::string result;
 	for (cpos = 0; c_id = GetListID(dwCategory, cpos); cpos++)
 		if (cdef = rDefs.ID2Def(c_id))
 		{
 			idcount = ObjectCount(c_id);
-			if (cpos > 0) Buf.Append(", ");
-			Buf.AppendFormat("%dx %s", idcount, cdef->GetName());
+			if (cpos > 0) result += ", ";
+			result += std::format("{}x {}", idcount, cdef->GetName());
 		}
-	return Buf;
+	return result;
 }
 
 bool C4ObjectList::ValidateOwners()
@@ -921,9 +925,9 @@ bool C4ObjectList::CheckSort(C4ObjectList *pList)
 	while (cLnk)
 		if (!cLnk2)
 		{
-			Log("CheckSort failure");
-			LogSilent(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(C4ObjectListDumpHelper(this), "SectorList")).getData());
-			LogSilent(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(C4ObjectListDumpHelper(pList), "MainList")).getData());
+			LogNTr(spdlog::level::err, "CheckSort failure");
+			spdlog::error(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(C4ObjectListDumpHelper(this), "SectorList")));
+			spdlog::error(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(C4ObjectListDumpHelper(pList), "MainList")));
 			return false;
 		}
 		else

@@ -291,6 +291,8 @@ private:
 class C4Playback // demo playback
 {
 private:
+	std::shared_ptr<spdlog::logger> logger;
+
 	typedef std::list<C4RecordChunk> chunks_t;
 	chunks_t chunks;
 	chunks_t::iterator currChunk;
@@ -301,11 +303,12 @@ private:
 	uint32_t iLastSequentialFrame; // frame number of last chunk read
 	void Finish(); // end playback
 #ifdef DEBUGREC
+	std::shared_ptr<spdlog::logger> loggerDebugRec;
 	C4PacketList DebugRec;
 #endif
 
 public:
-	C4Playback();
+	C4Playback(std::shared_ptr<spdlog::logger> logger);
 	~C4Playback();
 
 	bool Open(C4Group &rGrp);
@@ -313,14 +316,14 @@ public:
 	bool ReadText(const StdStrBuf &Buf);
 	void NextChunk(); // point to next prepared chunk in mem or read it
 	bool NextSequentialChunk(); // read from seq file until a new chunk has been filled
-	StdStrBuf ReWriteText();
+	std::string ReWriteText();
 	StdBuf ReWriteBinary();
 	void Strip();
 	bool ExecuteControl(C4Control *pCtrl, int iFrame); // assign control
 	void Clear();
 #ifdef DEBUGREC
 	void Check(C4RecordChunkType eType, const uint8_t *pData, int iSize); // compare with debugrec
-	void DebugRecError(const char *szError);
+	void DebugRecError(std::string_view error);
 #endif
 	static bool StreamToRecord(const char *szStream, StdStrBuf *pRecord);
 };

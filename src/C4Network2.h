@@ -164,6 +164,9 @@ public:
 	// game status
 	C4Network2Status Status;
 
+	// logger
+	std::shared_ptr<spdlog::logger> Logger;
+
 protected:
 	// role
 	bool fHost;

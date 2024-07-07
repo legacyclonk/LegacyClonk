@@ -229,15 +229,15 @@ bool SetRegShell(const char *szClassName,
 {
 	char szKeyName[256 + 1];
 	// Set shell caption
-	sprintf(szKeyName, "%s\\Shell\\%s", szClassName, szShellName);
+	FormatWithNull(szKeyName, "{}\\Shell\\{}", szClassName, szShellName);
 	if (!SetRegClassesRoot(szKeyName, nullptr, szShellCaption)) return false;
 	// Set shell command
-	sprintf(szKeyName, "%s\\Shell\\%s\\Command", szClassName, szShellName);
+	FormatWithNull(szKeyName, "{}\\Shell\\{}\\Command", szClassName, szShellName);
 	if (!SetRegClassesRoot(szKeyName, nullptr, szCommand)) return false;
 	// Set as default command
 	if (fMakeDefault)
 	{
-		sprintf(szKeyName, "%s\\Shell", szClassName);
+		FormatWithNull(szKeyName, "{}\\Shell", szClassName);
 		if (!SetRegClassesRoot(szKeyName, nullptr, szShellName)) return false;
 	}
 	return true;
@@ -265,14 +265,14 @@ bool SetRegFileClass(const char *szClassRoot,
 	// Create root class entry
 	if (!SetRegClassesRoot(szClassRoot, nullptr, szClassName)) return false;
 	// Set root class icon
-	sprintf(keyname, "%s\\DefaultIcon", szClassRoot);
-	sprintf(iconpath, "%s,%d", szIconPath, iIconNum);
+	FormatWithNull(keyname, "{}\\DefaultIcon", szClassRoot);
+	FormatWithNull(iconpath, "{},{}", szIconPath, iIconNum);
 	if (!SetRegClassesRoot(keyname, nullptr, iconpath)) return false;
 	// Set extension map entry
-	sprintf(keyname, ".%s", szExtension);
+	FormatWithNull(keyname, ".{}", szExtension);
 	if (!SetRegClassesRoot(keyname, nullptr, szClassRoot)) return false;
 	// Set extension content type
-	sprintf(keyname, ".%s", szExtension);
+	FormatWithNull(keyname, ".{}", szExtension);
 	if (!SetRegClassesRootString(keyname, "Content Type", szContentType)) return false;
 	// Success
 	return true;
@@ -292,8 +292,8 @@ bool StoreWindowPosition(HWND hwnd,
 	if (IsIconic(hwnd))
 		return SetRegistryString(szSubKey, szWindowName, "Minimized");
 	if (!GetWindowRect(hwnd, &winpos)) return false;
-	if (fStoreSize) sprintf(regstr, "%i,%i,%i,%i", winpos.left, winpos.top, winpos.right - winpos.left, winpos.bottom - winpos.top);
-	else sprintf(regstr, "%i,%i", winpos.left, winpos.top);
+	if (fStoreSize) FormatWithNull(regstr, "{},{},{},{}", winpos.left, winpos.top, winpos.right - winpos.left, winpos.bottom - winpos.top);
+	else FormatWithNull(regstr, "{},{}", winpos.left, winpos.top);
 	return SetRegistryString(szSubKey, szWindowName, regstr);
 }
 
@@ -437,7 +437,7 @@ void StdCompilerConfigWrite::Boolean(bool &rBool)
 
 void StdCompilerConfigWrite::Character(char &rChar)
 {
-	WriteString(FormatString("%c", rChar).getData());
+	WriteString(std::format("{}", rChar).c_str());
 }
 
 void StdCompilerConfigWrite::String(char *szString, size_t iMaxLength, RawCompileType eType)
@@ -476,7 +476,7 @@ void StdCompilerConfigWrite::CreateKey(HKEY hParent)
 		0, nullptr, REG_OPTION_NON_VOLATILE,
 		KEY_WRITE, nullptr,
 		&pKey->Handle, nullptr) != ERROR_SUCCESS)
-		excCorrupt("Could not create key %s!", pKey->Name.getData());
+		excCorrupt("Could not create key {}!", pKey->Name.getData());
 }
 
 template<typename T>
@@ -489,7 +489,7 @@ void StdCompilerConfigWrite::WriteInteger(T value)
 	if (RegSetValueEx(pKey->Parent->Handle, pKey->Name.getData(),
 		0, type, reinterpret_cast<const BYTE *>(&value),
 		sizeof(value)) != ERROR_SUCCESS)
-		excCorrupt("Could not write key %s!", pKey->Name.getData());
+		excCorrupt("Could not write key {}!", pKey->Name.getData());
 }
 
 void StdCompilerConfigWrite::WriteDWord(uint32_t iVal)
@@ -503,7 +503,7 @@ void StdCompilerConfigWrite::WriteString(const char *szString)
 	if (RegSetValueEx(pKey->Parent->Handle, pKey->Name.getData(),
 		0, REG_SZ, reinterpret_cast<const BYTE *>(szString),
 		checked_cast<DWORD>(strlen(szString) + 1)) != ERROR_SUCCESS)
-		excCorrupt("Could not write key %s!", pKey->Name.getData());
+		excCorrupt("Could not write key {}!", pKey->Name.getData());
 }
 
 // *** StdCompilerConfigRead
@@ -670,7 +670,7 @@ T StdCompilerConfigRead::ReadInteger(DWORD type, DWORD alternativeType)
 	// Virtual key?
 	if (pKey->Virtual)
 	{
-		excNotFound("Could not read value %s! Parent key doesn't exist!", pKey->Name.getData()); return 0;
+		excNotFound("Could not read value {}! Parent key doesn't exist!", pKey->Name.getData()); return 0;
 	}
 	// Wrong type?
 	if (pKey->Type != type && pKey->Type != alternativeType)
@@ -684,7 +684,7 @@ T StdCompilerConfigRead::ReadInteger(DWORD type, DWORD alternativeType)
 		reinterpret_cast<LPBYTE>(&iVal),
 		&iSize) != ERROR_SUCCESS)
 	{
-		excNotFound("Could not read value %s!", pKey->Name.getData()); return 0;
+		excNotFound("Could not read value {}!", pKey->Name.getData()); return 0;
 	}
 	// Check size
 	if (iSize != sizeof(iVal))
@@ -705,7 +705,7 @@ StdStrBuf StdCompilerConfigRead::ReadString()
 	// Virtual key?
 	if (pKey->Virtual)
 	{
-		excNotFound("Could not read value %s! Parent key doesn't exist!", pKey->Name.getData()); return StdStrBuf();
+		excNotFound("Could not read value {}! Parent key doesn't exist!", pKey->Name.getData()); return StdStrBuf();
 	}
 	// Wrong type?
 	if (pKey->Type != REG_SZ)
@@ -719,7 +719,7 @@ StdStrBuf StdCompilerConfigRead::ReadString()
 		nullptr,
 		&iSize) != ERROR_SUCCESS)
 	{
-		excNotFound("Could not read value %s!", pKey->Name.getData()); return StdStrBuf();
+		excNotFound("Could not read value {}!", pKey->Name.getData()); return StdStrBuf();
 	}
 	// Allocate string
 	StdStrBuf Result; Result.SetLength(iSize);
@@ -729,7 +729,7 @@ StdStrBuf StdCompilerConfigRead::ReadString()
 		reinterpret_cast<BYTE *>(Result.getMData()),
 		&iSize) != ERROR_SUCCESS)
 	{
-		excNotFound("Could not read value %s!", pKey->Name.getData()); return StdStrBuf();
+		excNotFound("Could not read value {}!", pKey->Name.getData()); return StdStrBuf();
 	}
 	Result.SetLength(strlen(Result.getData()));
 	return Result;

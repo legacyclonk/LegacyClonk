@@ -52,24 +52,24 @@
 
 // Some Support Functions
 
-static void Warn(C4Object *const obj, const char *const message)
+static void Warn(C4Object *const obj, const std::string_view message)
 {
 	C4AulExecError{obj, message}.show();
 }
 
 template<typename... Args>
-static void StrictError(C4AulContext *const context, C4AulScriptStrict errorSince, const char *const message, Args... args)
+static void StrictError(C4AulContext *const context, C4AulScriptStrict errorSince, const std::format_string<Args...> message, Args &&... args)
 {
 	const auto strictness = context->Caller ? context->Caller->Func->Owner->Strict : C4AulScriptStrict::NONSTRICT;
 
-	const StdStrBuf result{FormatString(message, std::forward<Args>(args)...)};
+	const std::string result{std::format(message, std::forward<Args>(args)...)};
 	if (strictness < errorSince)
 	{
-		Warn(context->Obj, result.getData());
+		Warn(context->Obj, result);
 	}
 	else
 	{
-		throw C4AulExecError{context->Obj, result.getData()};
+		throw C4AulExecError{context->Obj, result};
 	}
 }
 
@@ -90,7 +90,7 @@ inline C4String *String(StdStrBuf &&str)
 	return str ? new C4String(std::forward<StdStrBuf>(str), &Game.ScriptEngine.Strings) : nullptr;
 }
 
-static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4Value *Par0 = nullptr, C4Value *Par1 = nullptr, C4Value *Par2 = nullptr, C4Value *Par3 = nullptr,
+static std::string FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4Value *Par0 = nullptr, C4Value *Par1 = nullptr, C4Value *Par2 = nullptr, C4Value *Par3 = nullptr,
 	C4Value *Par4 = nullptr, C4Value *Par5 = nullptr, C4Value *Par6 = nullptr, C4Value *Par7 = nullptr, C4Value *Par8 = nullptr, C4Value *Par9 = nullptr)
 {
 	C4Value *Par[11];
@@ -99,7 +99,7 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 	Par[10] = nullptr;
 	int cPar = 0;
 
-	StdStrBuf StringBuf("", false);
+	std::string stringBuf;
 	const char *cpFormat = szFormatPar;
 	const char *cpType;
 	char szField[MaxFnStringParLen + 1];
@@ -107,7 +107,7 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 	{
 		// Copy normal stuff
 		while (*cpFormat && (*cpFormat != '%'))
-			StringBuf.AppendChar(*cpFormat++);
+			stringBuf += *cpFormat++;
 		// Field
 		if (*cpFormat == '%')
 		{
@@ -122,7 +122,7 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 			case 'd': case 'x': case 'X': case 'c':
 			{
 				if (!Par[cPar]) throw C4AulExecError(cthr->Obj, "format placeholder without parameter");
-				StringBuf.AppendFormat(szField, Par[cPar++]->getInt());
+				stringBuf += fmt::sprintf(szField, Par[cPar++]->getInt());
 				cpFormat += SLen(szField);
 				break;
 			}
@@ -131,7 +131,7 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 			{
 				if (!Par[cPar]) throw C4AulExecError(cthr->Obj, "format placeholder without parameter");
 				C4ID id = Par[cPar++]->getC4ID();
-				StringBuf.Append(C4IdText(id));
+				stringBuf += C4IdText(id);
 				cpFormat += SLen(szField);
 				break;
 			}
@@ -141,11 +141,11 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 				if (!Par[cPar]) throw C4AulExecError(cthr->Obj, "format placeholder without parameter");
 				if (!Par[cPar]->_getRaw() && !cthr->CalledWithStrictNil())
 				{
-					StringBuf.Append("0");
+					stringBuf += '0';
 				}
 				else
 				{
-					StringBuf.Append(static_cast<const StdStrBuf &>(Par[cPar++]->GetDataString()));
+					stringBuf += Par[cPar++]->GetDataString();
 				}
 				cpFormat += SLen(szField);
 				break;
@@ -162,23 +162,23 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 					if (!pStr) throw C4AulExecError(cthr->Obj, "string format placeholder without string");
 					szStr = pStr->Data.getData();
 				}
-				StringBuf.AppendFormat(szField, szStr);
+				stringBuf += fmt::sprintf(szField, szStr);
 				cpFormat += SLen(szField);
 				break;
 			}
 			case '%':
-				StringBuf.AppendChar('%');
+				stringBuf += '%';
 				cpFormat += SLen(szField);
 				break;
 			// Undefined / Empty
 			default:
-				StringBuf.AppendChar('%');
+				stringBuf += '%';
 				cpFormat++;
 				break;
 			}
 		}
 	}
-	return StringBuf;
+	return stringBuf;
 }
 
 bool CheckEnergyNeedChain(C4Object *pObj, C4ObjectList &rEnergyChainChecked)
@@ -286,9 +286,22 @@ static C4ValueInt FnGetGravity(C4AulContext *cthr)
 	return fixtoi(Game.Landscape.Gravity * 500);
 }
 
+template<int N>
+static void DeathAnnounceMessageHelper(C4Object *const obj, const int n)
+{
+	if (N == n)
+	{
+		GameMsgObject(LoadResStr(static_cast<C4ResStrTableKey>(std::to_underlying(C4ResStrTableKey::IDS_OBJ_DEATH1) + N), obj->GetName()).c_str(), obj);
+	}
+	else if constexpr (N > 0)
+	{
+		DeathAnnounceMessageHelper<N - 1>(obj, n);
+	}
+}
+
 static bool FnDeathAnnounce(C4AulContext *cthr)
 {
-	const int MaxDeathMsg = 7;
+	static constexpr int MaxDeathMsg{7};
 	if (!cthr->Obj) return false;
 	if (Game.C4S.Head.Film) return true;
 	// Check if crew member has an own death message
@@ -298,8 +311,7 @@ static bool FnDeathAnnounce(C4AulContext *cthr)
 	}
 	else
 	{
-		char idDeathMsg[128 + 1]; sprintf(idDeathMsg, "IDS_OBJ_DEATH%d", 1 + SafeRandom(MaxDeathMsg));
-		GameMsgObject(FormatString(LoadResStr(idDeathMsg), cthr->Obj->GetName()).getData(), cthr->Obj);
+		DeathAnnounceMessageHelper<MaxDeathMsg - 1>(cthr->Obj, SafeRandom(MaxDeathMsg));
 	}
 	return true;
 }
@@ -1074,7 +1086,7 @@ static C4String *FnGetTaggedPlayerName(C4AulContext *cthr, C4ValueInt iPlayer)
 	if (!pPlr) return nullptr;
 	uint32_t dwClr = pPlr->ColorDw; C4GUI::MakeColorReadableOnBlack(dwClr);
 	static char szFnFormatBuf[1024 + 1];
-	sprintf(szFnFormatBuf, "<c %x>%s</c>", dwClr & 0xffffff, pPlr->GetName());
+	FormatWithNull(szFnFormatBuf, "<c {:x}>{}</c>", dwClr & 0xffffff, pPlr->GetName());
 	return String(szFnFormatBuf);
 }
 
@@ -1214,7 +1226,7 @@ static std::optional<C4ValueInt> FnGetVertex(C4AulContext *cthr, C4ValueInt iInd
 	case VTX_Friction: return {pObj->Shape.VtxFriction[iIndex]}; break;
 	default:
 		// old-style behaviour for any value != 0 (normally not used)
-		DebugLogF("GetVertex: Unknown vertex attribute: %d; getting VtxY", iValueToGet);
+		DebugLog("GetVertex: Unknown vertex attribute: {}; getting VtxY", iValueToGet);
 		return {pObj->Shape.VtxY[iIndex]};
 		break;
 	}
@@ -1250,7 +1262,7 @@ static bool FnSetVertex(C4AulContext *cthr, C4ValueInt iIndex, C4ValueInt iValue
 	default:
 		// old-style behaviour for any value != 0 (normally not used)
 		pObj->Shape.VtxY[iIndex] = iValue;
-		DebugLogF("SetVertex: Unknown vertex attribute: %d; setting VtxY", iValueToSet);
+		DebugLog("SetVertex: Unknown vertex attribute: {}; setting VtxY", iValueToSet);
 		break;
 	}
 	// vertex update desired?
@@ -1465,8 +1477,8 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 	char caption[256 + 1];
 	char parameter[256 + 1];
 	char dummy[256 + 1];
-	char command[512 + 1];
-	char command2[512 + 1];
+	std::string command;
+	std::string command2;
 	char infocaption[C4MaxTitle + 1];
 
 	// get needed symbol size
@@ -1501,16 +1513,16 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 	switch (Parameter.GetType())
 	{
 	case C4V_Int:
-		sprintf(parameter, "%d", Parameter.getInt());
+		FormatWithNull(parameter, "{}", Parameter.getInt());
 		break;
 	case C4V_Bool:
 		SCopy(Parameter.getBool() ? "true" : "false", parameter);
 		break;
 	case C4V_C4ID:
-		sprintf(parameter, "%s", C4IdText(Parameter.getC4ID()));
+		FormatWithNull(parameter, "{}", C4IdText(Parameter.getC4ID()));
 		break;
 	case C4V_C4Object:
-		sprintf(parameter, "Object(%d)", Parameter.getObj()->Number);
+		FormatWithNull(parameter, "Object({})", Parameter.getObj()->Number);
 		break;
 	case C4V_String:
 		// note this breaks if there is '"' in the string.
@@ -1519,7 +1531,7 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 		SAppendChar('"', parameter);
 		break;
 	case C4V_Any:
-		sprintf(parameter, "CastAny(%" PRIdPTR ")", Parameter._getRaw());
+		FormatWithNull(parameter, "CastAny({})", Parameter._getRaw());
 		break;
 	case C4V_Array:
 		// Arrays were never allowed, so tell the scripter
@@ -1552,9 +1564,8 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 		if (pFound != nullptr)
 			*(pFound - 1) = 's';
 		// Compose left-click command
-		ssprintf(command, dummy, parameter, 0);
-		// Compose right-click command
-		ssprintf(command2, dummy, parameter, 1);
+		command = fmt::sprintf(dummy, parameter, 0);
+		command2 = fmt::sprintf(dummy, parameter, 1);
 	}
 
 	// Old style: function name with id and parameter
@@ -1566,20 +1577,19 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 			if (iExtra & C4MN_Add_PassValue)
 			{
 				// with value
-				sprintf(command, "%s(%s,%s,0,%d)", szScriptCom, C4IdText(idItem), parameter, iValue);
-				sprintf(command2, "%s(%s,%s,1,%d)", szScriptCom, C4IdText(idItem), parameter, iValue);
+				command = std::format("{}({},{},0,{})", szScriptCom, C4IdText(idItem), parameter, iValue);
+				command2 = std::format("{}({},{},1,{})", szScriptCom, C4IdText(idItem), parameter, iValue);
 			}
 			else
 			{
 				// without value
-				sprintf(command, "%s(%s,%s)", szScriptCom, C4IdText(idItem), parameter);
-				sprintf(command2, "%s(%s,%s,1)", szScriptCom, C4IdText(idItem), parameter);
+				command = std::format("{}({},{})", szScriptCom, C4IdText(idItem), parameter);
+				command2 = std::format("{}({},{},1)", szScriptCom, C4IdText(idItem), parameter);
 			}
 		}
 		else
 		{
 			// no command
-			*command = *command2 = '\0';
 		}
 	}
 
@@ -1715,10 +1725,10 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 	if (iCount == 0 && !(iExtra & C4MN_Add_ForceCount)) iCount = C4MN_Item_NoCount;
 
 	// menuitems without commands are never selectable
-	bool fIsSelectable = !!*command;
+	bool fIsSelectable = !command.empty();
 
 	// Add menu item
-	pMenuObj->Menu->Add(caption, fctSymbol, command, iCount, nullptr, infocaption, idItem, command2, fOwnValue, iValue, fIsSelectable);
+	pMenuObj->Menu->Add(caption, fctSymbol, command.c_str(), iCount, nullptr, infocaption, idItem, command2.c_str(), fOwnValue, iValue, fIsSelectable);
 
 	return true;
 }
@@ -2370,17 +2380,17 @@ static bool FnGainMissionAccess(C4AulContext *cthr, C4String *szPassword)
 
 static void FnLog(C4AulContext *cthr, C4String *szMessage, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6, C4Value iPar7, C4Value iPar8)
 {
-	Log(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7, &iPar8).getData());
+	LogNTr(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7, &iPar8));
 }
 
 static void FnDebugLog(C4AulContext *cthr, C4String *szMessage, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6, C4Value iPar7, C4Value iPar8)
 {
-	DebugLog(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7, &iPar8).getData());
+	DebugLog(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7, &iPar8));
 }
 
 static C4String *FnFormat(C4AulContext *cthr, C4String *szFormat, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6, C4Value iPar7, C4Value iPar8)
 {
-	return String(FnStringFormat(cthr, FnStringPar(szFormat), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7, &iPar8));
+	return String(StdStrBuf{FnStringFormat(cthr, FnStringPar(szFormat), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7, &iPar8).c_str()});
 }
 
 static C4ID FnC4Id(C4AulContext *cthr, C4String *szID)
@@ -2401,7 +2411,7 @@ static bool FnPlayerMessage(C4AulContext *cthr, C4ValueInt iPlayer, C4String *sz
 
 	// Text
 	if (!fSpoken)
-		if (SCopySegment(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6).getData(), 0, buf, '$', MaxFnStringParLen))
+		if (SCopySegment(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6).c_str(), 0, buf, '$', MaxFnStringParLen))
 			if (pObj) GameMsgObjectPlayer(buf, pObj, iPlayer);
 			else GameMsgPlayer(buf, iPlayer);
 
@@ -2421,7 +2431,7 @@ static bool FnMessage(C4AulContext *cthr, C4String *szMessage, C4Object *pObj, C
 
 	// Text
 	if (!fSpoken)
-		if (SCopySegment(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).getData(), 0, buf, '$', MaxFnStringParLen))
+		if (SCopySegment(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).c_str(), 0, buf, '$', MaxFnStringParLen))
 			if (pObj) GameMsgObject(buf, pObj);
 			else GameMsgGlobal(buf);
 
@@ -2432,8 +2442,8 @@ static bool FnAddMessage(C4AulContext *cthr, C4String *szMessage, C4Object *pObj
 {
 	if (!szMessage) return false;
 
-	if (pObj) Game.Messages.Append(C4GM_Target, FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).getData(), pObj, NO_OWNER, 0, 0, FWhite);
-	else Game.Messages.Append(C4GM_Global, FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).getData(), nullptr, ANY_OWNER, 0, 0, FWhite);
+	if (pObj) Game.Messages.Append(C4GM_Target, FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).c_str(), pObj, NO_OWNER, 0, 0, FWhite);
+	else Game.Messages.Append(C4GM_Global, FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).c_str(), nullptr, ANY_OWNER, 0, 0, FWhite);
 
 	return true;
 }
@@ -2451,7 +2461,7 @@ static bool FnPlrMessage(C4AulContext *cthr, C4String *szMessage, C4ValueInt iPl
 
 	// Text
 	if (!fSpoken)
-		if (SCopySegment(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).getData(), 0, buf, '$', MaxFnStringParLen))
+		if (SCopySegment(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).c_str(), 0, buf, '$', MaxFnStringParLen))
 			if (ValidPlr(iPlr)) GameMsgPlayer(buf, iPlr);
 			else GameMsgGlobal(buf);
 
@@ -2563,7 +2573,7 @@ static bool FnSetPlrShowControlPos(C4AulContext *cthr, C4ValueInt iPlr, C4ValueI
 
 static C4String *FnGetPlrControlName(C4AulContext *cthr, C4ValueInt iPlr, C4ValueInt iCon, bool fShort)
 {
-	return String(PlrControlKeyName(iPlr, iCon, fShort).getData());
+	return String(PlrControlKeyName(iPlr, iCon, fShort).c_str());
 }
 
 static C4ValueInt FnGetPlrJumpAndRunControl(C4AulContext *cthr, C4ValueInt iPlr)
@@ -3445,7 +3455,8 @@ static C4Value FnDefinitionCall(C4AulContext *cthr,
 {
 	if (!idID || !szFunction) return C4VNull;
 	// Make failsafe
-	char szFunc2[500 + 1]; sprintf(szFunc2, "~%s", FnStringPar(szFunction));
+	char szFunc2[C4AUL_MAX_Identifier + 1];
+	FormatWithNull(szFunc2, "~{}", FnStringPar(szFunction));
 	// Get definition
 	C4Def *pDef;
 	if (!(pDef = C4Id2Def(idID))) return C4VNull;
@@ -3463,7 +3474,8 @@ static C4Value FnGameCall(C4AulContext *cthr,
 {
 	if (!szFunction) return C4VNull;
 	// Make failsafe
-	char szFunc2[500 + 1]; sprintf(szFunc2, "~%s", FnStringPar(szFunction));
+	char szFunc2[C4AUL_MAX_Identifier + 1];
+	FormatWithNull(szFunc2, "~{}", FnStringPar(szFunction));
 	// copy parameters
 	C4AulParSet Pars;
 	Copy2ParSet9(Pars, par);
@@ -3478,7 +3490,8 @@ static C4Value FnGameCallEx(C4AulContext *cthr,
 {
 	if (!szFunction) return C4VNull;
 	// Make failsafe
-	char szFunc2[500 + 1]; sprintf(szFunc2, "~%s", FnStringPar(szFunction));
+	char szFunc2[C4AUL_MAX_Identifier + 1];
+	FormatWithNull(szFunc2, "~{}", FnStringPar(szFunction));
 	// copy parameters
 	C4AulParSet Pars;
 	Copy2ParSet9(Pars, par);
@@ -3838,7 +3851,7 @@ static void FnSetLength(C4AulContext *cthr, C4Value *pArrayRef, C4ValueInt iNewS
 {
 	// safety
 	if (iNewSize < 0 || iNewSize > C4ValueList::MaxSize)
-		throw C4AulExecError(cthr->Obj, FormatString("SetLength: invalid array size (%d)", iNewSize).getData());
+		throw C4AulExecError(cthr->Obj, std::format("SetLength: invalid array size ({})", iNewSize));
 
 	// set new size
 	pArrayRef->SetArrayLength(iNewSize, cthr);
@@ -3873,7 +3886,7 @@ static bool FnSetClrModulation(C4AulContext *cthr, C4ValueInt dwClr, C4Object *p
 		C4GraphicsOverlay *pOverlay = pObj->GetGraphicsOverlay(iOverlayID, false);
 		if (!pOverlay)
 		{
-			DebugLogF("SetClrModulation: Overlay %d not defined for object %d (%s)", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
+			DebugLog(spdlog::level::err, "SetClrModulation: Overlay {} not defined for object {} ({})", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
 			return false;
 		}
 		pOverlay->SetClrModulation(dwClr);
@@ -3897,7 +3910,7 @@ static std::optional<C4ValueInt> FnGetClrModulation(C4AulContext *cthr, C4Object
 		C4GraphicsOverlay *pOverlay = pObj->GetGraphicsOverlay(iOverlayID, false);
 		if (!pOverlay)
 		{
-			DebugLogF("GetClrModulation: Overlay %d not defined for object %d (%s)", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
+			DebugLog(spdlog::level::err, "GetClrModulation: Overlay {} not defined for object {} ({})", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
 			return {};
 		}
 		return {pOverlay->GetClrModulation()};
@@ -3914,7 +3927,7 @@ static bool FnGetMissionAccess(C4AulContext *cthr, C4String *strMissionAccess)
 
 	// non-sync mode: warn
 	if (Game.Control.SyncMode())
-		Log("Warning: using GetMissionAccess may cause desyncs when playing records!");
+		LogNTr(spdlog::level::warn, "using GetMissionAccess may cause desyncs when playing records!");
 
 	return SIsModule(Config.General.MissionAccess, FnStringPar(strMissionAccess));
 }
@@ -4042,7 +4055,7 @@ protected:
 	// get values as C4Value
 	virtual void ProcessInt(int32_t &rInt) override { Res = C4VInt(rInt); }
 	virtual void ProcessBool(bool &rBool) override { Res = C4VBool(rBool); }
-	virtual void ProcessChar(char &rChar) override { Res = C4VString(FormatString("%c", rChar)); }
+	virtual void ProcessChar(char &rChar) override { Res = C4VString(std::format("{}", rChar).c_str()); }
 
 	virtual void ProcessString(char *szString, size_t iMaxLength, bool fIsID) override
 	{
@@ -4311,7 +4324,7 @@ static bool FnResortObjects(C4AulContext *cthr, C4String *szFunc, C4ValueInt Cat
 	// get function
 	C4AulFunc *pFn = cthr->Caller->Func->GetLocalSFunc(FnStringPar(szFunc));
 	if (!pFn)
-		throw C4AulExecError(cthr->Obj, FormatString("ResortObjects: Resort function %s not found", FnStringPar(szFunc)).getData());
+		throw C4AulExecError(cthr->Obj, std::format("ResortObjects: Resort function {} not found", FnStringPar(szFunc)));
 	// create object resort
 	C4ObjResort *pObjRes = new C4ObjResort();
 	pObjRes->Category = Category;
@@ -4332,7 +4345,7 @@ static bool FnResortObject(C4AulContext *cthr, C4String *szFunc, C4Object *pObj)
 	// get function
 	C4AulFunc *pFn = cthr->Caller->Func->GetLocalSFunc(FnStringPar(szFunc));
 	if (!pFn)
-		throw C4AulExecError(cthr->Obj, FormatString("ResortObjects: Resort function %s not found", FnStringPar(szFunc)).getData());
+		throw C4AulExecError(cthr->Obj, std::format("ResortObjects: Resort function {} not found", FnStringPar(szFunc)));
 	// create object resort
 	C4ObjResort *pObjRes = new C4ObjResort();
 	pObjRes->OrderFunc = pFn;
@@ -4367,7 +4380,7 @@ static bool FnSetGraphics(C4AulContext *pCtx, C4String *pGfxName, C4Object *pObj
 	if (iOverlayID)
 	{
 		// any overlays must be positive for now
-		if (iOverlayID < 0) { Log("SetGraphics: Background overlays not implemented!"); return false; }
+		if (iOverlayID < 0) { LogNTr(spdlog::level::err, "SetGraphics: Background overlays not implemented!"); return false; }
 		// deleting overlay?
 		C4DefGraphics *pGrp;
 		if (iOverlayMode == C4GraphicsOverlay::MODE_Object)
@@ -4481,7 +4494,7 @@ static C4String *FnGetNeededMatStr(C4AulContext *cthr, C4Object *pObj)
 {
 	// local/safety
 	if (!pObj) if (!(pObj = cthr->Obj)) return nullptr;
-	return String(pObj->GetNeededMatStr(cthr->Obj).getData());
+	return String(pObj->GetNeededMatStr(cthr->Obj).c_str());
 }
 
 static C4Value FnEval(C4AulContext *cthr, C4String *strScript)
@@ -4503,7 +4516,7 @@ static bool FnLocateFunc(C4AulContext *cthr, C4String *funcname, C4Object *pObj,
 	// safety
 	if (!funcname || !funcname->Data.getData())
 	{
-		Log("No func name");
+		LogNTr(spdlog::level::err, "No func name");
 		return false;
 	}
 	// determine script context
@@ -4515,14 +4528,14 @@ static bool FnLocateFunc(C4AulContext *cthr, C4String *funcname, C4Object *pObj,
 	else if (idDef)
 	{
 		C4Def *pDef = C4Id2Def(idDef);
-		if (!pDef) { Log("Invalid or unloaded def"); return false; }
+		if (!pDef) { LogNTr(spdlog::level::err, "Invalid or unloaded def"); return false; }
 		pCheckScript = &pDef->Script;
 	}
 	else
 	{
 		if (!cthr || !cthr->Caller || !cthr->Caller->Func || !cthr->Caller->Func->Owner)
 		{
-			Log("No valid script context");
+			LogNTr(spdlog::level::err, "No valid script context");
 			return false;
 		}
 		pCheckScript = cthr->Caller->Func->Owner;
@@ -4531,7 +4544,7 @@ static bool FnLocateFunc(C4AulContext *cthr, C4String *funcname, C4Object *pObj,
 	C4AulFunc *pFunc = pCheckScript->GetFuncRecursive(funcname->Data.getData());
 	if (!pFunc)
 	{
-		LogF("Func %s not found", funcname->Data.getData());
+		LogNTr(spdlog::level::err, "Func {} not found", funcname->Data.getData());
 	}
 	else
 	{
@@ -4541,16 +4554,16 @@ static bool FnLocateFunc(C4AulContext *cthr, C4String *funcname, C4Object *pObj,
 			C4AulScriptFunc *pSFunc = pFunc->SFunc();
 			if (!pSFunc)
 			{
-				LogF("%s%s (engine)", szPrefix, pFunc->Name);
+				LogNTr("{}{} (engine)", szPrefix, pFunc->Name);
 			}
 			else if (!pSFunc->pOrgScript)
 			{
-				LogF("%s%s (no owner)", szPrefix, pSFunc->Name);
+				LogNTr("{}{} (no owner)", szPrefix, pSFunc->Name);
 			}
 			else
 			{
 				int32_t iLine = SGetLine(pSFunc->pOrgScript->GetScript(), pSFunc->Script);
-				LogF("%s%s (%s:%d)", szPrefix, pFunc->Name, pSFunc->pOrgScript->ScriptName.getData(), static_cast<int>(iLine));
+				LogNTr("{}{} ({}:{})", szPrefix, pFunc->Name, pSFunc->pOrgScript->ScriptName.c_str(), static_cast<int>(iLine));
 			}
 			// next func in overload chain
 			pFunc = pSFunc ? pSFunc->OwnerOverloaded : nullptr;
@@ -4678,7 +4691,7 @@ static C4Value FnSetPlrExtraData(C4AulContext *cthr, C4ValueInt iPlayer, C4Strin
 	{
 		StdStrBuf name{strDataName};
 		name.EscapeString();
-		DebugLogF("WARNING: SetPlrExtraData: Ignoring invalid data name \"%s\"! Only alphanumerics, _ and - are allowed.", name.getData());
+		DebugLog(spdlog::level::warn, "SetPlrExtraData: Ignoring invalid data name \"{}\"! Only alphanumerics, _ and - are allowed.", name.getData());
 		return C4VNull;
 	}
 
@@ -4736,7 +4749,7 @@ static C4Value FnSetCrewExtraData(C4AulContext *cthr, C4Object *pCrew, C4String 
 	{
 		StdStrBuf name{strDataName};
 		name.EscapeString();
-		DebugLogF("WARNING: SetCrewExtraData: Ignoring invalid data name \"%s\"! Only alphanumerics, _ and - are allowed.", name.getData());
+		DebugLog(spdlog::level::err, "SetCrewExtraData: Ignoring invalid data name \"{}\"! Only alphanumerics, _ and - are allowed.", name.getData());
 		return C4VNull;
 	}
 
@@ -5622,7 +5635,7 @@ static std::optional<C4ValueInt> FnSetObjectBlitMode(C4AulContext *ctx, C4ValueI
 		C4GraphicsOverlay *pOverlay = pObj->GetGraphicsOverlay(iOverlayID, false);
 		if (!pOverlay)
 		{
-			DebugLogF("SetObjectBlitMode: Overlay %d not defined for object %d (%s)", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
+			DebugLog(spdlog::level::err, "SetObjectBlitMode: Overlay {} not defined for object {} ({})", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
 			return {};
 		}
 		pOverlay->SetBlitMode(dwNewBlitMode);
@@ -5651,7 +5664,7 @@ static std::optional<C4ValueInt> FnGetObjectBlitMode(C4AulContext *ctx, C4Object
 		C4GraphicsOverlay *pOverlay = pObj->GetGraphicsOverlay(iOverlayID, false);
 		if (!pOverlay)
 		{
-			DebugLogF("SetObjectBlitMode: Overlay %d not defined for object %d (%s)", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
+			DebugLog(spdlog::level::err, "SetObjectBlitMode: Overlay {} not defined for object {} ({})", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
 			return {};
 		}
 		return {pOverlay->GetBlitMode()};
@@ -5777,7 +5790,7 @@ static std::optional<C4ValueInt> FnGetTeamConfig(C4AulContext *cthr, C4ValueInt 
 	case C4TeamList::TEAM_TeamColors:           return {Game.Teams.IsTeamColors()};
 	}
 	// undefined value
-	DebugLogF("GetTeamConfig: Unknown config value: %d", iConfigValue);
+	DebugLog(spdlog::level::err, "GetTeamConfig: Unknown config value: {}", iConfigValue);
 	return {};
 }
 
@@ -5942,7 +5955,7 @@ static C4ValueInt FnActivateGameGoalMenu(C4AulContext *ctx, C4ValueInt iPlayer)
 
 static void FnFatalError(C4AulContext *ctx, C4String *pErrorMsg)
 {
-	throw C4AulExecError(ctx->Obj, FormatString("User error: %s", pErrorMsg ? pErrorMsg->Data.getData() : "(no error)").getData());
+	throw C4AulExecError(ctx->Obj, std::format("User error: {}", pErrorMsg ? pErrorMsg->Data.getData() : "(no error)"));
 }
 
 static void FnStartCallTrace(C4AulContext *ctx)
@@ -6049,7 +6062,7 @@ static void FnSetNextMission(C4AulContext *ctx, C4String *szNextMission, C4Strin
 		}
 		else
 		{
-			Game.NextMissionText.Copy(LoadResStr("IDS_BTN_NEXTSCENARIO"));
+			Game.NextMissionText.Copy(LoadResStr(C4ResStrTableKey::IDS_BTN_NEXTSCENARIO));
 		}
 		if (szNextMissionDesc && szNextMissionDesc->Data.getData())
 		{
@@ -6057,7 +6070,7 @@ static void FnSetNextMission(C4AulContext *ctx, C4String *szNextMission, C4Strin
 		}
 		else
 		{
-			Game.NextMissionDesc.Copy(LoadResStr("IDS_DESC_NEXTSCENARIO"));
+			Game.NextMissionDesc.Copy(LoadResStr(C4ResStrTableKey::IDS_DESC_NEXTSCENARIO));
 		}
 	}
 }

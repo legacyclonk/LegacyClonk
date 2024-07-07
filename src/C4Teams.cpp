@@ -388,9 +388,7 @@ bool C4TeamList::GenerateDefaultTeams(int32_t iUpToID)
 	// generate until last team ID matches given
 	while (iLastTeamID < iUpToID)
 	{
-		char TeamName[C4MaxName + 1];
-		sprintf(TeamName, LoadResStr("IDS_MSG_TEAM"), iLastTeamID + 1);
-		if (!CreateTeam(TeamName)) return false;
+		if (!CreateTeam(LoadResStr(C4ResStrTableKey::IDS_MSG_TEAM, iLastTeamID + 1).c_str())) return false;
 	}
 	return true;
 }
@@ -668,9 +666,10 @@ bool C4TeamList::Save(C4Group &hGroup)
 	// decompile
 	try
 	{
-		StdStrBuf Buf = DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*this, "Teams"));
+		const std::string buf{DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*this, "Teams"))};
 		// save it
-		hGroup.Add(C4CFN_Teams, Buf, false, true);
+		StdStrBuf copy{buf.c_str(), buf.size()};
+		hGroup.Add(C4CFN_Teams, copy, false, true);
 	}
 	catch (const StdCompiler::Exception &)
 	{
@@ -769,17 +768,17 @@ void C4TeamList::ReassignAllTeams()
 	}
 }
 
-StdStrBuf C4TeamList::GetTeamDistName(TeamDist eTeamDist) const
+std::string C4TeamList::GetTeamDistName(TeamDist eTeamDist) const
 {
 	switch (eTeamDist)
 	{
-	case TEAMDIST_Free:      return (StdStrBuf(LoadResStr("IDS_MSG_TEAMDIST_FREE"),   true));
-	case TEAMDIST_Host:      return (StdStrBuf(LoadResStr("IDS_MSG_TEAMDIST_HOST"),   true));
-	case TEAMDIST_None:      return (StdStrBuf(LoadResStr("IDS_MSG_TEAMDIST_NONE"),   true));
-	case TEAMDIST_Random:    return (StdStrBuf(LoadResStr("IDS_MSG_TEAMDIST_RND"),    true));
-	case TEAMDIST_RandomInv: return (StdStrBuf(LoadResStr("IDS_MSG_TEAMDIST_RNDINV"), true));
+	case TEAMDIST_Free:      return LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_FREE);
+	case TEAMDIST_Host:      return LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_HOST);
+	case TEAMDIST_None:      return LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_NONE);
+	case TEAMDIST_Random:    return LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_RND);
+	case TEAMDIST_RandomInv: return LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_RNDINV);
 	}
-	return (FormatString("TEAMDIST_undefined(%d)", static_cast<int>(eTeamDist)));
+	return std::format("TEAMDIST_undefined({})", std::to_underlying(eTeamDist));
 }
 
 void C4TeamList::FillTeamDistOptions(C4GUI::ComboBox_FillCB *pFiller) const
@@ -787,11 +786,11 @@ void C4TeamList::FillTeamDistOptions(C4GUI::ComboBox_FillCB *pFiller) const
 	// no teams if disabled
 	if (!fActive) return;
 	// team distribution options
-	pFiller->AddEntry(GetTeamDistName(TEAMDIST_Free).getData(), TEAMDIST_Free);
-	pFiller->AddEntry(GetTeamDistName(TEAMDIST_Host).getData(), TEAMDIST_Host);
-	if (IsAutoGenerateTeams()) pFiller->AddEntry(GetTeamDistName(TEAMDIST_None).getData(), TEAMDIST_None); // no teams: only for regular melees
-	pFiller->AddEntry(GetTeamDistName(TEAMDIST_Random).getData(), TEAMDIST_Random);
-	pFiller->AddEntry(GetTeamDistName(TEAMDIST_RandomInv).getData(), TEAMDIST_RandomInv);
+	pFiller->AddEntry(GetTeamDistName(TEAMDIST_Free).c_str(), TEAMDIST_Free);
+	pFiller->AddEntry(GetTeamDistName(TEAMDIST_Host).c_str(), TEAMDIST_Host);
+	if (IsAutoGenerateTeams()) pFiller->AddEntry(GetTeamDistName(TEAMDIST_None).c_str(), TEAMDIST_None); // no teams: only for regular melees
+	pFiller->AddEntry(GetTeamDistName(TEAMDIST_Random).c_str(), TEAMDIST_Random);
+	pFiller->AddEntry(GetTeamDistName(TEAMDIST_RandomInv).c_str(), TEAMDIST_RandomInv);
 }
 
 void C4TeamList::SendSetTeamDist(TeamDist eNewTeamDist)
@@ -801,7 +800,7 @@ void C4TeamList::SendSetTeamDist(TeamDist eNewTeamDist)
 	Game.Control.DoInput(CID_Set, new C4ControlSet(C4CVT_TeamDistribution, eNewTeamDist), CDT_Sync);
 }
 
-StdStrBuf C4TeamList::GetTeamDistString() const
+std::string C4TeamList::GetTeamDistString() const
 {
 	// return name of current team distribution setting
 	return GetTeamDistName(eTeamDist);
@@ -913,7 +912,7 @@ int32_t C4TeamList::GetForcedTeamSelection(int32_t idForPlayer) const
 StdStrBuf C4TeamList::GetScriptPlayerName() const
 {
 	// get a name to assign to a new script player. Try to avoid name conflicts
-	if (!sScriptPlayerNames.getLength()) return StdStrBuf::MakeRef(LoadResStr("IDS_TEXT_COMPUTER")); // default name
+	if (!sScriptPlayerNames.getLength()) return StdStrBuf::MakeRef(LoadResStr(C4ResStrTableKey::IDS_TEXT_COMPUTER)); // default name
 	// test available script names
 	int32_t iNameIdx = 0; StdStrBuf sOut;
 	while (sScriptPlayerNames.GetSection(iNameIdx++, &sOut, '|'))

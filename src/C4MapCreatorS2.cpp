@@ -796,24 +796,15 @@ CSurface8 *C4MapCreatorS2::Render(const char *szMapName)
 	return sfc;
 }
 
-C4MCParserErr::C4MCParserErr(C4MCParser *pParser, const char *szMsg)
+C4MCParserErr::C4MCParserErr(C4MCParser *pParser, const std::string_view msg)
+	: Msg{std::format("{}: {} ({})", pParser->Filename, msg, pParser->Code ? SGetLine(pParser->Code, pParser->CPos) : 0)}
 {
-	// create error message
-	sprintf(Msg, "%s: %s (%d)", pParser->Filename, szMsg, pParser->Code ? SGetLine(pParser->Code, pParser->CPos) : 0);
-}
-
-C4MCParserErr::C4MCParserErr(C4MCParser *pParser, const char *szMsg, const char *szPar)
-{
-	char Buf[C4MaxMessage];
-	// create error message
-	sprintf(Buf, szMsg, szPar);
-	sprintf(Msg, "%s: %s (%d)", pParser->Filename, Buf, pParser->Code ? SGetLine(pParser->Code, pParser->CPos) : 0);
 }
 
 void C4MCParserErr::show() const
 {
 	// log error
-	Log(Msg);
+	LogNTr(spdlog::level::err, Msg);
 }
 
 // parser

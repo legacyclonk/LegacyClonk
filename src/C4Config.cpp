@@ -18,14 +18,14 @@
 
 #include <C4Config.h>
 
-#include <C4UpperBoard.h>
-#include <C4Log.h>
 #include "C4Version.h"
 #ifdef C4ENGINE
 #include <C4Application.h>
+#include <C4Log.h>
 #include <C4Network2.h>
 #include <C4Language.h>
-#include <StdResStr2.h>
+#include "C4ResStrTable.h"
+#include <C4UpperBoard.h>
 #endif
 
 #include <StdFile.h>
@@ -35,6 +35,8 @@
 #elif defined(__linux__)
 #include <clocale>
 #endif
+
+#include <format>
 
 bool isGermanSystem()
 {
@@ -283,9 +285,9 @@ void C4ConfigGamepad::CompileFunc(StdCompiler *pComp, bool fButtonsOnly)
 	{
 		for (int i = 0; i < 6; ++i)
 		{
-			pComp->Value(mkNamingAdapt(AxisMin[i],        FormatString("Axis%dMin",        i).getData(), 0u));
-			pComp->Value(mkNamingAdapt(AxisMax[i],        FormatString("Axis%dMax",        i).getData(), 0u));
-			pComp->Value(mkNamingAdapt(AxisCalibrated[i], FormatString("Axis%dCalibrated", i).getData(), false));
+			pComp->Value(mkNamingAdapt(AxisMin[i],        std::format("Axis{}Min",        i).c_str(), 0u));
+			pComp->Value(mkNamingAdapt(AxisMax[i],        std::format("Axis{}Max",        i).c_str(), 0u));
+			pComp->Value(mkNamingAdapt(AxisCalibrated[i], std::format("Axis{}Calibrated", i).c_str(), false));
 		}
 	}
 	pComp->Value(mkNamingAdapt(Button[0],  "Button1",  -1));
@@ -480,7 +482,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 	{
 		// Configuration file syntax error?
 #ifdef C4ENGINE
-		LogF("Error loading configuration: %s"/*restbl not yet loaded*/, e.what());
+		spdlog::critical("Error loading configuration: {}", e.what());
 #endif
 		return false;
 	}
@@ -521,13 +523,13 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 	}
 	if (Config.Network.PortTCP > 0 && Config.Network.PortTCP == Config.Network.PortRefServer)
 	{
-		Log("Warning: Network TCP port and reference server port both set to same value - increasing reference server port!");
+		spdlog::warn("Network TCP port and reference server port both set to same value - increasing reference server port!");
 		++Config.Network.PortRefServer;
 		if (Config.Network.PortRefServer >= 65536) Config.Network.PortRefServer = C4NetStdPortRefServer;
 	}
 	if (Config.Network.PortUDP > 0 && Config.Network.PortUDP == Config.Network.PortDiscovery)
 	{
-		Log("Warning: Network UDP port and LAN game discovery port both set to same value - increasing discovery port!");
+		spdlog::warn("Network UDP port and LAN game discovery port both set to same value - increasing discovery port!");
 		++Config.Network.PortDiscovery;
 		if (Config.Network.PortDiscovery >= 65536) Config.Network.PortDiscovery = C4NetStdPortDiscovery;
 	}
@@ -568,13 +570,14 @@ bool C4Config::Save()
 			}
 			StdCompilerINIWrite IniWrite;
 			IniWrite.Decompile(*this);
-			IniWrite.getOutput().SaveToFile(filename.getData());
+			const std::string output{IniWrite.getOutput()};
+			StdStrBuf{output.c_str(), output.size(), false}.SaveToFile(filename.getData());
 		}
 	}
 	catch ([[maybe_unused]] const StdCompiler::Exception &e)
 	{
 #ifdef C4ENGINE
-		LogF(LoadResStr("IDS_ERR_CONFSAVE"), e.what());
+		Log(C4ResStrTableKey::IDS_ERR_CONFSAVE, e.what());
 #endif
 		return false;
 	}
@@ -699,11 +702,11 @@ bool C4ConfigGeneral::CreateSaveFolder(const char *strDirectory, const char *str
 			return false;
 	// Create title component if needed
 	char lang[3]; SCopy(Config.General.Language, lang, 2);
-	StdStrBuf strTitleFile; strTitleFile.Format("%s%c%s", strDirectory, DirectorySeparator, C4CFN_WriteTitle);
-	StdStrBuf strTitleData; strTitleData.Format("%s:%s", lang, strLanguageTitle);
+	const std::string titleFile{std::format("{}" DirSep C4CFN_WriteTitle, strDirectory)};
+	const std::string titleData{std::format("{}:{}", lang, strLanguageTitle)};
 	CStdFile hFile;
-	if (!FileExists(strTitleFile.getData()))
-		if (!hFile.Create(strTitleFile.getData()) || !hFile.WriteString(strTitleData.getData()) || !hFile.Close())
+	if (!FileExists(titleFile.c_str()))
+		if (!hFile.Create(titleFile.c_str()) || !hFile.WriteString(titleData.c_str()) || !hFile.Close())
 			return false;
 	// Save folder seems okay
 	return true;
@@ -779,9 +782,9 @@ const char *C4Config::GetSubkeyPath(const char *strSubkey)
 {
 	static char key[1024 + 1];
 #ifdef _WIN32
-	sprintf(key, "Software\\%s\\%s\\%s", C4CFG_Company, C4CFG_Product, strSubkey);
+	FormatWithNull(key, "Software\\{}\\{}\\{}", C4CFG_Company, C4CFG_Product, strSubkey);
 #else
-	sprintf(key, "%s", strSubkey);
+	SCopy(strSubkey, key, 1024);
 #endif
 	return key;
 }
@@ -824,7 +827,7 @@ void C4Config::CompileFunc(StdCompiler *pComp)
 #ifdef C4ENGINE
 	pComp->Value(mkNamingAdapt(Controls,  "Controls"));
 	for (int i = 0; i < C4ConfigMaxGamepads; ++i)
-		pComp->Value(mkNamingAdapt(Gamepads[i], FormatString("Gamepad%d", i).getData()));
+		pComp->Value(mkNamingAdapt(Gamepads[i], std::format("Gamepad{}", i).c_str()));
 	pComp->Value(mkNamingAdapt(Graphics,  "Graphics"));
 	pComp->Value(mkNamingAdapt(Sound,     "Sound"));
 	pComp->Value(mkNamingAdapt(Network,   "Network"));

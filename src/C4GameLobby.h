@@ -59,7 +59,7 @@ public:
 
 	bool IsAbort() const { return iCountdown == Abort; }
 	int32_t GetCountdown() const { return iCountdown; }
-	StdStrBuf GetCountdownMsg(bool fInitialMsg = false) const;
+	std::string GetCountdownMsg(bool fInitialMsg = false) const;
 
 	virtual void CompileFunc(StdCompiler *pComp) override;
 };

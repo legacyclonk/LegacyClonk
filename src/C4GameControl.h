@@ -68,6 +68,9 @@ protected:
 
 	C4Control *pExecutingControl; // Control that is in the process of being executed - needed by non-initial records
 
+private:
+	std::shared_ptr<spdlog::logger> logger;
+
 public:
 	// ticks
 	int32_t ControlRate;
@@ -136,6 +139,8 @@ public:
 	void ExecControl(const C4Control &rCtrl);
 	void ExecControlPacket(C4PacketType eCtrlType, class C4ControlPacket *pPkt);
 	void OnGameSynchronizing(); // start record if desired
+
+	const std::shared_ptr<spdlog::logger> &GetLogger() const noexcept { return logger; }
 
 protected:
 	// sync checks

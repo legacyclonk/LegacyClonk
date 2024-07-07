@@ -23,8 +23,10 @@
 #include <C4Game.h>
 #include <C4Player.h>
 
+#include <format>
+
 C4Graph::C4Graph()
-	: szTitle(LoadResStr("IDS_NET_GRAPH"), false), dwColor(0x7fff0000) {}
+	: szTitle(LoadResStr(C4ResStrTableKey::IDS_NET_GRAPH), false), dwColor(0x7fff0000) {}
 
 C4TableGraph::C4TableGraph(int iBackLogLength, int iStartTime)
 	: iBackLogLength(iBackLogLength), pValues(nullptr), iBackLogPos(0), fWrapped(false)
@@ -167,11 +169,9 @@ bool C4TableGraph::DumpToFile(const StdStrBuf &rszFilename, bool fAppend) const
 	}
 	// write out current timeframe
 	int iEndTime = GetEndTime();
-	StdStrBuf buf;
 	for (int iWriteTime = GetStartTime(); iWriteTime < iEndTime; ++iWriteTime)
 	{
-		buf.Format("%d\t%d\r\n", static_cast<int>(iWriteTime), static_cast<int>(GetValue(iWriteTime)));
-		out.WriteString(buf.getData());
+		out.WriteString(std::format("{}\t{}\r\n", iWriteTime, GetValue(iWriteTime)).c_str());
 	}
 	return true;
 }
@@ -299,16 +299,16 @@ C4Network2Stats::C4Network2Stats() : pSec1Timer(nullptr)
 	SecondCounter = 0;
 	ControlCounter = 0;
 	// init graphs
-	statObjCount.SetTitle(LoadResStr("IDS_MSG_OBJCOUNT"));
-	statFPS.SetTitle(LoadResStr("IDS_MSG_FPS"));
-	statNetI.SetTitle(LoadResStr("IDS_NET_INPUT"));
+	statObjCount.SetTitle(LoadResStr(C4ResStrTableKey::IDS_MSG_OBJCOUNT));
+	statFPS.SetTitle(LoadResStr(C4ResStrTableKey::IDS_MSG_FPS));
+	statNetI.SetTitle(LoadResStr(C4ResStrTableKey::IDS_NET_INPUT));
 	statNetI.SetColorDw(0x00ff00);
-	statNetO.SetTitle(LoadResStr("IDS_NET_OUTPUT"));
+	statNetO.SetTitle(LoadResStr(C4ResStrTableKey::IDS_NET_OUTPUT));
 	statNetO.SetColorDw(0xff0000);
 	graphNetIO.AddGraph(&statNetI); graphNetIO.AddGraph(&statNetO);
-	statControls.SetTitle(LoadResStr("IDS_NET_CONTROL"));
+	statControls.SetTitle(LoadResStr(C4ResStrTableKey::IDS_NET_CONTROL));
 	statControls.SetAverageTime(100);
-	statActions.SetTitle(LoadResStr("IDS_NET_APM"));
+	statActions.SetTitle(LoadResStr(C4ResStrTableKey::IDS_NET_APM));
 	statActions.SetAverageTime(100);
 	for (C4Player *pPlr = Game.Players.First; pPlr; pPlr = pPlr->Next) pPlr->CreateGraphs();
 	C4Network2Client *pClient = nullptr;

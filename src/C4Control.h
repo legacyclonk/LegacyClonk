@@ -25,6 +25,7 @@
 #include "C4PlayerInfo.h"
 #include "C4Client.h"
 
+#include <format>
 #include <string>
 
 class C4Record;
@@ -47,8 +48,8 @@ public:
 
 	void SetByClient(int32_t iByClient);
 
-	virtual bool PreExecute() const { return true; }
-	virtual void Execute() const = 0;
+	virtual bool PreExecute(const std::shared_ptr<spdlog::logger> &logger) const { return true; }
+	virtual void Execute(const std::shared_ptr<spdlog::logger> &logger) const = 0;
 	virtual void PreRec(C4Record *pRecord) {}
 
 	// allowed in lobby (without dynamic loaded)?
@@ -60,7 +61,7 @@ public:
 };
 
 #define DECLARE_C4CONTROL_VIRTUALS \
-	virtual void Execute() const override; \
+	virtual void Execute(const std::shared_ptr<spdlog::logger> &logger) const override; \
 	virtual void CompileFunc(StdCompiler *pComp) override;
 
 class C4Control : public C4PacketBase
@@ -88,8 +89,8 @@ public:
 	void Delete(C4IDPacket *pPkt) { Pkts.Delete(pPkt); }
 
 	// control execution
-	bool PreExecute() const;
-	void Execute() const;
+	bool PreExecute(const std::shared_ptr<spdlog::logger> &logger) const;
+	void Execute(const std::shared_ptr<spdlog::logger> &logger) const;
 	void PreRec(C4Record *pRecord) const;
 
 	virtual void CompileFunc(StdCompiler *pComp) override;
@@ -326,7 +327,7 @@ protected:
 
 public:
 	DECLARE_C4CONTROL_VIRTUALS
-	virtual bool PreExecute() const override;
+	virtual bool PreExecute(const std::shared_ptr<spdlog::logger> &logger) const override;
 	virtual void PreRec(C4Record *pRecord) override;
 	void Strip();
 };
@@ -500,8 +501,8 @@ class C4ControlInternalScriptBase : public C4ControlPacket
 public:
 	virtual int32_t Scope() const { return C4ControlScript::SCOPE_Global; }
 	virtual bool Allowed() const { return true; }
-	virtual StdStrBuf FormatScript() const = 0;
-	virtual void Execute() const override;
+	virtual std::string FormatScript() const = 0;
+	virtual void Execute(const std::shared_ptr<spdlog::logger> &logger) const override;
 };
 
 class C4ControlEMDropDef : public C4ControlInternalScriptBase
@@ -515,7 +516,7 @@ public:
 	C4ControlEMDropDef(C4ID id, int32_t x, int32_t y) : id(id), x(x), y(y) {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
 	virtual bool Allowed() const override;
-	virtual StdStrBuf FormatScript() const override;
+	virtual std::string FormatScript() const override;
 };
 
 class C4ControlInternalPlayerScriptBase : public C4ControlInternalScriptBase
@@ -539,7 +540,7 @@ public:
 	C4ControlMessageBoardAnswer() {}
 	C4ControlMessageBoardAnswer(int32_t obj, int32_t plr, const std::string &answer) : obj(obj), answer(answer), C4ControlInternalPlayerScriptBase(plr) {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
-	virtual StdStrBuf FormatScript() const override;
+	virtual std::string FormatScript() const override;
 };
 
 class C4ControlCustomCommand : public C4ControlInternalPlayerScriptBase
@@ -552,7 +553,7 @@ public:
 	C4ControlCustomCommand(int32_t plr, const std::string &command, const std::string &argument) : command(command), argument(argument), C4ControlInternalPlayerScriptBase(plr) {}
 	virtual bool Allowed() const override;
 	virtual void CompileFunc(StdCompiler *pComp) override;
-	virtual StdStrBuf FormatScript() const override;
+	virtual std::string FormatScript() const override;
 };
 
 class C4ControlInitScenarioPlayer : public C4ControlInternalPlayerScriptBase
@@ -563,7 +564,7 @@ public:
 	C4ControlInitScenarioPlayer() {}
 	C4ControlInitScenarioPlayer(int32_t plr, int32_t team) : team(team), C4ControlInternalPlayerScriptBase(plr) {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
-	virtual StdStrBuf FormatScript() const override { return FormatString("InitScenarioPlayer(%d,%d)", static_cast<int>(plr), static_cast<int>(team)); }
+	virtual std::string FormatScript() const override { return std::format("InitScenarioPlayer({},{})", plr, team); }
 };
 
 class C4ControlActivateGameGoalMenu : public C4ControlInternalPlayerScriptBase
@@ -571,7 +572,7 @@ class C4ControlActivateGameGoalMenu : public C4ControlInternalPlayerScriptBase
 public:
 	C4ControlActivateGameGoalMenu() {}
 	C4ControlActivateGameGoalMenu(int32_t plr) : C4ControlInternalPlayerScriptBase(plr) {}
-	virtual StdStrBuf FormatScript() const override { return FormatString("ActivateGameGoalMenu(%d)", plr); }
+	virtual std::string FormatScript() const override { return std::format("ActivateGameGoalMenu({})", plr); }
 };
 
 class C4ControlToggleHostility : public C4ControlInternalPlayerScriptBase
@@ -582,7 +583,7 @@ public:
 	C4ControlToggleHostility() {}
 	C4ControlToggleHostility(int32_t plr, int32_t opponent) : opponent(opponent), C4ControlInternalPlayerScriptBase(plr) {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
-	virtual StdStrBuf FormatScript() const override { return FormatString("SetHostility(%d,%d,!Hostile(%d,%d,true))", plr, opponent, plr, opponent); }
+	virtual std::string FormatScript() const override { return std::format("SetHostility({},{},!Hostile({},{},true))", plr, opponent, plr, opponent); }
 };
 
 class C4ControlSurrenderPlayer : public C4ControlInternalPlayerScriptBase
@@ -590,7 +591,7 @@ class C4ControlSurrenderPlayer : public C4ControlInternalPlayerScriptBase
 public:
 	C4ControlSurrenderPlayer() {}
 	C4ControlSurrenderPlayer(int32_t plr) : C4ControlInternalPlayerScriptBase(plr) {}
-	virtual StdStrBuf FormatScript() const override { return FormatString("SurrenderPlayer(%d)", plr); }
+	virtual std::string FormatScript() const override { return std::format("SurrenderPlayer({})", plr); }
 };
 
 class C4ControlActivateGameGoalRule : public C4ControlInternalPlayerScriptBase
@@ -601,7 +602,7 @@ public:
 	C4ControlActivateGameGoalRule() {}
 	C4ControlActivateGameGoalRule(int32_t plr, int32_t obj) : obj(obj), C4ControlInternalPlayerScriptBase(plr) {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
-	virtual StdStrBuf FormatScript() const override { return FormatString("Activate(%d)", plr); }
+	virtual std::string FormatScript() const override { return std::format("Activate({})", plr); }
 	virtual int32_t Scope() const override { return obj; }
 };
 
@@ -613,7 +614,7 @@ public:
 	C4ControlSetPlayerTeam() {}
 	C4ControlSetPlayerTeam(int32_t plr, int32_t team) : team(team), C4ControlInternalPlayerScriptBase(plr) {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
-	virtual StdStrBuf FormatScript() const override { return FormatString("SetPlayerTeam(%d,%d)", static_cast<int>(plr), static_cast<int>(team)); }
+	virtual std::string FormatScript() const override { return std::format("SetPlayerTeam({},{})", plr, team); }
 };
 
 class C4ControlEliminatePlayer : public C4ControlInternalPlayerScriptBase
@@ -622,5 +623,5 @@ public:
 	C4ControlEliminatePlayer() {}
 	C4ControlEliminatePlayer(int32_t plr) : C4ControlInternalPlayerScriptBase(plr) {}
 	virtual bool Allowed() const override { return HostControl(); }
-	virtual StdStrBuf FormatScript() const override { return FormatString("EliminatePlayer(%d)", plr); }
+	virtual std::string FormatScript() const override { return std::format("EliminatePlayer({})", plr); }
 };
