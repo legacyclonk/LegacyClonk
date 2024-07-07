@@ -120,6 +120,7 @@ public:
 	void DeleteObjects(bool deleteInactive);
 
 	void ClearPointers(C4Object *obj);
+	void ClearSectionPointers(C4Section &section);
 	void EnumeratePointers();
 	void DenumeratePointers();
 
@@ -262,6 +263,16 @@ public:
 		return status == Status::Active;
 	}
 
+	void UpdateRootParent();
+
+	C4Section &GetRootSection() noexcept;
+
+	bool IsChildOf(const C4Section &section) const noexcept;
+
+	void PointToParentPoint(std::int32_t &x, std::int32_t &y, const C4Section *untilParent = nullptr) const noexcept;
+	void ParentPointToPoint(std::int32_t &x, std::int32_t &y, const C4Section *untilParent = nullptr) const noexcept;
+	std::tuple<C4Section &, std::int32_t, std::int32_t> PointToChildPoint(int32_t x, int32_t y) noexcept;
+
 private:
 	// Object function internals
 	C4Object *NewObject(C4Def *ndef, C4Object *pCreator,
@@ -291,6 +302,11 @@ public:
 	bool LandscapeLoaded{false};
 	std::uint32_t RemovalDelay{};
 	std::uint32_t Number;
+	std::vector<EnumeratedPtr> Children;
+	C4Section *Parent{nullptr};
+	C4Section *RootParent{nullptr};
+	C4Rect RenderAsChildBounds;
+	bool ChildVisible{false};
 
 public:
 	static void ResetEnumerationIndex() noexcept;

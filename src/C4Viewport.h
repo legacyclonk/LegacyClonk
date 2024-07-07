@@ -113,6 +113,12 @@ public:
 	int32_t GetPlayer() { return Player; }
 	void CenterPosition();
 	C4Section &GetViewSection();
+	C4Section &GetViewRootSection();
+
+	auto MapPointToChildSectionPoint(const std::int32_t x, const std::int32_t y)
+	{
+		return GetViewRootSection().PointToChildPoint(x, y);
+	}
 
 protected:
 	int32_t Player;
@@ -126,10 +132,12 @@ protected:
 	void DrawMouseButtons(C4FacetEx &cgo);
 	void DrawPlayerStartup(C4FacetEx &cgo);
 	void Draw(C4FacetEx &cgo, bool fDrawOverlay);
+	void DrawSection(C4FacetEx &cgo, C4Section &section, C4Player *plr, bool fowEnabled);
+	void DrawParallaxObjects(C4FacetEx &cgo, C4Section &section);
 	void DrawOverlay(C4FacetEx &cgo, C4Section &viewSection);
 	void DrawMenu(C4FacetEx &cgo);
 	void DrawCursorInfo(C4FacetEx &cgo);
-	void DrawPlayerInfo(C4FacetEx &cgo);
+	void DrawPlayerInfo(C4FacetEx &cgo, C4Section &section);
 	void DrawPlayerControls(C4FacetEx &cgo);
 	void BlitOutput();
 	void AdjustPosition();
