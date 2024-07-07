@@ -59,6 +59,8 @@ void C4Section::Default()
 	PathFinder.Default();
 	TransferZones.Default();
 	GlobalEffects = nullptr;
+	Children.clear();
+	Parent = nullptr;
 }
 
 void C4Section::Clear()
@@ -73,6 +75,8 @@ void C4Section::Clear()
 	TransferZones.Clear();
 	delete GlobalEffects;
 	GlobalEffects = nullptr;
+	Children.clear();
+	Parent = nullptr;
 }
 
 bool C4Section::InitFromTemplate(C4Group &scenario)
@@ -671,6 +675,11 @@ void C4Section::EnumeratePointers()
 	{
 		GlobalEffects->EnumeratePointers();
 	}
+
+	for (auto &child : Children)
+	{
+		child.Enumerate();
+	}
 }
 
 void C4Section::DenumeratePointers()
@@ -679,6 +688,23 @@ void C4Section::DenumeratePointers()
 	{
 		GlobalEffects->DenumeratePointers();
 	}
+
+	std::erase_if(Children, [this](auto &child)
+	{
+		child.Denumerate();
+
+		if (child)
+		{
+			child->Parent = this;
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	});
+
+	UpdateRootParent();
 }
 
 bool C4Section::AssignRemoval()
@@ -699,6 +725,14 @@ bool C4Section::AssignRemoval()
 
 	Particles.ClearParticles();
 	RemovalDelay = 3;
+
+	for (auto &child : Children)
+	{
+		child->Parent = nullptr;
+		child->RootParent = nullptr;
+	}
+
+	Children.clear();
 
 	return true;
 }
@@ -1264,6 +1298,107 @@ void C4Section::SynchronizeTransferZones()
 	Objects.UpdateTransferZones();
 }
 
+void C4Section::UpdateRootParent()
+{
+	if (Parent)
+	{
+		C4Section *section{Parent};
+		while (section->Parent)
+		{
+			section = section->Parent;
+		}
+
+		RootParent = section;
+	}
+	else
+	{
+		RootParent = nullptr;
+	}
+}
+
+C4Section &C4Section::GetRootSection() noexcept
+{
+	return RootParent ? *RootParent : *this;
+}
+
+bool C4Section::IsChildOf(const C4Section &section) const noexcept
+{
+	for (const C4Section *sectionPtr{this}; sectionPtr->Parent; sectionPtr = sectionPtr->Parent)
+	{
+		if (sectionPtr->Parent == &section)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void C4Section::PointToParentPoint(std::int32_t &x, std::int32_t &y, const C4Section *untilParent) const noexcept
+{
+	if (this == untilParent || !Parent)
+	{
+		return;
+	}
+
+	if (!untilParent)
+	{
+		untilParent = RootParent;
+	}
+
+	for (const C4Section *sectionPtr{this}; sectionPtr != untilParent; sectionPtr = sectionPtr->Parent)
+	{
+		x += sectionPtr->RenderAsChildBounds.x;
+		y += sectionPtr->RenderAsChildBounds.y;
+	}
+}
+
+void C4Section::ParentPointToPoint(std::int32_t &x, std::int32_t &y, const C4Section *untilParent) const noexcept
+{
+	if (this == untilParent || !Parent)
+	{
+		return;
+	}
+
+	if (!untilParent)
+	{
+		untilParent = RootParent;
+	}
+
+	for (const C4Section *sectionPtr{this}; sectionPtr != untilParent; sectionPtr = sectionPtr->Parent)
+	{
+		x -= sectionPtr->RenderAsChildBounds.x;
+		y -= sectionPtr->RenderAsChildBounds.y;
+	}
+}
+
+std::tuple<C4Section &, std::int32_t, std::int32_t> C4Section::PointToChildPoint(std::int32_t x, std::int32_t y) noexcept
+{
+	C4Section *childPtr{this};
+
+	for (;;)
+	{
+
+		for (const auto &child : Children)
+		{
+			if (const auto &bounds = child->RenderAsChildBounds; bounds.Contains(x, y))
+			{
+				childPtr = *child;
+				x -= bounds.x;
+				y -= bounds.y;
+				goto next;
+			}
+		}
+
+		break;
+
+	next:
+		continue;
+	}
+
+	return {*childPtr, x, y};
+}
+
 void C4Section::ClearObjectPtrs(C4Object *const obj)
 {
 	// May not call Objects.ClearPointers() because that would
@@ -1275,6 +1410,15 @@ void C4Section::ClearObjectPtrs(C4Object *const obj)
 	// check in inactive objects as well
 	for (clnk = Objects.InactiveObjects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
 		cObj->ClearPointers(obj);
+}
+
+void C4Section::ClearSectionPointers(C4Section &section)
+{
+	if (Parent == &section)
+	{
+		Parent = nullptr;
+		RootParent = nullptr;
+	}
 }
 
 // Deletes removal-assigned data from list.

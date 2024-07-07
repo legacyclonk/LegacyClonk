@@ -5848,6 +5848,20 @@ void C4Object::UnSelect(bool fCursor)
 	Call(PSF_CrewSelection, {C4VBool(true), C4VBool(fCursor)});
 }
 
+void C4Object::GetViewPos(int32_t &riX, int32_t &riY, int32_t tx, int32_t ty, const C4Facet &fctViewport) // get position this object is seen at (for given scroll)
+{
+	if (Category & C4D_Parallax)
+	{
+		GetViewPosPar(riX, riY, tx, ty, fctViewport);
+	}
+	else
+	{
+		riX = x; riY = y;
+	}
+
+	Section->PointToParentPoint(riX, riY);
+}
+
 void C4Object::GetViewPosPar(int32_t &riX, int32_t &riY, int32_t tx, int32_t ty, const C4Facet &fctViewport)
 {
 	int iParX = Local[0].getInt(), iParY = Local[1].getInt();
