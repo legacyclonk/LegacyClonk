@@ -15,6 +15,7 @@
 
 #include "C4Game.h"
 #include "C4Math.h"
+#include "C4Random.h"
 #include "C4Section.h"
 
 C4Section::EnumeratedPtrTraits::Enumerated C4Section::EnumeratedPtrTraits::Enumerate(Denumerated *const section)
