@@ -37,17 +37,17 @@ public:
 	void Add(const C4Rect &r2);
 	bool operator==(const C4Rect &r2) const { return !((x - r2.x) | (y - r2.y) | (Wdt - r2.Wdt) | (Hgt - r2.Hgt)); }
 
-	bool Contains(int32_t iX, int32_t iY)
+	constexpr bool Contains(int32_t iX, int32_t iY) const noexcept
 	{
 		return iX >= x && iX < x + Wdt && iY >= y && iY < y + Hgt;
 	}
 
-	bool Contains(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt)
+	constexpr bool Contains(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt) const noexcept
 	{
 		return iX >= x && iX + iWdt < x + Wdt && iY >= y && iY + iHgt < y + Hgt;
 	}
 
-	bool Contains(const C4Rect &rect)
+	constexpr bool Contains(const C4Rect &rect) const noexcept
 	{
 		return Contains(rect.x, rect.y, rect.Wdt, rect.Hgt);
 	}

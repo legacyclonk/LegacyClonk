@@ -384,7 +384,7 @@ void C4GraphicsSystem::RecalculateViewports()
 			cOffWdt = cOffHgt = 0;
 			int32_t ViewportScrollBorder = Application.isFullScreen ? C4ViewportScrollBorder : 0;
 
-			C4Section &section{cvp->get()->GetViewSection()};
+			C4Section &section{cvp->get()->GetViewRootSection()};
 			if (ciViewsX * std::min<int32_t>(cViewWdt, section.Landscape.Width + 2 * ViewportScrollBorder) < ViewportArea.Wdt)
 				cOffX = (ViewportArea.Wdt - ciViewsX * std::min<int32_t>(cViewWdt, section.Landscape.Width + 2 * ViewportScrollBorder)) / 2;
 			if (iViewsH * std::min<int32_t>(cViewHgt, section.Landscape.Height + 2 * ViewportScrollBorder) < ViewportArea.Hgt)
@@ -544,7 +544,7 @@ bool C4GraphicsSystem::DoSaveScreenshot(bool fSaveAll, const char *szFilename)
 		// get viewport to draw in
 		const auto &pVP = Viewports.front();
 		// create image large enough to hold the landcape
-		C4Landscape &landscape{pVP->GetViewSection().Landscape};
+		C4Landscape &landscape{pVP->GetViewRootSection().Landscape};
 		int32_t lWdt = static_cast<int32_t>(ceilf(landscape.Width * scale)), lHgt = static_cast<int32_t>(ceilf(landscape.Height * scale));
 		StdBitmap bmp(lWdt, lHgt, false);
 		// get backbuffer size

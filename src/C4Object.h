@@ -410,10 +410,7 @@ public:
 	bool DoSelect(bool fCursor = false); // select in crew (or just set cursor) if not disabled
 	void UnSelect(bool fCursor = false); // unselect in crew (or just task away cursor)
 
-	void GetViewPos(int32_t &riX, int32_t &riY, int32_t tx, int32_t ty, const C4Facet &fctViewport) // get position this object is seen at (for given scroll)
-	{
-		if (Category & C4D_Parallax) GetViewPosPar(riX, riY, tx, ty, fctViewport); else { riX = x; riY = y; }
-	}
+	void GetViewPos(int32_t &riX, int32_t &riY, int32_t tx, int32_t ty, const C4Facet &fctViewport);
 
 	void GetViewPosPar(int32_t &riX, int32_t &riY, int32_t tx, int32_t ty, const C4Facet &fctViewport); // get position this object is seen at, calculating parallaxity
 	bool PutAwayUnusedObject(C4Object *pToMakeRoomForObject); // either directly put the least-needed object away, or add a command to do it - return whether successful

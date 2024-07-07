@@ -6307,6 +6307,57 @@ static bool FnRemoveSection(C4AulContext *ctx, C4ValueInt section)
 	return Game.RemoveSection(static_cast<std::uint32_t>(section));
 }
 
+static bool FnAddBackgroundSection(C4AulContext *ctx, C4ValueInt sectionNumber, C4ValueInt backgroundSectionNumber, C4ValueInt x, C4ValueInt y, C4ValueInt width, C4ValueInt height)
+{
+	C4Section *const section{Game.GetSectionByNumber(static_cast<std::uint32_t>(sectionNumber))};
+	if (!section) return false;
+
+	C4Section *const backgroundSection{Game.GetSectionByNumber(static_cast<std::uint32_t>(backgroundSectionNumber))};
+	if (!backgroundSection) return false;
+
+	if (x < 0 || width <= 0 || x + width >= backgroundSection->Landscape.Width || y < 0 || height <= 0 || y + height >= backgroundSection->Landscape.Height)
+	{
+		return false;
+	}
+
+	if (section->Parent)
+	{
+		if (section->Parent != backgroundSection)
+		{
+			return false;
+		}
+	}
+
+	section->Parent = backgroundSection;
+	section->UpdateRootParent();
+	section->RenderAsChildBounds = {x, y, width, height};
+	section->ChildVisible = true;
+
+	if (std::ranges::find(backgroundSection->Children, section) == backgroundSection->Children.end())
+	{
+		backgroundSection->Children.emplace_back(section);
+	}
+
+	return true;
+}
+
+static bool FnSetSectionPosition(C4AulContext *ctx, C4ValueInt sectionNumber, C4ValueInt x, C4ValueInt y)
+{
+	C4Section *const section{Game.GetSectionByNumber(static_cast<std::uint32_t>(sectionNumber))};
+	if (!section) return false;
+
+	if (!section->Parent) return false;
+
+	if (x < 0 || x + section->RenderAsChildBounds.Wdt >= section->Parent->Landscape.Width || y < 0 || y + section->RenderAsChildBounds.Hgt >= section->Parent->Landscape.Height)
+	{
+		return false;
+	}
+
+	section->RenderAsChildBounds.x = x;
+	section->RenderAsChildBounds.y = y;
+	return true;
+}
+
 template<std::size_t ParCount>
 class C4AulEngineFuncHelper : public C4AulFunc
 {
@@ -7237,6 +7288,8 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "SetSectionContext",               FnSetSectionContext);
 	AddFunc(pEngine, "SetObjectContext",                FnSetObjectContext);
 	AddFunc(pEngine, "RemoveSection",                   FnRemoveSection);
+	AddFunc(pEngine, "AddBackgroundSection",            FnAddBackgroundSection);
+	AddFunc(pEngine, "SetSectionPosition",              FnSetSectionPosition);
 	new C4AulDefCastFunc<C4V_C4ID, C4V_Int>{pEngine, "ScoreboardCol"};
 	new C4AulDefCastFunc<C4V_Any, C4V_Int>{pEngine, "CastInt"};
 	new C4AulDefCastFunc<C4V_Any, C4V_Bool>{pEngine, "CastBool"};

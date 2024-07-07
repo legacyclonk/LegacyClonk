@@ -957,7 +957,7 @@ bool C4MainMenu::ActivateObserver()
 	C4Viewport *const viewport{Game.GraphicsSystem.GetViewport(NO_OWNER)};
 	if (!viewport) return false;
 	// Menu symbol/init
-	InitRefSym(C4GUI::Icon::GetIconFacet(C4GUI::Ico_View), viewport->GetViewSection(), LoadResStr(C4ResStrTableKey::IDS_TEXT_VIEW), NO_OWNER, C4MN_Extra_None, 0, C4MN_Observer, C4MN_Style_Context);
+	InitRefSym(C4GUI::Icon::GetIconFacet(C4GUI::Ico_View), viewport->GetViewRootSection(), LoadResStr(C4ResStrTableKey::IDS_TEXT_VIEW), NO_OWNER, C4MN_Extra_None, 0, C4MN_Observer, C4MN_Style_Context);
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
 	// Players added in Refill
 	Refill();
