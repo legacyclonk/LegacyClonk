@@ -1988,7 +1988,8 @@ bool C4Game::InitGameFinal()
 
 	// Script constructor call
 	if (!C4S.Head.SaveGame) Script.Call(*Sections.front(), PSF_Initialize); // FIXME
-	if (std::ranges::any_of(Sections, [objectCount](C4GameObjects &objects) { return objects.ObjectCount() != objectCount; }, &C4Section::Objects))
+
+	if (std::transform_reduce(Sections.begin(), Sections.end(), 0, std::plus<std::int32_t>{}, [](const auto &section) { return section->Objects.ObjectCount(); }) != objectCount)
 	{
 		fScriptCreatedObjects = true;
 	}
