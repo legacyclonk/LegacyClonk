@@ -153,7 +153,7 @@ void C4GameObjects::CrossCheck() // Every Tick1 by ExecObjects
 			{
 				uint32_t Marker = GetNextMarker();
 				C4LSector *pSct;
-				for (C4ObjectList *pLst = obj1->Area.FirstObjects(&pSct); pLst; pLst = obj1->Area.NextObjects(pLst, &pSct))
+				for (C4ObjectList *pLst = obj1->Area.FirstObjects(&pSct); pLst; pLst = obj1->Area.NextObjects(&pSct))
 					for (C4ObjectList::iterator iter2 = pLst->begin(); iter2 != pLst->end() && (obj2 = *iter2); ++iter2)
 						if (obj2->Status && !obj2->Contained && (obj2 != obj1) && (obj2->OCF & tocf))
 							if (Inside<int32_t>(obj2->x - (obj1->x + obj1->Shape.x), 0, obj1->Shape.Wdt - 1))

@@ -57,8 +57,132 @@
 #include <format>
 #include <iterator>
 #include <numeric>
+#include <ranges>
 #include <sstream>
 #include <utility>
+
+C4Object *C4Game::MultipleObjectLists::Next()
+{
+	C4Object *value;
+
+	do
+	{
+		if (objectLinks.size() > 1)
+		{
+			std::ranges::stable_sort(objectLinks, [](C4ObjectLink *const link1, C4ObjectLink *const link2)
+			{
+				if (link1 == nullptr)
+				{
+					return link2 == nullptr ? 0 : 1;
+				}
+				else if (link2 == nullptr)
+				{
+					return -1;
+				}
+
+				return (link2->Obj->Category & C4D_SortLimit) - (link1->Obj->Category & C4D_SortLimit);
+			});
+		}
+
+		if (objectLinks[0])
+		{
+			if (extraLink && (extraLink->Obj->Category & C4D_SortLimit) > (objectLinks[0]->Obj->Category & C4D_SortLimit))
+			{
+				value = extraLink->Obj;
+				extraLink = extraLink->Next;
+			}
+			else
+			{
+				value = objectLinks[0]->Obj;
+				objectLinks[0] = objectLinks[0]->Next;
+			}
+		}
+		else if (extraLink)
+		{
+			value = extraLink->Obj;
+			extraLink = extraLink->Next;
+		}
+		else
+		{
+			// No more objects
+			return nullptr;
+		}
+	}
+	while (!value->Status);
+
+	return value;
+}
+
+C4Object *C4Game::MultipleObjectListsWithMarker::Next()
+{
+	C4Object *value;
+
+	do
+	{
+		if (objectLinks.size() > 1)
+		{
+			std::ranges::stable_sort(objectLinks, [](const auto &pair1, const auto &pair2)
+			{
+				C4ObjectLink *const link1{pair1.first};
+				C4ObjectLink *const link2{pair2.first};
+
+				if (link1 == nullptr)
+				{
+					return link2 == nullptr ? 0 : 1;
+				}
+				else if (link2 == nullptr)
+				{
+					return -1;
+				}
+
+				return (link2->Obj->Category & C4D_SortLimit) - (link1->Obj->Category & C4D_SortLimit);
+			});
+		}
+
+		//spdlog::warn("objectLink[0]: {}->{} (obj: {}), extraLink: {} (obj: {})", (void *) objectLinks[0].first, objectLinks[0].first ? (void *) objectLinks[0].first->Next : nullptr, objectLinks[0].first ? objectLinks[0].first->Obj->GetName() : "", (void *) extraLink, extraLink ? extraLink->Obj->GetName() : "");
+
+		if (objectLinks[0].first)
+		{
+			if (extraLink && (extraLink->Obj->Category & C4D_SortLimit) > (objectLinks[0].first->Obj->Category & C4D_SortLimit))
+			{
+				value = extraLink->Obj;
+				extraLink = extraLink->Next;
+			}
+			else
+			{
+				value = objectLinks[0].first->Obj;
+				objectLinks[0].first = objectLinks[0].first->Next;
+
+				if (!(objectLinks[0].second >> 32))
+				{
+					const auto realMarker = static_cast<std::uint32_t>(objectLinks[0].second);
+
+					if (value->Marker != realMarker)
+					{
+						value->Marker = realMarker;
+					}
+					else
+					{
+						continue;
+					}
+				}
+			}
+		}
+		else if (extraLink)
+		{
+			value = extraLink->Obj;
+			extraLink = extraLink->Next;
+		}
+		else
+		{
+			// No more objects
+			return nullptr;
+		}
+	}
+	while (!value->Status);
+
+	return value;
+}
 
 constexpr unsigned int defaultIngameGameTickDelay = 28;
 
@@ -620,6 +744,7 @@ void C4Game::Clear()
 	// Clear the logger now that C4GameRes has also destroyed all C4Network2Res objects
 	Network.ResList.ClearLogger();
 	RoundResults.Clear();
+	ObjectsInAllSections.Clear();
 	// Ensure the main section is destroyed last
 	SectionsPendingDeletion.clear();
 	Sections.resize(1);
@@ -912,6 +1037,12 @@ void C4Game::ClearPointers(C4Object *pObj)
 		section->ClearPointers(pObj);
 	}
 
+	// Don't call ClearPointers() as we don't need to call C4Object::ClearPointers on the list members -
+	// objects in this list are _always_ contained in section lists
+	while (ObjectsInAllSections.Remove(pObj))
+	{
+	}
+
 	Application.SoundSystem->ClearPointers(pObj);
 
 	Messages.ClearPointers(pObj);
@@ -1172,6 +1303,7 @@ void C4Game::Default()
 	IsMusicEnabled = false;
 	iMusicLevel = 100;
 	PlayList.Clear();
+	ObjectsInAllSections.Default();
 	C4Section::ResetEnumerationIndex();
 }
 
@@ -2750,6 +2882,26 @@ void C4Game::OnSectionLoadFinished(const std::uint32_t sectionNumber, bool succe
 	{
 		func->Exec(*callbackSection, obj, C4AulParSet{C4VInt(static_cast<C4ValueInt>(newSectionNumber)), C4VBool(success)});
 	}
+}
+
+C4Object *C4Game::CreateObject(C4ID type, C4Section &section, C4Object *pCreator, int32_t owner, int32_t x, int32_t y, int32_t r, C4Fixed xdir, C4Fixed ydir, C4Fixed rdir, int32_t iController)
+{
+	C4Def *const def{Defs.ID2Def(type)};
+	if (!def)
+	{
+		return nullptr;
+	}
+
+	const bool inAllSections{(def->Category & (C4D_Goal | C4D_Rule)) != 0};
+	C4Section &targetSection{inAllSections ? *Sections.front() : section};
+
+	C4Object *const obj{targetSection.CreateObject(type, pCreator, owner, x, y, r, xdir, ydir, rdir, iController)};
+	if (inAllSections && obj)
+	{
+		ObjectsInAllSections.Add(obj, C4ObjectList::stMain);
+	}
+
+	return obj;
 }
 
 #ifndef USE_CONSOLE

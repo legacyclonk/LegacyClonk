@@ -120,16 +120,16 @@ public:
 
 	inline C4ObjectList *FirstObjects(C4LSector **ppSct) // get first object list of this area
 	{
-		*ppSct = nullptr; return NextObjects(nullptr, ppSct);
+		*ppSct = nullptr; return NextObjects(ppSct);
 	}
-	C4ObjectList *NextObjects(C4ObjectList *pPrev, C4LSector **ppSct); // get next object list of this area
+	C4ObjectList *NextObjects(C4LSector **ppSct); // get next object list of this area
 
 	inline C4ObjectList *FirstObjectShapes(C4LSector **ppSct) // get first object shapes list of this area
 	{
-		*ppSct = nullptr; return NextObjectShapes(nullptr, ppSct);
+		*ppSct = nullptr; return NextObjectShapes(ppSct);
 	}
 
-	C4ObjectList *NextObjectShapes(C4ObjectList *pPrev, C4LSector **ppSct); // get next object shapes list of this area
+	C4ObjectList *NextObjectShapes(C4LSector **ppSct); // get next object shapes list of this area
 
 #ifdef DEBUGREC
 	void DebugRec(class C4Object *pObj, char cMarker);
