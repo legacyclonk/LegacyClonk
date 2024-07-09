@@ -1900,7 +1900,7 @@ static C4Object *FnCreateObject(C4AulContext *cthr,
 			iOwner = cthr->Obj->Owner;
 	}
 
-	C4Object *pNewObj = cthr->GetSection().CreateObject(id, cthr->Obj, iOwner, iXOffset, iYOffset);
+	C4Object *pNewObj = Game.CreateObject(id, cthr->GetSection(), cthr->Obj, iOwner, iXOffset, iYOffset);
 
 	// Set initial controller to creating controller, so more complicated cause-effect-chains can be traced back to the causing player
 	if (pNewObj && cthr->Obj && cthr->Obj->Controller > NO_OWNER) pNewObj->Controller = cthr->Obj->Controller;
@@ -1986,15 +1986,97 @@ static C4Object *FnFindBase(C4AulContext *cthr, C4ValueInt iOwner, C4ValueInt iI
 	return cthr->GetSection().FindBase(iOwner, iIndex);
 }
 
-C4FindObject *CreateCriterionsFromPars(const C4Value *pPars, C4FindObject **pFOs, C4SortObject **pSOs)
+
+enum class C4FindObjectSectionInfo : std::int32_t
+{
+	AnySection = -1,
+	InSection = -2,
+	InSections = -3
+};
+
+namespace
+{
+	using SectionInfoVariant = std::variant<std::array<C4Section *, 1>, std::pair<std::vector<C4Section *>, bool>, std::monostate>;
+}
+
+C4FindObject *CreateCriterionsFromPars(const C4Value *pPars, C4FindObject **pFOs, C4SortObject **pSOs, SectionInfoVariant &sectionInfo)
 {
 	int i, iCnt = 0, iSortCnt = 0;
+	bool hasSectionInfo{false};
 	// Read all parameters
 	for (i = 0; i < C4AUL_MAX_Par; i++)
 	{
 		const C4Value &Data = pPars[i].GetRefVal();
 		// No data given?
 		if (!Data) break;
+
+		// Section info?
+		C4Value copy{Data};
+		if (C4ValueArray *const array{copy.getArray()}; array)
+		{
+			const C4ValueInt type{(*array)[0].getInt()};
+			if (type < 0)
+			{
+				if (hasSectionInfo)
+				{
+					sectionInfo.emplace<std::monostate>();
+					break;
+				}
+
+				switch (static_cast<C4FindObjectSectionInfo>(type))
+				{
+				case C4FindObjectSectionInfo::AnySection:
+					hasSectionInfo = true;
+					sectionInfo.emplace<std::pair<std::vector<C4Section *>, bool>>(Game.Sections | std::views::transform([](const auto &section) { return section.get(); }) | std::ranges::to<std::vector>(), true);
+					break;
+
+				case C4FindObjectSectionInfo::InSection:
+					hasSectionInfo = true;
+					sectionInfo.emplace<std::array<C4Section *, 1>>(std::array{Game.GetSectionByNumber(static_cast<std::uint32_t>((*array)[1].getInt()))});
+					break;
+
+				case C4FindObjectSectionInfo::InSections:
+				{
+					if ((*array)[1].ConvertTo(C4V_Array))
+					{
+						hasSectionInfo = true;
+						C4ValueArray &sections{*(*array)[1].getArray()};
+						const auto size = static_cast<std::size_t>(sections.GetSize());
+
+						bool includesMainSection{false};
+						std::unordered_set<std::uint32_t> sectionNumbers;
+
+						std::vector<C4Section *> result;
+						result.reserve(size);
+
+						for (std::size_t i{0}; i < size; ++i)
+						{
+							const auto sectionNumber = static_cast<std::uint32_t>(sections[i].getInt());
+							if (sectionNumbers.emplace(sectionNumber).second)
+							{
+								C4Section *const section{Game.GetSectionByNumber(static_cast<std::uint32_t>(sections[i].getInt()))};
+								if (section)
+								{
+									result.emplace_back(section);
+									if (sectionNumber == 0)
+									{
+										includesMainSection = true;
+									}
+								}
+							}
+						}
+
+						sectionInfo.emplace<std::pair<std::vector<C4Section *>, bool>>(std::move(result), includesMainSection);
+					}
+					break;
+				}
+
+				default:
+					break;
+				}
+			}
+		}
+
 		// Construct
 		C4SortObject *pSO = nullptr;
 		C4FindObject *pFO = C4FindObject::CreateByValue(Data, pSOs ? &pSO : nullptr);
@@ -2034,16 +2116,38 @@ C4FindObject *CreateCriterionsFromPars(const C4Value *pPars, C4FindObject **pFOs
 	return pFO;
 }
 
+template<typename R>
+static R InvokeFindObject(R(C4FindObject::*func)(std::span<C4Section *>, C4ObjectList *), C4FindObject *findObject, SectionInfoVariant &variant)
+{
+	if (auto *const array = std::get_if<std::array<C4Section *, 1>>(&variant); array)
+	{
+		return std::invoke(func, findObject, *array, (*array)[0] == Game.Sections.front().get() ? nullptr : &Game.ObjectsInAllSections);
+	}
+	else if (auto *const vector = std::get_if<std::pair<std::vector<C4Section *>, bool>>(&variant); vector)
+	{
+		return std::invoke(func, findObject, vector->first, vector->second ? nullptr : &Game.ObjectsInAllSections);
+	}
+	else
+	{
+		std::unreachable();
+	}
+}
+
 static C4Value FnObjectCount2(C4AulContext *cthr, const C4Value *pPars)
 {
 	// Create FindObject-structure
+	SectionInfoVariant sectionInfo{std::array{&cthr->GetSection()}};
 	C4FindObject *pFOs[C4AUL_MAX_Par];
-	C4FindObject *pFO = CreateCriterionsFromPars(pPars, pFOs, nullptr);
+	C4FindObject *pFO = CreateCriterionsFromPars(pPars, pFOs, nullptr, sectionInfo);
 	// Error?
 	if (!pFO)
 		throw C4AulExecError(cthr->Obj, "ObjectCount: No valid search criterions supplied!");
+	if (std::holds_alternative<std::monostate>(sectionInfo))
+	{
+		throw C4AulExecError{cthr->Obj, "ObjectCount: No valid section info supplied!"};
+	}
 	// Search
-	int32_t iCnt = pFO->Count(cthr->GetSection().Objects, cthr->GetSection().Objects.Sectors);
+	int32_t iCnt = InvokeFindObject(&C4FindObject::CountWithSectors, pFO, sectionInfo);
 	// Free
 	delete pFO;
 	// Return
@@ -2053,14 +2157,21 @@ static C4Value FnObjectCount2(C4AulContext *cthr, const C4Value *pPars)
 static C4Value FnFindObject2(C4AulContext *cthr, const C4Value *pPars)
 {
 	// Create FindObject-structure
+	SectionInfoVariant sectionInfo{std::array{&cthr->GetSection()}};
 	C4FindObject *pFOs[C4AUL_MAX_Par];
 	C4SortObject *pSOs[C4AUL_MAX_Par];
-	C4FindObject *pFO = CreateCriterionsFromPars(pPars, pFOs, pSOs);
+	C4FindObject *pFO = CreateCriterionsFromPars(pPars, pFOs, pSOs, sectionInfo);
 	// Error?
 	if (!pFO)
 		throw C4AulExecError(cthr->Obj, "FindObject: No valid search criterions supplied!");
+
+	if (std::holds_alternative<std::monostate>(sectionInfo))
+	{
+		throw C4AulExecError{cthr->Obj, "FindObject: No valid section info supplied!"};
+	}
+
 	// Search
-	C4Object *pObj = pFO->Find(cthr->GetSection().Objects, cthr->GetSection().Objects.Sectors);
+	C4Object *pObj = InvokeFindObject(&C4FindObject::FindWithSectors, pFO, sectionInfo);
 	// Free
 	delete pFO;
 	// Return
@@ -2070,14 +2181,20 @@ static C4Value FnFindObject2(C4AulContext *cthr, const C4Value *pPars)
 static C4Value FnFindObjects(C4AulContext *cthr, const C4Value *pPars)
 {
 	// Create FindObject-structure
+	SectionInfoVariant sectionInfo{std::array{&cthr->GetSection()}};
 	C4FindObject *pFOs[C4AUL_MAX_Par];
 	C4SortObject *pSOs[C4AUL_MAX_Par];
-	C4FindObject *pFO = CreateCriterionsFromPars(pPars, pFOs, pSOs);
+	C4FindObject *pFO = CreateCriterionsFromPars(pPars, pFOs, pSOs, sectionInfo);
 	// Error?
 	if (!pFO)
 		throw C4AulExecError(cthr->Obj, "FindObjects: No valid search criterions supplied!");
+
+	if (std::holds_alternative<std::monostate>(sectionInfo))
+	{
+		throw C4AulExecError{cthr->Obj, "FindObjects: No valid section info supplied!"};
+	}
 	// Search
-	C4ValueArray *pResult = pFO->FindMany(cthr->GetSection().Objects, cthr->GetSection().Objects.Sectors);
+	C4ValueArray *pResult = InvokeFindObject(&C4FindObject::FindManyWithSectors, pFO, sectionInfo);
 	// Free
 	delete pFO;
 	// Return
@@ -2103,11 +2220,13 @@ static C4ValueInt FnObjectCount(C4AulContext *cthr, C4ID id, C4ValueInt x, C4Val
 	if (vContainer.getInt() == ANY_CONTAINER)
 		pContainer = reinterpret_cast<C4Object *>(ANY_CONTAINER);
 	// Find object
-	return cthr->GetSection().ObjectCount(id, x, y, wdt, hgt, dwOCF,
+	C4Section &section{cthr->GetSection()};
+	return section.ObjectCount(id, x, y, wdt, hgt, dwOCF,
 		FnStringPar(szAction), pActionTarget,
 		cthr->Obj, // Local calls exclude self
 		pContainer,
-		iOwner);
+		iOwner,
+		&section == Game.Sections.front().get() ? nullptr : &Game.ObjectsInAllSections);
 }
 
 static C4Object *FnFindObject(C4AulContext *cthr, C4ID id, C4ValueInt x, C4ValueInt y, C4ValueInt wdt, C4ValueInt hgt, C4ValueInt dwOCF, C4String *szAction, C4Object *pActionTarget, C4Value vContainer, C4Object *pFindNext)
@@ -2127,12 +2246,14 @@ static C4Object *FnFindObject(C4AulContext *cthr, C4ID id, C4ValueInt x, C4Value
 	if (vContainer.getInt() == ANY_CONTAINER)
 		pContainer = reinterpret_cast<C4Object *>(ANY_CONTAINER);
 	// Find object
-	return cthr->GetSection().FindObject(id, x, y, wdt, hgt, dwOCF,
+	C4Section &section{cthr->GetSection()};
+	return section.FindObject(id, x, y, wdt, hgt, dwOCF,
 		FnStringPar(szAction), pActionTarget,
 		cthr->Obj, // Local calls exclude self
 		pContainer,
 		ANY_OWNER,
-		pFindNext);
+		pFindNext,
+		&section == Game.Sections.front().get() ? nullptr : &Game.ObjectsInAllSections);
 }
 
 static C4Object *FnFindObjectOwner(C4AulContext *cthr,
@@ -2154,12 +2275,14 @@ static C4Object *FnFindObjectOwner(C4AulContext *cthr,
 	// Adjust default ocf
 	if (dwOCF == 0) dwOCF = OCF_All;
 	// Find object
-	return cthr->GetSection().FindObject(id, x, y, wdt, hgt, dwOCF,
+	C4Section &section{cthr->GetSection()};
+	return section.FindObject(id, x, y, wdt, hgt, dwOCF,
 		FnStringPar(szAction), pActionTarget,
 		cthr->Obj, // Local calls exclude self
 		nullptr,
 		iOwner,
-		pFindNext);
+		pFindNext,
+		&section == Game.Sections.front().get() ? nullptr : &Game.ObjectsInAllSections);
 }
 
 static bool FnMakeCrewMember(C4AulContext *cthr, C4Object *pObj, C4ValueInt iPlayer)
@@ -6729,6 +6852,10 @@ static constexpr C4ScriptConstDef C4ScriptConstMap[] =
 	{ "C4FO_Controller",   C4V_Int, C4FO_Controller },
 	{ "C4FO_Func",         C4V_Int, C4FO_Func },
 	{ "C4FO_Layer",        C4V_Int, C4FO_Layer },
+
+	{ "C4FOOPT_AnySection", C4V_Int, static_cast<C4ValueInt>(C4FindObjectSectionInfo::AnySection) },
+	{ "C4FOOPT_InSection",  C4V_Int, static_cast<C4ValueInt>(C4FindObjectSectionInfo::InSection) },
+	{ "C4FOOPT_InSections", C4V_Int, static_cast<C4ValueInt>(C4FindObjectSectionInfo::InSections) },
 
 	{ "C4SO_Reverse",  C4V_Int, C4SO_Reverse },
 	{ "C4SO_Multiple", C4V_Int, C4SO_Multiple },

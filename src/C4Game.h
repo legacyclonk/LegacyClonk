@@ -60,10 +60,47 @@
 #include <mutex>
 #include <queue>
 #include <semaphore>
+#include <span>
 #include <thread>
+#include <tuple>
+#include <vector>
 
 class C4Game
 {
+public:
+
+	class MultipleObjectLists
+	{
+	public:
+		MultipleObjectLists(std::span<C4ObjectLink *> objectLinks, C4ObjectLink *extraLink) : objectLinks{std::move(objectLinks)}, extraLink{extraLink} {}
+		MultipleObjectLists(const MultipleObjectLists &) = delete;
+		MultipleObjectLists &operator=(const MultipleObjectLists &) = delete;
+		MultipleObjectLists(MultipleObjectLists &&) = default;
+		MultipleObjectLists &operator=(MultipleObjectLists &&) = default;
+
+	public:
+		C4Object *Next();
+
+	private:
+		std::span<C4ObjectLink *> objectLinks;
+		C4ObjectLink *extraLink;
+	};
+
+	class MultipleObjectListsWithMarker
+	{
+	public:
+		MultipleObjectListsWithMarker() = default;
+		MultipleObjectListsWithMarker(std::span<std::pair<C4ObjectLink *, std::uint64_t>> objectLinks, C4ObjectLink *extraLink) : objectLinks{std::move(objectLinks)}, extraLink{extraLink} {}
+
+	public:
+		C4Object *Next();
+
+	private:
+		std::span<std::pair<C4ObjectLink *, std::uint64_t>> objectLinks;
+		C4ObjectLink *extraLink;
+	};
+
+
 private:
 	// used as StdCompiler-parameter
 	struct CompileSettings
@@ -108,6 +145,7 @@ public:
 	std::vector<std::unique_ptr<C4Section>> SectionsPendingDeletion;
 	std::vector<SectionWithCallback> SectionsLoading;
 	std::unordered_map<C4Section *, std::unordered_map<std::int32_t, bool>> SectionsLoadingClients;
+	C4ObjectList ObjectsInAllSections;
 	C4Group ScenarioFile;
 	C4Scenario C4S;
 	std::string Loader;
@@ -323,6 +361,10 @@ public:
 	std::uint32_t CreateEmptySection(const C4SLandscape &landscape, std::string callback, C4Section &sourceSection, C4Object *target);
 	void OnSectionLoaded(std::uint32_t sectionNumber, std::int32_t byClient, bool success);
 	void OnSectionLoadFinished(std::uint32_t sectionNumber, bool success);
+
+	C4Object *CreateObject(C4ID type, C4Section &section, C4Object *pCreator, int32_t owner = NO_OWNER,
+		int32_t x = 50, int32_t y = 50, int32_t r = 0,
+		C4Fixed xdir = Fix0, C4Fixed ydir = Fix0, C4Fixed rdir = Fix0, int32_t iController = NO_OWNER);
 
 protected:
 	bool InitSystem();
