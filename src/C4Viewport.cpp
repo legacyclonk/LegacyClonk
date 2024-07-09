@@ -836,6 +836,7 @@ void C4Viewport::Clear()
 	Regions.Clear();
 	dViewX = dViewY = -31337;
 	ViewOffsX = ViewOffsY = 0;
+	previousViewRootSection = nullptr;
 }
 
 void C4Viewport::DrawOverlay(C4FacetEx &cgo, C4Section &viewSection)
@@ -1280,7 +1281,7 @@ void C4Viewport::AdjustPosition()
 					).c_str());
 		}*/
 		// smooth
-		if (dViewX >= 0 && dViewY >= 0)
+		if ((previousViewRootSection == &viewRootSection || !previousViewRootSection) && dViewX >= 0 && dViewY >= 0)
 		{
 			dViewX += (itofix(iTargetViewX) - dViewX) / BoundBy<int32_t>(Config.General.ScrollSmooth, 1, 50);
 			dViewY += (itofix(iTargetViewY) - dViewY) / BoundBy<int32_t>(Config.General.ScrollSmooth, 1, 50);
@@ -1298,6 +1299,8 @@ void C4Viewport::AdjustPosition()
 		}
 		// apply offset
 		ViewX += ViewOffsX; ViewY += ViewOffsY;
+		// store previous section
+		previousViewRootSection = &viewRootSection;
 	}
 	// NO_OWNER can't scroll
 	if (fIsNoOwnerViewport) { ViewOffsX = 0; ViewOffsY = 0; }
@@ -1615,6 +1618,14 @@ void C4Viewport::SetOutputSize(int32_t iDrawX, int32_t iDrawY, int32_t iOutX, in
 void C4Viewport::ClearPointers(C4Object *pObj)
 {
 	Regions.ClearPointers(pObj);
+}
+
+void C4Viewport::ClearSectionPointers(C4Section &section)
+{
+	if (previousViewRootSection == &section)
+	{
+		previousViewRootSection = nullptr;
+	}
 }
 
 void C4Viewport::DrawMouseButtons(C4FacetEx &cgo)

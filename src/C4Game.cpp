@@ -1095,6 +1095,8 @@ bool C4Game::RemoveSection(uint32_t number)
 			otherSection->ClearSectionPointers(*section);
 		}
 
+		GraphicsSystem.ClearSectionPointers(*section);
+
 		return true;
 	}
 
