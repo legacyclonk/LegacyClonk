@@ -186,11 +186,11 @@ namespace
 		C4Game::MultipleObjectLists Lists;
 
 		SectionSearch(std::span<C4Section *> sections, C4ObjectList *const extraList, const C4Rect &bounds)
-			: SearchArgs{std::from_range, sections | std::views::transform([bounds](C4Section *const section)
+			: SearchArgs{sections | std::views::transform([bounds](C4Section *const section)
 			  {
 				  return Args{.Area = {&section->Objects.Sectors, bounds}};
-			  })},
-			  Links{std::from_range, sections | std::views::transform(&C4Section::Objects) | std::views::transform(&C4GameObjects::First)},
+			  }) | std::ranges::to<std::vector>()},
+			  Links{sections | std::views::transform(&C4Section::Objects) | std::views::transform(&C4GameObjects::First) | std::ranges::to<std::vector>()},
 			  Lists{Links, extraList ? extraList->First : nullptr}
 		{
 		}
@@ -227,10 +227,10 @@ namespace
 		C4Game::MultipleObjectListsWithMarker Lists;
 
 		SectionSearchWithMarker(std::span<C4Section *> sections, C4ObjectList *const extraList, const C4Rect &bounds)
-			: SearchArgs{std::from_range, sections | std::views::transform([bounds](C4Section *const section)
+			: SearchArgs{sections | std::views::transform([bounds](C4Section *const section)
 			  {
 				  return Args{.Area = {&section->Objects.Sectors, bounds}};
-			  })}
+			  }) | std::ranges::to<std::vector>()}
 		{
 			Links.reserve(SearchArgs.size());
 
