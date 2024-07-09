@@ -126,7 +126,18 @@ global func Find_PathFree(object toobj) {
 global func Find_PathFreeCheck(object toobj) {
   return PathFree(GetX(), GetY(), GetX(toobj), GetY(toobj));
 }
-  
+
+global func Find_AnySection() {
+  return([C4FOOPT_AnySection]);
+}
+
+global func Find_InSection(int section) {
+  return([C4FOOPT_InSection, section]);
+}
+
+global func Find_InSections(array sections) {
+  return([C4FOOPT_InSections, sections]);
+}
 
 /* Sort */
 
