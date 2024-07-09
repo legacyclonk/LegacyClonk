@@ -100,6 +100,7 @@ public:
 	void Clear();
 	void Execute();
 	void ClearPointers(C4Object *pObj);
+	void ClearSectionPointers(C4Section &section);
 	void SetOutputSize(int32_t iDrawX, int32_t iDrawY, int32_t iOutX, int32_t iOutY, int32_t iOutWdt, int32_t iOutHgt);
 	void UpdateViewPosition(); // update view position: Clip properly; update border variables
 	bool Init(int32_t iPlayer, bool fSetTempOnly);
@@ -130,6 +131,7 @@ protected:
 	CStdGLCtx *pCtx; // rendering context for OpenGL
 	C4ViewportWindow *pWindow;
 	CClrModAddMap ClrModMap; // color modulation map for viewport drawing
+	C4Section *previousViewRootSection{nullptr};
 	void DrawMouseButtons(C4FacetEx &cgo);
 	void DrawPlayerStartup(C4FacetEx &cgo);
 	void Draw(C4FacetEx &cgo, bool fDrawOverlay);

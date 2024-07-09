@@ -65,6 +65,7 @@ public:
 	void SetMouseInGUI(bool fInGUI, bool fByMouse);
 	void SortViewportsByPlayerControl();
 	void ClearPointers(C4Object *pObj);
+	void ClearSectionPointers(C4Section &section);
 	void RecalculateViewports();
 	bool Init();
 	bool InitLoaderScreen(const char *szLoaderSpec);
