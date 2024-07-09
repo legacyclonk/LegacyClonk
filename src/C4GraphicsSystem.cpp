@@ -257,6 +257,12 @@ void C4GraphicsSystem::ClearPointers(C4Object *pObj)
 		cvp->ClearPointers(pObj);
 }
 
+void C4GraphicsSystem::ClearSectionPointers(C4Section &section)
+{
+	for (const auto &cvp : Viewports)
+		cvp->ClearSectionPointers(section);
+}
+
 void C4GraphicsSystem::Default()
 {
 	UpperBoard.Default();
