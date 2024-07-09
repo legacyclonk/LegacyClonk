@@ -288,7 +288,7 @@ bool C4LArea::Contains(C4LSector *pSct) const
 	return (pSct->x >= pFirst->x && pSct->y >= pFirst->y && pSct->x <= xL && pSct->y <= yL);
 }
 
-C4ObjectList *C4LArea::NextObjects(C4ObjectList *pPrev, C4LSector **ppSct)
+C4ObjectList *C4LArea::NextObjects(C4LSector **ppSct)
 {
 	// get next sector
 	if (!*ppSct)
@@ -302,7 +302,7 @@ C4ObjectList *C4LArea::NextObjects(C4ObjectList *pPrev, C4LSector **ppSct)
 	return &(*ppSct)->Objects;
 }
 
-C4ObjectList *C4LArea::NextObjectShapes(C4ObjectList *pPrev, C4LSector **ppSct)
+C4ObjectList *C4LArea::NextObjectShapes(C4LSector **ppSct)
 {
 	// get next sector
 	if (!*ppSct)

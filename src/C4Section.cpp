@@ -744,7 +744,7 @@ C4Object *C4Section::OverlapObject(const std::int32_t tx, const std::int32_t ty,
 	C4Rect rect1, rect2;
 	rect1.x = tx; rect1.y = ty; rect1.Wdt = width; rect1.Hgt = height;
 	C4LArea Area(&Objects.Sectors, tx, ty, width, height); C4LSector *pSector;
-	for (C4ObjectList *pObjs = Area.FirstObjectShapes(&pSector); pSector; pObjs = Area.NextObjectShapes(pObjs, &pSector))
+	for (C4ObjectList *pObjs = Area.FirstObjectShapes(&pSector); pSector; pObjs = Area.NextObjectShapes(&pSector))
 		for (clnk = pObjs->First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
 			if (cObj->Status) if (!cObj->Contained)
 				if (cObj->Category & category & C4D_SortLimit)
@@ -812,6 +812,18 @@ C4Object *C4Section::CreateObject(C4ID id, C4Object *pCreator, int32_t iOwner,
 	if (!(pDef = Game.Defs.ID2Def(id))) return nullptr;
 	// Create object
 	return NewObject(pDef, pCreator,
+		iOwner, nullptr,
+		x, y, r,
+		xdir, ydir, rdir,
+		FullCon, iController);
+}
+
+C4Object *C4Section::CreateObject(C4Def *const def, C4Object *pCreator, int32_t iOwner,
+	int32_t x, int32_t y, int32_t r,
+	C4Fixed xdir, C4Fixed ydir, C4Fixed rdir, int32_t iController)
+{
+	// Create object
+	return NewObject(def, pCreator,
 		iOwner, nullptr,
 		x, y, r,
 		xdir, ydir, rdir,
@@ -1055,7 +1067,7 @@ C4Object *C4Section::FindObject(C4ID id,
 	C4Object *pExclude,
 	C4Object *pContainer,
 	int32_t iOwner,
-	C4Object *pFindNext)
+	C4Object *pFindNext, C4ObjectList *const extraList)
 {
 	C4Object *pClosest = nullptr;
 	int32_t iClosest = 0, iDistance, iFartherThan = -1;
@@ -1080,58 +1092,59 @@ C4Object *C4Section::FindObject(C4ID id,
 
 	bool bFindActIdle = SEqual(szAction, "Idle") || SEqual(szAction, "ActIdle");
 
+	std::array<C4ObjectLink *, 1> objectLink{Objects.First};
+	C4Game::MultipleObjectLists lists{objectLink, extraList ? extraList->First : nullptr};
+
 	// Scan all objects
-	for (cLnk = Objects.First; cLnk && (cObj = cLnk->Obj); cLnk = cLnk->Next)
+	while ((cObj = lists.Next()))
 	{
 		// Not skipping to find next
 		if (!pFindNext)
-			// Status
-			if (cObj->Status)
-				// ID
-				if ((id == C4ID_None) || (cObj->Def->id == id))
-					// OCF (match any specified)
-					if (cObj->OCF & ocf)
-						// Exclude
-						if (cObj != pExclude)
-							// Action
-							if (!szAction || !szAction[0] || (bFindActIdle && cObj->Action.Act <= ActIdle) || ((cObj->Action.Act > ActIdle) && SEqual(szAction, cObj->Def->ActMap[cObj->Action.Act].Name)))
-								// ActionTarget
-								if (!pActionTarget || ((cObj->Action.Act > ActIdle) && ((cObj->Action.Target == pActionTarget) || (cObj->Action.Target2 == pActionTarget))))
-									// Container
-									if (!pContainer || (cObj->Contained == pContainer) || ((reinterpret_cast<std::intptr_t>(pContainer) == NO_CONTAINER) && !cObj->Contained) || ((reinterpret_cast<std::intptr_t>(pContainer) == ANY_CONTAINER) && cObj->Contained))
-										// Owner
-										if ((iOwner == ANY_OWNER) || (cObj->Owner == iOwner))
-											// Area
+			// ID
+			if ((id == C4ID_None) || (cObj->Def->id == id))
+				// OCF (match any specified)
+				if (cObj->OCF & ocf)
+					// Exclude
+					if (cObj != pExclude)
+						// Action
+						if (!szAction || !szAction[0] || (bFindActIdle && cObj->Action.Act <= ActIdle) || ((cObj->Action.Act > ActIdle) && SEqual(szAction, cObj->Def->ActMap[cObj->Action.Act].Name)))
+							// ActionTarget
+							if (!pActionTarget || ((cObj->Action.Act > ActIdle) && ((cObj->Action.Target == pActionTarget) || (cObj->Action.Target2 == pActionTarget))))
+								// Container
+								if (!pContainer || (cObj->Contained == pContainer) || ((reinterpret_cast<std::intptr_t>(pContainer) == NO_CONTAINER) && !cObj->Contained) || ((reinterpret_cast<std::intptr_t>(pContainer) == ANY_CONTAINER) && cObj->Contained))
+									// Owner
+									if ((iOwner == ANY_OWNER) || (cObj->Owner == iOwner))
+										// Area
+									{
+										// Full range
+										if ((iX == 0) && (iY == 0) && (iWdt == 0) && (iHgt == 0))
+											return cObj;
+										// Point
+										if ((iWdt == 0) && (iHgt == 0))
 										{
-											// Full range
-											if ((iX == 0) && (iY == 0) && (iWdt == 0) && (iHgt == 0))
-												return cObj;
-											// Point
-											if ((iWdt == 0) && (iHgt == 0))
-											{
-												if (Inside<int32_t>(iX - (cObj->x + cObj->Shape.x), 0, cObj->Shape.Wdt - 1))
-													if (Inside<int32_t>(iY - (cObj->y + cObj->Shape.y), 0, cObj->Shape.Hgt - 1))
-														return cObj;
-												continue;
-											}
-											// Closest
-											if ((iWdt == -1) && (iHgt == -1))
-											{
-												iDistance = (cObj->x - iX) * (cObj->x - iX) + (cObj->y - iY) * (cObj->y - iY);
-												// same distance?
-												if ((iDistance == iFartherThan) && !pFindNextCpy)
+											if (Inside<int32_t>(iX - (cObj->x + cObj->Shape.x), 0, cObj->Shape.Wdt - 1))
+												if (Inside<int32_t>(iY - (cObj->y + cObj->Shape.y), 0, cObj->Shape.Hgt - 1))
 													return cObj;
-												// nearer than/first closest?
-												if (!pClosest || (iDistance < iClosest))
-													if (iDistance > iFartherThan)
-													{
-														pClosest = cObj; iClosest = iDistance;
-													}
-											}
-											// Range
-											else if (Inside<int32_t>(cObj->x - iX, 0, iWdt - 1) && Inside<int32_t>(cObj->y - iY, 0, iHgt - 1))
-												return cObj;
+											continue;
 										}
+										// Closest
+										if ((iWdt == -1) && (iHgt == -1))
+										{
+											iDistance = (cObj->x - iX) * (cObj->x - iX) + (cObj->y - iY) * (cObj->y - iY);
+											// same distance?
+											if ((iDistance == iFartherThan) && !pFindNextCpy)
+												return cObj;
+											// nearer than/first closest?
+											if (!pClosest || (iDistance < iClosest))
+												if (iDistance > iFartherThan)
+												{
+													pClosest = cObj; iClosest = iDistance;
+												}
+										}
+										// Range
+										else if (Inside<int32_t>(cObj->x - iX, 0, iWdt - 1) && Inside<int32_t>(cObj->y - iY, 0, iHgt - 1))
+											return cObj;
+									}
 
 		// Find next mark reached
 		if (cObj == pFindNextCpy) pFindNext = pFindNextCpy = nullptr;
@@ -1221,7 +1234,7 @@ int32_t C4Section::ObjectCount(C4ID id,
 	const char *szAction, C4Object *pActionTarget,
 	C4Object *pExclude,
 	C4Object *pContainer,
-	int32_t iOwner)
+	int32_t iOwner, C4ObjectList *const extraList)
 {
 	int32_t iResult = 0; C4Def *pDef;
 	// check the easy cases first
@@ -1233,48 +1246,50 @@ int32_t C4Section::ObjectCount(C4ID id,
 			// plain id-search: return known count
 			return pDef->Count;
 	}
-	C4Object *cObj; C4ObjectLink *clnk;
+	C4Object *cObj;
 	bool bFindActIdle = SEqual(szAction, "Idle") || SEqual(szAction, "ActIdle");
-	for (clnk = Objects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
-		// Status
-		if (cObj->Status)
-			// ID
-			if ((id == C4ID_None) || (cObj->Def->id == id))
-				// OCF
-				if (cObj->OCF & ocf)
-					// Exclude
-					if (cObj != pExclude)
-						// Action
-						if (!szAction || !szAction[0] || (bFindActIdle && cObj->Action.Act <= ActIdle) || ((cObj->Action.Act > ActIdle) && SEqual(szAction, cObj->Def->ActMap[cObj->Action.Act].Name)))
-							// ActionTarget
-							if (!pActionTarget || ((cObj->Action.Act > ActIdle) && ((cObj->Action.Target == pActionTarget) || (cObj->Action.Target2 == pActionTarget))))
-								// Container
-								if (!pContainer || (cObj->Contained == pContainer) || ((reinterpret_cast<std::intptr_t>(pContainer) == NO_CONTAINER) && !cObj->Contained) || ((reinterpret_cast<std::intptr_t>(pContainer) == ANY_CONTAINER) && cObj->Contained))
-									// Owner
-									if ((iOwner == ANY_OWNER) || (cObj->Owner == iOwner))
-										// Area
+
+	std::array<C4ObjectLink *, 1> objectLink{Objects.First};
+	C4Game::MultipleObjectLists lists{objectLink, extraList ? extraList->First : nullptr};
+
+	while ((cObj = lists.Next()))
+		// ID
+		if ((id == C4ID_None) || (cObj->Def->id == id))
+			// OCF
+			if (cObj->OCF & ocf)
+				// Exclude
+				if (cObj != pExclude)
+					// Action
+					if (!szAction || !szAction[0] || (bFindActIdle && cObj->Action.Act <= ActIdle) || ((cObj->Action.Act > ActIdle) && SEqual(szAction, cObj->Def->ActMap[cObj->Action.Act].Name)))
+						// ActionTarget
+						if (!pActionTarget || ((cObj->Action.Act > ActIdle) && ((cObj->Action.Target == pActionTarget) || (cObj->Action.Target2 == pActionTarget))))
+							// Container
+							if (!pContainer || (cObj->Contained == pContainer) || ((reinterpret_cast<std::intptr_t>(pContainer) == NO_CONTAINER) && !cObj->Contained) || ((reinterpret_cast<std::intptr_t>(pContainer) == ANY_CONTAINER) && cObj->Contained))
+								// Owner
+								if ((iOwner == ANY_OWNER) || (cObj->Owner == iOwner))
+									// Area
+								{
+									// Full range
+									if ((x == 0) && (y == 0) && (wdt == 0) && (hgt == 0))
 									{
-										// Full range
-										if ((x == 0) && (y == 0) && (wdt == 0) && (hgt == 0))
-										{
-											iResult++; continue;
-										}
-										// Point
-										if ((wdt == 0) && (hgt == 0))
-										{
-											if (Inside<int32_t>(x - (cObj->x + cObj->Shape.x), 0, cObj->Shape.Wdt - 1))
-												if (Inside<int32_t>(y - (cObj->y + cObj->Shape.y), 0, cObj->Shape.Hgt - 1))
-												{
-													iResult++; continue;
-												}
-											continue;
-										}
-										// Range
-										if (Inside<int32_t>(cObj->x - x, 0, wdt - 1) && Inside<int32_t>(cObj->y - y, 0, hgt - 1))
-										{
-											iResult++; continue;
-										}
+										iResult++; continue;
 									}
+									// Point
+									if ((wdt == 0) && (hgt == 0))
+									{
+										if (Inside<int32_t>(x - (cObj->x + cObj->Shape.x), 0, cObj->Shape.Wdt - 1))
+											if (Inside<int32_t>(y - (cObj->y + cObj->Shape.y), 0, cObj->Shape.Hgt - 1))
+											{
+												iResult++; continue;
+											}
+										continue;
+									}
+									// Range
+									if (Inside<int32_t>(cObj->x - x, 0, wdt - 1) && Inside<int32_t>(cObj->y - y, 0, hgt - 1))
+									{
+										iResult++; continue;
+									}
+								}
 
 	return iResult;
 }

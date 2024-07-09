@@ -142,6 +142,10 @@ public:
 		int32_t x = 50, int32_t y = 50, int32_t r = 0,
 		C4Fixed xdir = Fix0, C4Fixed ydir = Fix0, C4Fixed rdir = Fix0, int32_t iController = NO_OWNER);
 
+	C4Object *CreateObject(C4Def *def, C4Object *pCreator, int32_t owner = NO_OWNER,
+		int32_t x = 50, int32_t y = 50, int32_t r = 0,
+		C4Fixed xdir = Fix0, C4Fixed ydir = Fix0, C4Fixed rdir = Fix0, int32_t iController = NO_OWNER);
+
 	C4Object *CreateObjectConstruction(C4ID type,
 		C4Object *pCreator,
 		int32_t owner,
@@ -158,7 +162,8 @@ public:
 		C4Object *pExclude = nullptr,
 		C4Object *pContainer = nullptr,
 		int32_t iOwner = ANY_OWNER,
-		C4Object *pFindNext = nullptr);
+		C4Object *pFindNext = nullptr,
+		C4ObjectList *extraList = nullptr);
 	C4Object *FindVisObject( // find object in view at pos, regarding parallaxity and visibility (but not distance)
 		int32_t tx, int32_t ty, int32_t iPlr, const C4Facet &fctViewport,
 		int32_t iX = 0, int32_t iY = 0, int32_t iWdt = 0, int32_t iHgt = 0,
@@ -172,7 +177,8 @@ public:
 		const char *szAction = nullptr, C4Object *pActionTarget = nullptr,
 		C4Object *pExclude = nullptr,
 		C4Object *pContainer = nullptr,
-		int32_t iOwner = ANY_OWNER);
+		int32_t iOwner = ANY_OWNER,
+		C4ObjectList *extraList = nullptr);
 
 	void SyncClearance();
 	void Synchronize();

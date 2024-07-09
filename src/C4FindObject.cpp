@@ -157,27 +157,123 @@ C4FindObject *C4FindObject::CreateByValue(const C4Value &DataVal, C4SortObject *
 
 	case C4FO_Layer:
 		return new C4FindObjectLayer(Data[1].getObj());
+
+	case C4FO_Section:
+		return new C4FindObjectSection(static_cast<std::uint32_t>(Data[1].getInt()));
 	}
 	return nullptr;
 }
 
-int32_t C4FindObject::Count(const C4ObjectList &Objs)
+namespace
 {
-	// Trivial cases
-	if (IsImpossible())
-		return 0;
-	if (IsEnsured())
-		return Objs.ObjectCount();
-	// Count
-	int32_t iCount = 0;
-	for (C4ObjectLink *pLnk = Objs.First; pLnk; pLnk = pLnk->Next)
-		if (pLnk->Obj->Status)
-			if (Check(pLnk->Obj))
-				iCount++;
-	return iCount;
+	template<bool UseShapes>
+	struct SectionSearch
+	{
+		struct Args
+		{
+			C4LArea Area;
+			C4LSector *Sector{nullptr};
+
+			C4ObjectLink *Next()
+			{
+				C4ObjectList *next{UseShapes ? Area.NextObjectShapes(&Sector) : Area.NextObjects(&Sector)};
+				return next ? next->First : nullptr;
+			}
+		};
+
+		std::vector<Args> SearchArgs;
+		std::vector<C4ObjectLink *> Links;
+		C4Game::MultipleObjectLists Lists;
+
+		SectionSearch(std::span<C4Section *> sections, C4ObjectList *const extraList, const C4Rect &bounds)
+			: SearchArgs{std::from_range, sections | std::views::transform([bounds](C4Section *const section)
+			  {
+				  return Args{.Area = {&section->Objects.Sectors, bounds}};
+			  })},
+			  Links{std::from_range, sections | std::views::transform(&C4Section::Objects) | std::views::transform(&C4GameObjects::First)},
+			  Lists{Links, extraList ? extraList->First : nullptr}
+		{
+		}
+
+		C4Object *Next()
+		{
+			C4Object *const result{Lists.Next()};
+			if (!result)
+			{
+				std::transform(SearchArgs.begin(), SearchArgs.end(), Links.begin(), std::mem_fn(&Args::Next));
+				return Lists.Next();
+			}
+
+			return result;
+		}
+	};
+
+	struct SectionSearchWithMarker
+	{
+		struct Args
+		{
+			C4LArea Area;
+			C4LSector *Sector{nullptr};
+
+			C4ObjectLink *Next()
+			{
+				C4ObjectList *next{Area.NextObjectShapes(&Sector)};
+				return next ? next->First : nullptr;
+			}
+		};
+
+		std::vector<Args> SearchArgs;
+		std::vector<std::pair<C4ObjectLink *, std::uint64_t>> Links;
+		C4Game::MultipleObjectListsWithMarker Lists;
+
+		SectionSearchWithMarker(std::span<C4Section *> sections, C4ObjectList *const extraList, const C4Rect &bounds)
+			: SearchArgs{std::from_range, sections | std::views::transform([bounds](C4Section *const section)
+			  {
+				  return Args{.Area = {&section->Objects.Sectors, bounds}};
+			  })}
+		{
+			Links.reserve(SearchArgs.size());
+
+			for (std::size_t i{0}; i < SearchArgs.size(); ++i)
+			{
+				auto &args = SearchArgs[i];
+				C4GameObjects &objects{sections[i]->Objects};
+				C4ObjectList *const firstObjectShapes{args.Area.FirstObjectShapes(&args.Sector)};
+
+				std::uint64_t marker;
+				if (args.Area.Next(args.Sector))
+				{
+					marker = objects.GetNextMarker();
+				}
+				else
+				{
+					// Optimization: No markers needed for only one area
+					marker = static_cast<std::uint64_t>(-1);
+				}
+
+				Links.emplace_back(std::pair{firstObjectShapes ? firstObjectShapes->First : nullptr, marker});
+			}
+
+			Lists = {Links, extraList ? extraList->First : nullptr};
+		}
+
+		C4Object *Next()
+		{
+			C4Object *const result{Lists.Next()};
+			if (!result)
+			{
+				//spdlog::warn("result empty, advancing");
+				std::ranges::transform(SearchArgs, (Links | std::views::elements<0>).begin(), &Args::Next);
+
+				return Lists.Next();
+			}
+
+			return result;
+		}
+	};
 }
 
-C4Object *C4FindObject::Find(const C4ObjectList &Objs)
+C4Object *C4FindObject::Find(std::vector<C4ObjectLink *> objectLinks, C4ObjectLink *const extraLink)
 {
 	// Trivial case
 	if (IsImpossible())
@@ -185,34 +281,44 @@ C4Object *C4FindObject::Find(const C4ObjectList &Objs)
 	// Search
 	// Double-check object status, as object might be deleted after Check()!
 	C4Object *pBestResult = nullptr;
-	for (C4ObjectLink *pLnk = Objs.First; pLnk; pLnk = pLnk->Next)
-		if (pLnk->Obj->Status)
-			if (Check(pLnk->Obj))
-				if (pLnk->Obj->Status)
+	C4Game::MultipleObjectLists lists{objectLinks, extraLink};
+	for (C4Object *obj; (obj = lists.Next()); )
+		if (obj->Status)
+			if (Check(obj))
+				if (obj->Status)
 				{
 					// no sorting: Use first object found
-					if (!pSort) return pLnk->Obj;
+					if (!pSort) return obj;
 					// Sorting: Check if found object is better
-					if (!pBestResult || pSort->Compare(pLnk->Obj, pBestResult) > 0)
-						if (pLnk->Obj->Status)
-							pBestResult = pLnk->Obj;
+					if (!pBestResult || pSort->Compare(obj, pBestResult) > 0)
+						if (obj->Status)
+							pBestResult = obj;
 				}
 	return pBestResult;
 }
 
-C4ValueArray *C4FindObject::FindMany(const C4ObjectList &Objs)
+static std::vector<C4ObjectLink *> ToLinkVector(const std::span<C4Section *> sections)
+{
+	return sections | std::views::transform(&C4Section::Objects) | std::views::transform(&C4GameObjects::First) | std::ranges::to<std::vector>();
+}
+
+C4ValueArray *C4FindObject::FindMany(const std::span<C4Section *> sections, C4ObjectList *const extraList)
 {
 	// Trivial case
 	if (IsImpossible())
 		return new C4ValueArray();
-	// Set up array
+
 	std::vector<C4Object *> result;
-	// Search
-	for (C4ObjectLink *pLnk = Objs.First; pLnk; pLnk = pLnk->Next)
-		if (pLnk->Obj->Status)
-			if (Check(pLnk->Obj))
+	std::vector<C4ObjectLink *> links{ToLinkVector(sections)};
+
+	C4Game::MultipleObjectLists lists{links, extraList ? extraList->First : nullptr};
+
+	for (C4Object *obj; (obj = lists.Next()); )
+		if (obj->Status)
+
+			if (Check(obj))
 			{
-				result.push_back(pLnk->Obj);
+				result.push_back(obj);
 			}
 	// Recheck object status (may shrink array again)
 	CheckObjectStatus(result);
@@ -225,134 +331,141 @@ C4ValueArray *C4FindObject::FindMany(const C4ObjectList &Objs)
 	return new C4ValueArray{std::span{result}};
 }
 
-int32_t C4FindObject::Count(C4GameObjects &Objs, const C4LSectors &Sct)
+int32_t C4FindObject::CountWithSectors(const std::span<C4Section *> sections, C4ObjectList *const extraList)
 {
 	// Trivial cases
 	if (IsImpossible())
 		return 0;
 	if (IsEnsured())
-		return Objs.ObjectCount();
-	// Check bounds
-	C4Rect *pBounds = GetBounds();
-	if (!pBounds)
-		return Count(Objs);
-	else if (UseShapes())
 	{
-		// Get area
-		C4LArea Area(&Objs.Sectors, *pBounds); C4LSector *pSct;
-		C4ObjectList *pLst = Area.FirstObjectShapes(&pSct);
-		// Check if a single-sector check is enough
-		if (!Area.Next(pSct))
-			return Count(pSct->ObjectShapes);
-		// Create marker, count over all areas
-		uint32_t iMarker = Objs.GetNextMarker();
-		int32_t iCount = 0;
-		for (; pLst; pLst = Area.NextObjectShapes(pLst, &pSct))
-			for (C4ObjectLink *pLnk = pLst->First; pLnk; pLnk = pLnk->Next)
-				if (pLnk->Obj->Status)
-					if (pLnk->Obj->Marker != iMarker)
-					{
-						pLnk->Obj->Marker = iMarker;
-						if (Check(pLnk->Obj))
-							iCount++;
-					}
-		return iCount;
+		return std::accumulate(sections.begin(), sections.end(), std::int32_t{}, [](const std::int32_t value, C4Section *const section)
+		{
+			return value + section->Objects.ObjectCount();
+		}) + (extraList ? extraList->ObjectCount() : 0);
+	}
+
+	// Check bounds
+	std::int32_t count{0};
+	C4Rect *bounds{GetBounds()};
+	if (!bounds)
+	{
+		std::vector<C4ObjectLink *> links{ToLinkVector(sections)};
+		C4Game::MultipleObjectLists lists{links, extraList ? extraList->First : nullptr};
+
+		for (C4Object *obj; (obj = lists.Next()); )
+		{
+			if (Check(obj))
+			{
+				++count;
+			}
+		}
 	}
 	else
 	{
-		// Count objects per area
-		C4LArea Area(&Objs.Sectors, *pBounds); C4LSector *pSct;
-		int32_t iCount = 0;
-		for (C4ObjectList *pLst = Area.FirstObjects(&pSct); pLst; pLst = Area.NextObjects(pLst, &pSct))
-			iCount += Count(*pLst);
-		return iCount;
+		if (UseShapes())
+		{
+			SectionSearchWithMarker search{sections, extraList, *bounds};
+			for (C4Object *obj; (obj = search.Next()); )
+			{
+				if (Check(obj))
+				{
+					++count;
+				}
+			}
+		}
+		else
+		{
+			SectionSearch<false> search{sections, extraList, *bounds};
+			for (C4Object *obj; (obj = search.Next()); )
+			{
+				if (Check(obj))
+				{
+					++count;
+				}
+			}
+		}
 	}
+	return count;
 }
 
-C4Object *C4FindObject::Find(C4GameObjects &Objs, const C4LSectors &Sct)
+C4Object *C4FindObject::FindWithSectors(std::span<C4Section *> sections, C4ObjectList *const extraList)
 {
 	// Trivial case
 	if (IsImpossible())
 		return nullptr;
-	C4Object *pBestResult = nullptr;
+
+	const auto search = [this]<bool UseShapes>(SectionSearch<UseShapes> search)
+	{
+		C4Object *bestResult{nullptr};
+		for (C4Object *obj; (obj = search.Next()); )
+		{
+			if (Check(obj))
+			{
+				if (obj->Status)
+				{
+					if (!pSort)
+					{
+						return obj;
+					}
+					else if (!bestResult || pSort->Compare(obj, bestResult) < 0)
+					{
+						if (obj->Status)
+						{
+							bestResult = obj;
+						}
+					}
+				}
+			}
+		}
+
+		return bestResult;
+	};
+
 	// Check bounds
-	C4Rect *pBounds = GetBounds();
-	if (!pBounds)
-		return Find(Objs);
+	C4Rect *bounds{GetBounds()};
+	if (!bounds)
+		return Find(ToLinkVector(sections), extraList ? extraList->First : nullptr);
 	// Traverse areas, return first matching object w/o sort or best with sort
 	else if (UseShapes())
 	{
-		C4LArea Area(&Objs.Sectors, *pBounds); C4LSector *pSct;
-		C4Object *pObj;
-		for (C4ObjectList *pLst = Area.FirstObjectShapes(&pSct); pLst; pLst = Area.NextObjectShapes(pLst, &pSct))
-			if (pObj = Find(*pLst))
-				if (!pSort)
-					return pObj;
-				else if (!pBestResult || pSort->Compare(pObj, pBestResult) > 0)
-					if (pObj->Status)
-						pBestResult = pObj;
+		return search(SectionSearch<true>{sections, extraList, *bounds});
 	}
 	else
 	{
-		C4LArea Area(&Objs.Sectors, *pBounds); C4LSector *pSct;
-		C4Object *pObj;
-		for (C4ObjectList *pLst = Area.FirstObjects(&pSct); pLst; pLst = Area.NextObjects(pLst, &pSct))
-			if (pObj = Find(*pLst))
-				if (!pSort)
-					return pObj;
-				else if (!pBestResult || pSort->Compare(pObj, pBestResult) > 0)
-					if (pObj->Status)
-						pBestResult = pObj;
+		return search(SectionSearch<false>{sections, extraList, *bounds});
 	}
-	return pBestResult;
 }
 
-C4ValueArray *C4FindObject::FindMany(C4GameObjects &Objs, const C4LSectors &Sct)
+C4ValueArray *C4FindObject::FindManyWithSectors(const std::span<C4Section *> sections, C4ObjectList *const extraList)
 {
 	// Trivial case
 	if (IsImpossible())
 		return new C4ValueArray();
+
 	C4Rect *pBounds = GetBounds();
 	if (!pBounds)
-		return FindMany(Objs);
+		return FindMany(sections, extraList);
 
-	std::vector<C4Object *> result;
-	// Check shape lists?
-	if (UseShapes())
+	const auto search = [this]<typename T>(T search)
 	{
-		// Get area
-		C4LArea Area(&Objs.Sectors, *pBounds); C4LSector *pSct;
-		C4ObjectList *pLst = Area.FirstObjectShapes(&pSct);
-		// Check if a single-sector check is enough
-		if (!Area.Next(pSct))
-			return FindMany(pSct->ObjectShapes);
-		// Set up array
-		// Create marker, search all areas
-		uint32_t iMarker = Objs.GetNextMarker();
-		for (; pLst; pLst = Area.NextObjectShapes(pLst, &pSct))
-			for (C4ObjectLink *pLnk = pLst->First; pLnk; pLnk = pLnk->Next)
-				if (pLnk->Obj->Status)
-					if (pLnk->Obj->Marker != iMarker)
-					{
-						pLnk->Obj->Marker = iMarker;
-						if (Check(pLnk->Obj))
-						{
-							result.push_back(pLnk->Obj);
-						}
-					}
-	}
-	else
-	{
-		// Search
-		C4LArea Area(&Objs.Sectors, *pBounds); C4LSector *pSct;
-		for (C4ObjectList *pLst = Area.FirstObjects(&pSct); pLst; pLst = Area.NextObjects(pLst, &pSct))
-			for (C4ObjectLink *pLnk = pLst->First; pLnk; pLnk = pLnk->Next)
-				if (pLnk->Obj->Status)
-					if (Check(pLnk->Obj))
-					{
-						result.push_back(pLnk->Obj);
-					}
-	}
+		std::vector<C4Object *> result;
+		for (C4Object *obj; (obj = search.Next()); )
+		{
+			if (Check(obj))
+			{
+				if (obj->Status)
+				{
+					//spdlog::warn("Adding obj {} ({})", (void *) obj, obj->GetName());
+					result.emplace_back(obj);
+				}
+			}
+		}
+
+		return result;
+	};
+
+	std::vector<C4Object *> result{UseShapes() ? search(SectionSearchWithMarker{sections, extraList, *pBounds}) : search(SectionSearch<false>{sections, extraList, *pBounds})};
+
 	// Recheck object status (may shrink array again)
 	CheckObjectStatus(result);
 	// Apply sorting
@@ -676,6 +789,23 @@ bool C4FindObjectLayer::Check(C4Object *pObj)
 bool C4FindObjectLayer::IsImpossible()
 {
 	return false;
+}
+
+// *** C4FindObjectSection
+
+C4FindObjectSection::C4FindObjectSection(const std::uint32_t sectionNumber)
+	: section{Game.GetSectionByNumber(sectionNumber)}
+{
+}
+
+bool C4FindObjectSection::Check(C4Object *const obj)
+{
+	return obj->Section == section;
+}
+
+bool C4FindObjectSection::IsImpossible()
+{
+	return !section;
 }
 
 // *** C4SortObject
