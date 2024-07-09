@@ -1603,6 +1603,8 @@ bool C4Object::Enter(C4Object *pTarget, bool fCalls, bool fCopyMotion, bool *pfR
 		UpdateSolidMask(false);
 		CopyMotion(Contained);
 	}
+	// Set section
+	MoveToSection(*Contained->Section, false);
 	SetOCF();
 	UpdateFace(true);
 	// Update container
