@@ -71,16 +71,12 @@ C4Object *C4Game::MultipleObjectLists::Next()
 		{
 			std::ranges::stable_sort(objectLinks, [](C4ObjectLink *const link1, C4ObjectLink *const link2)
 			{
-				if (link1 == nullptr)
+				if (link1 == nullptr || link2 == nullptr)
 				{
-					return link2 == nullptr ? 0 : 1;
-				}
-				else if (link2 == nullptr)
-				{
-					return -1;
+					return false;
 				}
 
-				return (link2->Obj->Category & C4D_SortLimit) - (link1->Obj->Category & C4D_SortLimit);
+				return (link2->Obj->Category & C4D_SortLimit) < (link1->Obj->Category & C4D_SortLimit);
 			});
 		}
 
@@ -126,16 +122,12 @@ C4Object *C4Game::MultipleObjectListsWithMarker::Next()
 				C4ObjectLink *const link1{pair1.first};
 				C4ObjectLink *const link2{pair2.first};
 
-				if (link1 == nullptr)
+				if (link1 == nullptr || link2 == nullptr)
 				{
-					return link2 == nullptr ? 0 : 1;
-				}
-				else if (link2 == nullptr)
-				{
-					return -1;
+					return false;
 				}
 
-				return (link2->Obj->Category & C4D_SortLimit) - (link1->Obj->Category & C4D_SortLimit);
+				return (link2->Obj->Category & C4D_SortLimit) < (link1->Obj->Category & C4D_SortLimit);
 			});
 		}
 
