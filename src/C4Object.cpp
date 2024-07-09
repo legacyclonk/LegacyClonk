@@ -1964,11 +1964,11 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		for (cnt = 0; pDef = C4Id2Def(pPlayer->Knowledge.GetID(Game.Defs, C4D_Structure, cnt, &iCount)); cnt++)
 		{
 			// Caption
-			caption = LoadResStr(C4ResStrTableKey::IDS_MENU_CONSTRUCT, pTarget->GetName());
+			caption = LoadResStr(C4ResStrTableKey::IDS_MENU_CONSTRUCT, pDef->GetName());
 			// Picture
 			pDef->Picture2Facet(fctSymbol);
 			// Command
-			command = std::format("SetCommand(this, \"Construct\",,0,0,,{}", C4IdText(pDef->id));
+			command = std::format("SetCommand(this, \"Construct\",,0,0,,{})", C4IdText(pDef->id));
 			// Add menu item
 			Menu->AddRefSym(caption.c_str(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, pDef->GetDesc(), pDef->id);
 		}
