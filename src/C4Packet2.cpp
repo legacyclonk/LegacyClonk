@@ -128,6 +128,8 @@ const C4PktHandlingData PktHandlingData[] =
 	{ CID_ActivateGameGoalRule, PC_Control, "Activate Game Goal/Rule",   false, true,  0,                       PKT_UNPACK(C4ControlActivateGameGoalRule) },
 	{ CID_SetPlayerTeam,        PC_Control, "Set Player Team",           false, true,  0,                       PKT_UNPACK(C4ControlSetPlayerTeam) },
 	{ CID_EliminatePlayer,      PC_Control, "Eliminate Player",          false, true,  0,                       PKT_UNPACK(C4ControlEliminatePlayer) },
+	{ CID_SectionLoaded,        PC_Control, "Section Loaded",            false, true,  0,                       PKT_UNPACK(C4ControlSectionLoaded) },
+	{ CID_SectionLoadFinished,  PC_Control, "Section Load Finished",     false, true,  0,                       PKT_UNPACK(C4ControlSectionLoadFinished) },
 
 	{ CID_DebugRec,           PC_Control, "Debug Rec",                   false, true,  0,                       PKT_UNPACK(C4ControlDebugRec) },
 
