@@ -1101,8 +1101,6 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 
 void C4Viewport::DrawSection(C4FacetEx &cgo, C4Section &section, C4Player *plr, const bool fowEnabled)
 {
-	assert(Player == plr->Number);
-
 	section.Objects.BackObjects.DrawAll(cgo, Player);
 
 	// Draw Landscape
