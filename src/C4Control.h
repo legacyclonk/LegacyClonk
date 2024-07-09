@@ -639,6 +639,7 @@ public:
 class C4ControlSectionLoaded : public C4ControlPacket
 {
 public:
+	C4ControlSectionLoaded() = default;
 	C4ControlSectionLoaded(const std::uint32_t sectionNumber, const bool success)
 		: sectionNumber{sectionNumber}, success{success} {}
 
@@ -655,6 +656,7 @@ private:
 class C4ControlSectionLoadFinished : public C4ControlPacket
 {
 public:
+	C4ControlSectionLoadFinished() = default;
 	C4ControlSectionLoadFinished(const std::uint32_t sectionNumber, const bool success)
 		: sectionNumber{sectionNumber}, success{success} {}
 
