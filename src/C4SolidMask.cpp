@@ -281,7 +281,7 @@ void C4SolidMask::Remove(bool fCauseInstability, bool fBackupAttachment)
 		iAttachingObjectsCount = 0;
 		C4LArea SolidArea(&pForObject->Section->Objects.Sectors, MaskPutRect.x - 1, MaskPutRect.y - 1, MaskPutRect.Wdt + 2, MaskPutRect.Hgt + 2);
 		C4LSector *pSct; C4Object *pObj;
-		for (C4ObjectList *pLst = SolidArea.FirstObjectShapes(&pSct); pLst; pLst = SolidArea.NextObjectShapes(pLst, &pSct))
+		for (C4ObjectList *pLst = SolidArea.FirstObjectShapes(&pSct); pLst; pLst = SolidArea.NextObjectShapes(&pSct))
 			for (C4ObjectLink *clnk = pLst->First; clnk; clnk = clnk->Next)
 				if ((pObj = clnk->Obj) && pObj != pForObject && pObj->IsMoveableBySolidMask() && !pObj->Shape.CheckContact(pObj->Section->Landscape, pObj->x, pObj->y))
 				{
