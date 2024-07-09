@@ -1404,14 +1404,23 @@ bool C4Network2::Join(C4ClientCore &CCore, C4Network2IOConnection *pConn, const 
 		static_assert(C4Strings::NumberOfCharactersForDigits<std::int32_t> <= C4MaxName);
 
 		std::array<char, C4MaxName + 1> newName;
+		newName[C4MaxName] = '\0';
 		std::int32_t i{1};
+		std::string_view ccoreName{CCore.getName()};
 		do
 		{
 			const std::string numberString{std::format("{}", ++i)};
 			const std::size_t numberStartIndex{newName.size() - 1 - numberString.size()};
 
-			numberString.copy(newName.data() + numberStartIndex, numberString.size());
-			SCopy(CCore.getName(), newName.data(), numberStartIndex);
+			const std::size_t copied{ccoreName.copy(newName.data(), newName.size() - 1)};
+			if (copied < numberStartIndex)
+			{
+				newName[copied + numberString.copy(newName.data() + copied, numberString.size())] = '\0';
+			}
+			else
+			{
+				numberString.copy(newName.data() + numberStartIndex, numberString.size());
+			}
 		}
 		while (Clients.GetClient(newName.data()));
 
