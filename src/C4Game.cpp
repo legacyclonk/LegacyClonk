@@ -663,20 +663,7 @@ bool C4Game::Init()
 	GraphicsSystem.InvalidateBg();
 
 	// start section load thread
-#ifndef USE_CONSOLE
-	try
-	{
-		SectionLoadThread = C4Thread::CreateJ({"SectionLoadThread"}, &C4Game::SectionLoadProc, this, SectionGLCtx{});
-	}
-	catch (const std::runtime_error &e)
-	{
-		LogFatalNTr(e.what());
-		return false;
-	}
-
-#else
 	SectionLoadThread = C4Thread::CreateJ({"SectionLoadThread"}, &C4Game::SectionLoadProc, this);
-#endif
 
 	return true;
 }
@@ -2731,28 +2718,19 @@ bool C4Game::InitKeyboard()
 	return true;
 }
 
-#define MAIN_THREAD
-
 std::uint32_t C4Game::CreateSection(const char *const name, std::string callback, C4Section &sourceSection, C4Object *const	target)
 {
 	C4Section *const section{SectionsLoading.emplace_back(std::make_unique<C4Section>(name), std::move(callback), sourceSection.Number, target ? target->Number : 0).Section.get()};
 
-#ifdef MAIN_THREAD
-	const bool success{
-			section->InitFromTemplate(ScenarioFile)
-			&& section->InitMaterialTexture(Sections.front().get())
-			&& section->InitSecondPart()};
-
-	{
-		const std::lock_guard lock{SectionDoneMutex};
-		SectionDoneVector.emplace_back(section, success);
-	}
-#else
 	const std::lock_guard lock{SectionLoadMutex};
+
+#ifndef USE_CONSOLE
+	SectionLoadQueue.emplace(section, SectionGLCtx{lpDDraw->CreateContext(Application.pWindow, &Application)}, std::nullopt);
+#else
 	SectionLoadQueue.emplace(section, std::nullopt);
-	SectionLoadSemaphore.release();
 #endif
 
+	SectionLoadSemaphore.release();
 
 	return section->Number;
 }
@@ -2761,21 +2739,15 @@ std::uint32_t C4Game::CreateEmptySection(const C4SLandscape &landscape, std::str
 {
 	C4Section *const section{SectionsLoading.emplace_back(std::make_unique<C4Section>(), std::move(callback), sourceSection.Number, target ? target->Number : 0).Section.get()};
 
-#ifdef MAIN_THREAD
-	const bool success{
-			section->InitFromEmptyLandscape(ScenarioFile, landscape)
-			&& section->InitMaterialTexture(Sections.front().get())
-			&& section->InitSecondPart()};
-
-	{
-		const std::lock_guard lock{SectionDoneMutex};
-		SectionDoneVector.emplace_back(section, success);
-	}
-#else
 	const std::lock_guard lock{SectionLoadMutex};
+
+#ifndef USE_CONSOLE
+	SectionLoadQueue.emplace(section, SectionGLCtx{lpDDraw->CreateContext(Application.pWindow, &Application)}, landscape);
+#else
 	SectionLoadQueue.emplace(section, landscape);
-	SectionLoadSemaphore.release();
 #endif
+
+	SectionLoadSemaphore.release();
 
 	return section->Number;
 }
@@ -2898,14 +2870,8 @@ C4Object *C4Game::CreateObject(C4ID type, C4Section &section, C4Object *pCreator
 	return obj;
 }
 
-#ifndef USE_CONSOLE
-void C4Game::SectionLoadProc(SectionGLCtx context, std::stop_token stopToken)
-#else
 void C4Game::SectionLoadProc(std::stop_token stopToken)
-#endif
 {
-	context.Select();
-
 	for (;;)
 	{
 		SectionLoadSemaphore.acquire();
@@ -2921,6 +2887,10 @@ void C4Game::SectionLoadProc(std::stop_token stopToken)
 			sectionLoadArgs = std::move(SectionLoadQueue.front());
 			SectionLoadQueue.pop();
 		}
+
+#ifndef USE_CONSOLE
+		sectionLoadArgs.Context.Select();
+#endif
 
 		const bool success{(sectionLoadArgs.Landscape
 				? sectionLoadArgs.Section->InitFromEmptyLandscape(ScenarioFile, *sectionLoadArgs.Landscape)
@@ -3779,8 +3749,8 @@ bool C4Game::ToggleChat()
 	return C4ChatDlg::ToggleChat();
 }
 
-C4Game::SectionGLCtx::SectionGLCtx()
-	: context{lpDDraw->CreateContext(Application.pWindow, &Application)}
+C4Game::SectionGLCtx::SectionGLCtx(CStdGLCtx *const context)
+	: context{context}
 {
 	if (!context)
 	{
@@ -3793,17 +3763,11 @@ C4Game::SectionGLCtx::SectionGLCtx()
 
 C4Game::SectionGLCtx::~SectionGLCtx()
 {
-	if (context)
+	if (context && !Application.IsMainThread())
 	{
 		context->Finish();
 		context->Deselect(true);
 	}
-}
-
-void C4Game::SectionGLCtx::Finish() const
-{
-	glFlush();
-	context->Finish();
 }
 
 void C4Game::SectionGLCtx::Select() const
