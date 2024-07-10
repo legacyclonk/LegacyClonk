@@ -425,7 +425,8 @@ private:
 	class SectionGLCtx
 	{
 	public:
-		SectionGLCtx();
+		SectionGLCtx() = default;
+		SectionGLCtx(CStdGLCtx *context);
 		~SectionGLCtx();
 
 		SectionGLCtx(SectionGLCtx &&) = default;
@@ -438,11 +439,7 @@ private:
 	private:
 		std::unique_ptr<CStdGLCtx> context;
 	};
-#ifndef USE_CONSOLE
-	void SectionLoadProc(SectionGLCtx context, std::stop_token stopToken);
-#else
 	void SectionLoadProc(std::stop_token stopToken);
-#endif
 	void CheckLoadedSections();
 
 protected:
@@ -462,6 +459,9 @@ protected:
 	struct SectionLoadArgs
 	{
 		C4Section *Section;
+#ifndef USE_CONSOLE
+		SectionGLCtx Context;
+#endif
 		std::optional<C4SLandscape> Landscape;
 	};
 
