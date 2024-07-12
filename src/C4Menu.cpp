@@ -312,7 +312,6 @@ void C4Menu::Clear()
 	Symbol.Clear();
 	ClearItems();
 	ClearFrameDeco();
-	section = nullptr;
 	fActive = false;
 }
 
