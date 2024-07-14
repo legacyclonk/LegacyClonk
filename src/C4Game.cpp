@@ -337,6 +337,11 @@ bool C4Game::PreInit()
 	return true;
 }
 
+void C4Game::InitLogger()
+{
+	Control.InitLogger();
+}
+
 bool C4Game::Init()
 {
 	IsRunning = false;

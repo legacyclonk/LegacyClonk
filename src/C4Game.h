@@ -199,6 +199,7 @@ public:
 	void FixRandom(int32_t iSeed);
 	bool Init();
 	bool PreInit();
+	void InitLogger();
 	void ParseCommandLine(const char *szCmdLine);
 	bool Execute();
 	class C4Player *JoinPlayer(const char *szFilename, int32_t iAtClient, const char *szAtClientName, C4PlayerInfo *pInfo);

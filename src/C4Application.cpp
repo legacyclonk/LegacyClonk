@@ -137,6 +137,9 @@ void C4Application::DoInit()
 		if (!ResStrTable)
 			spdlog::warn("No language string table loaded!");
 
+	// Init game loggers
+	Game.InitLogger();
+
 	// Parse command line
 	Game.ParseCommandLine(GetCommandLine());
 

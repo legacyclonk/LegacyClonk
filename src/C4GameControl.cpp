@@ -41,6 +41,11 @@ C4GameControl::~C4GameControl()
 	Clear();
 }
 
+void C4GameControl::InitLogger()
+{
+	logger = CreateLogger("C4GameControl");
+}
+
 bool C4GameControl::InitLocal(C4Client *pLocal)
 {
 	eMode = CM_Local; fPreInit = fInitComplete = true;
@@ -224,7 +229,6 @@ void C4GameControl::Default()
 	DoSync = false;
 	fRecordNeeded = false;
 	pExecutingControl = nullptr;
-	logger = CreateLogger("C4GameControl");
 }
 
 bool C4GameControl::Prepare()

@@ -91,6 +91,7 @@ public:
 	bool NoInput() const { return isReplay(); }
 
 	// initialization
+	void InitLogger();
 	bool InitLocal(C4Client *pLocal);
 	bool InitNetwork(C4Client *pLocal);
 	bool InitReplay(C4Group &rGroup);
