@@ -49,13 +49,13 @@ void C4MapCreator::SetPix(int32_t x, int32_t y, uint8_t col)
 	MapBuf->SetPix(x, y, col);
 }
 
-void C4MapCreator::DrawLayer(int32_t x, int32_t y, int32_t size, uint8_t col)
+void C4MapCreator::DrawLayer(C4Random &random, int32_t x, int32_t y, int32_t size, uint8_t col)
 {
 	int32_t cnt, cnt2;
 	for (cnt = 0; cnt < size; cnt++)
 	{
-		x += Random(9) - 4; y += Random(3) - 1;
-		for (cnt2 = Random(3); cnt2 < 5; cnt2++)
+		x += random.Random(9) - 4; y += random.Random(3) - 1;
+		for (cnt2 = random.Random(3); cnt2 < 5; cnt2++)
 		{
 			SetPix(x + cnt2, y, col); SetPix(x + cnt2 + 1, y + 1, col);
 		}
@@ -71,7 +71,7 @@ uint8_t C4MapCreator::GetPix(int32_t x, int32_t y)
 }
 
 void C4MapCreator::Create(CSurface8 *sfcMap,
-	C4SLandscape &rLScape, C4TextureMap &rTexMap,
+	C4SLandscape &rLScape, C4Random &random, C4TextureMap &rTexMap,
 	bool fLayers, int32_t iPlayerNum)
 {
 	double fullperiod = 20.0 * std::numbers::pi;
@@ -91,23 +91,23 @@ void C4MapCreator::Create(CSurface8 *sfcMap,
 
 	// Surface
 	ccol = rTexMap.GetIndexMatTex(rLScape.Material, "Smooth") + MapIFT;
-	float amplitude = static_cast<float>(rLScape.Amplitude.Evaluate());
-	float phase = static_cast<float>(rLScape.Phase.Evaluate());
-	float period = static_cast<float>(rLScape.Period.Evaluate());
+	float amplitude = static_cast<float>(rLScape.Amplitude.Evaluate(random));
+	float phase = static_cast<float>(rLScape.Phase.Evaluate(random));
+	float period = static_cast<float>(rLScape.Period.Evaluate(random));
 	if (rLScape.MapPlayerExtend) period *= (std::min)(iPlayerNum, C4S_MaxMapPlayerExtend);
-	float natural = static_cast<float>(rLScape.Random.Evaluate());
+	float natural = static_cast<float>(rLScape.Random.Evaluate(random));
 	int32_t level0 = (std::min)(MapWdt, MapHgt) / 2;
 	int32_t maxrange = level0 * 3 / 4;
 	double cy_curve, cy_natural; // -1.0 - +1.0 !
 
 	double rnd_cy, rnd_tend; // -1.0 - +1.0 !
-	rnd_cy = (Random(2000 + 1) - 1000) / 1000.0;
-	rnd_tend = (Random(200 + 1) - 100) / 20000.0;
+	rnd_cy = (random.Random(2000 + 1) - 1000) / 1000.0;
+	rnd_tend = (random.Random(200 + 1) - 100) / 20000.0;
 
 	for (cx = 0; cx < MapWdt; cx++)
 	{
 		rnd_cy += rnd_tend;
-		rnd_tend += (Random(100 + 1) - 50) / 10000.0;
+		rnd_tend += (random.Random(100 + 1) - 50) / 10000.0;
 		if (rnd_tend > +0.05) rnd_tend = +0.05;
 		if (rnd_tend < -0.05) rnd_tend = -0.05;
 		if (rnd_cy < -0.5) rnd_tend += 0.01;
@@ -130,7 +130,7 @@ void C4MapCreator::Create(CSurface8 *sfcMap,
 	// Raise liquid level
 	Exclusive = 0;
 	ccol = rTexMap.GetIndexMatTex(rLScape.Liquid, "Smooth");
-	int32_t wtr_level = rLScape.LiquidLevel.Evaluate();
+	int32_t wtr_level = rLScape.LiquidLevel.Evaluate(random);
 	for (cx = 0; cx < MapWdt; cx++)
 		for (cy = MapHgt * (100 - wtr_level) / 100; cy < MapHgt; cy++)
 			SetPix(cx, cy, ccol);
@@ -155,10 +155,10 @@ void C4MapCreator::Create(CSurface8 *sfcMap,
 				for (cnt = 0; cnt < layer_num; cnt++)
 				{
 					// Place layer
-					sptx = Random(MapWdt);
+					sptx = random.Random(MapWdt);
 					for (spty = 0; (spty < MapHgt) && (GetPix(sptx, spty) != Exclusive); spty++);
-					spty += 5 + Random((MapHgt - spty) - 10);
-					DrawLayer(sptx, spty, Random(15), ccol);
+					spty += 5 + random.Random((MapHgt - spty) - 10);
+					DrawLayer(random, sptx, spty, random.Random(15), ccol);
 				}
 			}
 

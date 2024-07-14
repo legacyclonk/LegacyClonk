@@ -41,30 +41,30 @@ void C4Weather::Init(bool fScenario)
 	if (fScenario)
 	{
 		// Season
-		Season = section.C4S.Weather.StartSeason.Evaluate();
-		YearSpeed = section.C4S.Weather.YearSpeed.Evaluate();
+		Season = section.C4S.Weather.StartSeason.Evaluate(C4Random::Default);
+		YearSpeed = section.C4S.Weather.YearSpeed.Evaluate(C4Random::Default);
 		// Temperature
-		Climate = 100 - section.C4S.Weather.Climate.Evaluate() - 50;
+		Climate = 100 - section.C4S.Weather.Climate.Evaluate(C4Random::Default) - 50;
 		Temperature = Climate;
 		// Wind
-		Wind = TargetWind = section.C4S.Weather.Wind.Evaluate();
+		Wind = TargetWind = section.C4S.Weather.Wind.Evaluate(C4Random::Default);
 		// Precipitation
 		if (!section.C4S.Head.NoInitialize)
-			if (section.C4S.Weather.Rain.Evaluate())
+			if (section.C4S.Weather.Rain.Evaluate(C4Random::Default))
 				for (int32_t iClouds = (std::min)(section.Landscape.Width / 500, 5); iClouds > 0; iClouds--)
 				{
 					volatile int iWidth = section.Landscape.Width / 15 + Random(320);
 					volatile int iX = Random(section.Landscape.Width);
 					LaunchCloud(iX, -1, iWidth,
-						section.C4S.Weather.Rain.Evaluate(),
+						section.C4S.Weather.Rain.Evaluate(C4Random::Default),
 						section.C4S.Weather.Precipitation);
 				}
 		// Lightning
-		LightningLevel = section.C4S.Weather.Lightning.Evaluate();
+		LightningLevel = section.C4S.Weather.Lightning.Evaluate(C4Random::Default);
 		// Disasters
-		MeteoriteLevel = section.C4S.Disasters.Meteorite.Evaluate();
-		VolcanoLevel = section.C4S.Disasters.Volcano.Evaluate();
-		EarthquakeLevel = section.C4S.Disasters.Earthquake.Evaluate();
+		MeteoriteLevel = section.C4S.Disasters.Meteorite.Evaluate(C4Random::Default);
+		VolcanoLevel = section.C4S.Disasters.Volcano.Evaluate(C4Random::Default);
+		EarthquakeLevel = section.C4S.Disasters.Earthquake.Evaluate(C4Random::Default);
 		// gamma?
 		NoGamma = section.C4S.Weather.NoGamma;
 	}
@@ -96,7 +96,7 @@ void C4Weather::Execute()
 	}
 	// Wind
 	if (!Tick1000)
-		TargetWind = section.C4S.Weather.Wind.Evaluate();
+		TargetWind = section.C4S.Weather.Wind.Evaluate(C4Random::Default);
 	if (!Tick10)
 		Wind = BoundBy<int32_t>(Wind + Sign(TargetWind - Wind),
 			section.C4S.Weather.Wind.Min,

@@ -462,6 +462,7 @@ protected:
 		SectionGLCtx Context;
 #endif
 		std::optional<C4SLandscape> Landscape;
+		std::optional<C4Random> Random;
 	};
 
 	struct SectionDoneArgs

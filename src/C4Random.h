@@ -20,52 +20,80 @@
 
 #ifdef DEBUGREC
 #include <C4Record.h>
+
+#include <atomic>
 #endif
 
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>
 
-inline int RandomCount{0};
-inline unsigned int RandomHold{0};
+class C4Random
+{
+public:
+	explicit C4Random(const std::uint32_t seed) : randomCount{0}, randomHold{seed} {}
+	C4Random(const C4Random &) = delete;
+	C4Random &operator=(const C4Random &) = delete;
+	C4Random(C4Random &&) = default;
+	C4Random &operator=(C4Random &&) = default;
+
+public:
+	int Random(const int range)
+	{
+		// next pseudorandom value
+		randomCount++;
+	#ifdef DEBUGREC
+		C4RCRandom rc;
+		rc.Cnt = randomCount;
+		rc.Range = range;
+		rc.Id = id;
+		if (range == 0)
+			rc.Val = 0;
+		else
+		{
+			randomHold = randomHold * 214013L + 2531011L;
+			rc.Val = (randomHold >> 16) % range;
+		}
+		AddDbgRec(RCT_Random, &rc, sizeof(rc));
+		return rc.Val;
+	#else
+		if (range == 0) return 0;
+		randomHold = randomHold * 214013L + 2531011L;
+		return (randomHold >> 16) % range;
+	#endif
+	}
+
+public:
+	std::uint32_t GetRandomCount() const noexcept { return randomCount; }
+	C4Random Clone() noexcept { return C4Random{randomHold}; }
+
+public:
+	static C4Random Default;
+
+private:
+	static inline std::atomic_uint32_t NextId{0};
+
+private:
+	std::uint32_t randomCount;
+	std::uint32_t randomHold;
+
+#ifdef DEBUGREC
+	std::uint32_t id{NextId.fetch_add(1, std::memory_order_acq_rel)};
+#endif
+
+	friend inline void FixedRandom(uint32_t);
+};
 
 inline void FixedRandom(uint32_t dwSeed)
 {
 	// for SafeRandom
 	srand(static_cast<unsigned>(time(nullptr)));
-	RandomHold = dwSeed;
-	RandomCount = 0;
+	C4Random::Default.randomHold = dwSeed;
 }
 
 inline int Random(int iRange)
 {
-	// next pseudorandom value
-	RandomCount++;
-#ifdef DEBUGREC
-	C4RCRandom rc;
-	rc.Cnt = RandomCount;
-	rc.Range = iRange;
-	if (iRange == 0)
-		rc.Val = 0;
-	else
-	{
-		RandomHold = RandomHold * 214013L + 2531011L;
-		rc.Val = (RandomHold >> 16) % iRange;
-	}
-	AddDbgRec(RCT_Random, &rc, sizeof(rc));
-	return rc.Val;
-#else
-	if (iRange == 0) return 0;
-	RandomHold = RandomHold * 214013L + 2531011L;
-	return (RandomHold >> 16) % iRange;
-#endif
-}
-
-inline unsigned int SeededRandom(unsigned int iSeed, unsigned int iRange)
-{
-	if (!iRange) return 0;
-	iSeed = iSeed * 214013L + 2531011L;
-	return (iSeed >> 16) % iRange;
+	return C4Random::Default.Random(iRange);
 }
 
 inline int SafeRandom(int range)
