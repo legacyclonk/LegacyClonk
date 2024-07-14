@@ -503,7 +503,7 @@ void C4Player::PlaceReadyCrew(C4Section &section, int32_t tx1, int32_t tx2, int3
 	if (section.C4S.PlrStart[PlrStartIndex].ReadyCrew.IsClear())
 	{
 		// Target number of ready crew
-		crewnum = section.C4S.PlrStart[PlrStartIndex].Crew.Evaluate();
+		crewnum = section.C4S.PlrStart[PlrStartIndex].Crew.Evaluate(C4Random::Default);
 		// Place crew
 		for (cnt = 0; cnt < crewnum; cnt++)
 		{
@@ -706,7 +706,7 @@ bool C4Player::ScenarioInit(C4Section &section)
 	Status = PS_Normal;
 
 	// Wealth, home base materials, abilities
-	Wealth = section.C4S.PlrStart[PlrStartIndex].Wealth.Evaluate();
+	Wealth = section.C4S.PlrStart[PlrStartIndex].Wealth.Evaluate(C4Random::Default);
 	HomeBaseMaterial = section.C4S.PlrStart[PlrStartIndex].HomeBaseMaterial;
 	HomeBaseMaterial.ConsolidateValids(Game.Defs);
 	HomeBaseProduction = section.C4S.PlrStart[PlrStartIndex].HomeBaseProduction;
@@ -723,8 +723,8 @@ bool C4Player::ScenarioInit(C4Section &section)
 	pty = section.C4S.PlrStart[PlrStartIndex].Position[1];
 
 	// Zoomed position
-	if (ptx > -1) ptx = BoundBy<int32_t>(ptx * section.C4S.Landscape.MapZoom.Evaluate(), 0, section.Landscape.Width - 1);
-	if (pty > -1) pty = BoundBy<int32_t>(pty * section.C4S.Landscape.MapZoom.Evaluate(), 0, section.Landscape.Height - 1);
+	if (ptx > -1) ptx = BoundBy<int32_t>(ptx * section.C4S.Landscape.MapZoom.Evaluate(C4Random::Default), 0, section.Landscape.Width - 1);
+	if (pty > -1) pty = BoundBy<int32_t>(pty * section.C4S.Landscape.MapZoom.Evaluate(C4Random::Default), 0, section.Landscape.Height - 1);
 
 	// Standard position (PrefPosition)
 	if (ptx < 0)

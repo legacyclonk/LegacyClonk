@@ -2093,7 +2093,7 @@ bool C4Game::InitGameSecondPart(C4Group &hGroup, bool fLoadSky, bool preloading)
 
 	FixRandom(Parameters.RandomSeed);
 
-	return std::ranges::all_of(Sections, &C4Section::InitSecondPart);
+	return std::ranges::all_of(Sections, [](const auto &section) { return section->InitSecondPart(C4Random::Default); });
 }
 
 bool C4Game::InitGameFinal()
@@ -2725,7 +2725,7 @@ std::uint32_t C4Game::CreateSection(const char *const name, std::string callback
 	const std::lock_guard lock{SectionLoadMutex};
 
 #ifndef USE_CONSOLE
-	SectionLoadQueue.emplace(section, SectionGLCtx{lpDDraw->CreateContext(Application.pWindow, &Application)}, std::nullopt);
+	SectionLoadQueue.emplace(section, SectionGLCtx{lpDDraw->CreateContext(Application.pWindow, &Application)}, std::nullopt, C4Random::Default.Clone());
 #else
 	SectionLoadQueue.emplace(section, std::nullopt);
 #endif
@@ -2742,7 +2742,7 @@ std::uint32_t C4Game::CreateEmptySection(const C4SLandscape &landscape, std::str
 	const std::lock_guard lock{SectionLoadMutex};
 
 #ifndef USE_CONSOLE
-	SectionLoadQueue.emplace(section, SectionGLCtx{lpDDraw->CreateContext(Application.pWindow, &Application)}, landscape);
+	SectionLoadQueue.emplace(section, SectionGLCtx{lpDDraw->CreateContext(Application.pWindow, &Application)}, landscape, C4Random::Default.Clone());
 #else
 	SectionLoadQueue.emplace(section, landscape);
 #endif
@@ -2896,7 +2896,7 @@ void C4Game::SectionLoadProc(std::stop_token stopToken)
 				? sectionLoadArgs.Section->InitFromEmptyLandscape(ScenarioFile, *sectionLoadArgs.Landscape)
 				: sectionLoadArgs.Section->InitFromTemplate(ScenarioFile))
 				&& sectionLoadArgs.Section->InitMaterialTexture(Sections.front().get())
-				&& sectionLoadArgs.Section->InitSecondPart()};
+				&& sectionLoadArgs.Section->InitSecondPart(*sectionLoadArgs.Random)};
 
 		{
 			const std::lock_guard lock{SectionDoneMutex};
