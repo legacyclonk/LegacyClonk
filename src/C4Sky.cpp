@@ -90,7 +90,8 @@ bool C4Sky::Init(bool fSavegame)
 		SReplaceChar(section.C4S.Landscape.SkyDef, ',', ';'); // modifying the C4S here...!
 		skylistn = SCharCount(';', section.C4S.Landscape.SkyDef) + 1;
 		StdStrBuf sky;
-		StdStrBuf::MakeRef(section.C4S.Landscape.SkyDef).GetSection(SeededRandom(Game.Parameters.RandomSeed, skylistn), &sky, ';');
+		C4Random random{static_cast<std::uint32_t>(Game.Parameters.RandomSeed)};
+		StdStrBuf::MakeRef(section.C4S.Landscape.SkyDef).GetSection(random.Random(skylistn), &sky, ';');
 		sky.TrimSpaces();
 		// Sky tile specified, try load
 		if (sky.getLength() && sky != "Default")

@@ -40,9 +40,9 @@ void C4SVal::Set(int32_t std, int32_t rnd, int32_t min, int32_t max)
 	Std = std; Rnd = rnd; Min = min; Max = max;
 }
 
-int32_t C4SVal::Evaluate()
+int32_t C4SVal::Evaluate(C4Random &random)
 {
-	return BoundBy(Std + Random(2 * Rnd + 1) - Rnd, Min, Max);
+	return BoundBy(Std + random.Random(2 * Rnd + 1) - Rnd, Min, Max);
 }
 
 void C4SVal::Default()
@@ -324,10 +324,10 @@ void C4SLandscape::Default()
 	ShadeMaterials = true;
 }
 
-void C4SLandscape::GetMapSize(int32_t &rWdt, int32_t &rHgt, int32_t iPlayerNum)
+void C4SLandscape::GetMapSize(int32_t &rWdt, int32_t &rHgt, int32_t iPlayerNum, C4Random &random)
 {
-	rWdt = MapWdt.Evaluate();
-	rHgt = MapHgt.Evaluate();
+	rWdt = MapWdt.Evaluate(random);
+	rHgt = MapHgt.Evaluate(random);
 	iPlayerNum = std::max<int32_t>(iPlayerNum, 1);
 	if (MapPlayerExtend)
 		rWdt = (std::min)(rWdt * (std::min)(iPlayerNum, C4S_MaxMapPlayerExtend), MapWdt.Max);
