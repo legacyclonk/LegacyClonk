@@ -236,13 +236,13 @@ const char *C4MCNode::StrPar(C4MCParser *pParser, const char *szSVal, int32_t iV
 #define IntPar IntPar(pParser, szSVal, iVal, ValType) // shortcut for checked int32_t param
 #define StrPar StrPar(pParser, szSVal, iVal, ValType) // shortcut for checked str param
 
-void C4MCNode::ReEvaluate()
+void C4MCNode::ReEvaluate(C4Random &random)
 {
 	// evaluate ourselves
-	Evaluate();
+	Evaluate(random);
 	// evaluate children
 	for (C4MCNode *pChild = Child0; pChild; pChild = pChild->Next)
-		pChild->ReEvaluate();
+		pChild->ReEvaluate(random);
 }
 
 // overlay
@@ -399,10 +399,10 @@ C4MCAlgorithm *C4MCOverlay::GetAlgo(const char *szName)
 	return nullptr;
 }
 
-void C4MCOverlay::Evaluate()
+void C4MCOverlay::Evaluate(C4Random &random)
 {
 	// inherited
-	C4MCNode::Evaluate();
+	C4MCNode::Evaluate(random);
 	// get mat color
 	if (Inside<int32_t>(Material, 0, MapCreator->MatMap->Num - 1))
 	{
@@ -427,7 +427,7 @@ void C4MCOverlay::Evaluate()
 		}
 	}
 	// calc seed
-	if (!(Seed = FixedSeed)) Seed = (Random(32768) << 16) | Random(65536);
+	if (!(Seed = FixedSeed)) Seed = (random.Random(32768) << 16) | random.Random(65536);
 }
 
 C4MCOverlay *C4MCOverlay::FirstOfChain()
@@ -607,10 +607,10 @@ bool C4MCPoint::SetField(C4MCParser *pParser, const char *szField, const char *s
 	return false;
 }
 
-void C4MCPoint::Evaluate()
+void C4MCPoint::Evaluate(C4Random &random)
 {
 	// inherited
-	C4MCNode::Evaluate();
+	C4MCNode::Evaluate(random);
 	// get mat color
 	// calc size
 	if (Owner)
@@ -630,13 +630,13 @@ C4MCMap::C4MCMap(C4MCNode *pOwner) : C4MCOverlay(pOwner) {}
 
 C4MCMap::C4MCMap(C4MCNode *pOwner, C4MCMap &rTemplate, bool fClone) : C4MCOverlay(pOwner, rTemplate, fClone) {}
 
-void C4MCMap::Default()
+void C4MCMap::Default(C4Random &random)
 {
 	// inherited
 	C4MCOverlay::Default();
 	// size by landscape def
-	Wdt = MapCreator->Landscape->MapWdt.Evaluate();
-	Hgt = MapCreator->Landscape->MapHgt.Evaluate();
+	Wdt = MapCreator->Landscape->MapWdt.Evaluate(random);
+	Hgt = MapCreator->Landscape->MapHgt.Evaluate(random);
 	// map player extend
 	MapCreator->PlayerCount = (std::max)(MapCreator->PlayerCount, 1);
 	if (MapCreator->Landscape->MapPlayerExtend)
@@ -673,17 +673,17 @@ bool C4MCMap::RenderTo(uint8_t *pToBuf, int32_t iPitch)
 	return true;
 }
 
-void C4MCMap::SetSize(int32_t iWdt, int32_t iHgt)
+void C4MCMap::SetSize(int32_t iWdt, int32_t iHgt, C4Random &random)
 {
 	// store new size
 	Wdt = iWdt; Hgt = iHgt;
 	// update relative values
-	MapCreator->ReEvaluate();
+	MapCreator->ReEvaluate(random);
 }
 
 // map creator
 
-C4MapCreatorS2::C4MapCreatorS2(C4Section &section, C4SLandscape *pLandscape, C4TextureMap *pTexMap, C4MaterialMap *pMatMap, int iPlayerCount)
+C4MapCreatorS2::C4MapCreatorS2(C4Section &section, C4Random &random, C4SLandscape *pLandscape, C4TextureMap *pTexMap, C4MaterialMap *pMatMap, int iPlayerCount)
 	: C4MCNode(nullptr), section{section}
 {
 	// me r b creator
@@ -696,10 +696,10 @@ C4MapCreatorS2::C4MapCreatorS2(C4Section &section, C4SLandscape *pLandscape, C4T
 	DefaultOverlay.MapCreator = this;
 	DefaultPoint.MapCreator = this;
 	// default to landscape settings
-	Default();
+	Default(random);
 }
 
-C4MapCreatorS2::C4MapCreatorS2(C4MapCreatorS2 &rTemplate, C4SLandscape *pLandscape) : C4MCNode(nullptr, rTemplate, true), section{rTemplate.section}
+C4MapCreatorS2::C4MapCreatorS2(C4MapCreatorS2 &rTemplate, C4Random &random, C4SLandscape *pLandscape) : C4MCNode(nullptr, rTemplate, true), section{rTemplate.section}
 {
 	// me r b creator
 	MapCreator = this;
@@ -711,7 +711,7 @@ C4MapCreatorS2::C4MapCreatorS2(C4MapCreatorS2 &rTemplate, C4SLandscape *pLandsca
 	DefaultOverlay.MapCreator = this;
 	DefaultPoint.MapCreator = this;
 	// default to landscape settings
-	Default();
+	Default(random);
 }
 
 C4MapCreatorS2::~C4MapCreatorS2()
@@ -720,10 +720,10 @@ C4MapCreatorS2::~C4MapCreatorS2()
 	Clear();
 }
 
-void C4MapCreatorS2::Default()
+void C4MapCreatorS2::Default(C4Random &random)
 {
 	// default templates
-	DefaultMap.Default();
+	DefaultMap.Default(random);
 	DefaultOverlay.Default();
 	DefaultPoint.Default();
 	pCurrentMap = nullptr;
@@ -735,16 +735,14 @@ void C4MapCreatorS2::Clear()
 	C4MCNode::Clear();
 	// clear callbacks
 	CallbackArrays.Clear();
-	// defaults templates
-	Default();
 }
 
-bool C4MapCreatorS2::ReadFile(const char *szFilename, C4Group *pGrp)
+bool C4MapCreatorS2::ReadFile(const char *szFilename, C4Group *pGrp, C4Random &random)
 {
 	// create parser and read file
 	try
 	{
-		C4MCParser(this).ParseFile(szFilename, pGrp);
+		C4MCParser(this, random).ParseFile(szFilename, pGrp);
 	}
 	catch (const C4MCParserErr &err)
 	{
@@ -755,12 +753,12 @@ bool C4MapCreatorS2::ReadFile(const char *szFilename, C4Group *pGrp)
 	return true;
 }
 
-bool C4MapCreatorS2::ReadScript(const char *szScript)
+bool C4MapCreatorS2::ReadScript(const char *szScript, C4Random &random)
 {
 	// create parser and read
 	try
 	{
-		C4MCParser(this).Parse(szScript);
+		C4MCParser(this, random).Parse(szScript);
 	}
 	catch (const C4MCParserErr &err)
 	{
@@ -829,10 +827,9 @@ void C4MCParserErr::show() const
 
 // parser
 
-C4MCParser::C4MCParser(C4MapCreatorS2 *pMapCreator)
+C4MCParser::C4MCParser(C4MapCreatorS2 *pMapCreator, C4Random &random)
+	: MapCreator{pMapCreator}, random{random}
 {
-	// store map creator
-	MapCreator = pMapCreator;
 	// reset some fields
 	Code = nullptr; CPos = nullptr; *Filename = 0;
 }
@@ -1201,7 +1198,7 @@ void C4MCParser::ParseTo(C4MCNode *pToNode)
 			// node done
 			// evaluate node and children, if this is top-level
 			// we mustn't evaluate everything immediately, because parents must be evaluated first!
-			if (pToNode->GlobalScope()) pNewNode->ReEvaluate();
+			if (pToNode->GlobalScope()) pNewNode->ReEvaluate(random);
 			pNewNode = nullptr;
 			break;
 		case PS_SETFIELD:
@@ -1255,7 +1252,7 @@ void C4MCParser::ParseValue(C4MCNode *pToNode, const char *szFieldName)
 				throw C4MCParserErr(this, C4MCErr_EOF);
 			if (MCT_INT == CurrToken || MCT_PX == CurrToken || MCT_PERCENT == CurrToken)
 			{
-				Value += Random(CurrTokenVal - Value);
+				Value += random.Random(CurrTokenVal - Value);
 			}
 			else
 				throw C4MCParserErr(this, C4MCErr_FieldConstExp, +CurrTokenIdtf);

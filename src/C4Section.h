@@ -99,7 +99,7 @@ public:
 
 	bool InitMaterialTexture(C4Section *fallback);
 
-	bool InitSecondPart();
+	bool InitSecondPart(C4Random &random);
 	bool InitThirdPart();
 	bool CheckObjectEnumeration();
 

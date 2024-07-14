@@ -155,6 +155,7 @@ struct C4RCRandom
 	int Cnt; // index in seed
 	int Range; // random range query
 	int Val; // random value
+	std::uint32_t Id; // random id
 };
 
 struct C4RCCreateObj

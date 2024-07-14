@@ -175,8 +175,8 @@ protected:
 	int32_t IntPar(C4MCParser *pParser, const char *szSVal, int32_t iVal, C4MCTokenType ValType); // ensure par is int32_t
 	const char *StrPar(C4MCParser *pParser, const char *szSVal, int32_t iVal, C4MCTokenType ValType); // ensure par is string
 
-	virtual void Evaluate() {} // called when all fields are initialized
-	void ReEvaluate(); // evaluate everything again
+	virtual void Evaluate([[maybe_unused]] C4Random &random) {} // called when all fields are initialized
+	void ReEvaluate(C4Random &random); // evaluate everything again
 
 	// For Percents and Pixels
 	class int_bool
@@ -281,7 +281,7 @@ public:
 
 	bool SetField(C4MCParser *pParser, const char *szField, const char *szSVal, int32_t iVal, C4MCTokenType ValType) override; // set field
 
-	void Evaluate() override; // called when all fields are initialized
+	void Evaluate(C4Random &random) override; // called when all fields are initialized
 
 	C4MCOverlay *Overlay() override { return this; } // this is an overlay
 	C4MCOverlay *FirstOfChain(); // go backwards in op chain until first overlay of chain
@@ -314,7 +314,7 @@ public:
 	int32_t X, Y;
 	int_bool RX, RY;
 
-	virtual void Evaluate() override; // called when all fields are initialized
+	virtual void Evaluate(C4Random &random) override; // called when all fields are initialized
 	bool SetField(C4MCParser *pParser, const char *szField, const char *szSVal, int32_t iVal, C4MCTokenType ValType) override; // set field
 
 public:
@@ -334,11 +334,11 @@ public:
 	C4MCNode *clone(C4MCNode *pToNode) override { return new C4MCMap(pToNode, *this, true); }
 
 protected:
-	void Default(); // set default values for default presets
+	void Default(C4Random &random); // set default values for default presets
 
 public:
 	bool RenderTo(uint8_t *pToBuf, int32_t iPitch); // render to buffer
-	void SetSize(int32_t iWdt, int32_t iHgt);
+	void SetSize(int32_t iWdt, int32_t iHgt, C4Random &random);
 
 public:
 	C4MCNodeType Type() override { return MCN_Map; } // get node type
@@ -351,16 +351,14 @@ public:
 class C4MapCreatorS2 : public C4MCNode
 {
 public:
-	C4MapCreatorS2(C4Section &section, C4SLandscape *pLandscape, C4TextureMap *pTexMap, C4MaterialMap *pMatMap, int iPlayerCount);
-	C4MapCreatorS2(C4MapCreatorS2 &rTemplate, C4SLandscape *pLandscape); // construct of template
-	C4MapCreatorS2(C4SLandscape *pLandscape, C4TextureMap *pTexMap, C4MaterialMap *pMatMap, int iPlayerCount);
+	C4MapCreatorS2(C4Section &section, C4Random &random, C4SLandscape *pLandscape, C4TextureMap *pTexMap, C4MaterialMap *pMatMap, int iPlayerCount);
+	C4MapCreatorS2(C4MapCreatorS2 &rTemplate, C4Random &random, C4SLandscape *pLandscape); // construct of template
 	~C4MapCreatorS2();
 
-
-	void Default(); // set default data
+	void Default(C4Random &random); // set default data
 	void Clear(); // clear any data
-	bool ReadFile(const char *szFilename, C4Group *pGrp); // read defs of file
-	bool ReadScript(const char *szScript); // reads def directly from mem
+	bool ReadFile(const char *szFilename, C4Group *pGrp, C4Random &random); // read defs of file
+	bool ReadScript(const char *szScript, C4Random &random); // reads def directly from mem
 
 public:
 	C4MCMap *GetMap(const char *szMapName); // get map by name
@@ -416,6 +414,7 @@ class C4MCParser
 {
 private:
 	C4MapCreatorS2 *MapCreator; // map creator parsing into
+	C4Random &random; // random generator to use
 	char *Code; // loaded code
 	const char *CPos; // current parser pos in code
 	C4MCTokenType CurrToken; // last token read
@@ -429,7 +428,7 @@ private:
 	void ParseValue(C4MCNode *pToNode, const char *szFieldName); // Set Field
 
 public:
-	C4MCParser(C4MapCreatorS2 *pMapCreator);
+	C4MCParser(C4MapCreatorS2 *pMapCreator, C4Random &random);
 	~C4MCParser();
 
 	void Clear(); // clear stuff

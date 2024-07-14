@@ -35,6 +35,7 @@ class C4Object;
 class C4ObjectList;
 class C4PathFinder;
 class C4Player;
+class C4Random;
 class C4Section;
 class C4Surface;
 class C4TextureMap;

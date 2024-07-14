@@ -34,12 +34,12 @@ protected:
 
 public:
 	void Create(CSurface8 *sfcMap,
-		C4SLandscape &rLScape, C4TextureMap &rTexMap,
+		C4SLandscape &rLScape, C4Random &random, C4TextureMap &rTexMap,
 		bool fLayers = false, int32_t iPlayerNum = 1);
 
 protected:
 	void Reset();
 	void SetPix(int32_t x, int32_t y, uint8_t col);
-	void DrawLayer(int32_t x, int32_t y, int32_t size, uint8_t col);
+	void DrawLayer(C4Random &random, int32_t x, int32_t y, int32_t size, uint8_t col);
 	uint8_t GetPix(int32_t x, int32_t y);
 };
