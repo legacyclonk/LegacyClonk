@@ -269,7 +269,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				pObj->Picture2Facet(fctSymbol);
 				// Commands
 				command = std::format("AppendCommand(this,\"Sell\",Object({}),{},0,Object({}),0,{})&&ExecuteCommand()", pTarget->Number, 1, pObj->Number, C4IdText(pDef->id));
-				command2 = std::format("AppendCommand(this,\"Sell\",Object({}),{},0,Object({}),0,{})&&ExecuteCommand()", pTarget->Number, pObj->Contents.ObjectCount(pDef->id), pObj->Number, C4IdText(pDef->id));
+				command2 = std::format("AppendCommand(this,\"Sell\",Object({}),{},0,,0,{})&&ExecuteCommand()", pTarget->Number, pTarget->Contents.ObjectCount(pDef->id), C4IdText(pDef->id));
 				// Selling value
 				int32_t iSellValue = pObj->GetValue(pTarget, Object ? Object->Owner : NO_OWNER);
 				// Add menu item
