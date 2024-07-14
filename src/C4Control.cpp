@@ -455,7 +455,7 @@ void C4ControlSyncCheck::Set()
 	Frame = Game.FrameCounter;
 	ControlTick = Game.Control.ControlTick;
 	Random3 = FRndPtr3;
-	RandomCount = ::RandomCount;
+	RandomCount = ::C4Random::Default.GetRandomCount();
 	AllCrewPosX = GetAllCrewPosX();
 	ObjectEnumerationIndex = Game.ObjectEnumerationIndex;
 

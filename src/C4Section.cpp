@@ -263,10 +263,10 @@ bool C4Section::InitMaterialTexture(C4Section *const fallback)
 	return true;
 }
 
-bool C4Section::InitSecondPart()
+bool C4Section::InitSecondPart(C4Random &random)
 {
 	LandscapeLoaded = false;
-	if (!(emptyLandscape ? Landscape.InitEmpty(true, LandscapeLoaded) : Landscape.Init(Group, false, true, LandscapeLoaded, C4S.Head.SaveGame)))
+	if (!(emptyLandscape ? Landscape.InitEmpty(random, true, LandscapeLoaded) : Landscape.Init(Group, random, false, true, LandscapeLoaded, C4S.Head.SaveGame)))
 	{
 		LogFatal(C4ResStrTableKey::IDS_ERR_GBACK);
 		return false;
@@ -275,7 +275,7 @@ bool C4Section::InitSecondPart()
 	// the savegame flag is set if runtime data is present, in which case this is to be used
 	if (LandscapeLoaded && (emptyLandscape || !C4S.Head.SaveGame))
 	{
-		Landscape.ScenarioInit();
+		Landscape.ScenarioInit(random);
 	}
 
 	// Init main object list
@@ -420,7 +420,7 @@ void C4Section::InitInEarth()
 	int32_t cnt, vidnum;
 	C4ID vidlist[maxvid];
 	// Amount
-	int32_t amt = (Landscape.Width * Landscape.Height / 5000) * C4S.Landscape.InEarthLevel.Evaluate() / 100;
+	int32_t amt = (Landscape.Width * Landscape.Height / 5000) * C4S.Landscape.InEarthLevel.Evaluate(C4Random::Default) / 100;
 	// List all valid IDs from C4S
 	vidnum = ListExpandValids(C4S.Landscape.InEarth, vidlist, maxvid);
 	// Place
@@ -435,7 +435,7 @@ void C4Section::InitVegetation()
 	int32_t cnt, vidnum;
 	C4ID vidlist[maxvid];
 	// Amount
-	int32_t amt = (Landscape.Width / 50) * C4S.Landscape.VegLevel.Evaluate() / 100;
+	int32_t amt = (Landscape.Width / 50) * C4S.Landscape.VegLevel.Evaluate(C4Random::Default) / 100;
 	// Get percentage vidlist from C4S
 	vidnum = ListExpandValids(C4S.Landscape.Vegetation, vidlist, maxvid);
 	// Place vegetation

@@ -118,7 +118,7 @@ public:
 	void Execute();
 	void Synchronize();
 	void Draw(C4FacetEx &cgo, int32_t iPlayer = -1);
-	void ScenarioInit();
+	void ScenarioInit(C4Random &random);
 	bool EnumerateMaterials();
 	void ClearRect(int32_t iTx, int32_t iTy, int32_t iWdt, int32_t iHgt);
 	void ClearRectDensity(int32_t iTx, int32_t iTy, int32_t iWdt, int32_t iHgt, int32_t iOfDensity);
@@ -141,8 +141,8 @@ public:
 	bool SaveMap(C4Group &hGroup);
 	bool SaveInitial();
 	bool SaveTextures(C4Group &hGroup);
-	bool Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame);
-	bool InitEmpty(bool loadSky, bool &landscapeLoaded);
+	bool Init(C4Group &hGroup, C4Random &random, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame);
+	bool InitEmpty(C4Random &random, bool loadSky, bool &landscapeLoaded);
 	bool MapToLandscape();
 	bool ApplyDiff(C4Group &hGroup);
 	bool SetMode(int32_t iMode);
@@ -296,11 +296,11 @@ protected:
 	bool MapToLandscape(CSurface8 *sfcMap, int32_t iMapX, int32_t iMapY, int32_t iMapWdt, int32_t iMapHgt, int32_t iOffsX = 0, int32_t iOffsY = 0); // zoom map segment to surface (or sector surfaces)
 	bool GetMapColorIndex(const char *szMaterial, const char *szTexture, bool fIFT, uint8_t &rbyCol);
 	bool SkyToLandscape(int32_t iToX, int32_t iToY, int32_t iToWdt, int32_t iToHgt, int32_t iOffX, int32_t iOffY);
-	void PrepareInit(bool overloadCurrent);
-	bool AssignMap(std::unique_ptr<CSurface8> map, bool overloadCurrent, bool loadSky, bool savegame);
+	void PrepareInit(C4Random &random, bool overloadCurrent);
+	bool AssignMap(std::unique_ptr<CSurface8> map, C4Random &random, bool overloadCurrent, bool loadSky, bool savegame);
 	bool FinalizeInit(bool &landscapeLoaded, C4Group *groupForDiff);
-	std::unique_ptr<CSurface8> CreateMap(); // create map by landscape attributes
-	std::unique_ptr<CSurface8> CreateMapS2(C4Group &ScenFile); // create map by def file
+	std::unique_ptr<CSurface8> CreateMap(C4Random &random); // create map by landscape attributes
+	std::unique_ptr<CSurface8> CreateMapS2(C4Group &ScenFile, C4Random &random); // create map by def file
 	CSurface8 *CreateEmptyMap(std::int32_t width, std::int32_t height);
 	bool Relight(C4Rect To);
 	bool ApplyLighting(C4Rect To);
