@@ -58,10 +58,10 @@ C4Landscape::~C4Landscape()
 	Clear();
 }
 
-void C4Landscape::ScenarioInit()
+void C4Landscape::ScenarioInit(C4Random &random)
 {
 	// Gravity
-	Gravity = FIXED100(Section.C4S.Landscape.Gravity.Evaluate()) / 5;
+	Gravity = FIXED100(Section.C4S.Landscape.Gravity.Evaluate(random)) / 5;
 	// Opens
 	LeftOpen = Section.C4S.Landscape.LeftOpen;
 	RightOpen = Section.C4S.Landscape.RightOpen;
@@ -547,35 +547,35 @@ bool C4Landscape::MapToLandscape(CSurface8 *sfcMap, int32_t iMapX, int32_t iMapY
 	return true;
 }
 
-std::unique_ptr<CSurface8> C4Landscape::CreateMap()
+std::unique_ptr<CSurface8> C4Landscape::CreateMap(C4Random &random)
 {
 	std::int32_t width{0};
 	std::int32_t height{0};
 
 	// Create map surface
-	Section.C4S.Landscape.GetMapSize(width, height, Game.Parameters.StartupPlayerCount);
+	Section.C4S.Landscape.GetMapSize(width, height, Game.Parameters.StartupPlayerCount, random);
 	auto surfaceMap = std::make_unique<CSurface8>(width, height);
 
 	// Fill sfcMap
 	C4MapCreator MapCreator;
 	MapCreator.Create(surfaceMap.get(),
-		Section.C4S.Landscape, Section.TextureMap,
+		Section.C4S.Landscape, random, Section.TextureMap,
 		true, Game.Parameters.StartupPlayerCount);
 
 	return surfaceMap;
 }
 
-std::unique_ptr<CSurface8> C4Landscape::CreateMapS2(C4Group &ScenFile)
+std::unique_ptr<CSurface8> C4Landscape::CreateMapS2(C4Group &ScenFile, C4Random &random)
 {
 	// file present?
 	if (!ScenFile.AccessEntry(C4CFN_DynLandscape)) return nullptr;
 
 	// create map creator
 	if (!pMapCreator)
-		pMapCreator = new C4MapCreatorS2(Section, &Section.C4S.Landscape, &Section.TextureMap, &Section.Material, Game.Parameters.StartupPlayerCount);
+		pMapCreator = new C4MapCreatorS2(Section, random, &Section.C4S.Landscape, &Section.TextureMap, &Section.Material, Game.Parameters.StartupPlayerCount);
 
 	// read file
-	pMapCreator->ReadFile(C4CFN_DynLandscape, &ScenFile);
+	pMapCreator->ReadFile(C4CFN_DynLandscape, &ScenFile, random);
 	// render landscape
 	// keep map creator until script callbacks have been done
 	return pMapCreator->Render(nullptr);
@@ -593,10 +593,10 @@ bool C4Landscape::PostInitMap()
 	return true;
 }
 
-void C4Landscape::PrepareInit(const bool overloadCurrent)
+void C4Landscape::PrepareInit(C4Random &random, const bool overloadCurrent)
 {
 	// set map seed, if not pre-assigned
-	if (!MapSeed) MapSeed = Random(3133700);
+	if (!MapSeed) MapSeed = random.Random(3133700);
 
 	ShadeMaterials = Section.C4S.Landscape.ShadeMaterials;
 
@@ -677,22 +677,18 @@ bool C4Landscape::FinalizeInit(bool &landscapeLoaded, C4Group *const groupForDif
 	// enforce first color to be transparent
 	Surface8->EnforceC0Transparency();
 
-	// after map/landscape creation, the seed must be fixed again, so there's no difference between clients creating
-	// and not creating the map
-	Game.FixRandom(Game.Parameters.RandomSeed);
-
 	// Success
 	landscapeLoaded = true;
 	return true;
 }
 
-bool C4Landscape::AssignMap(std::unique_ptr<CSurface8> map, const bool overloadCurrent, const bool loadSky, const bool savegame)
+bool C4Landscape::AssignMap(std::unique_ptr<CSurface8> map, C4Random &random, const bool overloadCurrent, const bool loadSky, const bool savegame)
 {
 	// Store map size and calculate map zoom
 	int iWdt, iHgt;
 	map->GetSurfaceSize(iWdt, iHgt);
 	MapWidth = iWdt; MapHeight = iHgt;
-	MapZoom = Section.C4S.Landscape.MapZoom.Evaluate();
+	MapZoom = Section.C4S.Landscape.MapZoom.Evaluate(random);
 
 	// Calculate landscape size
 	Width = MapZoom * MapWidth;
@@ -721,19 +717,17 @@ bool C4Landscape::AssignMap(std::unique_ptr<CSurface8> map, const bool overloadC
 	return true;
 }
 
-bool C4Landscape::InitEmpty(const bool loadSky, bool &landscapeLoaded)
+bool C4Landscape::InitEmpty(C4Random &random, const bool loadSky, bool &landscapeLoaded)
 {
 	assert(!Section.C4S.Landscape.ExactLandscape);
-	PrepareInit(false);
-
-	Game.FixRandom(Game.Parameters.RandomSeed);
+	PrepareInit(random, false);
 
 	std::int32_t width{0};
 	std::int32_t height{0};
 
 	// Create map surface
-	Section.C4S.Landscape.GetMapSize(width, height, Game.Parameters.StartupPlayerCount);
-	if (!AssignMap(std::make_unique<CSurface8>(width, height), false, loadSky, false))
+	Section.C4S.Landscape.GetMapSize(width, height, Game.Parameters.StartupPlayerCount, random);
+	if (!AssignMap(std::make_unique<CSurface8>(width, height), random, false, loadSky, false))
 	{
 		return false;
 	}
@@ -741,9 +735,9 @@ bool C4Landscape::InitEmpty(const bool loadSky, bool &landscapeLoaded)
 	return FinalizeInit(landscapeLoaded, nullptr);
 }
 
-bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame)
+bool C4Landscape::Init(C4Group &hGroup, C4Random &random, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame)
 {
-	PrepareInit(fOverloadCurrent);
+	PrepareInit(random, fOverloadCurrent);
 
 	// map and landscape must be initialized with fixed random, so runtime joining clients may recreate it
 	// with same seed
@@ -751,8 +745,6 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 	// and not creating the map
 	// this, however, would cause syncloss to DebugRecs
 	C4DebugRecOff DBGRECOFF(!!Section.C4S.Landscape.ExactLandscape);
-
-	Game.FixRandom(Game.Parameters.RandomSeed);
 
 	// don't change landscape mode in runtime joins
 	bool fLandscapeModeSet = (Mode != C4LSC_Undefined);
@@ -778,12 +770,12 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 
 		// dynamic map from file
 		if (!sfcMap)
-			if (sfcMap = CreateMapS2(hGroup))
+			if (sfcMap = CreateMapS2(hGroup, random))
 				if (!fLandscapeModeSet) Mode = C4LSC_Dynamic;
 
 		// Dynamic map by scenario
 		if (!sfcMap && !fOverloadCurrent)
-			if (sfcMap = CreateMap())
+			if (sfcMap = CreateMap(random))
 				if (!fLandscapeModeSet) Mode = C4LSC_Dynamic;
 
 		// No map failure
@@ -800,7 +792,7 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 		AddDbgRec(RCT_Map, sfcMap->Bits, sfcMap->Pitch * sfcMap->Hgt);
 #endif
 
-		if (!AssignMap(std::move(sfcMap), fOverloadCurrent, fLoadSky, fSavegame))
+		if (!AssignMap(std::move(sfcMap), random, fOverloadCurrent, fLoadSky, fSavegame))
 		{
 			return false;
 		}
@@ -2750,14 +2742,13 @@ bool C4Landscape::DrawMap(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, co
 	// If KeepMapCreator=1 we copy the existing creator to gain access to the named overlays
 	if (pMapCreator)
 	{
-		mapCreator.emplace(*pMapCreator, &FakeLS);
+		mapCreator.emplace(*pMapCreator, C4Random::Default, &FakeLS);
 	}
 	else
 	{
-		mapCreator.emplace(Section, &FakeLS, &Section.TextureMap, &Section.Material, Game.Parameters.StartupPlayerCount);
+		mapCreator.emplace(Section, C4Random::Default, &FakeLS, &Section.TextureMap, &Section.Material, Game.Parameters.StartupPlayerCount);
 	}
-	// read file
-	mapCreator->ReadScript(szMapDef);
+	mapCreator->ReadScript(szMapDef, C4Random::Default);
 	// render map
 	const auto sfcMap = mapCreator->Render(nullptr);
 	if (!sfcMap) return false;
@@ -2780,7 +2771,7 @@ bool C4Landscape::DrawDefMap(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt,
 	// render map
 	C4MCMap *pMap = pMapCreator->GetMap(szMapDef);
 	if (!pMap) return false;
-	pMap->SetSize(iMapWdt, iMapHgt);
+	pMap->SetSize(iMapWdt, iMapHgt, C4Random::Default);
 	const auto sfcMap = pMapCreator->Render(szMapDef);
 	if (sfcMap)
 	{
