@@ -45,15 +45,16 @@ std::unique_ptr<CSurface8> GroupReadSurface8(CStdStream &hGroup)
 	return std::move(sfc);
 }
 
-CSurface8 *GroupReadSurfaceOwnPal8(CStdStream &hGroup)
+std::unique_ptr<CSurface8> GroupReadSurfaceOwnPal8(CStdStream &hGroup)
 {
 	// create surface
-	CSurface8 *pSfc = new CSurface8();
-	if (!pSfc->Read(hGroup, true))
+	auto sfc = std::make_unique<CSurface8>();
+	if (!sfc->Read(hGroup, true))
 	{
-		delete pSfc; return nullptr;
+		return nullptr;
 	}
-	return pSfc;
+
+	return std::move(sfc);
 }
 
 std::unique_ptr<C4Surface> GroupReadSurfacePNG(CStdStream &hGroup)

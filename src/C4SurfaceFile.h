@@ -29,4 +29,4 @@ class C4Surface;
 C4Surface *GroupReadSurface(CStdStream &hGroup, uint8_t *bpPalette = nullptr);
 std::unique_ptr<CSurface8> GroupReadSurface8(CStdStream &hGroup);
 std::unique_ptr<C4Surface> GroupReadSurfacePNG(CStdStream &hGroup);
-CSurface8 *GroupReadSurfaceOwnPal8(CStdStream &hGroup);
+std::unique_ptr<CSurface8> GroupReadSurfaceOwnPal8(CStdStream &hGroup);
