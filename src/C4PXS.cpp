@@ -335,8 +335,9 @@ bool C4PXSSystem::Save(C4Group &hGroup)
 	}
 
 	// Save chunks to temp file
+	const std::string tempFilename{Config.AtTempPathWithPrefix(section.GetNumberAsString(), C4CFN_TempPXS)};
 	CStdFile hTempFile;
-	if (!hTempFile.Create(Config.AtTempPath(C4CFN_TempPXS)))
+	if (!hTempFile.Create(tempFilename.c_str()))
 		return false;
 	int32_t iNumFormat = 1;
 	if (!hTempFile.Write(&iNumFormat, sizeof(iNumFormat)))
@@ -350,7 +351,7 @@ bool C4PXSSystem::Save(C4Group &hGroup)
 		return false;
 
 	// Move temp file to group
-	if (!hGroup.Move(Config.AtTempPath(C4CFN_TempPXS),
+	if (!hGroup.Move(tempFilename.c_str(),
 		C4CFN_PXS))
 		return false;
 

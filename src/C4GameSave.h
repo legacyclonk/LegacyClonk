@@ -100,9 +100,10 @@ private:
 	bool SaveCreateGroup(const char *szFilename, C4Group &hUseGroup); // create/copy group at target filename
 	bool SaveCore(); // save C4S core
 	bool SaveScenarioSections(); // save scenario sections
-	bool SaveLandscape(C4Section &section); // save current landscape
+	bool SaveLandscape(C4Section &section, C4Group &group); // save current landscape
 	bool SaveRuntimeData(); // save any runtime data
-	bool SaveSection(C4Section &section);
+	bool SaveSection(C4Section &section, const std::string &filename, bool saveRuntimeData);
+	bool SaveSection(C4Section &section, C4Group &group, bool saveRuntimeData);
 
 public:
 	virtual ~C4GameSave() { Close(); } // dtor: close group

@@ -221,6 +221,19 @@ int32_t C4TextureMap::LoadMap(C4Group &hGroup, const char *szEntryName, bool *pO
 	return iTextures;
 }
 
+bool C4TextureMap::InitFromMapAndExistingTextures(C4Group &group, const char *entryName, const C4TextureMap &other)
+{
+	if (!LoadMap(group, entryName, nullptr, nullptr))
+	{
+		return false;
+	}
+
+	this->textures = other.textures;
+	Init();
+
+	return true;
+}
+
 int32_t C4TextureMap::Init()
 {
 	int32_t iRemoved = 0;

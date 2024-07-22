@@ -691,6 +691,12 @@ const char *C4Config::AtTempPath(const char *szFilename)
 	return AtPathFilename;
 }
 
+const char *C4Config::AtTempPathWithPrefix(std::string_view prefix, std::string_view filename)
+{
+	FormatWithNull(AtPathFilename, "{}{}{}", +General.TempPath, prefix, filename);
+	return AtPathFilename;
+}
+
 #ifdef C4ENGINE
 
 const char *C4Config::AtNetworkPath(const char *szFilename)
