@@ -88,14 +88,23 @@ public:
 
 	~C4Section() { Clear(); }
 
+private:
+	C4Section(std::uint32_t number) noexcept;
+
 public:
 	void Default();
 	void Clear();
 
-	std::string_view GetName() const { return name; }
+	std::string_view GetNameForSaveGame() const { return name; }
+	std::string_view GetNumberAsString() const { return numberAsString; }
 
-	bool InitFromTemplate(C4Group &scenario);
+	bool InitFromTemplate(C4Group &scenario, bool savegame = false);
 	bool InitFromEmptyLandscape(C4Group &scenario, const C4SLandscape &landscape);
+
+	bool AssumeGroupAsSaveGameGroup(); // for main section: open group as savegame group
+	bool LoadSaveGame(C4Group &scenario, std::string_view entryName);
+	bool InitFromSaveGameAfterLoad(C4Group &scenario); // called after all savegame sections have been created
+	bool SaveRuntimeData(C4Group &group);
 
 	bool InitMaterialTexture(C4Section *fallback);
 
@@ -279,6 +288,11 @@ public:
 	void ParentPointToPoint(std::int32_t &x, std::int32_t &y, const C4Section *untilParent = nullptr) const noexcept;
 	std::tuple<C4Section &, std::int32_t, std::int32_t> PointToChildPoint(int32_t x, int32_t y) noexcept;
 
+	void CompileFunc(StdCompiler *comp, bool mainSection);
+
+public:
+	static std::unique_ptr<C4Section> FromSaveGame(C4Group &group, std::string_view entryName);
+
 private:
 	// Object function internals
 	C4Object *NewObject(C4Def *ndef, C4Object *pCreator,
@@ -292,6 +306,7 @@ private:
 
 public:
 	C4Group Group;
+	std::optional<C4Group> SaveGameGroup;
 	C4Scenario C4S;
 	C4Weather Weather;
 	C4TextureMap TextureMap;
@@ -317,6 +332,7 @@ public:
 public:
 	static void ResetEnumerationIndex() noexcept;
 	static std::uint32_t AcquireEnumerationIndex() noexcept;
+	static void AdjustEnumerationIndex(std::uint32_t newIndex) noexcept;
 
 	static inline constexpr std::uint32_t NoSectionSentinel{std::numeric_limits<std::uint32_t>::max()};
 
@@ -325,6 +341,7 @@ private:
 
 private:
 	std::string name;
+	std::string numberAsString; // NoSave
 	bool emptyLandscape{false};
 	Status status{Status::Active};
 };
