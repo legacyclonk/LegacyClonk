@@ -2456,10 +2456,19 @@ static bool FnSound(C4AulContext *cthr, C4String *szSound, bool fGlobal, C4Objec
 	if (iLoop >= 0 && !fMultiple && IsSoundPlaying(FnStringPar(szSound), pObj))
 		return true;
 	// try to play effect
-	if (iLoop >= 0)
-		StartSoundEffect(FnStringPar(szSound), !!iLoop, iLevel, pObj, iCustomFalloffDistance);
+	C4SoundSystem::TargetVariant target;
+	if (fGlobal)
+	{
+		target.emplace<C4Section *>(&cthr->GetSection());
+	}
 	else
-		StopSoundEffect(FnStringPar(szSound), pObj);
+	{
+		target.emplace<C4Object *>(pObj);
+	}
+	if (iLoop >= 0)
+		StartSoundEffect(FnStringPar(szSound), !!iLoop, iLevel, target, iCustomFalloffDistance);
+	else
+		StopSoundEffect(FnStringPar(szSound), target);
 	// always return true (network safety!)
 	return true;
 }
