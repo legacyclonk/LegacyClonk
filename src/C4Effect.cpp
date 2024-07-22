@@ -179,12 +179,12 @@ void C4Effect::EnumeratePointers()
 	C4Effect *pEff = this;
 	do
 	{
+		// section
+		pEff->section.Enumerate();
 		// command target
 		pEff->pCommandTarget.Enumerate();
 		// effect var denumeration: not necessary, because this is done while saving
 	} while (pEff = pEff->pNext);
-
-	section.Enumerate();
 }
 
 void C4Effect::DenumeratePointers()
@@ -193,6 +193,8 @@ void C4Effect::DenumeratePointers()
 	C4Effect *pEff = this;
 	do
 	{
+		// section
+		pEff->section.Denumerate();
 		// command target
 		pEff->pCommandTarget.Denumerate();
 		// variable pointers
@@ -200,8 +202,6 @@ void C4Effect::DenumeratePointers()
 		// assign any callback functions
 		pEff->AssignCallbackFunctions();
 	} while (pEff = pEff->pNext);
-
-	section.Denumerate();
 }
 
 void C4Effect::ClearPointers(C4Object *pObj)
