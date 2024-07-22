@@ -104,9 +104,9 @@ public:
 	C4SolidMask *LastSolidMask{nullptr};
 
 protected:
-	C4Surface *Surface32;
-	C4Surface *AnimationSurface;
-	CSurface8 *Surface8;
+	std::unique_ptr<C4Surface> Surface32;
+	std::unique_ptr<C4Surface> AnimationSurface;
+	std::unique_ptr<CSurface8> Surface8;
 	int32_t Pix2Mat[256], Pix2Dens[256], Pix2Place[256];
 	int32_t PixCntPitch;
 	uint8_t *PixCnt;
@@ -136,12 +136,12 @@ public:
 	void FindMatTop(int32_t mat, int32_t &x, int32_t &y);
 	uint8_t GetMapIndex(int32_t iX, int32_t iY);
 	bool Load(C4Group &hGroup, bool fLoadSky, bool fSavegame);
-	bool Save(C4Group &hGroup);
+	bool SaveExact(C4Group &hGroup);
 	bool SaveDiff(C4Group &hGroup, bool fSyncSave);
 	bool SaveMap(C4Group &hGroup);
 	bool SaveInitial();
 	bool SaveTextures(C4Group &hGroup);
-	bool Init(C4Group &hGroup, C4Random &random, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame);
+	bool Init(C4Group &hGroup, C4Group *const saveGameGroup, C4Random &random, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame);
 	bool InitEmpty(C4Random &random, bool loadSky, bool &landscapeLoaded);
 	bool MapToLandscape();
 	bool ApplyDiff(C4Group &hGroup);
