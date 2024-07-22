@@ -102,7 +102,7 @@ void C4Weather::Execute()
 			section.C4S.Weather.Wind.Min,
 			section.C4S.Weather.Wind.Max);
 	if (!Tick10)
-		SoundLevel("Wind", nullptr, (std::max)(Abs(Wind) - 30, 0) * 2);
+		SoundLevel("Wind", &section, (std::max)(Abs(Wind) - 30, 0) * 2);
 	// Disaster launch
 	if (!Tick10)
 	{
