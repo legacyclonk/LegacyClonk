@@ -540,6 +540,8 @@ void C4Effect::CompileFunc(StdCompiler *pComp)
 	else
 	{
 		assert(pComp->isCompiler());
+		pComp->Warn("Effect section missing, assuming 0!");
+		section.SetNumber(0);
 	}
 
 	pComp->Separator(StdCompiler::SEP_END); // ')'
