@@ -393,6 +393,45 @@ bool C4Game::OpenScenario()
 		LogFatal(C4ResStrTableKey::IDS_ERR_LOAD_RUNTIMEDATA); return false;
 	}
 
+	if (C4S.Head.SaveGame)
+	{
+		// Sadly, the first section requires some rather convoluted section loading,
+		// as its data gets deserialized from Game.txt for compatibility with older
+		// save games.s
+		if (!Sections.front()->AssumeGroupAsSaveGameGroup())
+		{
+			LogFatal(C4ResStrTableKey::IDS_ERR_SECTION); return false;
+		}
+
+		std::array<char, _MAX_PATH + 1> filename;
+
+		ScenarioFile.ResetSearch();
+		while (ScenarioFile.FindNextEntry(C4CFN_SavedSectionFiles, filename.data()))
+		{
+			auto section = C4Section::FromSaveGame(ScenarioFile, filename.data());
+			if (!section)
+			{
+				LogFatal(C4ResStrTableKey::IDS_ERR_SECTION); return false;
+			}
+
+			Sections.emplace_back(std::move(section));
+		}
+
+		C4Section::AdjustEnumerationIndex(std::ranges::max(Sections | std::views::transform(&C4Section::Number)) + 1);
+
+		// C4Section::InitFromSaveGameAfterLoad potentially calls C4Section::InitFromTemplate, which calls
+		// C4Group::OpenAsChild, which moves the group search pointer; therefore we can't combine it with the
+		// loop above.
+
+		for (auto &section : Sections | std::views::drop(1))
+		{
+			if (!section->InitFromSaveGameAfterLoad(ScenarioFile))
+			{
+				LogFatal(C4ResStrTableKey::IDS_ERR_SECTION); return false;
+			}
+		}
+	}
+
 	// If scenario is a directory: Watch for changes
 	if (!ScenarioFile.IsPacked())
 	{
@@ -1428,9 +1467,7 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp)
 
 	if (comp.fExact)
 	{
-		pComp->Value(mkNamingAdapt(Sections.front()->Weather,       "Weather")); // FIXME: sections
-		pComp->Value(mkNamingAdapt(Sections.front()->Landscape,     "Landscape"));
-		pComp->Value(mkNamingAdapt(Sections.front()->Landscape.Sky, "Sky"));
+		pComp->Value(mkParAdapt(*Sections.front(), true));
 	}
 
 	pComp->Value(mkNamingAdapt(mkNamingPtrAdapt(Sections.front()->GlobalEffects, "GlobalEffects"), "Effects"));
@@ -1736,6 +1773,7 @@ bool C4Game::QuickSave(const char *strFilename, const char *strTitle, bool fForc
 	{
 		Log(C4ResStrTableKey::IDS_GAME_FAILSAVEGAME); delete pGameSave; return false;
 	}
+
 	delete pGameSave;
 
 	// Success
@@ -2884,6 +2922,13 @@ void C4Game::SectionLoadProc(std::stop_token stopToken)
 
 		{
 			const std::lock_guard lock{SectionLoadMutex};
+
+			if (SectionLoadQueue.empty())
+			{
+				spdlog::error("SectionLoadProc: Semaphore acquired, but queue is empty!");
+				continue;
+			}
+
 			sectionLoadArgs = std::move(SectionLoadQueue.front());
 			SectionLoadQueue.pop();
 		}
