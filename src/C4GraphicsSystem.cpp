@@ -779,6 +779,11 @@ int32_t C4GraphicsSystem::GetAudibility(C4Section &section, int32_t iX, int32_t 
 	return iAudible;
 }
 
+bool C4GraphicsSystem::IsSectionAudible(C4Section &section) const
+{
+	return std::ranges::any_of(Viewports, [&section](const auto &cvp) { return &cvp->GetViewSection() == &section; });
+}
+
 void C4GraphicsSystem::SetGamma(uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, int32_t iRampIndex)
 {
 	// No gamma effects
