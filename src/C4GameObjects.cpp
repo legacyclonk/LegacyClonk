@@ -684,11 +684,11 @@ int C4GameObjects::Load(C4Section &section, C4Group &hGroup, bool fKeepInactive)
 bool C4GameObjects::Save(C4Section &section, C4Group &hGroup, bool fSaveGame, bool fSaveInactive)
 {
 	// Save to temp file
-	char szFilename[_MAX_PATH + 1]; SCopy(Config.AtTempPath(C4CFN_ScenarioObjects), szFilename);
+	char szFilename[_MAX_PATH + 1]; SCopy(Config.AtTempPathWithPrefix(section.GetNumberAsString(), C4CFN_ScenarioObjects), szFilename);
 	if (!Save(section, szFilename, fSaveGame, fSaveInactive)) return false;
 
 	// Move temp file to group
-	hGroup.Move(szFilename, nullptr); // check?
+	hGroup.Move(szFilename, C4CFN_ScenarioObjects); // check?
 	// Success
 	return true;
 }

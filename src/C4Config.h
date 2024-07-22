@@ -329,6 +329,7 @@ public:
 	bool Load(bool forceWorkingDirectory = true, const char *szConfigFile = nullptr);
 	bool Init();
 	const char *AtExePath(const char *szFilename);
+	const char *AtTempPathWithPrefix(std::string_view prefix, std::string_view filename);
 	const char *AtTempPath(const char *szFilename);
 #ifdef C4ENGINE
 	const char *AtNetworkPath(const char *szFilename);

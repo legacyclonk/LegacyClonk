@@ -34,7 +34,7 @@ C4Section::EnumeratedPtrTraits::Denumerated *C4Section::EnumeratedPtrTraits::Den
 }
 
 C4Section::C4Section() noexcept
-	: Weather{*this}, TextureMap{*this}, Material{*this}, Landscape{*this}, MassMover{*this}, PXS{*this}, Particles{*this}, Number{AcquireEnumerationIndex()}
+	: C4Section{AcquireEnumerationIndex()}
 {
 	Default();
 }
@@ -43,6 +43,12 @@ C4Section::C4Section(std::string name)
 	: C4Section{}
 {
 	this->name = std::move(name);
+}
+
+C4Section::C4Section(const std::uint32_t number) noexcept
+	: Weather{*this}, TextureMap{*this}, Material{*this}, Landscape{*this}, MassMover{*this}, PXS{*this}, Particles{*this}, Number{number}, numberAsString{std::format("{}", number)}
+{
+	Default();
 }
 
 void C4Section::Default()
@@ -80,9 +86,12 @@ void C4Section::Clear()
 	Parent = nullptr;
 }
 
-bool C4Section::InitFromTemplate(C4Group &scenario)
+bool C4Section::InitFromTemplate(C4Group &scenario, const bool savegame)
 {
-	C4S = Game.C4S;
+	if (!savegame)
+	{
+		C4S = Game.C4S;
+	}
 
 	if (name.empty())
 	{
@@ -93,7 +102,7 @@ bool C4Section::InitFromTemplate(C4Group &scenario)
 	}
 	else
 	{
-		if (!Group.OpenAsChild(&scenario, std::format("Sect{}.c4g", name).c_str()))
+		if (!Group.OpenAsChild(&scenario, std::format(C4CFN_Section, name).c_str()))
 		{
 			LogFatalNTr("GROUP");
 			return false;
@@ -134,6 +143,74 @@ bool C4Section::InitFromEmptyLandscape(C4Group &scenario, const C4SLandscape &la
 	return true;
 }
 
+bool C4Section::AssumeGroupAsSaveGameGroup()
+{
+	SaveGameGroup.emplace();
+
+	if (!SaveGameGroup->Open(Group.GetFullName().getData()))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool C4Section::LoadSaveGame(C4Group &scenario, std::string_view entryName)
+{
+	SaveGameGroup.emplace();
+
+	if (!SaveGameGroup->OpenAsChild(&scenario, entryName.data()))
+	{
+		return false;
+	}
+
+	C4ComponentHost sectionRuntimeData;
+	if (!sectionRuntimeData.Load(C4CFN_SectionRuntimeData, *SaveGameGroup, C4CFN_SectionRuntimeData))
+	{
+		return false;
+	}
+
+	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkParAdapt(*this, false), StdStrBuf{sectionRuntimeData.GetData(), sectionRuntimeData.GetDataSize(), false}, C4CFN_SectionRuntimeData))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool C4Section::InitFromSaveGameAfterLoad(C4Group &scenario)
+{
+	if (emptyLandscape)
+	{
+		if (!Group.Open(scenario.GetFullName().getData()))
+		{
+			LogFatalNTr("GROUP");
+			return false;
+		}
+	}
+	else
+	{
+		if (!InitFromTemplate(scenario, true))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool C4Section::SaveRuntimeData(C4Group &group)
+{
+	std::string output;
+	if (!DecompileToBuf_Log<StdCompilerINIWrite>(mkParAdapt(*this, false), &output, C4CFN_SectionRuntimeData))
+	{
+		return false;
+	}
+
+	StdStrBuf copy{output.c_str(), output.size()};
+	return group.Add(C4CFN_SectionRuntimeData, copy, false, true);
+}
+
 bool C4Section::InitMaterialTexture(C4Section *const fallback)
 {
 	// Clear old data
@@ -141,16 +218,40 @@ bool C4Section::InitMaterialTexture(C4Section *const fallback)
 	Material.Clear();
 
 	// Check for scenario local materials
+	const bool isMainSection{name.empty()};
 	bool haveSectionMaterials{!emptyLandscape && Group.FindEntry(C4CFN_Material)};
 
 	if (!haveSectionMaterials && fallback)
 	{
 		Material.CopyMaterials(fallback->Material);
-		TextureMap = fallback->TextureMap;
+
+		if (SaveGameGroup)
+		{
+			C4Group group;
+			if (group.OpenAsChild(&*SaveGameGroup, C4CFN_Material))
+			{
+				if (!TextureMap.InitFromMapAndExistingTextures(group, C4CFN_TexMap, fallback->TextureMap))
+				{
+					LogFatal(C4ResStrTableKey::IDS_ERR_SCENARIOMATERIALS, group.GetError());
+					return false;
+				}
+			}
+			else
+			{
+				TextureMap = fallback->TextureMap;
+			}
+		}
+		else
+		{
+			TextureMap = fallback->TextureMap;
+		}
 	}
 	else
 	{
-		bool haveScenarioFileMaterials{!name.empty() && Game.ScenarioFile.FindEntry(C4CFN_Material)};
+		bool haveSectionSavegameMaterials{SaveGameGroup && SaveGameGroup->FindEntry(C4CFN_Material)};
+		bool haveScenarioFileMaterials{!isMainSection && Game.ScenarioFile.FindEntry(C4CFN_Material)};
+		bool skipNextTexMap{false};
+		bool onlyLoadTexMap{false};
 
 		// Load all materials
 		auto matRes = Game.Parameters.GameRes.iterRes(NRT_Material);
@@ -160,7 +261,20 @@ bool C4Section::InitMaterialTexture(C4Section *const fallback)
 		{
 			// Are there any scenario local materials that need to be looked at firs?
 			C4Group Mats;
-			if (haveSectionMaterials)
+			if (haveSectionSavegameMaterials)
+			{
+				if (!Mats.OpenAsChild(&*SaveGameGroup, C4CFN_Material))
+				{
+					LogFatal(C4ResStrTableKey::IDS_ERR_SCENARIOMATERIALS, Mats.GetError());
+					return false;
+				}
+
+				// Once only
+				haveSectionSavegameMaterials = false;
+				skipNextTexMap = !isMainSection;
+				onlyLoadTexMap = !isMainSection;
+			}
+			else if (haveSectionMaterials)
 			{
 				if (!Mats.OpenAsChild(&Group, C4CFN_Material))
 				{
@@ -201,6 +315,13 @@ bool C4Section::InitMaterialTexture(C4Section *const fallback)
 				// Only once
 				fFirst = false;
 			}
+			else if (skipNextTexMap)
+			{
+				// Skip texture map
+				skipNextTexMap = false;
+				fNewOverloadMaterials = fOverloadMaterials;
+				fNewOverloadTextures = fOverloadTextures;
+			}
 			else
 			{
 				// Check overload-flags only
@@ -208,27 +329,34 @@ bool C4Section::InitMaterialTexture(C4Section *const fallback)
 					fOverloadMaterials = fOverloadTextures = false;
 			}
 
-			// Load textures
-			if (fOverloadTextures)
+			if (onlyLoadTexMap)
 			{
-				int iTexs = TextureMap.LoadTextures(Mats);
-				// Automatically continue search if no texture was found
-				if (!iTexs) fNewOverloadTextures = true;
-				tex_count += iTexs;
+				onlyLoadTexMap = false;
 			}
-
-			// Load materials
-			if (fOverloadMaterials)
+			else
 			{
-				int iMats = Material.Load(Mats);
-				// Automatically continue search if no material was found
-				if (!iMats) fNewOverloadMaterials = true;
-				mat_count += iMats;
-			}
+				// Load textures
+				if (fOverloadTextures)
+				{
+					int iTexs = TextureMap.LoadTextures(Mats);
+					// Automatically continue search if no texture was found
+					if (!iTexs) fNewOverloadTextures = true;
+					tex_count += iTexs;
+				}
 
-			// Set flags
-			fOverloadTextures = fNewOverloadTextures;
-			fOverloadMaterials = fNewOverloadMaterials;
+				// Load materials
+				if (fOverloadMaterials)
+				{
+					int iMats = Material.Load(Mats);
+					// Automatically continue search if no material was found
+					if (!iMats) fNewOverloadMaterials = true;
+					mat_count += iMats;
+				}
+
+				// Set flags
+				fOverloadTextures = fNewOverloadTextures;
+				fOverloadMaterials = fNewOverloadMaterials;
+			}
 		}
 
 		// Logs
@@ -236,7 +364,7 @@ bool C4Section::InitMaterialTexture(C4Section *const fallback)
 		Log(C4ResStrTableKey::IDS_PRC_MATERIALS, mat_count);
 
 		// Load material enumeration
-		if (!Material.LoadEnumeration(Group))
+		if (SaveGameGroup && !Material.LoadEnumeration(*SaveGameGroup))
 		{
 			LogFatal(C4ResStrTableKey::IDS_PRC_NOMATENUM); return false;
 		}
@@ -266,14 +394,14 @@ bool C4Section::InitMaterialTexture(C4Section *const fallback)
 bool C4Section::InitSecondPart(C4Random &random)
 {
 	LandscapeLoaded = false;
-	if (!(emptyLandscape ? Landscape.InitEmpty(random, true, LandscapeLoaded) : Landscape.Init(Group, random, false, true, LandscapeLoaded, C4S.Head.SaveGame)))
+	if (!(emptyLandscape ? Landscape.InitEmpty(random, true, LandscapeLoaded) : Landscape.Init(Group, SaveGameGroup ? &*SaveGameGroup : nullptr, random, false, true, LandscapeLoaded, C4S.Head.SaveGame)))
 	{
 		LogFatal(C4ResStrTableKey::IDS_ERR_GBACK);
 		return false;
 	}
 
 	// the savegame flag is set if runtime data is present, in which case this is to be used
-	if (LandscapeLoaded && (emptyLandscape || !C4S.Head.SaveGame))
+	if (LandscapeLoaded && !SaveGameGroup)
 	{
 		Landscape.ScenarioInit(random);
 	}
@@ -289,9 +417,9 @@ bool C4Section::InitSecondPart(C4Random &random)
 	}, &TransferZones);
 
 	// PXS
-	if (!emptyLandscape && Group.FindEntry(C4CFN_PXS))
+	if (SaveGameGroup && SaveGameGroup->FindEntry(C4CFN_PXS))
 	{
-		if (!PXS.Load(Group))
+		if (!PXS.Load(*SaveGameGroup))
 		{
 		   LogFatal(C4ResStrTableKey::IDS_ERR_PXS);
 		   return false;
@@ -304,9 +432,9 @@ bool C4Section::InitSecondPart(C4Random &random)
 	}
 
 	// MassMover
-	if (!emptyLandscape && Group.FindEntry(C4CFN_MassMover))
+	if (SaveGameGroup && SaveGameGroup->FindEntry(C4CFN_MassMover))
 	{
-		if (!MassMover.Load(Group))
+		if (!MassMover.Load(*SaveGameGroup))
 		{
 			LogFatal(C4ResStrTableKey::IDS_ERR_MOVER); return false;
 		}
@@ -319,15 +447,20 @@ bool C4Section::InitSecondPart(C4Random &random)
 	}
 
 	// Load objects
-	if (!emptyLandscape)
+	if (SaveGameGroup)
 	{
-		if (const std::int32_t loadedObjects{Objects.Load(*this, Group, "")}; loadedObjects)
+		if (const std::int32_t loadedObjects{Objects.Load(*this, *SaveGameGroup, "")}; loadedObjects)
 		{
 			Log(C4ResStrTableKey::IDS_PRC_OBJECTSLOADED, loadedObjects);
 		}
 	}
 
 	Group.Close();
+
+	if (SaveGameGroup)
+	{
+		SaveGameGroup->Close();
+	}
 
 	return true;
 }
@@ -1412,6 +1545,47 @@ std::tuple<C4Section &, std::int32_t, std::int32_t> C4Section::PointToChildPoint
 	return {*childPtr, x, y};
 }
 
+void C4Section::CompileFunc(StdCompiler *const comp, const bool mainSection)
+{
+	if (!mainSection)
+	{
+		auto name = comp->Name("Section");
+		comp->Value(mkNamingAdapt(emptyLandscape, "EmptyLandscape"));
+		if (emptyLandscape)
+		{
+			comp->Value(mkNamingAdapt(mkParAdapt(C4S, false), "Scenario"));
+		}
+		else
+		{
+			comp->Value(mkNamingAdapt(this->name, "Template"));
+		}
+	}
+
+	comp->Value(mkNamingAdapt(Weather,       "Weather"));
+	comp->Value(mkNamingAdapt(Landscape,     "Landscape"));
+	comp->Value(mkNamingAdapt(Landscape.Sky, "Sky"));
+}
+
+std::unique_ptr<C4Section> C4Section::FromSaveGame(C4Group &scenario, const std::string_view entryName)
+{
+	const std::size_t separator{entryName.find('-')};
+	const auto numberSubstr = entryName.substr(separator + 1, entryName.size() - separator - 4);
+
+	std::uint32_t number;
+	if (std::from_chars(numberSubstr.data(), numberSubstr.data() + numberSubstr.size(), number).ec != std::errc{})
+	{
+		return nullptr;
+	}
+
+	std::unique_ptr<C4Section> section{new C4Section{number}};
+	if (section->LoadSaveGame(scenario, entryName))
+	{
+		return section;
+	}
+
+	return nullptr;
+}
+
 void C4Section::ClearObjectPtrs(C4Object *const obj)
 {
 	// May not call Objects.ClearPointers() because that would
@@ -1467,4 +1641,9 @@ std::uint32_t C4Section::AcquireEnumerationIndex() noexcept
 	}
 
 	return index;
+}
+
+void C4Section::AdjustEnumerationIndex(const std::uint32_t index) noexcept
+{
+	enumerationIndex = index;
 }

@@ -102,6 +102,7 @@ public:
 	void StoreMapPalette(uint8_t *bypPalette, C4MaterialMap &rMaterials);
 	static bool LoadFlags(C4Group &hGroup, const char *szEntryName, bool *pOverloadMaterials, bool *pOverloadTextures);
 	int32_t LoadMap(C4Group &hGroup, const char *szEntryName, bool *pOverloadMaterials, bool *pOverloadTextures);
+	bool InitFromMapAndExistingTextures(C4Group &group, const char *entryName, const C4TextureMap &other);
 	int32_t Init();
 	bool SaveMap(C4Group &hGroup, const char *szEntryName);
 	int32_t LoadTextures(C4Group &hGroup);

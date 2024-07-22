@@ -281,9 +281,9 @@ void C4Landscape::Clear(bool fClearMapCreator, bool fClearSky)
 	// clear sky
 	if (fClearSky) Sky.Clear();
 	// clear surfaces, if assigned
-	delete Surface32;        Surface32        = nullptr;
-	delete AnimationSurface; AnimationSurface = nullptr;
-	delete Surface8;         Surface8         = nullptr;
+	Surface32.reset();
+	AnimationSurface.reset();
+	Surface8.reset();
 	Map.reset();
 	// clear initial landscape
 	delete[] pInitial;       pInitial         = nullptr;
@@ -302,9 +302,9 @@ void C4Landscape::Draw(C4FacetEx &cgo, int32_t iPlayer)
 	DoRelights();
 	// blit landscape
 	if (Game.GraphicsSystem.ShowSolidMask)
-		Application.DDraw->Blit8Fast(Surface8, cgo.TargetX, cgo.TargetY, cgo.Surface, cgo.X, cgo.Y, cgo.Wdt, cgo.Hgt);
+		Application.DDraw->Blit8Fast(Surface8.get(), cgo.TargetX, cgo.TargetY, cgo.Surface, cgo.X, cgo.Y, cgo.Wdt, cgo.Hgt);
 	else
-		Application.DDraw->BlitLandscape(Surface32, AnimationSurface, &Game.GraphicsResource.sfcLiquidAnimation, cgo.TargetX, cgo.TargetY, cgo.Surface, cgo.X, cgo.Y, cgo.Wdt, cgo.Hgt);
+		Application.DDraw->BlitLandscape(Surface32.get(), AnimationSurface.get(), &Game.GraphicsResource.sfcLiquidAnimation, cgo.TargetX, cgo.TargetY, cgo.Surface, cgo.X, cgo.Y, cgo.Wdt, cgo.Hgt);
 	if (Modulation) Application.DDraw->DeactivateBlitModulation();
 }
 
@@ -631,17 +631,18 @@ bool C4Landscape::FinalizeInit(bool &landscapeLoaded, C4Group *const groupForDif
 	{
 		// map to big surface and sectionize it
 		// Create landscape surface
-		Surface32 = new C4Surface();
-		Surface8 = new CSurface8();
+		Surface32 = std::make_unique<C4Surface>();
+		Surface8 = std::make_unique<CSurface8>();
 		if (Config.Graphics.ColorAnimation && Config.Graphics.Shader)
-			AnimationSurface = new C4Surface(Width, Height);
+			AnimationSurface =std::make_unique<C4Surface>(Width, Height);
 		if (!Surface32->Create(Width, Height, true)
 			|| !Surface8->Create(Width, Height, true)
 			|| (AnimationSurface && !AnimationSurface->Create(Width, Height))
 			|| !Mat2Pal())
 		{
-			delete Surface8;    delete Surface32;    delete AnimationSurface;
-			Surface8 = nullptr; Surface32 = nullptr; AnimationSurface = nullptr;
+			Surface8.reset();
+			Surface32.reset();
+			AnimationSurface.reset();
 			return false;
 		}
 
@@ -735,7 +736,7 @@ bool C4Landscape::InitEmpty(C4Random &random, const bool loadSky, bool &landscap
 	return FinalizeInit(landscapeLoaded, nullptr);
 }
 
-bool C4Landscape::Init(C4Group &hGroup, C4Random &random, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame)
+bool C4Landscape::Init(C4Group &hGroup, C4Group *const saveGameGroup, C4Random &random, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame)
 {
 	PrepareInit(random, fOverloadCurrent);
 
@@ -750,23 +751,53 @@ bool C4Landscape::Init(C4Group &hGroup, C4Random &random, bool fOverloadCurrent,
 	bool fLandscapeModeSet = (Mode != C4LSC_Undefined);
 
 	Game.SetInitProgress(60);
+
+	const auto loadFromGroup = [&hGroup, saveGameGroup]<typename T>(const char *const entry, std::unique_ptr<T>(*const load)(CStdStream &)) -> std::unique_ptr<T>
+	{
+		if (saveGameGroup && saveGameGroup->AccessEntry(entry))
+		{
+			if (auto ptr{load(*saveGameGroup)})
+			{
+				return ptr;
+			}
+		}
+
+		if (hGroup.AccessEntry(entry))
+		{
+			if (auto ptr{load(hGroup)})
+			{
+				return ptr;
+			}
+		}
+
+		return nullptr;
+	};
+
 	// create map if necessary
 	if (!Section.C4S.Landscape.ExactLandscape)
 	{
 		std::unique_ptr<CSurface8> sfcMap;
 		// Static map from scenario
-		if (hGroup.AccessEntry(C4CFN_Map))
-			if (sfcMap = GroupReadSurface8(hGroup))
-				if (!fLandscapeModeSet) Mode = C4LSC_Static;
+		if ((sfcMap = loadFromGroup(C4CFN_Map, &GroupReadSurface8)))
+		{
+			if (!fLandscapeModeSet)
+			{
+				Mode = C4LSC_Static;
+			}
+		}
 
 		// allow C4CFN_Landscape as map for downwards compatibility
 		if (!sfcMap)
-			if (hGroup.AccessEntry(C4CFN_Landscape))
-				if (sfcMap = GroupReadSurface8(hGroup))
+		{
+			if ((sfcMap = loadFromGroup(C4CFN_Landscape, &GroupReadSurface8)))
+			{
+				if (!fLandscapeModeSet)
 				{
-					if (!fLandscapeModeSet) Mode = C4LSC_Static;
+					Mode = C4LSC_Static;
 					fMapChanged = true;
 				}
+			}
+		}
 
 		// dynamic map from file
 		if (!sfcMap)
@@ -807,10 +838,21 @@ bool C4Landscape::Init(C4Group &hGroup, C4Random &random, bool fOverloadCurrent,
 		// load it
 		if (!fLandscapeModeSet) Mode = C4LSC_Exact;
 		rfLoaded = true;
-		if (!Load(hGroup, fLoadSky, fSavegame)) return false;
+
+		if (saveGameGroup && saveGameGroup->AccessEntry(C4CFN_Landscape) && ((Surface8 = GroupReadSurfaceOwnPal8(*saveGameGroup))))
+		{
+			if (!Load(*saveGameGroup, fLoadSky, fSavegame)) return false;
+		}
+		else
+		{
+			if (!hGroup.AccessEntry(C4CFN_Landscape)) return false;
+			if (!(Surface8 = GroupReadSurfaceOwnPal8(hGroup))) return false;
+			if (!Load(hGroup, fLoadSky, fSavegame)) return false;
+		}
+
 	}
 
-	return FinalizeInit(rfLoaded, &hGroup);
+	return FinalizeInit(rfLoaded, saveGameGroup ? saveGameGroup : &hGroup);
 }
 
 bool C4Landscape::SetPix(int32_t x, int32_t y, uint8_t npix)
@@ -1514,7 +1556,7 @@ bool C4Landscape::Incinerate(int32_t x, int32_t y)
 	return false;
 }
 
-bool C4Landscape::Save(C4Group &hGroup)
+bool C4Landscape::SaveExact(C4Group &hGroup)
 {
 	// Save members
 	if (!Sky.Save(hGroup))
@@ -1522,7 +1564,7 @@ bool C4Landscape::Save(C4Group &hGroup)
 
 	// Save landscape surface
 	char szTempLandscape[_MAX_PATH + 1];
-	SCopy(Config.AtTempPath(C4CFN_TempLandscape), szTempLandscape);
+	SCopy(Config.AtTempPathWithPrefix(Section.GetNumberAsString(), C4CFN_TempLandscape), szTempLandscape);
 	MakeTempFilename(szTempLandscape);
 	if (!Surface8->Save(szTempLandscape))
 		return false;
@@ -1531,7 +1573,7 @@ bool C4Landscape::Save(C4Group &hGroup)
 	if (!hGroup.Move(szTempLandscape, C4CFN_Landscape))
 		return false;
 
-	SCopy(Config.AtTempPath(C4CFN_TempLandscapePNG), szTempLandscape);
+	SCopy(Config.AtTempPathWithPrefix(Section.GetNumberAsString(), C4CFN_TempLandscapePNG), szTempLandscape);
 	MakeTempFilename(szTempLandscape);
 	if (!Surface32->SavePNG(szTempLandscape, true, false, false))
 		return false;
@@ -1564,11 +1606,11 @@ bool C4Landscape::SaveDiff(C4Group &hGroup, bool fSyncSave)
 	if (fSyncSave || fChanged)
 	{
 		// Save landscape surface
-		if (!Surface8->Save(Config.AtTempPath(C4CFN_TempLandscape)))
+		if (!Surface8->Save(Config.AtTempPathWithPrefix(Section.GetNumberAsString(), C4CFN_TempLandscape)))
 			return false;
 
 		// Move temp file to group
-		if (!hGroup.Move(Config.AtTempPath(C4CFN_TempLandscape),
+		if (!hGroup.Move(Config.AtTempPathWithPrefix(Section.GetNumberAsString(), C4CFN_TempLandscape),
 			C4CFN_DiffLandscape))
 			return false;
 	}
@@ -1608,14 +1650,13 @@ bool C4Landscape::SaveInitial()
 bool C4Landscape::Load(C4Group &hGroup, bool fLoadSky, bool fSavegame)
 {
 	// Load exact landscape from group
-	if (!hGroup.AccessEntry(C4CFN_Landscape)) return false;
-	if (!(Surface8 = GroupReadSurfaceOwnPal8(hGroup))) return false;
+	assert(Surface8);
 	int iWidth, iHeight;
 	Surface8->GetSurfaceSize(iWidth, iHeight);
 	Width = iWidth; Height = iHeight;
-	Surface32 = new C4Surface(Width, Height);
+	Surface32 = std::make_unique<C4Surface>(Width, Height);
 	if (Config.Graphics.ColorAnimation && Config.Graphics.Shader)
-		AnimationSurface = new C4Surface(Width, Height);
+		AnimationSurface = std::make_unique<C4Surface>(Width, Height);
 	// adjust pal
 	if (!Mat2Pal()) return false;
 	// load the 32bit-surface, too
@@ -1698,19 +1739,22 @@ bool C4Landscape::Load(C4Group &hGroup, bool fLoadSky, bool fSavegame)
 
 bool C4Landscape::ApplyDiff(C4Group &hGroup)
 {
-	CSurface8 *pDiff;
+	std::unique_ptr<CSurface8> diff;
 	// Load diff landscape from group
 	if (!hGroup.AccessEntry(C4CFN_DiffLandscape)) return false;
-	if (!(pDiff = GroupReadSurfaceOwnPal8(hGroup))) return false;
+	if (!(diff = GroupReadSurfaceOwnPal8(hGroup))) return false;
 	// convert all pixels: keep if same material; re-set if different material
+	C4Rect changedRect{};
 	uint8_t byPix;
 	for (int32_t y = 0; y < Height; ++y) for (int32_t x = 0; x < Width; ++x)
-		if (pDiff->GetPix(x, y) != 0xff)
-			if (Surface8->GetPix(x, y) != (byPix = pDiff->GetPix(x, y)))
+		if (diff->GetPix(x, y) != 0xff)
+			if (Surface8->GetPix(x, y) != (byPix = diff->GetPix(x, y)))
+			{
+				changedRect.Add(C4Rect{x, y, 1, 1});
 				// material has changed here: readjust with new texture
 				SetPix(x, y, byPix);
+			}
 	// done; clear diff
-	delete pDiff;
 	return true;
 }
 
@@ -2305,11 +2349,11 @@ bool C4Landscape::SaveMap(C4Group &hGroup)
 	Section.TextureMap.StoreMapPalette(bypPalette, Section.Material);
 
 	// Save map surface
-	if (!Map->Save(Config.AtTempPath(C4CFN_TempMap), bypPalette))
+	if (!Map->Save(Config.AtTempPathWithPrefix(Section.GetNumberAsString(), C4CFN_TempMap), bypPalette))
 		return false;
 
 	// Move temp file to group
-	if (!hGroup.Move(Config.AtTempPath(C4CFN_TempMap),
+	if (!hGroup.Move(Config.AtTempPathWithPrefix(Section.GetNumberAsString(), C4CFN_TempMap),
 		C4CFN_Map))
 		return false;
 
@@ -2328,15 +2372,16 @@ bool C4Landscape::SaveTextures(C4Group &hGroup)
 		if (!hGroup.FindEntry(C4CFN_Material))
 		{
 			// delete previous item at temp path
-			EraseItem(Config.AtTempPath(C4CFN_Material));
+			const std::string tempPath{Config.AtTempPathWithPrefix(Section.GetNumberAsString(), C4CFN_Material)};
+			EraseItem(tempPath.c_str());
 			// create at temp path
-			if (pMatGroup->Open(Config.AtTempPath(C4CFN_Material), true))
+			if (pMatGroup->Open(tempPath.c_str(), true))
 				// write to it
 				if (Section.TextureMap.SaveMap(*pMatGroup, C4CFN_TexMap))
 					// close (flush)
 					if (pMatGroup->Close())
 						// add it
-						if (hGroup.Move(Config.AtTempPath(C4CFN_Material), C4CFN_Material))
+						if (hGroup.Move(tempPath.c_str(), C4CFN_Material))
 							fSuccess = true;
 			// temp group must remain for scenario file closure
 			// it will be deleted when the group is closed
