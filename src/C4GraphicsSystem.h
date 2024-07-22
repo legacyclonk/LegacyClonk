@@ -75,6 +75,7 @@ public:
 	bool CreateViewport(int32_t iPlayer, bool fSilent);
 	bool CloseViewport(int32_t iPlayer, bool fSilent);
 	int32_t GetAudibility(C4Section &section, int32_t iX, int32_t iY, int32_t *iPan, int32_t iAudibilityRadius = 0);
+	bool IsSectionAudible(C4Section &section) const;
 	int32_t GetViewportCount();
 	C4Viewport *GetViewport(int32_t iPlayer);
 	const std::vector<std::unique_ptr<C4Viewport>> &GetViewports() { return Viewports; }
