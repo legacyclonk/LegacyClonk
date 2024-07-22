@@ -350,7 +350,7 @@ void MainDlg::SetCountdownState(CountdownState eToState, int32_t iTimer)
 	// changing away from countdown?
 	if (eCountdownState == CDS_Countdown)
 	{
-		StopSoundEffect("Elevator", nullptr);
+		StopSoundEffect("Elevator", C4SoundSystem::GlobalSound);
 		if (eToState != CDS_Start) StartSoundEffect("Pshshsh");
 	}
 	// change to game start?

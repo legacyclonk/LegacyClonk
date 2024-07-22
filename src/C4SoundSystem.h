@@ -31,15 +31,27 @@
 
 class C4Section;
 
-bool IsSoundPlaying(const char *name, const C4Object *obj);
-void SoundLevel(const char *name, C4Object *obj, std::int32_t iLevel);
-bool StartSoundEffect(const char *name, bool loop = false, std::int32_t volume = 100,
-	C4Object *obj = nullptr, std::int32_t falloffDistance = 0);
-void StartSoundEffectAt(const char *name, C4Section &section, std::int32_t x, std::int32_t y);
-void StopSoundEffect(const char *name, const C4Object *obj);
-
 class C4SoundSystem
 {
+public:
+	struct Position
+	{
+		C4Section *const Section;
+		const int32_t X;
+		const int32_t Y;
+
+		constexpr bool operator==(const Position &other) const = default;
+	};
+
+	struct GlobalSoundMarker
+	{
+		constexpr bool operator==(GlobalSoundMarker) const noexcept { return true; }
+	};
+
+	static inline constexpr GlobalSoundMarker GlobalSound{};
+
+	using TargetVariant = std::variant<C4Object *, Position, C4Section *, GlobalSoundMarker>;
+
 public:
 	static constexpr std::int32_t AudibilityRadius = 700;
 	static constexpr std::int32_t NearSoundRadius = 50;
@@ -81,24 +93,10 @@ private:
 
 	struct Instance
 	{
-		struct ObjPos
-		{
-			const int32_t x;
-			const int32_t y;
-
-			ObjPos() = delete;
-			ObjPos(const C4Object &obj) : x{obj.x}, y{obj.y} {}
-			ObjPos(const ObjPos &) = delete;
-			ObjPos(ObjPos &&) = delete;
-			~ObjPos() = default;
-			ObjPos &operator=(const ObjPos &) = delete;
-			ObjPos &operator=(ObjPos &&) = delete;
-		};
-
 		Instance(Sample &sample, bool loop, std::int32_t volume,
-			C4Object *obj, std::int32_t falloffDistance)
+			TargetVariant target, std::int32_t falloffDistance)
 			: sample{sample}, loop{loop}, volume{volume},
-			obj{obj}, falloffDistance{falloffDistance},
+			target{target}, falloffDistance{falloffDistance},
 			startTime{std::chrono::steady_clock::now()} {}
 		Instance(const Instance &) = delete;
 		Instance(Instance &&) = delete;
@@ -110,7 +108,7 @@ private:
 		std::unique_ptr<C4AudioSystem::SoundChannel> channel;
 		const bool loop;
 		std::int32_t volume, pan{0};
-		std::variant<C4Object *, const ObjPos> obj;
+		TargetVariant target;
 		const std::int32_t falloffDistance;
 		const std::chrono::time_point<std::chrono::steady_clock> startTime;
 
@@ -129,19 +127,26 @@ private:
 
 	// Returns a sound instance that matches the specified name and object.
 	std::optional<decltype(Sample::instances)::iterator> FindInst(
-		const char *wildcard, const C4Object *obj);
+		const char *wildcard, TargetVariant target);
 	// Returns a reference to the "sound enabled" config entry of the current game mode
 	static bool &GetCfgSoundEnabled();
 	static void GetVolumeByPos(C4Section &section, std::int32_t x, std::int32_t y,
 							   std::int32_t &volume, std::int32_t &pan);
 	Instance *NewInstance(const char *filename, bool loop,
-		std::int32_t volume, std::int32_t pan, C4Object *obj, std::int32_t falloffDistance);
+		std::int32_t volume, std::int32_t pan, TargetVariant target, std::int32_t falloffDistance);
 	// Adds default file extension if missing and replaces "*" with "?"
 	static std::string PrepareFilename(const char *filename);
 
-	friend bool IsSoundPlaying(const char *, const C4Object *);
-	friend void SoundLevel(const char *, C4Object *, std::int32_t);
-	friend bool StartSoundEffect(const char *, bool, std::int32_t, C4Object *, std::int32_t);
+	friend bool IsSoundPlaying(const char *, TargetVariant);
+	friend void SoundLevel(const char *, TargetVariant, std::int32_t);
+	friend bool StartSoundEffect(const char *, bool, std::int32_t, C4SoundSystem::TargetVariant, std::int32_t);
 	friend void StartSoundEffectAt(const char *, C4Section &, std::int32_t, std::int32_t);
-	friend void StopSoundEffect(const char *, const C4Object *);
+	friend void StopSoundEffect(const char *, TargetVariant);
 };
+
+bool IsSoundPlaying(const char *name, C4SoundSystem::TargetVariant target);
+void SoundLevel(const char *name, C4SoundSystem::TargetVariant target, std::int32_t iLevel);
+bool StartSoundEffect(const char *name, bool loop = false, std::int32_t volume = 100,
+	C4SoundSystem::TargetVariant target = C4SoundSystem::GlobalSound, std::int32_t falloffDistance = 0);
+void StartSoundEffectAt(const char *name, C4Section &section, std::int32_t x, std::int32_t y);
+void StopSoundEffect(const char *name, C4SoundSystem::TargetVariant target);

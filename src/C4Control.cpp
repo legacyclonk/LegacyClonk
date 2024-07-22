@@ -1246,9 +1246,9 @@ void C4ControlMessage::Execute(const std::shared_ptr<spdlog::logger> &) const
 		if (auto *client = Game.Clients.getClientByID(iByClient); client && client->TryAllowSound())
 		{
 			if (client->isMuted()
-				|| StartSoundEffect(szMessage, false, 100, nullptr)
-				|| StartSoundEffect((szMessage + std::string{".ogg"}).c_str(), false, 100, nullptr)
-				|| StartSoundEffect((szMessage + std::string{".mp3"}).c_str(), false, 100, nullptr))
+				|| StartSoundEffect(szMessage, false, 100, C4SoundSystem::GlobalSound)
+				|| StartSoundEffect((szMessage + std::string{".ogg"}).c_str(), false, 100, C4SoundSystem::GlobalSound)
+				|| StartSoundEffect((szMessage + std::string{".mp3"}).c_str(), false, 100, C4SoundSystem::GlobalSound))
 			{
 				if (pLobby) pLobby->OnClientSound(Game.Clients.getClientByID(iByClient));
 			}

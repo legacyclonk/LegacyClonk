@@ -1370,7 +1370,7 @@ void C4StartupOptionsDlg::OnSoundVolumeSliderChange(int32_t iNewVal)
 	// sound system reads this value directly
 	Config.Sound.SoundVolume = iNewVal;
 	// test sound
-	StartSoundEffect("ArrowHit", false, 100, nullptr);
+	StartSoundEffect("ArrowHit", false, 100, C4SoundSystem::GlobalSound);
 }
 
 bool C4StartupOptionsDlg::KeyMusicToggle()
