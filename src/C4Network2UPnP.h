@@ -31,8 +31,7 @@ public:
 
 public:
 	void AddMapping(C4Network2IOProtocol protocol, std::uint16_t internalPort, std::uint16_t externalPort);
-	void ClearMappings();
 
 private:
-	const std::unique_ptr<Impl> impl;
+	std::unique_ptr<Impl> impl;
 };

@@ -70,9 +70,45 @@ public:
 		task = AddMappingInt(std::move(task), protocol, internalPort, externalPort);
 	}
 
-	void ClearMappings()
+	static C4Task::OneShot ClearMappings(std::unique_ptr<Impl> self)
 	{
-		task = ClearMappingsInt(std::move(task));
+		co_await C4Awaiter::ResumeInGlobalThreadPool();
+		co_await std::move(self->task);
+
+		if (!self->IsInitialized())
+		{
+			co_return;
+		}
+
+		for (const auto &mapping : self->mappings)
+		{
+			const int result{UPNP_DeletePortMapping(
+							self->urls.controlURL,
+							self->igdData.first.servicetype,
+							mapping.ExternalPort.data(),
+							mapping.Protocol.data(),
+							nullptr
+							)};
+			if (result == UPNPCOMMAND_SUCCESS)
+			{
+				self->logger->info("Removed port mapping {} {} -> {}:{}",
+							mapping.Protocol.data(),
+							mapping.ExternalPort.data(),
+							self->lanAddress.data(),
+							mapping.InternalPort.data()
+							);
+			}
+			else
+			{
+				self->logger->error("Failed to remove port mapping {} {} -> {}:{}: {}",
+							mapping.Protocol.data(),
+							mapping.ExternalPort.data(),
+							self->lanAddress.data(),
+							mapping.InternalPort.data(),
+							strupnperror(result)
+							);
+			}
+		}
 	}
 
 	bool IsInitialized() const
@@ -177,51 +213,6 @@ private:
 		}
 	}
 
-	C4Task::Hot<void> ClearMappingsInt(C4Task::Hot<void> task)
-	{
-		co_await C4Awaiter::ResumeInGlobalThreadPool();
-		co_await std::move(task);
-
-		if (!IsInitialized())
-		{
-			co_return;
-		}
-
-		for (const auto &mapping : mappings)
-		{
-			const int result{UPNP_DeletePortMapping(
-							urls.controlURL,
-							igdData.first.servicetype,
-							mapping.ExternalPort.data(),
-							mapping.Protocol.data(),
-							nullptr
-							)};
-			if (result == UPNPCOMMAND_SUCCESS)
-			{
-				logger->info("Removed port mapping {} {} -> {}:{}",
-							mapping.Protocol.data(),
-							mapping.ExternalPort.data(),
-							lanAddress.data(),
-							mapping.InternalPort.data()
-							);
-
-				mappings.emplace_back(std::move(mapping));
-			}
-			else
-			{
-				logger->error("Failed to remove port mapping {} {} -> {}:{}: {}",
-							mapping.Protocol.data(),
-							mapping.ExternalPort.data(),
-							lanAddress.data(),
-							mapping.InternalPort.data(),
-							strupnperror(result)
-							);
-			}
-		}
-
-		mappings.clear();
-	}
-
 	std::shared_ptr<spdlog::logger> logger;
 	C4Task::Hot<void> task;
 	UPNPUrls urls{};
@@ -240,15 +231,13 @@ C4Network2UPnP::C4Network2UPnP()
 
 C4Network2UPnP::~C4Network2UPnP() noexcept
 {
-	ClearMappings();
+	if (impl)
+	{
+		Impl::ClearMappings(std::move(impl));
+	}
 }
 
 void C4Network2UPnP::AddMapping(const C4Network2IOProtocol protocol, const std::uint16_t internalPort, const std::uint16_t externalPort)
 {
 	impl->AddMapping(protocol, internalPort, externalPort);
-}
-
-void C4Network2UPnP::ClearMappings()
-{
-	impl->ClearMappings();
 }

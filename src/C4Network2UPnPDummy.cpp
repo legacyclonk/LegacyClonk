@@ -22,4 +22,3 @@ C4Network2UPnP::C4Network2UPnP() = default;
 C4Network2UPnP::~C4Network2UPnP() noexcept = default;
 
 void C4Network2UPnP::AddMapping(C4Network2IOProtocol, std::uint16_t, std::uint16_t) {}
-void C4Network2UPnP::ClearMappings() {}
