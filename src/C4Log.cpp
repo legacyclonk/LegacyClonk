@@ -196,7 +196,7 @@ void C4LogSystem::GuiSink::DoLog(const std::string &message)
 		lobby->OnLog(message.c_str());
 	}
 
-	Console.Out(message.c_str());
+	Console.Out(message);
 
 	if (Game.GraphicsSystem.MessageBoard.Active)
 	{

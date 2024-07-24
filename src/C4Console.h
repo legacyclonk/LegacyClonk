@@ -68,7 +68,7 @@ public:
 	bool Message(const char *szMessage, bool fQuery = false);
 	void SetCaption(const char *szCaption);
 	bool In(const char *szText);
-	bool Out(const char *szText);
+	bool Out(std::string_view text);
 	bool ClearLog(); // empty log text
 	void DoPlay();
 	void DoHalt();
