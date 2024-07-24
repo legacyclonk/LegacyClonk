@@ -300,13 +300,13 @@ std::shared_ptr<spdlog::logger> C4LogSystem::CreateLogger(std::string name, cons
 	auto newLogger = std::make_shared<spdlog::logger>(std::move(name));
 	newLogger->set_level(spdlog::level::trace);
 
-	if (options.GuiLogLevel != spdlog::level::n_levels && !options.ShowLoggerNameInGui)
+	if (options.GuiLogLevel == spdlog::level::n_levels && !options.ShowLoggerNameInGui)
 	{
 		newLogger->sinks().emplace_back(loggerSilentGuiSink);
 	}
 	else
 	{
-		const auto level = options.GuiLogLevel != spdlog::level::n_levels ? std::min(options.GuiLogLevel, loggerSilentGuiSink->level()) : loggerSilentGuiSink->level();
+		const auto level = options.GuiLogLevel != spdlog::level::n_levels ? std::max(options.GuiLogLevel, loggerSilentGuiSink->level()) : loggerSilentGuiSink->level();
 		newLogger->sinks().emplace_back(std::make_shared<GuiSink>(level, options.ShowLoggerNameInGui));
 	}
 
