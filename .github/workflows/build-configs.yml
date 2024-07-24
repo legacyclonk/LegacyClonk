@@ -97,7 +97,7 @@ jobs:
         run: |
           mkdir deps
           cd deps
-          curl -L https://github.com/legacyclonk/deps/releases/download/2024-07-01/lc_deps-$CONFIG_SUFFIX.tar.gz | tar -xz
+          curl -L https://github.com/legacyclonk/deps/releases/download/2024-07-24/lc_deps-$CONFIG_SUFFIX.tar.gz | tar -xz
           ./fix_paths.sh
 
       - name: "Configuration setup: No Sound"
