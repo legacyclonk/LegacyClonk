@@ -241,9 +241,7 @@ C4LogSystem::C4LogSystem()
 {
 	spdlog::set_automatic_registration(false);
 
-	const auto logLevel = Game.Verbose ? spdlog::level::debug : spdlog::level::warn;
-
-	loggerSilentGuiSink = std::make_shared<GuiSink>(logLevel, true);
+	loggerSilentGuiSink = std::make_shared<GuiSink>(spdlog::level::warn, true);
 
 #ifdef _WIN32
 	debugSink = std::make_shared<spdlog::sinks::msvc_sink_mt>();
@@ -273,7 +271,7 @@ C4LogSystem::C4LogSystem()
 void C4LogSystem::OpenLog()
 {
 	stdoutSink = std::static_pointer_cast<spdlog::sinks::sink>(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
-	stdoutSink->set_level(Game.Verbose ? spdlog::level::debug : spdlog::level::info);
+	stdoutSink->set_level(spdlog::level::info);
 
 	clonkLogSink = std::make_shared<LogSink>();
 	clonkLogFD = clonkLogSink->GetFD();
@@ -336,6 +334,12 @@ std::shared_ptr<spdlog::logger> C4LogSystem::GetOrCreate(std::string name, C4Log
 void C4LogSystem::EnableDebugLog(const bool enable)
 {
 	loggerDebugGuiSink->set_level(enable ? spdlog::level::debug : spdlog::level::off);
+}
+
+void C4LogSystem::SetVerbose(const bool verbose)
+{
+	loggerSilentGuiSink->set_level(verbose ? spdlog::level::trace : spdlog::level::warn);
+	stdoutSink->set_level(verbose ? spdlog::level::trace : spdlog::level::info);
 }
 
 void C4LogSystem::AddFatalError(std::string message)

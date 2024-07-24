@@ -1748,7 +1748,6 @@ void C4Game::Default()
 	Parameters.ScenarioTitle.Ref("Loading...");
 	HaltCount = 0;
 	Evaluated = false;
-	Verbose = false;
 	TimeGo = false;
 	Time = 0;
 	StartTime = 0;
@@ -3272,7 +3271,7 @@ void C4Game::ParseCommandLine(const char *szCmdLine)
 
 	// verbose
 	if (SSearchNoCase(szCmdLine, "/verbose"))
-		Verbose = true;
+		Application.LogSystem.SetVerbose(true);
 
 	// startup dialog required?
 	Application.UseStartupDialog = Application.isFullScreen && !*DirectJoinAddress && !*ScenarioFilename && !RecordStream.getSize();

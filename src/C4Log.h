@@ -124,6 +124,7 @@ public:
 	std::shared_ptr<spdlog::logger> GetOrCreate(std::string name, C4LogSystemCreateLoggerOptions options = {});
 
 	void EnableDebugLog(bool enable);
+	void SetVerbose(bool verbose);
 
 private:
 	std::shared_ptr<spdlog::logger> logger;
