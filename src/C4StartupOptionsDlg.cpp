@@ -1017,6 +1017,11 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp(C4ResS
 	pCheck->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_AUTOMATICUPDATES));
 	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pSheetNetwork->AddElement(pCheck);
+	// UPnP
+	pCheck = new BoolConfig{caSheetNetwork.GetFromTop(pUseFont->GetLineHeight()), LoadResStr(C4ResStrTableKey::IDS_CTL_UPNP), &Config.Network.EnableUPnP, false};
+	pCheck->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_UPNP));
+	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
+	pSheetNetwork->AddElement(pCheck);
 	const char *szNameCfgText = LoadResStr(C4ResStrTableKey::IDS_NET_COMPUTERNAME);
 	int iNameCfgWdt = 200, iNameCfgHgt = 48; C4StartupOptionsDlg::EditConfig::GetControlSize(&iNameCfgWdt, &iNameCfgHgt, szNameCfgText, false);
 	iNameCfgWdt += 5;
