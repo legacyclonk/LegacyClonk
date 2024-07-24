@@ -108,14 +108,21 @@ bool C4Network2IO::Init(std::shared_ptr<spdlog::logger> logger, const std::uint1
 	Thread.SetCallback(Ev_Net_Packet, this);
 
 	// initialize UPnP
-	UPnP = std::make_unique<C4Network2UPnP>();
+	if (Config.Network.EnableUPnP)
+	{
+		UPnP = std::make_unique<C4Network2UPnP>();
+	}
 
 	// initialize net i/o classes: TCP first
 	pNetIO_TCP = CreateNetIO(this->logger, "TCP I/O", new C4NetIOTCP{}, iPortTCP, Thread);
 	if (pNetIO_TCP)
 	{
 		pNetIO_TCP->SetCallback(this);
-		UPnP->AddMapping(P_TCP, iPortTCP, 0);
+
+		if (Config.Network.EnableUPnP)
+		{
+			UPnP->AddMapping(P_TCP, iPortTCP, 0);
+		}
 	}
 
 	// then UDP
@@ -123,7 +130,11 @@ bool C4Network2IO::Init(std::shared_ptr<spdlog::logger> logger, const std::uint1
 	if (pNetIO_UDP)
 	{
 		pNetIO_UDP->SetCallback(this);
-		UPnP->AddMapping(P_UDP, iPortUDP, 0);
+
+		if (Config.Network.EnableUPnP)
+		{
+			UPnP->AddMapping(P_UDP, iPortUDP, 0);
+		}
 	}
 
 	// no protocols?
