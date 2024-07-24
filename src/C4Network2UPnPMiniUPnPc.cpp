@@ -70,10 +70,17 @@ public:
 		task = AddMappingInt(std::move(task), protocol, internalPort, externalPort);
 	}
 
-	static C4Task::OneShot ClearMappings(std::unique_ptr<Impl> self)
+	static C4Task::OneShot ClearMappings(std::unique_ptr<Impl> self, std::atomic_bool &done)
 	{
 		co_await C4Awaiter::ResumeInGlobalThreadPool();
-		co_await std::move(self->task);
+
+		done.store(true, std::memory_order_release);
+		done.notify_one();
+
+		// Doing a blocking wait here to ensure the coroutine
+		// is never suspended so that mapping removal succeeds
+		// even if the engine is shutting down.
+		std::move(self->task).Get();
 
 		if (!self->IsInitialized())
 		{
@@ -233,7 +240,9 @@ C4Network2UPnP::~C4Network2UPnP() noexcept
 {
 	if (impl)
 	{
-		Impl::ClearMappings(std::move(impl));
+		std::atomic_bool done{false};
+		Impl::ClearMappings(std::move(impl), done);
+		done.wait(false, std::memory_order_acquire);
 	}
 }
 
