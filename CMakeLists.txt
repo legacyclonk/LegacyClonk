@@ -246,6 +246,8 @@ endif ()
 
 if (USE_MINIUPNPC)
 	list(APPEND CLONK_SOURCES src/C4Network2UPnPMiniUPnPc.cpp)
+else ()
+	list(APPEND CLONK_SOURCES src/C4Network2UPnPDummy.cpp)
 endif ()
 
 if (USE_WINDOWS_RUNTIME)
