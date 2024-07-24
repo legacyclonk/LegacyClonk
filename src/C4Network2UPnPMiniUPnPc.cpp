@@ -52,7 +52,7 @@ private:
 	};
 
 public:
-	Impl() : logger{CreateLogger("C4Network2UPnP", {.ShowLoggerNameInGui = true})}
+	Impl() : logger{CreateLogger("C4Network2UPnP", {.GuiLogLevel = spdlog::level::off})}
 	{
 		task = Init();
 	}
