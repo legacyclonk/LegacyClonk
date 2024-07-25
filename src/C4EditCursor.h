@@ -38,6 +38,7 @@ protected:
 	int32_t X, Y, X2, Y2;
 	bool Hold, DragFrame, DragLine;
 	C4Object *Target, *DropTarget;
+	C4Section *CurrentSection{nullptr};
 #ifdef _WIN32
 	HMENU hMenu;
 #elif defined(WITH_DEVELOPER_MODE)
@@ -55,6 +56,7 @@ public:
 	void Clear();
 	void Execute();
 	void ClearPointers(C4Object *pObj);
+	void ClearSectionPointers(C4Section &section);
 	bool ToggleMode();
 	void Draw(C4FacetEx &cgo);
 	int32_t GetMode();
@@ -66,8 +68,8 @@ public:
 	bool Delete();
 	bool LeftButtonUp(C4Section &section);
 	bool LeftButtonDown(C4Section &section, bool fControl);
-	bool RightButtonUp();
-	bool RightButtonDown(bool fControl);
+	bool RightButtonUp(C4Section &section);
+	bool RightButtonDown(C4Section &section, bool fControl);
 	void MiddleButtonUp(C4Section &section);
 	bool Move(C4Section &section, int32_t iX, int32_t iY, uint16_t wKeyFlags);
 	bool Init();
@@ -80,20 +82,22 @@ public:
 
 protected:
 	bool UpdateStatusBar();
-	void ApplyToolPicker(C4Section &section);
+	void ApplyToolPicker();
 	void PutContents();
-	void UpdateDropTarget(C4Section &section, uint16_t wKeyFlags);
+	void UpdateDropTarget(uint16_t wKeyFlags);
 	void GrabContents();
 	bool DoContextMenu();
-	void ApplyToolFill(C4Section &section);
-	void ApplyToolRect(C4Section &section);
-	void ApplyToolLine(C4Section &section);
-	void ApplyToolBrush(C4Section &section);
+	void ApplyToolFill();
+	void ApplyToolRect();
+	void ApplyToolLine();
+	void ApplyToolBrush();
 	void DrawSelectMark(C4Facet &cgo);
-	void FrameSelection(C4Section &section);
+	void FrameSelection();
 	void MoveSelection(int32_t iXOff, int32_t iYOff);
 	void EMMoveObject(enum C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj, const C4ObjectList &objects, const char *szScript = nullptr);
 	void EMControl(enum C4PacketType eCtrlType, class C4ControlPacket *pCtrl);
+	void UpdateCurrentSection(C4Section &section);
+	void ResetSectionDependentState();
 
 #ifdef WITH_DEVELOPER_MODE
 	static void OnDelete(GtkWidget *widget, gpointer data);
