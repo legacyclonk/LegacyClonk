@@ -1156,6 +1156,12 @@ void C4Console::ClearPointers(C4Object *pObj)
 	PropertyDlg.ClearPointers(pObj);
 }
 
+void C4Console::ClearSectionPointers(C4Section &section)
+{
+	EditCursor.ClearSectionPointers(section);
+	ToolsDlg.ClearSectionPointers(section);
+}
+
 void C4Console::Default()
 {
 	EditCursor.Default();
