@@ -2839,7 +2839,7 @@ void C4Game::OnSectionLoaded(const std::uint32_t sectionNumber, const std::int32
 	}
 
 	// all clients have loaded; send control
-	Control.DoInput(CID_SectionLoadFinished, new C4ControlSectionLoadFinished{sectionNumber, allClientsLoadedSuccessful}, CDT_Sync);
+	Control.DoInput(CID_SectionLoadFinished, new C4ControlSectionLoadFinished{sectionNumber, allClientsLoadedSuccessful}, CDT_Decide);
 }
 
 void C4Game::OnSectionLoadFinished(const std::uint32_t sectionNumber, bool success)
@@ -2970,7 +2970,7 @@ void C4Game::CheckLoadedSections()
 			Control.DoInput(CID_SectionLoaded, new C4ControlSectionLoaded{
 								sectionDoneArgs.Section->Number,
 								sectionDoneArgs.Success
-							}, CDT_Sync);
+							}, CDT_Decide);
 		}
 
 		SectionDoneVector.clear();
