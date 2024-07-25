@@ -2457,13 +2457,13 @@ static bool FnSound(C4AulContext *cthr, C4String *szSound, bool fGlobal, C4Objec
 		return true;
 	// try to play effect
 	C4SoundSystem::TargetVariant target;
-	if (fGlobal)
+	if (pObj)
 	{
-		target.emplace<C4Section *>(&cthr->GetSection());
+		target.emplace<C4Object *>(pObj);
 	}
 	else
 	{
-		target.emplace<C4Object *>(pObj);
+		target.emplace<C4Section *>(&cthr->GetSection());
 	}
 	if (iLoop >= 0)
 		StartSoundEffect(FnStringPar(szSound), !!iLoop, iLevel, target, iCustomFalloffDistance);
