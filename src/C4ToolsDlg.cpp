@@ -249,7 +249,7 @@ C4ToolsDlg::~C4ToolsDlg()
 #endif
 }
 
-bool C4ToolsDlg::Open()
+bool C4ToolsDlg::Open(C4Section &section)
 {
 	// Create dialog window
 #ifdef _WIN32
@@ -387,7 +387,7 @@ bool C4ToolsDlg::Open()
 #endif
 
 	Active = true;
-	Section = Game.Sections.front().get(); // FIXME
+	Section = &section;
 	// Update contols
 	InitGradeCtrl();
 	UpdateLandscapeModeCtrls();
@@ -409,6 +409,7 @@ void C4ToolsDlg::Default()
 	hbox = nullptr;
 #endif
 	Active = false;
+	Section = nullptr;
 	Tool = SelectedTool = C4TLS_Brush;
 	Grade = C4TLS_GradeDefault;
 	ModeIFT = true;
@@ -425,6 +426,7 @@ void C4ToolsDlg::Clear()
 	if (hDialog) DestroyWindow(hDialog); hDialog = nullptr;
 #endif
 	Active = false;
+	Section = nullptr;
 }
 
 bool C4ToolsDlg::SetTool(int32_t iTool, bool fTemp)
@@ -1009,6 +1011,27 @@ void C4ToolsDlg::ResetAlternateTool()
 {
 	// reset tool to selected tool in case alternate tool was set
 	SetTool(SelectedTool, true);
+}
+
+void C4ToolsDlg::SetSection(C4Section &section)
+{
+	if (Section != &section)
+	{
+		Section = &section;
+
+		UpdateLandscapeModeCtrls();
+		UpdateToolCtrls();
+		UpdateIFTControls();
+		InitMaterialCtrls();
+	}
+}
+
+void C4ToolsDlg::ClearSectionPointers(C4Section &section)
+{
+	if (Section == &section)
+	{
+		Clear();
+	}
 }
 
 #ifdef WITH_DEVELOPER_MODE
