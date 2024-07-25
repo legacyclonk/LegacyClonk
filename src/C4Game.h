@@ -204,7 +204,6 @@ public:
 	int32_t iLobbyTimeout;
 	bool fObserve;
 	bool NetworkActive;
-	bool Verbose; // default false; set to true only by command line
 	StdStrBuf RecordDumpFile;
 	StdStrBuf RecordStream;
 	bool TempScenarioFile;

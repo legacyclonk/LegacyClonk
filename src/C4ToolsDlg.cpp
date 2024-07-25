@@ -806,11 +806,11 @@ void C4ToolsDlg::UpdateLandscapeModeCtrls()
 	switch (iMode)
 	{
 	case C4LSC_Dynamic:
-		caption = LoadResStr(C4ResStrTableKey::IDS_DLG_EXACT);
+		caption = LoadResStr(C4ResStrTableKey::IDS_DLG_DYNAMIC);
 		break;
 
 	case C4LSC_Static:
-		caption = LoadResStr(C4ResStrTableKey::IDS_DLG_EXACT);
+		caption = LoadResStr(C4ResStrTableKey::IDS_DLG_STATIC);
 		break;
 
 	default:

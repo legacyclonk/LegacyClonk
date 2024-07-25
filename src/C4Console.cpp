@@ -596,22 +596,33 @@ bool C4Console::In(const char *szText)
 	return true;
 }
 
-bool C4Console::Out(const char *szText)
+bool C4Console::Out(std::string_view text)
 {
 #ifdef _WIN32
 	if (!Active) return false;
-	if (!szText || !*szText) return true;
-	int len, len2; char *buffer, *buffer2;
-	len = 65000;
-	len2 = len + std::min<int>(strlen(szText) + 2, 5000);
-	buffer = new char[len2];
-	buffer[0] = 0;
-	GetDlgItemText(hWindow, IDC_EDITOUTPUT, buffer, len);
-	if (buffer[0]) SAppend("\r\n", buffer);
-	SAppend(szText, buffer, len2 - 1);
-	if (strlen(buffer) > 60000) buffer2 = buffer + strlen(buffer) - 60000; else buffer2 = buffer; // max log length: Otherwise, discard beginning
-	SetDlgItemText(hWindow, IDC_EDITOUTPUT, buffer2);
-	delete[] buffer;
+	if (text.empty()) return true;
+
+	const bool hasNewline{text.ends_with("\r\n")};
+
+	std::string buffer;
+	const LRESULT dlgItemTextSize{SendDlgItemMessage(hWindow, IDC_EDITOUTPUT, WM_GETTEXTLENGTH, 0, 0)};
+	buffer.resize_and_overwrite(dlgItemTextSize + text.size() + (hasNewline ? 0 : 2), [dlgItemTextSize, hasNewline,&text, this](char *const ptr, std::size_t size)
+	{
+		const UINT textSize{GetDlgItemText(hWindow, IDC_EDITOUTPUT, ptr, dlgItemTextSize + 1)};
+		char *newlinePtr{ptr + textSize + text.copy(ptr + textSize, text.size())};
+
+		if (!hasNewline)
+		{
+			*newlinePtr++ = '\r';
+			*newlinePtr++ = '\n';
+		}
+
+		return newlinePtr - ptr;
+	});
+
+	const char *const newText{buffer.size() <= 60000 ? buffer.c_str() : buffer.c_str() + buffer.size() - 60000}; // max log length: Otherwise, discard beginning
+	SetDlgItemText(hWindow, IDC_EDITOUTPUT, newText);
+
 	const auto lines = SendDlgItemMessage(hWindow, IDC_EDITOUTPUT, EM_GETLINECOUNT, 0, 0);
 	SendDlgItemMessage(hWindow, IDC_EDITOUTPUT, EM_LINESCROLL, 0, static_cast<LPARAM>(lines));
 	UpdateWindow(hWindow);
@@ -623,8 +634,12 @@ bool C4Console::Out(const char *szText)
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(txtLog));
 	gtk_text_buffer_get_end_iter(buffer, &end);
 
-	gtk_text_buffer_insert(buffer, &end, C4Language::IconvUtf8(szText).getData(), -1);
-	gtk_text_buffer_insert(buffer, &end, "\n", 1);
+	gtk_text_buffer_insert(buffer, &end, C4Language::IconvUtf8(text.data()).getData(), -1);
+
+	if (!text.ends_with('\n'))
+	{
+		gtk_text_buffer_insert(buffer, &end, "\n", 1);
+	}
 
 	gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(txtLog), gtk_text_buffer_get_insert(buffer), 0.0, FALSE, 0.0, 0.0);
 
