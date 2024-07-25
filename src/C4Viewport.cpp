@@ -183,9 +183,9 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 
 		case WM_LBUTTONUP: Console.EditCursor.LeftButtonUp(cvp->GetViewSection()); break;
 
-		case WM_RBUTTONDOWN: Console.EditCursor.RightButtonDown(wParam & MK_CONTROL); break;
+		case WM_RBUTTONDOWN: Console.EditCursor.RightButtonDown(cvp->GetViewSection(), wParam & MK_CONTROL); break;
 
-		case WM_RBUTTONUP: Console.EditCursor.RightButtonUp(); break;
+		case WM_RBUTTONUP: Console.EditCursor.RightButtonUp(cvp->GetViewSection()); break;
 
 		case WM_MBUTTONUP: Console.EditCursor.MiddleButtonUp(cvp->GetViewSection()); break;
 
@@ -540,7 +540,7 @@ gboolean C4ViewportWindow::OnButtonPressStatic(GtkWidget *widget, GdkEventButton
 			Console.EditCursor.LeftButtonDown(window->cvp->GetViewSection(), event->state & MK_CONTROL);
 			break;
 		case 3:
-			Console.EditCursor.RightButtonDown(event->state & MK_CONTROL);
+			Console.EditCursor.RightButtonDown(window->cvp->GetViewSection(), event->state & MK_CONTROL);
 			break;
 		}
 	}
@@ -578,7 +578,7 @@ gboolean C4ViewportWindow::OnButtonReleaseStatic(GtkWidget *widget, GdkEventButt
 			Console.EditCursor.MiddleButtonUp(window->cvp->GetViewSection());
 			break;
 		case 3:
-			Console.EditCursor.RightButtonUp();
+			Console.EditCursor.RightButtonUp(window->cvp->GetViewSection());
 			break;
 		}
 	}
