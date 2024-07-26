@@ -267,7 +267,7 @@ void C4Facet::DrawValue2(C4Facet &cgo, int32_t iValue1, int32_t iValue2, int32_t
 	if (!lpDDraw) return;
 	std::array<char, C4Strings::NumberOfCharactersForDigits<std::int32_t> * 2 + 1 + 1> buf;
 
-	char *ptr{std::to_chars(buf.data(), buf.data() + std::numeric_limits<std::int32_t>::max_digits10 + 1, iValue1).ptr};
+	char *ptr{std::to_chars(buf.data(), buf.data() + C4Strings::NumberOfCharactersForDigits<std::int32_t>, iValue1).ptr};
 	*ptr++ = '/';
 	*std::to_chars(ptr, ptr + C4Strings::NumberOfCharactersForDigits<std::int32_t>, iValue2).ptr = '\0';
 
