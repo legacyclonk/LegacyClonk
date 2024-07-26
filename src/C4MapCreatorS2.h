@@ -63,6 +63,7 @@
 #define C4MCErr_MatNotFound       "material '{}' not found"
 #define C4MCErr_TexNotFound       "texture '{}' not found"
 #define C4MCErr_AlgoNotFound      "algorithm '{}' not found"
+#define C4MCErr_ScriptNotAllowed  "script execution is not allowed"
 #define C4MCErr_SFuncNotFound     "script func '{}' not found in scenario script"
 #define C4MCErr_PointOnlyOvl      "point only allowed in overlays"
 
@@ -356,7 +357,7 @@ public:
 
 	void Default(C4Random &random); // set default data
 	void Clear(); // clear any data
-	bool ReadFile(const char *szFilename, C4Group *pGrp, C4Random &random); // read defs of file
+	bool ReadFile(const char *szFilename, C4Group *pGrp, C4Random &random, bool allowScript); // read defs of file
 	bool ReadScript(const char *szScript, C4Random &random); // reads def directly from mem
 
 public:
@@ -414,6 +415,7 @@ class C4MCParser
 private:
 	C4MapCreatorS2 *MapCreator; // map creator parsing into
 	C4Random &random; // random generator to use
+	bool allowScript; // whether the script algorithm is allowed
 	char *Code; // loaded code
 	const char *CPos; // current parser pos in code
 	C4MCTokenType CurrToken; // last token read
@@ -427,13 +429,15 @@ private:
 	void ParseValue(C4MCNode *pToNode, const char *szFieldName); // Set Field
 
 public:
-	C4MCParser(C4MapCreatorS2 *pMapCreator, C4Random &random);
+	C4MCParser(C4MapCreatorS2 *pMapCreator, C4Random &random, bool allowScript);
 	~C4MCParser();
 
 	void Clear(); // clear stuff
 
 	void ParseFile(const char *szFilename, C4Group *pGrp); // load and parse file
 	void Parse(const char *szScript); // load and parse from mem
+
+	bool AllowScript() const noexcept { return allowScript; }
 
 	friend class C4MCParserErr;
 };

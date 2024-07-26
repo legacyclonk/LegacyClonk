@@ -394,7 +394,7 @@ bool C4Section::InitMaterialTexture(C4Section *const fallback)
 bool C4Section::InitSecondPart(C4Random &random)
 {
 	LandscapeLoaded = false;
-	if (!(emptyLandscape ? Landscape.InitEmpty(random, true, LandscapeLoaded) : Landscape.Init(Group, SaveGameGroup ? &*SaveGameGroup : nullptr, random, false, true, LandscapeLoaded, C4S.Head.SaveGame)))
+	if (!(emptyLandscape ? Landscape.InitEmpty(random, true, LandscapeLoaded) : Landscape.Init(Group, SaveGameGroup ? &*SaveGameGroup : nullptr, random, name.empty(), false, true, LandscapeLoaded, C4S.Head.SaveGame)))
 	{
 		LogFatal(C4ResStrTableKey::IDS_ERR_GBACK);
 		return false;
