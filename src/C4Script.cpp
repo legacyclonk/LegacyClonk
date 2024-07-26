@@ -5833,8 +5833,7 @@ static bool FnSetViewOffset(C4AulContext *ctx, C4ValueInt iPlayer, C4ValueInt iX
 	C4Viewport *pView = Game.GraphicsSystem.GetViewport(iPlayer);
 	if (!pView) return true; // sync safety
 	// set
-	pView->ViewOffsX = iX;
-	pView->ViewOffsY = iY;
+	pView->SetViewOffset(ctx->GetSection(), iX, iY);
 	// ok
 	return true;
 }
