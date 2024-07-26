@@ -565,7 +565,7 @@ std::unique_ptr<CSurface8> C4Landscape::CreateMap(C4Random &random)
 	return surfaceMap;
 }
 
-std::unique_ptr<CSurface8> C4Landscape::CreateMapS2(C4Group &ScenFile, C4Random &random)
+std::unique_ptr<CSurface8> C4Landscape::CreateMapS2(C4Group &ScenFile, C4Random &random, const bool allowScript)
 {
 	// file present?
 	if (!ScenFile.AccessEntry(C4CFN_DynLandscape)) return nullptr;
@@ -575,7 +575,7 @@ std::unique_ptr<CSurface8> C4Landscape::CreateMapS2(C4Group &ScenFile, C4Random 
 		pMapCreator = new C4MapCreatorS2(Section, random, &Section.C4S.Landscape, &Section.TextureMap, &Section.Material, Game.Parameters.StartupPlayerCount);
 
 	// read file
-	pMapCreator->ReadFile(C4CFN_DynLandscape, &ScenFile, random);
+	pMapCreator->ReadFile(C4CFN_DynLandscape, &ScenFile, random, allowScript);
 	// render landscape
 	// keep map creator until script callbacks have been done
 	return pMapCreator->Render(nullptr);
@@ -736,7 +736,7 @@ bool C4Landscape::InitEmpty(C4Random &random, const bool loadSky, bool &landscap
 	return FinalizeInit(landscapeLoaded, nullptr);
 }
 
-bool C4Landscape::Init(C4Group &hGroup, C4Group *const saveGameGroup, C4Random &random, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame)
+bool C4Landscape::Init(C4Group &hGroup, C4Group *const saveGameGroup, C4Random &random, const bool allowScript, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame)
 {
 	PrepareInit(random, fOverloadCurrent);
 
@@ -801,7 +801,7 @@ bool C4Landscape::Init(C4Group &hGroup, C4Group *const saveGameGroup, C4Random &
 
 		// dynamic map from file
 		if (!sfcMap)
-			if (sfcMap = CreateMapS2(hGroup, random))
+			if (sfcMap = CreateMapS2(hGroup, random, allowScript))
 				if (!fLandscapeModeSet) Mode = C4LSC_Dynamic;
 
 		// Dynamic map by scenario

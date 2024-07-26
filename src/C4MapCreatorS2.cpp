@@ -26,6 +26,8 @@
 
 #include <cassert>
 
+bool AlgoScript(C4MCOverlay *pOvrl, int32_t iX, int32_t iY);
+
 // C4MCCallbackArray
 
 C4MCCallbackArray::C4MCCallbackArray(C4AulFunc *pSFunc, C4MapCreatorS2 *pMapCreator)
@@ -356,6 +358,10 @@ bool C4MCOverlay::SetField(C4MCParser *pParser, const char *szField, const char 
 				pAlgo = GetAlgo(StrPar);
 				// check validity
 				if (!pAlgo) throw C4MCParserErr(pParser, C4MCErr_AlgoNotFound, StrPar);
+				if (!pParser->AllowScript() && pAlgo->Function == &AlgoScript)
+				{
+					throw C4MCParserErr{pParser, C4MCErr_ScriptNotAllowed};
+				}
 				// store
 				this->*(pAttr->algorithm) = pAlgo;
 				break;
@@ -369,6 +375,10 @@ bool C4MCOverlay::SetField(C4MCParser *pParser, const char *szField, const char 
 				break;
 			case C4MCV_ScriptFunc:
 			{
+				if (!pParser->AllowScript())
+				{
+					throw C4MCParserErr{pParser, C4MCErr_ScriptNotAllowed};
+				}
 				// get script func of main script
 				C4AulFunc *pSFunc = Game.Script.GetSFunc(StrPar, AA_PROTECTED);
 				if (!pSFunc) throw C4MCParserErr(pParser, C4MCErr_SFuncNotFound, StrPar);
@@ -737,12 +747,12 @@ void C4MapCreatorS2::Clear()
 	CallbackArrays.Clear();
 }
 
-bool C4MapCreatorS2::ReadFile(const char *szFilename, C4Group *pGrp, C4Random &random)
+bool C4MapCreatorS2::ReadFile(const char *szFilename, C4Group *pGrp, C4Random &random, const bool allowScript)
 {
 	// create parser and read file
 	try
 	{
-		C4MCParser(this, random).ParseFile(szFilename, pGrp);
+		C4MCParser(this, random, allowScript).ParseFile(szFilename, pGrp);
 	}
 	catch (const C4MCParserErr &err)
 	{
@@ -758,7 +768,7 @@ bool C4MapCreatorS2::ReadScript(const char *szScript, C4Random &random)
 	// create parser and read
 	try
 	{
-		C4MCParser(this, random).Parse(szScript);
+		C4MCParser(this, random, true).Parse(szScript);
 	}
 	catch (const C4MCParserErr &err)
 	{
@@ -827,8 +837,8 @@ void C4MCParserErr::show() const
 
 // parser
 
-C4MCParser::C4MCParser(C4MapCreatorS2 *pMapCreator, C4Random &random)
-	: MapCreator{pMapCreator}, random{random}
+C4MCParser::C4MCParser(C4MapCreatorS2 *pMapCreator, C4Random &random, const bool allowScript)
+	: MapCreator{pMapCreator}, random{random}, allowScript{allowScript}
 {
 	// reset some fields
 	Code = nullptr; CPos = nullptr; *Filename = 0;
