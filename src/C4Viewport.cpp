@@ -835,7 +835,7 @@ void C4Viewport::Clear()
 	DrawX = DrawY = 0;
 	Regions.Clear();
 	dViewX = dViewY = -31337;
-	ViewOffsX = ViewOffsY = 0;
+	ViewOffsets.clear();
 	previousViewRootSection = nullptr;
 }
 
@@ -1247,8 +1247,15 @@ void C4Viewport::AdjustPosition()
 		// calc target view position
 		int32_t iTargetViewX = pPlr->ViewX - ViewWdt / 2;
 		int32_t iTargetViewY = pPlr->ViewY - ViewHgt / 2;
+		// get view offset
+		std::int32_t viewOffsetX{0};
+		std::int32_t viewOffsetY{0};
+		if (const auto it = ViewOffsets.find(&viewRootSection); it != ViewOffsets.end())
+		{
+			std::tie(viewOffsetX, viewOffsetY) = it->second;
+		}
 		// add mouse auto scroll
-		int32_t iPrefViewX = ViewX - ViewOffsX, iPrefViewY = ViewY - ViewOffsY;
+		int32_t iPrefViewX = ViewX - viewOffsetX, iPrefViewY = ViewY - viewOffsetY;
 		if (pPlr->MouseControl && Game.MouseControl.InitCentered && Config.General.MouseAScroll)
 		{
 			int32_t iAutoScrollBorder = (std::min)((std::min)(ViewWdt / 10, ViewHgt / 10), C4SymbolSize);
@@ -1298,12 +1305,12 @@ void C4Viewport::AdjustPosition()
 			dViewY = itofix(ViewY);
 		}
 		// apply offset
-		ViewX += ViewOffsX; ViewY += ViewOffsY;
+		ViewX += viewOffsetX; ViewY += viewOffsetY;
 		// store previous section
 		previousViewRootSection = &viewRootSection;
 	}
 	// NO_OWNER can't scroll
-	if (fIsNoOwnerViewport) { ViewOffsX = 0; ViewOffsY = 0; }
+	if (fIsNoOwnerViewport) { ViewOffsets.clear(); }
 	// clip at borders, update vars
 	UpdateViewPosition();
 }
@@ -1337,6 +1344,23 @@ C4Section &C4Viewport::GetViewRootSection()
 	}
 
 	return *Game.Sections.front();
+}
+
+void C4Viewport::SetViewOffset(C4Section &section, const std::int32_t x, const std::int32_t y)
+{
+	if (fIsNoOwnerViewport)
+	{
+		return;
+	}
+
+	if (x == 0 && y == 0)
+	{
+		ViewOffsets.erase(&section.GetRootSection());
+	}
+	else
+	{
+		ViewOffsets.insert_or_assign(&section.GetRootSection(), std::pair{x, y});
+	}
 }
 
 void C4Viewport::UpdateViewPosition()
@@ -1383,7 +1407,7 @@ void C4Viewport::Default()
 	SetRegions = nullptr;
 	Regions.Default();
 	dViewX = dViewY = -31337;
-	ViewOffsX = ViewOffsY = 0;
+	ViewOffsets.clear();
 	fIsNoOwnerViewport = false;
 }
 
@@ -1626,6 +1650,8 @@ void C4Viewport::ClearSectionPointers(C4Section &section)
 	{
 		previousViewRootSection = nullptr;
 	}
+
+	ViewOffsets.erase(&section);
 }
 
 void C4Viewport::DrawMouseButtons(C4FacetEx &cgo)

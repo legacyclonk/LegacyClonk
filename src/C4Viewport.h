@@ -93,7 +93,7 @@ public:
 	C4Fixed dViewX, dViewY;
 	int32_t ViewX, ViewY, ViewWdt, ViewHgt;
 	int32_t BorderLeft, BorderTop, BorderRight, BorderBottom;
-	int32_t ViewOffsX, ViewOffsY;
+	std::unordered_map<C4Section *, std::pair<std::int32_t, std::int32_t>> ViewOffsets;
 	int32_t DrawX, DrawY;
 	bool fIsNoOwnerViewport; // this viewport is found for searches of NO_OWNER-viewports; even if it has a player assigned (for network obs)
 	void Default();
@@ -116,6 +116,7 @@ public:
 	void CenterPosition();
 	C4Section &GetViewSection();
 	C4Section &GetViewRootSection();
+	void SetViewOffset(C4Section &section, std::int32_t x, std::int32_t y);
 
 	auto MapPointToChildSectionPoint(const std::int32_t x, const std::int32_t y)
 	{
