@@ -73,7 +73,7 @@ public:
 	~C4ValueHash();
 
 	virtual void CompileFunc(StdCompiler *pComp) override;
-	virtual void DenumeratePointers() override;
+	virtual void DenumeratePointers(C4Section *section) override;
 
 	C4ValueHash &operator=(const C4ValueHash &other);
 	bool operator==(const C4ValueHash &other) const;

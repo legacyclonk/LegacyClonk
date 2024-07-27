@@ -226,11 +226,11 @@ int32_t C4ValueMapData::GetAnzItems()
 	return pNames->iSize;
 }
 
-void C4ValueMapData::DenumeratePointers()
+void C4ValueMapData::DenumeratePointers(C4Section *const section)
 {
 	if (!pNames) return;
 	for (int32_t i = 0; i < pNames->iSize; i++)
-		pData[i].DenumeratePointer();
+		pData[i].DenumeratePointer(section);
 }
 
 void C4ValueMapData::CompileFunc(StdCompiler *pComp)

@@ -23,7 +23,7 @@ public:
 	virtual ~C4ValueContainer() {}
 
 	virtual void CompileFunc(StdCompiler *pComp) = 0;
-	virtual void DenumeratePointers() = 0;
+	virtual void DenumeratePointers(C4Section *section = nullptr) = 0;
 
 	virtual bool hasIndex(const C4Value &index) const = 0;
 	virtual C4Value &operator[](const C4Value &index) = 0;

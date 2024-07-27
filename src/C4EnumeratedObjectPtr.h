@@ -91,9 +91,10 @@ public:
 		SetNumber(Traits::Enumerate(Denumerated()));
 	}
 
-	void Denumerate()
+	template<typename... Args>
+	void Denumerate(Args &&...args)
 	{
-		SetDenumerated(Traits::Denumerate(Number()));
+		SetDenumerated(Traits::Denumerate(Number(), std::forward<Args>(args)...));
 	}
 };
 
@@ -103,7 +104,7 @@ struct C4EnumeratedObjectPtrTraits
 	using Enumerated = std::int32_t;
 
 	static std::int32_t Enumerate(C4Object *object);
-	static C4Object *Denumerate(std::int32_t number);
+	static C4Object *Denumerate(std::int32_t number, C4Section *section = nullptr);
 };
 
 using C4EnumeratedObjectPtr = C4EnumeratedPtr<C4EnumeratedObjectPtrTraits>;

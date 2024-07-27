@@ -2927,28 +2927,31 @@ void C4Object::EnumeratePointers()
 			pGfxOvrl->EnumeratePointers();
 }
 
-void C4Object::DenumeratePointers()
+void C4Object::DenumeratePointers(const bool onlyFromObjectSection)
 {
-	DenumerateObjectPtrs(Contained, Action.Target, Action.Target2, pLayer);
+	Contained.Denumerate(Section);
+	Action.Target.Denumerate(Section);
+	Action.Target2.Denumerate(Section);
+	pLayer.Denumerate(Section);
 
 	// Post-compile object list
-	Contents.DenumerateRead();
+	Contents.DenumerateRead(Section);
 
 	// Local variable pointers
-	Local.DenumeratePointers();
-	LocalNamed.DenumeratePointers();
+	Local.DenumeratePointers(Section);
+	LocalNamed.DenumeratePointers(Section);
 
 	// Commands
 	for (C4Command *pCom = Command; pCom; pCom = pCom->Next)
-		pCom->DenumeratePointers();
+		pCom->DenumeratePointers(*Section);
 
 	// effects
-	if (pEffects) pEffects->DenumeratePointers();
+	if (pEffects) pEffects->DenumeratePointers(onlyFromObjectSection);
 
 	// gfx overlays
 	if (pGfxOverlay)
 		for (C4GraphicsOverlay *pGfxOvrl = pGfxOverlay; pGfxOvrl; pGfxOvrl = pGfxOvrl->GetNext())
-			pGfxOvrl->DenumeratePointers();
+			pGfxOvrl->DenumeratePointers(*Section);
 }
 
 bool DrawCommandQuery(int32_t controller, C4ScriptHost &scripthost, int32_t *mask, int com)

@@ -455,23 +455,23 @@ bool C4ObjectList::IsClear() const
 	return (ObjectCount() == 0);
 }
 
-bool C4ObjectList::DenumerateRead()
+bool C4ObjectList::DenumerateRead(C4Section *const section)
 {
 	if (!pEnumerated) return false;
 	// Denumerate all object pointers
 	for (const auto num : *pEnumerated)
-		Add(Game.ObjectPointer(num), stNone); // Add to tail, unsorted
+		Add(section ? section->Objects.ObjectPointer(num) : Game.ObjectPointer(num), stNone); // Add to tail, unsorted
 	// Delete old list
 	pEnumerated.reset();
 	return true;
 }
 
-void C4ObjectList::Denumerate()
+void C4ObjectList::Denumerate(const bool onlyFromObjectSection)
 {
 	C4ObjectLink *cLnk;
 	for (cLnk = First; cLnk; cLnk = cLnk->Next)
 		if (cLnk->Obj->Status)
-			cLnk->Obj->DenumeratePointers();
+			cLnk->Obj->DenumeratePointers(onlyFromObjectSection);
 }
 
 void C4ObjectList::CompileFunc(StdCompiler *pComp)

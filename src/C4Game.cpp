@@ -2129,7 +2129,7 @@ bool C4Game::InitGameSecondPart(C4Group &hGroup, bool fLoadSky, bool preloading)
 
 	FixRandom(Parameters.RandomSeed);
 
-	return std::ranges::all_of(Sections, [](const auto &section) { return section->InitSecondPart(C4Random::Default); });
+	return std::ranges::all_of(Sections, [](const auto &section) { return section->InitSecondPart(C4Random::Default) && section->FinishObjectLoading(false); });
 }
 
 bool C4Game::InitGameFinal()
@@ -2881,7 +2881,12 @@ void C4Game::OnSectionLoadFinished(const std::uint32_t sectionNumber, bool succe
 	if (success)
 	{
 		auto it = Sections.emplace(Sections.end(), std::move(sectionWithCallback.Section));
-		success = it->get()->InitThirdPart();
+		success = it->get()->FinishObjectLoading(true);
+		if (success)
+		{
+			it->get()->DenumeratePointers();
+			success = it->get()->InitThirdPart();
+		}
 
 		if (!success)
 		{

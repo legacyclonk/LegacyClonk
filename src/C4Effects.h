@@ -105,7 +105,7 @@ public:
 	~C4Effect(); // dtor - deletes all following effects
 
 	void EnumeratePointers(); // object pointers to numbers
-	void DenumeratePointers(); // numbers to object pointers
+	void DenumeratePointers(bool onlyFromEffectSection); // numbers to object pointers
 	void ClearPointers(C4Object *pObj); // clear all pointers to object - may kill some effects w/o callback, because the callback target is lost
 
 	void SetDead()              { iPriority = 0; }        // mark effect to be removed in next execution cycle

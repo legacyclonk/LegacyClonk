@@ -64,9 +64,11 @@ public:
 	void PutSolidMasks();
 	void RemoveSolidMasks();
 
-	int Load(C4Section &section, C4Group &hGroup, bool fKeepInactive);
+	std::optional<bool> Load(C4Section &section, C4Group &hGroup, bool fKeepInactive);
 	bool Save(C4Section &section, const char *szFilename, bool fSaveGame, bool fSaveInactive);
 	bool Save(C4Section &section, C4Group &hGroup, bool fSaveGame, bool fSaveInactive);
+
+	std::optional<int> AfterLoad(C4Section &section, bool keepInactive, bool renumberEverythingOnCollision);
 
 	void UpdateScriptPointers(C4Section &section); // update pointers to C4AulScript *
 
