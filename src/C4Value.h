@@ -241,7 +241,7 @@ public:
 	const char *GetTypeName() const { return GetC4VName(GetType()); }
 	const char *GetTypeInfo();
 
-	void DenumeratePointer();
+	void DenumeratePointer(C4Section *section = nullptr);
 
 	std::string GetDataString() const;
 

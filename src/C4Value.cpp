@@ -681,12 +681,12 @@ C4Value C4VString(StdStrBuf &&Str)
 	return C4Value(new C4String(std::forward<StdStrBuf>(Str), &Game.ScriptEngine.Strings));
 }
 
-void C4Value::DenumeratePointer()
+void C4Value::DenumeratePointer(C4Section *const section)
 {
 	// array?
 	if (Type == C4V_Array || Type == C4V_Map)
 	{
-		Data.Container->DenumeratePointers();
+		Data.Container->DenumeratePointers(section);
 		return;
 	}
 	// object types only
@@ -695,9 +695,9 @@ void C4Value::DenumeratePointer()
 	if (Type != C4V_C4ObjectEnum && !Inside<std::intptr_t>(Data.Raw, C4EnumPointer1, C4EnumPointer2)) return;
 	// get obj id, search object
 	const auto iObjID = (Data.Int >= C4EnumPointer1 ? Data.Int - C4EnumPointer1 : Data.Int);
-	C4Object *pObj = Game.ObjectPointer(iObjID);
+	C4Object *pObj = section ? section->Objects.ObjectPointer(iObjID) : Game.ObjectPointer(iObjID);
 	if (!pObj)
-		pObj = Game.FindFirstInAllObjects([iObjID](C4GameObjects &objects) { return objects.InactiveObjects.ObjectPointer(iObjID); });
+		pObj = section ? section->Objects.InactiveObjects.ObjectPointer(iObjID) : Game.FindFirstInAllObjects([iObjID](C4GameObjects &objects) { return objects.InactiveObjects.ObjectPointer(iObjID); });
 	if (pObj)
 		// set
 		SetObject(pObj);

@@ -258,7 +258,7 @@ public:
 	bool AssignPlrViewRange();
 	void DrawPicture(C4Facet &cgo, bool fSelected = false, C4RegionList *pRegions = nullptr);
 	void Picture2Facet(C4FacetExSurface &cgo); // set picture to facet, or create facet in current size and draw if specific states are being needed
-	void DenumeratePointers();
+	void DenumeratePointers(bool onlyFromObjectSection);
 	void EnumeratePointers();
 	void Default();
 	bool Init(C4Def *ndef, C4Section &section, C4Object *pCreator,

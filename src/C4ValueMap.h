@@ -65,7 +65,7 @@ public:
 	C4Value &operator[](int32_t iNr) { return *GetItem(iNr); }
 	C4Value &operator[](const char *strName) { return *GetItem(strName); }
 
-	void DenumeratePointers();
+	void DenumeratePointers(C4Section *section = nullptr);
 
 	void CompileFunc(StdCompiler *pComp);
 
