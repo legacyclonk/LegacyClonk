@@ -742,9 +742,9 @@ void C4GraphicsOverlay::EnumeratePointers()
 	pOverlayObj.Enumerate();
 }
 
-void C4GraphicsOverlay::DenumeratePointers()
+void C4GraphicsOverlay::DenumeratePointers(C4Section &section)
 {
-	pOverlayObj.Denumerate();
+	pOverlayObj.Denumerate(&section);
 }
 
 void C4GraphicsOverlay::Draw(C4FacetEx &cgo, C4Object *pForObj, int32_t iByPlayer)

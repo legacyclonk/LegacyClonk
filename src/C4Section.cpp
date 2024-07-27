@@ -447,12 +447,20 @@ bool C4Section::InitSecondPart(C4Random &random)
 	}
 
 	// Load objects
+	std::optional<bool> objectsLoaded;
 	if (SaveGameGroup)
 	{
-		if (const std::int32_t loadedObjects{Objects.Load(*this, *SaveGameGroup, "")}; loadedObjects)
-		{
-			Log(C4ResStrTableKey::IDS_PRC_OBJECTSLOADED, loadedObjects);
-		}
+		objectsLoaded = Objects.Load(*this, *SaveGameGroup, "");
+	}
+
+	if (!objectsLoaded)
+	{
+		objectsLoaded = Objects.Load(*this, Group, "");
+	}
+
+	if (objectsLoaded && !*objectsLoaded)
+	{
+		return false;
 	}
 
 	Group.Close();
@@ -460,6 +468,16 @@ bool C4Section::InitSecondPart(C4Random &random)
 	if (SaveGameGroup)
 	{
 		SaveGameGroup->Close();
+	}
+
+	return true;
+}
+
+bool C4Section::FinishObjectLoading(const bool renumberEverything)
+{
+	if (const std::optional<int> loadedObjects{Objects.AfterLoad(*this, true, renumberEverything)}; loadedObjects)
+	{
+		Log(C4ResStrTableKey::IDS_PRC_OBJECTSLOADED, *loadedObjects);
 	}
 
 	return true;
@@ -817,7 +835,7 @@ void C4Section::DenumeratePointers()
 {
 	if (GlobalEffects)
 	{
-		GlobalEffects->DenumeratePointers();
+		GlobalEffects->DenumeratePointers(false);
 	}
 
 	std::erase_if(Children, [this](auto &child)
