@@ -187,7 +187,7 @@ void C4Effect::EnumeratePointers()
 	} while (pEff = pEff->pNext);
 }
 
-void C4Effect::DenumeratePointers()
+void C4Effect::DenumeratePointers(const bool onlyFromEffectSection)
 {
 	// denum in all effects
 	C4Effect *pEff = this;
@@ -195,10 +195,11 @@ void C4Effect::DenumeratePointers()
 	{
 		// section
 		pEff->section.Denumerate();
+		C4Section *sectionToUse{onlyFromEffectSection ? pEff->section.Denumerated() : nullptr};
 		// command target
-		pEff->pCommandTarget.Denumerate();
+		pEff->pCommandTarget.Denumerate(sectionToUse);
 		// variable pointers
-		pEff->EffectVars.DenumeratePointers();
+		pEff->EffectVars.DenumeratePointers(sectionToUse);
 		// assign any callback functions
 		pEff->AssignCallbackFunctions();
 	} while (pEff = pEff->pNext);

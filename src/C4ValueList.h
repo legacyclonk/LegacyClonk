@@ -61,7 +61,7 @@ public:
 	void Reset();
 	void SetSize(std::int32_t size); // (enlarge only!)
 
-	void DenumeratePointers();
+	void DenumeratePointers(C4Section *section = nullptr);
 
 	// comparison
 	bool operator==(const C4ValueList &other) const = default;
@@ -96,9 +96,9 @@ public:
 		C4ValueList::CompileFunc(pComp);
 	}
 
-	virtual void DenumeratePointers() override
+	virtual void DenumeratePointers(C4Section *const section = nullptr) override
 	{
-		C4ValueList::DenumeratePointers();
+		C4ValueList::DenumeratePointers(section);
 	}
 
 private:

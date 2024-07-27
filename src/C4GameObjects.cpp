@@ -537,12 +537,12 @@ void C4ObjResort::Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast)
 #endif
 }
 
-int C4GameObjects::Load(C4Section &section, C4Group &hGroup, bool fKeepInactive)
+std::optional<bool> C4GameObjects::Load(C4Section &section, C4Group &hGroup, bool fKeepInactive)
 {
 	// Load data component
 	StdStrBuf Source;
 	if (!hGroup.LoadEntryString(C4CFN_ScenarioObjects, Source))
-		return 0;
+		return {};
 
 	// Compile
 	StdStrBuf Name = hGroup.GetFullName() + DirSep C4CFN_ScenarioObjects;
@@ -550,24 +550,51 @@ int C4GameObjects::Load(C4Section &section, C4Group &hGroup, bool fKeepInactive)
 		mkParAdapt(*this, section, false),
 		Source,
 		Name.getData()))
-		return 0;
+		return {false};
+
+	return {true};
+}
+
+bool C4GameObjects::Save(C4Section &section, C4Group &hGroup, bool fSaveGame, bool fSaveInactive)
+{
+	// Save to temp file
+	char szFilename[_MAX_PATH + 1]; SCopy(Config.AtTempPathWithPrefix(section.GetNumberAsString(), C4CFN_ScenarioObjects), szFilename);
+	if (!Save(section, szFilename, fSaveGame, fSaveInactive)) return false;
+
+	// Move temp file to group
+	hGroup.Move(szFilename, C4CFN_ScenarioObjects); // check?
+	// Success
+	return true;
+}
+
+std::optional<int> C4GameObjects::AfterLoad(C4Section &section, const bool keepInactive, const bool renumberEverything)
+{
+	if (!Last)
+	{
+		return {};
+	}
 
 	// Process objects
 	C4ObjectLink *cLnk;
 	C4Object *pObj;
-	bool fObjectNumberCollision = false;
+	bool inactiveObjectNumberCollision{false};
 	int32_t iMaxObjectNumber = 0;
 	for (cLnk = Last; cLnk; cLnk = cLnk->Prev)
 	{
 		C4Object *pObj = cLnk->Obj;
 		// check object number collision with inactive list
-		if (fKeepInactive)
+		if (!renumberEverything)
 		{
-			for (C4ObjectLink *clnk = InactiveObjects.First; clnk; clnk = clnk->Next)
-				if (clnk->Obj->Number == pObj->Number) fObjectNumberCollision = true;
+			if (keepInactive)
+			{
+				for (C4ObjectLink *clnk = InactiveObjects.First; clnk; clnk = clnk->Next)
+					if (clnk->Obj->Number == pObj->Number) inactiveObjectNumberCollision = true;
+			}
+
+			// keep track of numbers
+			iMaxObjectNumber = std::max<long>(iMaxObjectNumber, pObj->Number);
 		}
-		// keep track of numbers
-		iMaxObjectNumber = std::max<long>(iMaxObjectNumber, pObj->Number);
+
 		// add to list of backobjects
 		if (pObj->Category & C4D_Background)
 			BackObjects.Add(pObj, C4ObjectList::stMain, this);
@@ -581,19 +608,35 @@ int C4GameObjects::Load(C4Section &section, C4Group &hGroup, bool fKeepInactive)
 	// if object numbers collideded, numbers will be adjusted afterwards
 	// so fake inactive object list empty meanwhile
 	C4ObjectLink *pInFirst;
-	if (fObjectNumberCollision) { pInFirst = InactiveObjects.First; InactiveObjects.First = nullptr; }
-	// denumerate pointers
-	Denumerate();
-	// update object enumeration index now, because calls like UpdateTransferZone might create objects
-	Game.ObjectEnumerationIndex = (std::max)(Game.ObjectEnumerationIndex, iMaxObjectNumber);
-	// end faking and adjust object numbers
-	if (fObjectNumberCollision)
+	if (inactiveObjectNumberCollision) { pInFirst = InactiveObjects.First; InactiveObjects.First = nullptr; }
+
+	Denumerate(renumberEverything);
+
+	if (renumberEverything)
 	{
-		InactiveObjects.First = pInFirst;
-		// simply renumber all inactive objects
-		for (cLnk = InactiveObjects.First; cLnk; cLnk = cLnk->Next)
-			if ((pObj = cLnk->Obj)->Status)
-				pObj->Number = ++Game.ObjectEnumerationIndex;
+		for (C4ObjectLink *link{First}; link; link = link->Next)
+		{
+			link->Obj->Number = ++Game.ObjectEnumerationIndex;
+		}
+
+		for (C4ObjectLink *link{InactiveObjects.First}; link; link = link->Next)
+		{
+			link->Obj->Number = ++Game.ObjectEnumerationIndex;
+		}
+	}
+	else
+	{
+		// update object enumeration index now, because calls like UpdateTransferZone might create objects
+		Game.ObjectEnumerationIndex = (std::max)(Game.ObjectEnumerationIndex, iMaxObjectNumber);
+		// end faking and adjust object numbers
+		if (inactiveObjectNumberCollision)
+		{
+			InactiveObjects.First = pInFirst;
+			// simply renumber all inactive objects
+			for (cLnk = InactiveObjects.First; cLnk; cLnk = cLnk->Next)
+				if ((pObj = cLnk->Obj)->Status)
+					pObj->Number = ++Game.ObjectEnumerationIndex;
+		}
 	}
 
 	// special checks:
@@ -678,19 +721,7 @@ int C4GameObjects::Load(C4Section &section, C4Group &hGroup, bool fKeepInactive)
 			pObj->UpdateFlipDir();
 		}
 	// Done
-	return ObjectCount();
-}
-
-bool C4GameObjects::Save(C4Section &section, C4Group &hGroup, bool fSaveGame, bool fSaveInactive)
-{
-	// Save to temp file
-	char szFilename[_MAX_PATH + 1]; SCopy(Config.AtTempPathWithPrefix(section.GetNumberAsString(), C4CFN_ScenarioObjects), szFilename);
-	if (!Save(section, szFilename, fSaveGame, fSaveInactive)) return false;
-
-	// Move temp file to group
-	hGroup.Move(szFilename, C4CFN_ScenarioObjects); // check?
-	// Success
-	return true;
+	return {ObjectCount()};
 }
 
 bool C4GameObjects::Save(C4Section &section, const char *szFilename, bool fSaveGame, bool fSaveInactive)
@@ -714,8 +745,8 @@ bool C4GameObjects::Save(C4Section &section, const char *szFilename, bool fSaveG
 	}
 
 	// Denumerate
-	InactiveObjects.Denumerate();
-	Denumerate();
+	InactiveObjects.Denumerate(false);
+	Denumerate(false);
 
 	// Error?
 	if (!fSuccess)

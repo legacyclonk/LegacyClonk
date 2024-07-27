@@ -2420,10 +2420,11 @@ void C4Command::CompileFunc(StdCompiler *pComp)
 	if (iVersion < 2 && Text == "0") Text.clear();
 }
 
-void C4Command::DenumeratePointers()
+void C4Command::DenumeratePointers(C4Section &section)
 {
-	DenumerateObjectPtrs(Target, Target2);
-	Tx.DenumeratePointer();
+	Target.Denumerate(&section);
+	Target2.Denumerate(&section);
+	Tx.DenumeratePointer(); // targets must not be in different sections, but it's okay for values
 }
 
 void C4Command::EnumeratePointers()

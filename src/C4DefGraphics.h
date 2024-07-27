@@ -204,7 +204,7 @@ public:
 
 	// object pointer management
 	void EnumeratePointers();
-	void DenumeratePointers();
+	void DenumeratePointers(C4Section &section);
 
 	void SetAsBase(C4DefGraphics *pBaseGfx, uint32_t dwBMode) // set in MODE_Base
 	{

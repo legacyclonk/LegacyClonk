@@ -109,6 +109,7 @@ public:
 	bool InitMaterialTexture(C4Section *fallback);
 
 	bool InitSecondPart(C4Random &random);
+	bool FinishObjectLoading(const bool renumberEverything);
 	bool InitThirdPart();
 	bool CheckObjectEnumeration();
 

@@ -94,9 +94,12 @@ void C4ValueList::Reset()
 	values.clear();
 }
 
-void C4ValueList::DenumeratePointers()
+void C4ValueList::DenumeratePointers(C4Section *const section)
 {
-	std::ranges::for_each(values, &C4Value::DenumeratePointer);
+	for (auto &value : values)
+	{
+		value.DenumeratePointer(section);
+	}
 }
 
 void C4ValueList::CompileFunc(class StdCompiler *pComp)
