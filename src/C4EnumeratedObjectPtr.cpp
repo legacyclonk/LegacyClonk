@@ -29,15 +29,13 @@ std::int32_t C4EnumeratedObjectPtrTraits::Enumerate(C4Object *const obj)
 	return Game.ObjectNumber(obj);
 }
 
-C4Object *C4EnumeratedObjectPtrTraits::Denumerate(const std::int32_t number)
+C4Object *C4EnumeratedObjectPtrTraits::Denumerate(std::int32_t number, C4Section *const section)
 {
 	// only for compatibility with old savegames where Game.Objects.Enumerated() has been used -.-
 	if (Inside(number, C4EnumPointer1, C4EnumPointer2))
 	{
-		return Game.ObjectPointer(number - C4EnumPointer1);
+		number -= C4EnumPointer1;
 	}
-	else
-	{
-		return Game.ObjectPointer(number);
-	}
+
+	return section ? section->Objects.ObjectPointer(number) : Game.ObjectPointer(number);
 }

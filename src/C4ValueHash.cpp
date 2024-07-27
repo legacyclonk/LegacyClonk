@@ -37,12 +37,12 @@ void C4ValueHash::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkSTLMapAdapt(*this));
 }
 
-void C4ValueHash::DenumeratePointers()
+void C4ValueHash::DenumeratePointers(C4Section *const section)
 {
 	for (auto [key, value] : *this)
 	{
-		const_cast<C4Value &>(key).DenumeratePointer();
-		value.DenumeratePointer();
+		const_cast<C4Value &>(key).DenumeratePointer(section);
+		value.DenumeratePointer(section);
 	}
 }
 
