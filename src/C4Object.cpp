@@ -610,7 +610,7 @@ void C4Object::SetOCF()
 				OCF |= OCF_FightReady;
 	// OCF_LineConstruct
 	if (OCF & OCF_FullCon)
-		if (Def->LineConnect)
+		if (Def->LineConnect & ~C4D_EnergyHolder)
 			OCF |= OCF_LineConstruct;
 	// OCF_Prey
 	if (Def->Prey)
