@@ -88,7 +88,7 @@ public:
 	void Default();
 	void Clear();
 	void Enumerate();
-	void Denumerate();
+	void Denumerate(bool onlyFromObjectSection);
 	void Copy(const C4ObjectList &rList);
 	void DrawAll(C4FacetEx &cgo, int iPlayer = -1); // draw all objects, including bg
 	void DrawIfCategory(C4FacetEx &cgo, int iPlayer, uint32_t dwCat, bool fInvert); // draw all objects that match dwCat (or don't match if fInvert)
@@ -112,7 +112,7 @@ public:
 	bool AssignPlrViewRange();
 	std::string GetNameList(C4DefList &rDefs, uint32_t dwCategory = C4D_All);
 	bool IsClear() const;
-	bool DenumerateRead();
+	bool DenumerateRead(C4Section *section = nullptr);
 	void CompileFunc(StdCompiler *pComp, const C4Section &section, bool fSkipPlayerObjects = false);
 	void CompileFunc(StdCompiler *pComp);
 
