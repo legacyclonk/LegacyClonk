@@ -24,6 +24,14 @@
 #include <atomic>
 #endif
 
+#ifndef __APPLE__
+#define LOG_RANDOM
+#endif
+
+#ifdef LOG_RANDOM
+#include "C4Log.h"
+#endif
+
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>
@@ -42,6 +50,14 @@ public:
 	{
 		// next pseudorandom value
 		randomCount++;
+
+#ifdef LOG_RANDOM
+		if (this == &Default)
+		{
+			Log(range);
+		}
+#endif
+
 	#ifdef DEBUGREC
 		C4RCRandom rc;
 		rc.Cnt = randomCount;
@@ -67,6 +83,10 @@ public:
 	std::uint32_t GetRandomCount() const noexcept { return randomCount; }
 	C4Random Clone() noexcept { return C4Random{randomHold}; }
 
+#ifdef LOG_RANDOM
+	void Log(int range);
+#endif
+
 public:
 	static C4Random Default;
 
@@ -79,6 +99,10 @@ private:
 
 #ifdef DEBUGREC
 	std::uint32_t id{NextId.fetch_add(1, std::memory_order_acq_rel)};
+#endif
+
+#ifdef LOG_RANDOM
+	std::shared_ptr<spdlog::logger> logger;
 #endif
 
 	friend inline void FixedRandom(uint32_t);

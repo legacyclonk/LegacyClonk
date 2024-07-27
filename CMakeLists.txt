@@ -471,6 +471,8 @@ if (WIN32)
 			target_link_options(clonk PRIVATE "/alternatename:_WINRT_IMPL_GetSystemTimePreciseAsFileTime@4=_Clonk_GetSystemTimePreciseAsFileTime@4")
 		endif ()
 	endif ()
+
+	target_link_options(clonk PRIVATE "/PDBALTPATH:%_PDB%")
 endif ()
 
 if (APPLE)
