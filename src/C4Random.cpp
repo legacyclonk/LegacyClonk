@@ -19,36 +19,7 @@
 #include <C4Include.h>
 #include <C4Random.h>
 
-#ifdef LOG_RANDOM
-
-#include <ranges>
-#include <stacktrace>
-
-#endif
-
 C4Random C4Random::Default{0};
-
-#ifdef LOG_RANDOM
-
-void C4Random::Log(const int range)
-{
-	if (!logger)
-	{
-		logger = CreateLogger("C4Random::Default", {.GuiLogLevel = spdlog::level::off});
-	}
-
-	const std::stacktrace trace{std::stacktrace::current()};
-
-	const auto string = trace
-						| std::views::take(10)
-						| std::views::transform([](const auto &frame) { return std::to_string(frame); })
-						| std::views::join_with('\n')
-						| std::ranges::to<std::string>();
-
-	logger->debug("range: {}, randomCount: {}, randomHold: {}\n{}", range, randomCount, randomHold, string);
-}
-
-#endif
 
 // Random3
 
