@@ -1736,6 +1736,17 @@ bool C4Network2ResList::CreateNetworkFolder()
 
 bool C4Network2ResList::FindTempResFileName(const char *szFilename, char *pTarget)
 {
+	static constexpr auto newFileCreated = [](const char *const filename)
+	{
+		FILE *const file{fopen(filename, "wxb")};
+		if (file)
+		{
+			fclose(file);
+		}
+
+		return file != nullptr;
+	};
+
 	char safeFilename[_MAX_PATH];
 	char *safePos = safeFilename;
 	while (*szFilename)
@@ -1757,7 +1768,7 @@ bool C4Network2ResList::FindTempResFileName(const char *szFilename, char *pTarge
 	// create temporary file
 	SCopy(Config.AtNetworkPath(GetFilename(szFilename)), pTarget, _MAX_PATH);
 	// file name is free?
-	if (access(pTarget, F_OK)) return true;
+	if (newFileCreated(pTarget)) return true;
 	// find another file name
 	char szFileMask[_MAX_PATH + 1];
 	SCopy(pTarget, szFileMask, GetExtension(pTarget) - 1 - pTarget);
@@ -1770,7 +1781,7 @@ bool C4Network2ResList::FindTempResFileName(const char *szFilename, char *pTarge
 		SCopy(GetExtension(pTarget) - 1, extPtr, _MAX_PATH - (extPtr - szFileMask));
 		SCopy(szFileMask, pTarget, _MAX_PATH);
 		// doesn't exist?
-		if (access(pTarget, F_OK))
+		if (newFileCreated(pTarget))
 			return true;
 	}
 	// not found
