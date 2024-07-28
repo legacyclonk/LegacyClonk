@@ -88,7 +88,7 @@ inline void FixedRandom(uint32_t dwSeed)
 {
 	// for SafeRandom
 	srand(static_cast<unsigned>(time(nullptr)));
-	C4Random::Default.randomHold = dwSeed;
+	C4Random::Default = C4Random{dwSeed};
 }
 
 inline int Random(int iRange)
