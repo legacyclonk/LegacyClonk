@@ -2129,7 +2129,18 @@ bool C4Game::InitGameSecondPart(C4Group &hGroup, bool fLoadSky, bool preloading)
 
 	FixRandom(Parameters.RandomSeed);
 
-	return std::ranges::all_of(Sections, [](const auto &section) { return section->InitSecondPart(C4Random::Default) && section->FinishObjectLoading(false); });
+	if (!std::ranges::all_of(Sections, [](const auto &section) { return section->InitSecondPart(C4Random::Default) && section->FinishObjectLoading(false); }))
+	{
+		return false;
+	}
+
+	InitValueOverloads();
+
+	SetInitProgress(93);
+
+	PreloadStatus = PreloadLevel::LandscapeObjects;
+
+	return true;
 }
 
 bool C4Game::InitGameFinal()
