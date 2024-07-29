@@ -453,7 +453,7 @@ bool C4Section::InitSecondPart(C4Random &random)
 		objectsLoaded = Objects.Load(*this, *SaveGameGroup, "");
 	}
 
-	if (!objectsLoaded)
+	if (!objectsLoaded && !emptyLandscape)
 	{
 		objectsLoaded = Objects.Load(*this, Group, "");
 	}
