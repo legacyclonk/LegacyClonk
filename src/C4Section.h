@@ -40,7 +40,8 @@ public:
 	enum class Status
 	{
 		Deleted = 0,
-		Active = 1
+		Active = 1,
+		Inactive = 2,
 	};
 
 	struct EnumeratedPtrTraits
@@ -288,6 +289,8 @@ public:
 	{
 		return status == Status::Deleted;
 	}
+
+	bool SetStatus(Status newStatus);
 
 	void UpdateRootParent();
 
