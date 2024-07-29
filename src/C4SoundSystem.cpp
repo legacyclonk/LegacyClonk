@@ -95,6 +95,23 @@ void C4SoundSystem::ClearPointers(const C4Object *const obj)
 	}
 }
 
+void C4SoundSystem::ClearSectionPointers(C4Section &section)
+{
+	for (auto &sample : samples)
+	{
+		sample.instances.remove_if(
+			[&section](auto &inst)
+		{
+			return std::visit(StdOverloadedCallable{
+								  [&section](C4Object *const obj) { return obj && obj->Section == &section; },
+								  [&section](const Position &position) { return position.Section == &section; },
+								  [&section](C4Section *const other) { return other == &section; },
+								  [](GlobalSoundMarker) { return false; }
+							  }, inst.target);
+		});
+	}
+}
+
 void C4SoundSystem::Execute()
 {
 	for (auto &sample : samples)
