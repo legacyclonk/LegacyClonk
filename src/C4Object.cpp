@@ -6039,7 +6039,7 @@ bool C4Object::StatusDeactivate(bool fClearPointers)
 	}
 	else
 	{
-		for (const auto &section : Game.Sections)
+		for (const auto &section : Game.GetNotDeletedSections())
 		{
 			section->TransferZones.ClearPointers(this);
 		}

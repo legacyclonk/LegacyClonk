@@ -85,7 +85,7 @@ void C4Player::ClearViewSection(C4Section &section)
 {
 	if (ViewSection == &section)
 	{
-		ViewSection.SetDenumerated(Game.Sections.front().get());
+		ViewSection.SetDenumerated(Game.GetActiveSections().begin()->get());
 	}
 }
 
@@ -154,7 +154,7 @@ bool C4Player::ScenarioAndTeamInit(int32_t idTeam)
 	// team selection OK; execute it!
 	if (pPrevTeam) pPrevTeam->RemovePlayerByID(pInfo->GetID());
 	if (pTeam) pTeam->AddPlayer(*pInfo, true);
-	if (!ScenarioInit(*Game.Sections.front())) return false;
+	if (!ScenarioInit(*Game.GetActiveSections().front())) return false;
 	if (Game.Rules & C4RULE_TeamHombase) SyncHomebaseMaterialFromTeam();
 	if (!FinalInit(false)) return false;
 	return true;
@@ -199,8 +199,8 @@ void C4Player::Execute()
 							{
 								// player has selected a team that has a valid start position assigned
 								// set view to this position!
-								ViewX = Game.C4S.PlrStart[iPlrStartIndex - 1].Position[0] * Game.Sections.front()->Landscape.MapZoom;
-								ViewY = Game.C4S.PlrStart[iPlrStartIndex - 1].Position[1] * Game.Sections.front()->Landscape.MapZoom;
+								ViewX = Game.C4S.PlrStart[iPlrStartIndex - 1].Position[0] * Game.GetActiveSections().begin()->get()->Landscape.MapZoom;
+								ViewY = Game.C4S.PlrStart[iPlrStartIndex - 1].Position[1] * Game.GetActiveSections().begin()->get()->Landscape.MapZoom;
 							}
 						}
 					}
@@ -294,7 +294,7 @@ bool C4Player::Init(int32_t iNumber, int32_t iAtClient, const char *szAtClientNa
 	Name.Copy(pInfo->GetName());
 
 	// section init: start on main section
-	ViewSection = Game.Sections.front().get();
+	ViewSection = Game.GetActiveSections().begin()->get();
 	// view pos init: Start at center pos
 	ViewX = ViewSection->Landscape.Width / 2; ViewY = ViewSection->Landscape.Height / 2;
 
@@ -805,7 +805,7 @@ bool C4Player::FinalInit(bool fInitialValue)
 	if (!Cursor) AdjustCursorCommand();
 
 	// Assign Captain
-	if (std::ranges::any_of(Game.Sections | std::views::transform(&C4Section::Objects), [](C4ObjectList &objects) { return objects.Find("KILC"_id); }))
+	if (std::ranges::any_of(Game.GetActiveSections() | std::views::transform(&C4Section::Objects), [](C4ObjectList &objects) { return objects.Find("KILC"_id); }))
 	{
 		if (!Captain) Captain = GetHiRankActiveCrew(false);
 	}
@@ -1836,7 +1836,7 @@ void C4Player::NotifyOwnedObjects()
 	C4Object *cobj; C4ObjectLink *clnk;
 
 	// notify objects in all object lists
-	for (const auto &section : Game.Sections)
+	for (const auto &section : Game.GetActiveSections())
 	{
 		for (C4ObjectList *pList = &section->Objects; pList; pList = ((pList == &section->Objects) ? &section->Objects.InactiveObjects : nullptr))
 			for (clnk = pList->First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
@@ -2468,7 +2468,7 @@ void C4Player::ApplyForcedControl(C4Section &initialSection)
 		PressedComs = 0;
 		if (ControlStyle) // AutoStopControl
 		{
-			for (const auto &section : Game.Sections)
+			for (const auto &section : Game.GetActiveSections())
 			{
 				for (auto objLink = section->Objects.InactiveObjects.First; objLink; objLink = objLink->Next)
 				{

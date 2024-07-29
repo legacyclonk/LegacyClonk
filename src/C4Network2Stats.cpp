@@ -326,10 +326,14 @@ C4Network2Stats::~C4Network2Stats()
 
 void C4Network2Stats::ExecuteFrame()
 {
-	statObjCount.RecordValue(C4Graph::ValueType(std::accumulate(Game.Sections.begin(), Game.Sections.end(), 0, [](const std::int32_t result, const auto &section)
+	std::size_t count{0};
+
+	for (const auto &section : Game.GetActiveSections())
 	{
-		return result + section->Objects.ObjectCount();
-	})));
+		count += section->Objects.ObjectCount();
+	}
+
+	statObjCount.RecordValue(static_cast<C4Graph::ValueType>(count));
 }
 
 void C4Network2Stats::ExecuteSecond()
