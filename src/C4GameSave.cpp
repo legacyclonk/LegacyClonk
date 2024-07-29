@@ -193,7 +193,7 @@ bool C4GameSave::SaveRuntimeData()
 		Log(C4ResStrTableKey::IDS_ERR_SAVE_SCENSECTIONS); return false;
 	}
 
-	if (!SaveSection(*Game.Sections.front(), *pSaveGroup, false))
+	if (!SaveSection(**Game.GetNotDeletedSections().begin(), *pSaveGroup, false))
 	{
 		return false;
 	}
@@ -202,10 +202,9 @@ bool C4GameSave::SaveRuntimeData()
 	{
 		std::size_t counter{1};
 
-		for (auto it = std::next(Game.Sections.begin()); it != Game.Sections.end(); ++it)
+		for (const auto &section : Game.GetNotDeletedSections() | std::views::drop(1))
 		{
-			C4Section &section{**it};
-			if (!SaveSection(section, std::format(C4CFN_SavedSection, counter++, section.Number), true))
+			if (!SaveSection(*section, std::format(C4CFN_SavedSection, counter++, section->Number), true))
 			{
 				return false;
 			}
@@ -213,22 +212,20 @@ bool C4GameSave::SaveRuntimeData()
 	}
 	else
 	{
-		for (auto it = std::next(Game.Sections.begin()); it != Game.Sections.end(); ++it)
+		for (const auto &section : Game.GetNotDeletedSections() | std::views::drop(1))
 		{
-			C4Section &section{**it};
-
 			C4Group sectGroup;
-			const std::string filename{std::format(C4CFN_Section, section.GetNameForSaveGame())};
+			const std::string filename{std::format(C4CFN_Section, section->GetNameForSaveGame())};
 			if (sectGroup.OpenAsChild(pSaveGroup, filename.c_str()))
 			{
-				if (!SaveSection(section, sectGroup, false))
+				if (!SaveSection(*section, sectGroup, false))
 				{
 					return false;
 				}
 			}
 			else
 			{
-				if (!SaveSection(section, filename, false))
+				if (!SaveSection(*section, filename, false))
 				{
 					return false;
 				}

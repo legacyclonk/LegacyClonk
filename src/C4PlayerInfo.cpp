@@ -1598,7 +1598,7 @@ bool C4PlayerInfoList::RecreatePlayers()
 					Game.Control.RecAddFile(szFilename, filenameInRecord.c_str());
 				}
 				// recreate join directly
-				Game.Players.Join(szFilename, false, idAtClient, szAtClientName, pInfo, *Game.Sections.front());
+				Game.Players.Join(szFilename, false, idAtClient, szAtClientName, pInfo, *Game.GetActiveSections().front());
 				// delete temporary files immediately
 				if (pInfo->IsTempFile()) pInfo->DeleteTempFile();
 			}

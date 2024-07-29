@@ -392,7 +392,7 @@ bool C4MainMenu::ActivateRules(int32_t iPlayer)
 	// Items
 	int32_t cnt; C4ID idGoal; C4Def *pDef;
 
-	for (const auto &section : Game.Sections)
+	for (const auto &section : Game.GetActiveSections())
 	{
 		for (cnt = 0; idGoal = section->Objects.ObjectsInt().GetListID(C4D_Rule, cnt); cnt++)
 			if (pDef = Game.Defs.ID2Def(idGoal))
