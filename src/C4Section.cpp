@@ -891,6 +891,7 @@ bool C4Section::AssignRemoval()
 	status = Status::Deleted;
 
 	Game.ClearSectionPointers(*this);
+
 	return true;
 }
 
