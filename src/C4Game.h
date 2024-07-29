@@ -141,10 +141,6 @@ public:
 
 public:
 	C4DefList Defs;
-	std::list<std::unique_ptr<C4Section>> Sections;
-	std::vector<std::unique_ptr<C4Section>> SectionsPendingDeletion;
-	std::vector<SectionWithCallback> SectionsLoading;
-	std::unordered_map<C4Section *, std::unordered_map<std::int32_t, bool>> SectionsLoadingClients;
 	C4ObjectList ObjectsInAllSections;
 	C4Group ScenarioFile;
 	C4Scenario C4S;
@@ -232,6 +228,13 @@ public:
 	StdStrBuf NextMission, NextMissionText, NextMissionDesc;
 	C4NetworkRestartInfos::Infos RestartRestoreInfos;
 
+private:
+	std::list<std::unique_ptr<C4Section>> Sections;
+	std::vector<std::unique_ptr<C4Section>> SectionsPendingDeletion;
+	std::vector<SectionWithCallback> SectionsLoading;
+	std::unordered_map<C4Section *, std::unordered_map<std::int32_t, bool>> SectionsLoadingClients;
+	std::size_t SectionsRecentlyDeleted;
+
 public:
 	// Init and execution
 	void Default();
@@ -282,9 +285,24 @@ public:
 	C4Object *SafeObjectPointer(std::int32_t number);
 	std::int32_t ObjectNumber(C4Object *obj);
 
+	const auto &GetAllSections()
+	{
+		return Sections;
+	}
+
+	auto GetActiveSections()
+	{
+		return Sections | std::views::filter(&C4Section::IsActive);
+	}
+
+	auto GetNotDeletedSections()
+	{
+		return Sections | std::views::filter([](const auto &section) { return section->GetStatus() != C4Section::Status::Deleted; });
+	}
+
 	auto GetAllObjects()
 	{
-		return Sections
+		return GetActiveSections()
 				| std::views::transform([](const auto &section) { return C4LinkedListIterator<&C4ObjectLink::Next>{section->Objects.First}; })
 				| std::views::join
 				| std::views::transform(&C4ObjectLink::Obj);
@@ -299,20 +317,30 @@ public:
 
 	auto GetSectionIteratorByNumber(const std::uint32_t number)
 	{
-		return std::ranges::find(Sections, number, &C4Section::Number);
+		auto it = Sections.begin();
+
+		for (; it != Sections.end(); ++it)
+		{
+			if ((*it)->IsActive() && (*it)->Number == number)
+			{
+				break;
+			}
+		}
+
+		return it;
 	}
 
 	bool RemoveSection(std::uint32_t number);
 
 	void AssignPlrViewRange()
 	{
-		std::ranges::for_each(Sections, &C4ObjectList::AssignPlrViewRange, &C4Section::Objects);
+		std::ranges::for_each(GetActiveSections(), &C4ObjectList::AssignPlrViewRange, &C4Section::Objects);
 	}
 
 	template<typename Func, typename T = std::invoke_result_t<Func, C4GameObjects &>>
 	decltype(auto) FindFirstInAllObjects(Func &&func, T defaultValue = {})
 	{
-		for (const auto &section : Sections)
+		for (const auto &section : GetActiveSections())
 		{
 			if (decltype(auto) value = std::invoke(std::forward<Func>(func), section->Objects); value)
 			{
@@ -325,22 +353,22 @@ public:
 
 	void ResetAudibility()
 	{
-		std::ranges::for_each(Sections, &C4ObjectList::ResetAudibility, &C4Section::Objects);
+		std::ranges::for_each(GetActiveSections(), &C4ObjectList::ResetAudibility, &C4Section::Objects);
 	}
 
 	void ValidateOwners()
 	{
-		std::ranges::for_each(Sections, &C4ObjectList::ValidateOwners, &C4Section::Objects);
+		std::ranges::for_each(GetActiveSections(), &C4ObjectList::ValidateOwners, &C4Section::Objects);
 	}
 
 	void SortByCategory()
 	{
-		std::ranges::for_each(Sections, &C4ObjectList::SortByCategory, &C4Section::Objects);
+		std::ranges::for_each(GetActiveSections(), &C4ObjectList::SortByCategory, &C4Section::Objects);
 	}
 
 	void OnObjectChangedDef(C4Object *const obj)
 	{
-		for (const auto &section : Sections)
+		for (const auto &section : GetActiveSections())
 		{
 			if (section->GlobalEffects)
 			{

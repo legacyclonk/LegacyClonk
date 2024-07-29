@@ -767,6 +767,7 @@ void C4Game::Clear()
 	SectionsPendingDeletion.clear();
 	Sections.resize(1);
 	Sections.clear();
+	SectionsRecentlyDeleted = 0;
 	C4S.Clear();
 	GraphicsSystem.Clear();
 	Defs.Clear();
@@ -966,7 +967,7 @@ bool C4Game::Execute() // Returns true if the game is over
 	SectionRemovalCheck();
 
 #ifdef DEBUGREC
-	std::ranges::for_each(Sections, &C4Landscape::DoRelights, &C4Section::Landscape);
+	std::ranges::for_each(GetActiveSections(), &C4Landscape::DoRelights, &C4Section::Landscape);
 #endif
 
 	// Execute the control
@@ -983,8 +984,8 @@ bool C4Game::Execute() // Returns true if the game is over
 
 	// Game
 
-	std::ranges::for_each(Sections, &C4Section::ExecObjects);
-	std::ranges::for_each(Sections, &C4Section::Execute);
+	std::ranges::for_each(GetActiveSections(), &C4Section::ExecObjects);
+	std::ranges::for_each(GetActiveSections(), &C4Section::Execute);
 
 	EXEC_S_DR(Players.Execute();,                  PlayersStat,     "PlrEx")
 	// FIXME: C4Application::Execute should do this, but what about the stats?
@@ -1016,7 +1017,7 @@ bool C4Game::Execute() // Returns true if the game is over
 #ifdef DEBUGREC
 	AddDbgRec(RCT_Block, "eGame", 6);
 
-	std::ranges::for_each(Sections, &C4Landscape::DoRelights, &C4Section::Landscape);
+	std::ranges::for_each(GetActiveSections(), &C4Landscape::DoRelights, &C4Section::Landscape);
 #endif
 
 	return true;
@@ -1050,7 +1051,7 @@ void C4Game::InitFullscreenComponents(bool fRunning)
 
 void C4Game::ClearPointers(C4Object *pObj)
 {
-	for (const auto &section : Sections)
+	for (const auto &section : GetNotDeletedSections())
 	{
 		section->ClearPointers(pObj);
 	}
@@ -1073,7 +1074,7 @@ void C4Game::ClearPointers(C4Object *pObj)
 
 void C4Game::UpdateScriptPointers()
 {
-	for (const auto &section : Sections)
+	for (const auto &section : GetNotDeletedSections())
 	{
 		section->Objects.UpdateScriptPointers(*section);
 	}
@@ -1083,7 +1084,7 @@ void C4Game::UpdateScriptPointers()
 
 void C4Game::UpdateMaterialScriptPointers()
 {
-	std::ranges::for_each(Sections, &C4MaterialMap::UpdateScriptPointers, &C4Section::Material);
+	std::ranges::for_each(GetNotDeletedSections(), &C4MaterialMap::UpdateScriptPointers, &C4Section::Material);
 }
 
 C4Object *C4Game::ObjectPointer(const std::int32_t number)
@@ -1115,17 +1116,15 @@ bool C4Game::RemoveSection(uint32_t number)
 {
 	if (const auto it = GetSectionIteratorByNumber(number); it != Sections.end() && (*it)->AssignRemoval())
 	{
-		std::unique_ptr<C4Section> section{std::move(*it)};
-		Sections.erase(it);
-		SectionsPendingDeletion.emplace_back(std::move(section));
+		++SectionsRecentlyDeleted;
 
-		for (const auto &otherSection : Sections)
+		for (const auto &otherSection : GetNotDeletedSections())
 		{
-			otherSection->ClearSectionPointers(*section);
+			otherSection->ClearSectionPointers(**it);
 		}
 
-		GraphicsSystem.ClearSectionPointers(*section);
-		Console.ClearSectionPointers(*section);
+		GraphicsSystem.ClearSectionPointers(**it);
+		Console.ClearSectionPointers(**it);
 
 		return true;
 	}
@@ -1326,6 +1325,7 @@ void C4Game::Default()
 	PlayList.Clear();
 	ObjectsInAllSections.Default();
 	C4Section::ResetEnumerationIndex();
+	SectionsRecentlyDeleted = 0;
 }
 
 void C4Game::Evaluate()
@@ -1555,7 +1555,7 @@ bool C4Game::SaveData(C4Group &hGroup, bool fSaveSection, bool fInitial, bool fS
 	{
 		Players.EnumeratePointers();
 		ScriptEngine.Strings.EnumStrings();
-		std::ranges::for_each(Sections, &C4Section::EnumeratePointers);
+		std::ranges::for_each(GetNotDeletedSections(), &C4Section::EnumeratePointers);
 	}
 
 	// Decompile
@@ -1568,7 +1568,7 @@ bool C4Game::SaveData(C4Group &hGroup, bool fSaveSection, bool fInitial, bool fS
 	{
 		ScriptEngine.DenumerateVariablePointers();
 		Players.DenumeratePointers();
-		std::ranges::for_each(Sections, &C4Section::DenumeratePointers);
+		std::ranges::for_each(GetNotDeletedSections(), &C4Section::DenumeratePointers);
 	}
 
 	// Initial?
@@ -1818,7 +1818,7 @@ bool C4Game::ReloadDef(C4ID id, uint32_t reloadWhat)
 		// Success, update all concerned object faces
 		// may have been done by graphics-update already - but not for objects using graphics of another def
 		// better update everything :)
-		for (const auto &section : Sections)
+		for (const auto &section : GetNotDeletedSections())
 		{
 			for (clnk = section->Objects.First; clnk && clnk->Obj; clnk = clnk->Next)
 			{
@@ -1831,7 +1831,7 @@ bool C4Game::ReloadDef(C4ID id, uint32_t reloadWhat)
 	else
 	{
 		// Failure, remove all objects of this type
-		for (const auto &section : Sections)
+		for (const auto &section : GetNotDeletedSections())
 		{
 			for (clnk = section->Objects.First; clnk && clnk->Obj; clnk = clnk->Next)
 				if (clnk->Obj->id == id)
@@ -1866,7 +1866,7 @@ bool C4Game::ReloadParticle(const char *szName)
 	if (!pDef->Reload())
 	{
 		// safer: remove all particles
-		std::ranges::for_each(Sections, &C4ParticleSystem::ClearParticles, &C4Section::Particles);
+		std::ranges::for_each(GetNotDeletedSections(), &C4ParticleSystem::ClearParticles, &C4Section::Particles);
 		// clear def
 		delete pDef;
 		// log
@@ -1999,7 +1999,7 @@ bool C4Game::InitGame(C4Group &hGroup, bool fLoadSky)
 		InitGoals();
 	}
 
-	std::ranges::for_each(Sections, &C4Section::InitThirdPart);
+	std::ranges::for_each(GetNotDeletedSections(), &C4Section::InitThirdPart);
 
 	SetInitProgress(94);
 	SetInitProgress(95);
@@ -2150,7 +2150,7 @@ bool C4Game::InitGameFinal()
 {
 	// Validate object owners & assign loaded info objects
 	std::int32_t objectCount{0};
-	for (C4GameObjects &objects : Sections | std::views::transform(&C4Section::Objects))
+	for (C4GameObjects &objects : GetNotDeletedSections() | std::views::transform(&C4Section::Objects))
 	{
 		objects.ValidateOwners();
 		objects.AssignInfo();
@@ -2161,7 +2161,13 @@ bool C4Game::InitGameFinal()
 	// Script constructor call
 	if (!C4S.Head.SaveGame) Script.Call(*Sections.front(), PSF_Initialize); // FIXME
 
-	if (std::transform_reduce(Sections.begin(), Sections.end(), 0, std::plus<std::int32_t>{}, [](const auto &section) { return section->Objects.ObjectCount(); }) != objectCount)
+	std::int32_t newObjectCount{0};
+	for (const auto &section : GetNotDeletedSections())
+	{
+		newObjectCount += section->Objects.ObjectCount();
+	}
+
+	if (newObjectCount != objectCount)
 	{
 		fScriptCreatedObjects = true;
 	}
@@ -2643,6 +2649,30 @@ void C4Game::SectionRemovalCheck()
 			return false;
 		}
 	});
+
+	if (SectionsRecentlyDeleted)
+	{
+		SectionsPendingDeletion.reserve(SectionsPendingDeletion.size() + SectionsRecentlyDeleted);
+
+		for (auto it = Sections.begin(); it != Sections.end(); )
+		{
+			if ((*it)->IsDeleted())
+			{
+				--(*it)->RemovalDelay;
+				SectionsPendingDeletion.emplace_back(std::move(*it));
+				it = Sections.erase(it);
+
+				if (--SectionsRecentlyDeleted == 0)
+				{
+					break;
+				}
+			}
+			else
+			{
+				++it;
+			}
+		}
+	}
 }
 
 bool C4Game::InitKeyboard()
@@ -3201,7 +3231,7 @@ void C4Game::ShowGameOverDlg()
 
 void C4Game::SyncClearance()
 {
-	std::ranges::for_each(Sections, &C4Section::SyncClearance);
+	std::ranges::for_each(GetNotDeletedSections(), &C4Section::SyncClearance);
 }
 
 void C4Game::Synchronize(bool fSavePlayerFiles)
@@ -3214,7 +3244,7 @@ void C4Game::Synchronize(bool fSavePlayerFiles)
 	FixRandom(Parameters.RandomSeed);
 	// Synchronize members
 	Defs.Synchronize();
-	std::ranges::for_each(Sections, &C4Section::Synchronize);
+	std::ranges::for_each(GetNotDeletedSections(), &C4Section::Synchronize);
 
 	// synchronize local player files if desired
 	// this will reset any InActionTimes!
@@ -3224,7 +3254,7 @@ void C4Game::Synchronize(bool fSavePlayerFiles)
 	if (Network.isEnabled()) Network.OnGameSynchronized();
 	// TransferZone synchronization: Must do this after dynamic creation to avoid synchronization loss
 	// if UpdateTransferZone-callbacks do sync-relevant changes
-	std::ranges::for_each(Sections, &C4Section::SynchronizeTransferZones);
+	std::ranges::for_each(GetNotDeletedSections(), &C4Section::SynchronizeTransferZones);
 }
 
 
@@ -3429,7 +3459,7 @@ void C4Game::UpdateRules()
 
 	const auto checkForId = [this](const C4ID id)
 	{
-		return std::ranges::any_of(Sections, [id](const auto &section) { return section->ObjectCount(id); });
+		return std::ranges::any_of(GetNotDeletedSections(), [id](const auto &section) { return section->ObjectCount(id); });
 	};
 
 	if (checkForId(C4ID_Energy))       Rules |= C4RULE_StructuresNeedEnergy;
