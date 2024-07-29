@@ -753,18 +753,16 @@ bool C4Console::SaveGame(bool fSaveGame)
 	gdk_window_set_cursor(gtk_widget_get_window(window), cursorWait);
 #endif
 
-#if 0
 	C4GameSave *pGameSave;
 	if (fSaveGame)
 		pGameSave = new C4GameSaveSavegame();
 	else
-		pGameSave = new C4GameSaveScenario(!Console.Active || Game.Landscape.Mode == C4LSC_Exact, false);
+		pGameSave = new C4GameSaveScenario(false);
 	if (!pGameSave->Save(Game.ScenarioFile, false))
 	{
 		Out("Game::Save failed"); fOkay = false;
 	}
 	delete pGameSave;
-#endif
 
 	// Close and reopen scenario file to fix file changes
 	if (!Game.ScenarioFile.Close())
