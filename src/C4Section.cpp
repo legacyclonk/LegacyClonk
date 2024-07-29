@@ -1467,6 +1467,20 @@ void C4Section::SynchronizeTransferZones()
 	Objects.UpdateTransferZones();
 }
 
+bool C4Section::SetStatus(const Status status)
+{
+	switch (status)
+	{
+	case Status::Active:
+	case Status::Inactive:
+		this->status = status;
+		return true;
+
+	default:
+		return false;
+	}
+}
+
 void C4Section::UpdateRootParent()
 {
 	if (Parent)
