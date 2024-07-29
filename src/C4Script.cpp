@@ -6445,6 +6445,18 @@ static bool FnRemoveSection(C4AulContext *ctx, C4ValueInt section)
 	return Game.RemoveSection(static_cast<std::uint32_t>(section));
 }
 
+static bool FnSetSectionStatus(C4AulContext *ctx, C4ValueInt sectionNumber, C4ValueInt status)
+{
+	if (sectionNumber == 0) return false;
+
+	C4Section *const section{Game.GetSectionByNumber(static_cast<std::uint32_t>(sectionNumber))};
+	if (!section) return false;
+
+	if (std::to_underlying(section->GetStatus()) == status) return true;
+
+	return section->SetStatus(static_cast<C4Section::Status>(status));
+}
+
 static bool FnAddBackgroundSection(C4AulContext *ctx, C4ValueInt sectionNumber, C4ValueInt backgroundSectionNumber, C4ValueInt x, C4ValueInt y, C4ValueInt width, C4ValueInt height)
 {
 	C4Section *const section{Game.GetSectionByNumber(static_cast<std::uint32_t>(sectionNumber))};
@@ -7430,6 +7442,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "SetSectionContext",               FnSetSectionContext);
 	AddFunc(pEngine, "SetObjectContext",                FnSetObjectContext);
 	AddFunc(pEngine, "RemoveSection",                   FnRemoveSection);
+	AddFunc(pEngine, "SetSectionStatus",                FnSetSectionStatus);
 	AddFunc(pEngine, "AddBackgroundSection",            FnAddBackgroundSection);
 	AddFunc(pEngine, "SetSectionPosition",              FnSetSectionPosition);
 	new C4AulDefCastFunc<C4V_C4ID, C4V_Int>{pEngine, "ScoreboardCol"};
