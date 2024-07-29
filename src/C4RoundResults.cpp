@@ -282,10 +282,10 @@ void C4RoundResults::EvaluateGoals(C4IDList &GoalList, C4IDList &FulfilledGoalLi
 	// clear prev
 	GoalList.Clear(); FulfilledGoalList.Clear();
 	// Items
-	bool fRivalvry = std::ranges::any_of(Game.Sections, [](C4GameObjects &objects) { return objects.Find("RVLR"_id); }, &C4Section::Objects);
+	bool fRivalvry = std::ranges::any_of(Game.GetActiveSections(), [](C4GameObjects &objects) { return objects.Find("RVLR"_id); }, &C4Section::Objects);
 	int32_t cnt; C4ID idGoal;
 
-	for (const auto &section : Game.Sections)
+	for (const auto &section : Game.GetActiveSections())
 	{
 		for (cnt = 0; idGoal = section->Objects.GetListID(C4D_Goal, cnt); cnt++)
 		{

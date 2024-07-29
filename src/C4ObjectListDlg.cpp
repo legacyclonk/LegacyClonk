@@ -58,7 +58,7 @@ GType c4_list_get_type(void);
 static void
 c4_list_init(C4List *c4_list)
 {
-	c4_list->data = &Game.Sections.front()->Objects; // FIXME
+	c4_list->data = &Game.GetActiveSections().front()->Objects; // FIXME
 
 	c4_list->stamp = g_random_int(); /* Random int to check whether iters belong to this model */
 }

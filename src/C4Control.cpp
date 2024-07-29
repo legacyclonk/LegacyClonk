@@ -464,7 +464,7 @@ void C4ControlSyncCheck::Set()
 	ObjectCount = 0;
 	SectShapeSum = 0;
 
-	for (const auto &section : Game.Sections)
+	for (const auto &section : Game.GetActiveSections())
 	{
 		PXSCount += section->PXS.Count;
 		MassMoverIndex += section->MassMover.CreatePtr;

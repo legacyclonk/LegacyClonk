@@ -1333,7 +1333,7 @@ C4Section &C4Viewport::GetViewSection()
 		return *plr->ViewSection.Denumerated();
 	}
 
-	return *Game.Sections.front();
+	return *Game.GetActiveSections().front();
 }
 
 C4Section &C4Viewport::GetViewRootSection()
@@ -1343,7 +1343,7 @@ C4Section &C4Viewport::GetViewRootSection()
 		return plr->ViewSection->GetRootSection();
 	}
 
-	return *Game.Sections.front();
+	return *Game.GetActiveSections().front();
 }
 
 void C4Viewport::SetViewOffset(C4Section &section, const std::int32_t x, const std::int32_t y)

@@ -274,9 +274,19 @@ public:
 		return Landscape.GBackIFT(x, y) ? 0 : Weather.Wind;
 	}
 
+	Status GetStatus() const noexcept
+	{
+		return status;
+	}
+
 	bool IsActive() const noexcept
 	{
 		return status == Status::Active;
+	}
+
+	bool IsDeleted() const noexcept
+	{
+		return status == Status::Deleted;
 	}
 
 	void UpdateRootParent();

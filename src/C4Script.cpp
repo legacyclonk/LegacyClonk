@@ -2027,7 +2027,7 @@ C4FindObject *CreateCriterionsFromPars(const C4Value *pPars, C4FindObject **pFOs
 				{
 				case C4FindObjectSectionInfo::AnySection:
 					hasSectionInfo = true;
-					sectionInfo.emplace<std::pair<std::vector<C4Section *>, bool>>(Game.Sections | std::views::transform([](const auto &section) { return section.get(); }) | std::ranges::to<std::vector>(), true);
+					sectionInfo.emplace<std::pair<std::vector<C4Section *>, bool>>(Game.GetActiveSections() | std::views::transform([](const auto &section) { return section.get(); }) | std::ranges::to<std::vector>(), true);
 					break;
 
 				case C4FindObjectSectionInfo::InSection:
@@ -2121,7 +2121,7 @@ static R InvokeFindObject(R(C4FindObject::*func)(std::span<C4Section *>, C4Objec
 {
 	if (auto *const array = std::get_if<std::array<C4Section *, 1>>(&variant); array)
 	{
-		return std::invoke(func, findObject, *array, (*array)[0] == Game.Sections.front().get() ? nullptr : &Game.ObjectsInAllSections);
+		return std::invoke(func, findObject, *array, (*array)[0] == Game.GetActiveSections().begin()->get() ? nullptr : &Game.ObjectsInAllSections);
 	}
 	else if (auto *const vector = std::get_if<std::pair<std::vector<C4Section *>, bool>>(&variant); vector)
 	{
@@ -2226,7 +2226,7 @@ static C4ValueInt FnObjectCount(C4AulContext *cthr, C4ID id, C4ValueInt x, C4Val
 		cthr->Obj, // Local calls exclude self
 		pContainer,
 		iOwner,
-		&section == Game.Sections.front().get() ? nullptr : &Game.ObjectsInAllSections);
+		&section == Game.GetActiveSections().begin()->get() ? nullptr : &Game.ObjectsInAllSections);
 }
 
 static C4Object *FnFindObject(C4AulContext *cthr, C4ID id, C4ValueInt x, C4ValueInt y, C4ValueInt wdt, C4ValueInt hgt, C4ValueInt dwOCF, C4String *szAction, C4Object *pActionTarget, C4Value vContainer, C4Object *pFindNext)
@@ -2253,7 +2253,7 @@ static C4Object *FnFindObject(C4AulContext *cthr, C4ID id, C4ValueInt x, C4Value
 		pContainer,
 		ANY_OWNER,
 		pFindNext,
-		&section == Game.Sections.front().get() ? nullptr : &Game.ObjectsInAllSections);
+		&section == Game.GetActiveSections().begin()->get() ? nullptr : &Game.ObjectsInAllSections);
 }
 
 static C4Object *FnFindObjectOwner(C4AulContext *cthr,
@@ -2282,7 +2282,7 @@ static C4Object *FnFindObjectOwner(C4AulContext *cthr,
 		nullptr,
 		iOwner,
 		pFindNext,
-		&section == Game.Sections.front().get() ? nullptr : &Game.ObjectsInAllSections);
+		&section == Game.GetActiveSections().begin()->get() ? nullptr : &Game.ObjectsInAllSections);
 }
 
 static bool FnMakeCrewMember(C4AulContext *cthr, C4Object *pObj, C4ValueInt iPlayer)
@@ -6357,16 +6357,23 @@ static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data, C4String *cal
 
 static C4ValueInt FnGetSectionCount(C4AulContext *ctx)
 {
-	return static_cast<C4ValueInt>(Game.Sections.size());
+	return static_cast<C4ValueInt>(std::ranges::count_if(Game.GetAllSections(), &C4Section::IsActive));
 }
 
 static C4ValueInt FnGetSectionByindex(C4AulContext *ctx, C4ValueInt i)
 {
-	if (Inside(i, 0, static_cast<std::int32_t>(Game.Sections.size()) - 1))
+	// Check if we need to iterate in the first place
+	if (Inside(i, 0, static_cast<std::int32_t>(Game.GetAllSections().size()) - 1))
 	{
-		auto it = Game.Sections.begin();
-		std::advance(it, i);
-		return static_cast<C4ValueInt>(it->get()->Number);
+		auto range = Game.GetActiveSections() | std::views::drop(i) | std::views::take(1);
+		if (range.empty())
+		{
+			return C4Section::NoSectionSentinel;
+		}
+		else
+		{
+			return static_cast<C4ValueInt>(range.front()->Number);
+		}
 	}
 
 	return C4Section::NoSectionSentinel;
