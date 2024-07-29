@@ -865,9 +865,14 @@ bool C4Section::AssignRemoval()
 		link->Obj->AssignRemoval();
 	}
 
+	if (!IsActive()) return true;
+
 	if (GlobalEffects)
 	{
 		GlobalEffects->ClearAll(nullptr, C4FxCall_RemoveClear);
+
+		if (!IsActive()) return true;
+
 		delete GlobalEffects;
 		GlobalEffects = nullptr;
 	}
@@ -883,6 +888,9 @@ bool C4Section::AssignRemoval()
 
 	Children.clear();
 
+	status = Status::Deleted;
+
+	Game.ClearSectionPointers(*this);
 	return true;
 }
 

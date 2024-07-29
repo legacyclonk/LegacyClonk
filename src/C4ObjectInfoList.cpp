@@ -230,7 +230,7 @@ void C4ObjectInfoList::DetachFromObjects()
 	C4ObjectInfo *cinf;
 	for (cinf = First; cinf; cinf = cinf->Next)
 	{
-		std::ranges::for_each(Game.Sections, [cinf](C4ObjectList &objects) { objects.ClearInfo(cinf); }, &C4Section::Objects);
+		std::ranges::for_each(Game.GetNotDeletedSections(), [cinf](C4ObjectList &objects) { objects.ClearInfo(cinf); }, &C4Section::Objects);
 	}
 }
 
