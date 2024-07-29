@@ -221,14 +221,14 @@ bool C4GameSave::SaveRuntimeData()
 			const std::string filename{std::format(C4CFN_Section, section.GetNameForSaveGame())};
 			if (sectGroup.OpenAsChild(pSaveGroup, filename.c_str()))
 			{
-				if (!SaveSection(section, sectGroup, true))
+				if (!SaveSection(section, sectGroup, false))
 				{
 					return false;
 				}
 			}
 			else
 			{
-				if (!SaveSection(section, filename, true))
+				if (!SaveSection(section, filename, false))
 				{
 					return false;
 				}

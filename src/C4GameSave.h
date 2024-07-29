@@ -119,15 +119,13 @@ public:
 class C4GameSaveScenario : public C4GameSave
 {
 public:
-	C4GameSaveScenario(bool fForceExactLandscape, bool fSaveOrigin) : C4GameSave(false, SyncScenario), fForceExactLandscape(fForceExactLandscape), fSaveOrigin(fSaveOrigin) {}
+	C4GameSaveScenario(bool fSaveOrigin) : C4GameSave(false, SyncScenario), fSaveOrigin(fSaveOrigin) {}
 
 protected:
-	bool fForceExactLandscape;
 	bool fSaveOrigin;
 	virtual bool GetSaveOrigin() override { return fSaveOrigin; }
 	virtual bool GetClearOrigin() override { return false; } // always keep existing origin
 	virtual bool GetSaveDesc() override { return false; } // should WriteDescData be executed in Save()-call?
-	virtual bool GetForceExactLandscape() override { return C4GameSave::GetForceExactLandscape() || fForceExactLandscape; }
 	virtual bool GetSaveScriptPlayers() override { return true; } // script players are also saved; but user players aren't!
 	virtual bool GetSaveScriptPlayerFiles() override { return true; } // script players are also saved; but user players aren't!
 };
