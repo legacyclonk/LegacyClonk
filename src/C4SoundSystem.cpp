@@ -193,7 +193,7 @@ bool C4SoundSystem::Instance::Execute(const bool justStarted)
 	{
 		std::int32_t audibility = obj->GetAudibility();
 		// apply custom falloff distance
-		if (falloffDistance != 0)
+		if (falloffDistance != 0 && Game.GraphicsSystem.IsSectionAudible(*obj->Section))
 		{
 			audibility = std::clamp<int32_t>(100 + (audibility - 100) * AudibilityRadius / falloffDistance, 0, 100);
 		}
