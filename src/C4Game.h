@@ -279,6 +279,7 @@ public:
 	bool ReloadParticle(const char *szName);
 	// Object functions
 	void ClearPointers(C4Object *cobj);
+	void ClearSectionPointers(C4Section &section);
 	void UpdateScriptPointers();
 	void UpdateMaterialScriptPointers();
 	C4Object *ObjectPointer(std::int32_t number);
