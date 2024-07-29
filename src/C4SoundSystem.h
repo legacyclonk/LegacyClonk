@@ -65,6 +65,7 @@ public:
 
 	// Detaches the specified object from all sound instances.
 	void ClearPointers(const C4Object *obj);
+	void ClearSectionPointers(C4Section &section);
 	void Execute();
 	// Load sounds from the specified folder
 	void LoadEffects(C4Group &group);
