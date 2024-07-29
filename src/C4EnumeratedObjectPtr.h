@@ -23,6 +23,7 @@
 #include <type_traits>
 
 class C4Object;
+class C4Section;
 
 template<typename Traits>
 class C4EnumeratedPtr
