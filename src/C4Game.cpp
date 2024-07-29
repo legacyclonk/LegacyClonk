@@ -1069,6 +1069,22 @@ void C4Game::ClearPointers(C4Object *pObj)
 	MouseControl.ClearPointers(pObj);
 }
 
+void C4Game::ClearSectionPointers(C4Section &section)
+{
+	for (const auto &otherSection : GetNotDeletedSections())
+	{
+		otherSection->ClearSectionPointers(section);
+	}
+
+	if (Application.SoundSystem)
+	{
+		Application.SoundSystem->ClearSectionPointers(section);
+	}
+
+	GraphicsSystem.ClearSectionPointers(section);
+	Console.ClearSectionPointers(section);
+}
+
 void C4Game::UpdateScriptPointers()
 {
 	for (const auto &section : GetNotDeletedSections())
@@ -1114,14 +1130,6 @@ bool C4Game::RemoveSection(uint32_t number)
 	if (const auto it = GetSectionIteratorByNumber(number); it != Sections.end() && (*it)->AssignRemoval())
 	{
 		++SectionsRecentlyDeleted;
-
-		for (const auto &otherSection : GetNotDeletedSections())
-		{
-			otherSection->ClearSectionPointers(**it);
-		}
-
-		GraphicsSystem.ClearSectionPointers(**it);
-		Console.ClearSectionPointers(**it);
 
 		return true;
 	}
