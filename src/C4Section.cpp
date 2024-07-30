@@ -888,6 +888,8 @@ bool C4Section::AssignRemoval()
 
 	Children.clear();
 
+	status = Status::Deleted;
+
 	Game.ClearSectionPointers(*this);
 
 	return true;
