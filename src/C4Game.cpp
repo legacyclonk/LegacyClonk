@@ -3634,7 +3634,7 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 		}
 	DeleteObjects(false);
 	// remove global effects
-	if (pGlobalEffects) if (~dwFlags | C4S_KEEP_EFFECTS)
+	if (pGlobalEffects)
 	{
 		pGlobalEffects->ClearAll(nullptr, C4FxCall_RemoveClear);
 		// scenario section call might have been done from a global effect
