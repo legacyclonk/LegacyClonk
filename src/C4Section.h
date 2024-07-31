@@ -78,8 +78,9 @@ public:
 	static constexpr auto Main = "main";
 
 public:
-	C4Section() noexcept;
+	explicit C4Section() noexcept;
 	explicit C4Section(std::string name);
+	explicit C4Section(std::string name, std::uint32_t number) noexcept;
 
 	C4Section(const C4Section &) = delete;
 	C4Section &operator=(const C4Section &) = delete;
@@ -88,9 +89,6 @@ public:
 	C4Section &operator=(C4Section &&) = delete;
 
 	~C4Section() { Clear(); }
-
-private:
-	C4Section(std::uint32_t number) noexcept;
 
 public:
 	void Default();
@@ -109,7 +107,7 @@ public:
 
 	bool InitMaterialTexture(C4Section *fallback);
 
-	bool InitSecondPart(C4Random &random);
+	bool InitSecondPart(C4Random &random, bool allowScript);
 	bool FinishObjectLoading(const bool renumberEverything);
 	bool InitThirdPart();
 	bool CheckObjectEnumeration();
@@ -275,6 +273,8 @@ public:
 		return Landscape.GBackIFT(x, y) ? 0 : Weather.Wind;
 	}
 
+	bool IsMain() const noexcept;
+
 	Status GetStatus() const noexcept
 	{
 		return status;
@@ -302,7 +302,7 @@ public:
 	void ParentPointToPoint(std::int32_t &x, std::int32_t &y, const C4Section *untilParent = nullptr) const noexcept;
 	std::tuple<C4Section &, std::int32_t, std::int32_t> PointToChildPoint(int32_t x, int32_t y) noexcept;
 
-	void CompileFunc(StdCompiler *comp, bool mainSection);
+	void CompileFunc(StdCompiler *comp, bool mainSection, bool onlyEffects);
 
 public:
 	static std::unique_ptr<C4Section> FromSaveGame(C4Group &group, std::string_view entryName);

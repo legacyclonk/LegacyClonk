@@ -379,30 +379,28 @@ bool C4Game::OpenScenario()
 		}
 	SetInitProgress(4);
 
-	auto mainSection = std::make_unique<C4Section>();
-	if (!mainSection->InitFromTemplate(ScenarioFile))
+	if (!LoadSections())
 	{
-		LogFatal(C4ResStrTableKey::IDS_ERR_SECTION); return false;
+		return false;
 	}
 
-	Sections.emplace_back(std::move(mainSection));
-
-	// Compile runtime data
-	if (!CompileRuntimeData(GameText))
+	// If scenario is a directory: Watch for changes
+	if (!ScenarioFile.IsPacked())
 	{
-		LogFatal(C4ResStrTableKey::IDS_ERR_LOAD_RUNTIMEDATA); return false;
+		AddDirectoryForMonitoring(ScenarioFile.GetFullName().getData());
 	}
+
+	PreloadStatus = PreloadLevel::Scenario;
+
+	return true;
+}
+
+bool C4Game::LoadSections()
+{
+	bool hasSectionZero{!C4S.Head.SaveGame};
 
 	if (C4S.Head.SaveGame)
 	{
-		// Sadly, the first section requires some rather convoluted section loading,
-		// as its data gets deserialized from Game.txt for compatibility with older
-		// save games.s
-		if (!Sections.front()->AssumeGroupAsSaveGameGroup())
-		{
-			LogFatal(C4ResStrTableKey::IDS_ERR_SECTION); return false;
-		}
-
 		std::array<char, _MAX_PATH + 1> filename;
 
 		ScenarioFile.ResetSearch();
@@ -414,7 +412,35 @@ bool C4Game::OpenScenario()
 				LogFatal(C4ResStrTableKey::IDS_ERR_SECTION); return false;
 			}
 
+			if (section->Number == 0)
+			{
+				assert(!hasSectionZero);
+				hasSectionZero = true;
+			}
+
 			Sections.emplace_back(std::move(section));
+		}
+
+		// Compile runtime data|
+		if (!CompileRuntimeData(
+					GameText,
+					[hasSectionZero, this](StdCompiler &comp) -> C4Section &
+					{
+						if (hasSectionZero)
+						{
+							comp.excCorrupt("section 0 was saved separately");
+						}
+
+						auto section = std::make_unique<C4Section>(C4Section::Main, 0);
+						if (!section->InitFromTemplate(ScenarioFile) || !section->AssumeGroupAsSaveGameGroup())
+						{
+							comp.excCorrupt("Failed to open savegame group");
+						}
+
+						return *Sections.emplace_front(std::move(section));
+					}))
+		{
+			LogFatal(C4ResStrTableKey::IDS_ERR_LOAD_RUNTIMEDATA); return false;
 		}
 
 		C4Section::AdjustEnumerationIndex(std::ranges::max(Sections | std::views::transform(&C4Section::Number)) + 1);
@@ -423,7 +449,7 @@ bool C4Game::OpenScenario()
 		// C4Group::OpenAsChild, which moves the group search pointer; therefore we can't combine it with the
 		// loop above.
 
-		for (auto &section : Sections | std::views::drop(1))
+		for (auto &section : Sections)
 		{
 			if (!section->InitFromSaveGameAfterLoad(ScenarioFile))
 			{
@@ -431,14 +457,21 @@ bool C4Game::OpenScenario()
 			}
 		}
 	}
-
-	// If scenario is a directory: Watch for changes
-	if (!ScenarioFile.IsPacked())
+	else
 	{
-		AddDirectoryForMonitoring(ScenarioFile.GetFullName().getData());
-	}
+		auto section = std::make_unique<C4Section>(C4Section::Main);
+		if (!section->InitFromTemplate(ScenarioFile))
+		{
+			LogFatal(C4ResStrTableKey::IDS_ERR_SECTION); return false;
+		}
 
-	PreloadStatus = PreloadLevel::Scenario;
+		Sections.emplace_back(std::move(section));
+
+		if (!CompileRuntimeData(GameText, [this](StdCompiler &) -> C4Section & { return *Sections.front(); }))
+		{
+			LogFatal(C4ResStrTableKey::IDS_ERR_LOAD_RUNTIMEDATA); return false;
+		}
+	}
 
 	return true;
 }
@@ -1428,22 +1461,7 @@ void C4Game::Ticks()
 	if (pNetworkStatistics) pNetworkStatistics->ExecuteFrame();
 }
 
-bool C4Game::Compile(const char *szSource)
-{
-	if (!szSource) return true;
-	// C4Game is not defaulted on compilation.
-	// Loading of runtime data overrides only certain values.
-	// Doesn't compile players; those will be done later
-	CompileSettings Settings(false, false, true);
-	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(
-		mkParAdapt(*this, Settings),
-		StdStrBuf(szSource, false),
-		C4CFN_Game))
-		return false;
-	return true;
-}
-
-void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp)
+void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp, std::function<C4Section &(StdCompiler &)> mainSectionProvider)
 {
 	if (!comp.fScenarioSection && comp.fExact)
 	{
@@ -1474,12 +1492,20 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp)
 
 	pComp->Value(mkNamingAdapt(mkInsertAdapt(Script, ScriptEngine), "Script"));
 
-	if (comp.fExact)
+	if (pComp->isCompiler())
 	{
-		pComp->Value(mkParAdapt(*Sections.front(), true));
-	}
+		C4Section *section{nullptr};
 
-	pComp->Value(mkNamingAdapt(mkNamingPtrAdapt(Sections.front()->GlobalEffects, "GlobalEffects"), "Effects"));
+		if (comp.fExact && pComp->NameCount("Weather"))
+		{
+			section = &mainSectionProvider(*pComp);
+			pComp->Value(mkParAdapt(*section, true, false));
+		}
+		else if (pComp->NameCount("Effects"))
+		{
+			pComp->Value(mkParAdapt(section ? *section : mainSectionProvider(*pComp), true, true));
+		}
+	}
 
 	// scoreboard compiles into main level [Scoreboard]
 	if (!comp.fScenarioSection && comp.fExact)
@@ -1546,10 +1572,21 @@ bool C4Game::CanPreload() const
 	return PreloadStatus <= PreloadLevel::Scenario && !PreloadThread.joinable();
 }
 
-bool C4Game::CompileRuntimeData(C4ComponentHost &rGameData)
+bool C4Game::CompileRuntimeData(C4ComponentHost &rGameData, std::function<C4Section &(StdCompiler &)> mainSectionProvider)
 {
-	// Compile
-	if (!Compile(rGameData.GetData())) return false;
+	if (auto *const data = rGameData.GetData(); data)
+	{
+		// C4Game is not defaulted on compilation.
+		// Loading of runtime data overrides only certain values.
+		// Doesn't compile players; those will be done later
+		CompileSettings Settings(false, false, true);
+		if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(
+			mkParAdapt(*this, Settings, mainSectionProvider),
+			StdStrBuf(data, false),
+			C4CFN_Game))
+			return false;
+	}
+
 	// Music System: Set play list
 	Application.MusicSystem->SetPlayList(PlayList.getData());
 	// Success
@@ -2140,7 +2177,7 @@ bool C4Game::InitGameSecondPart(C4Group &hGroup, bool fLoadSky, bool preloading)
 
 	FixRandom(Parameters.RandomSeed);
 
-	if (!std::ranges::all_of(Sections, [](const auto &section) { return section->InitSecondPart(C4Random::Default) && section->FinishObjectLoading(false); }))
+	if (!std::ranges::all_of(Sections, [](const auto &section) { return section->InitSecondPart(C4Random::Default, true) && section->FinishObjectLoading(false); }))
 	{
 		return false;
 	}
@@ -2996,7 +3033,7 @@ void C4Game::SectionLoadProc(std::stop_token stopToken)
 				? sectionLoadArgs.Section->InitFromEmptyLandscape(ScenarioFile, *sectionLoadArgs.Landscape)
 				: sectionLoadArgs.Section->InitFromTemplate(ScenarioFile))
 				&& sectionLoadArgs.Section->InitMaterialTexture(Sections.front().get())
-				&& sectionLoadArgs.Section->InitSecondPart(*sectionLoadArgs.Random)};
+				&& sectionLoadArgs.Section->InitSecondPart(*sectionLoadArgs.Random, false)};
 
 		{
 			const std::lock_guard lock{SectionDoneMutex};
