@@ -34,19 +34,18 @@ C4Section::EnumeratedPtrTraits::Denumerated *C4Section::EnumeratedPtrTraits::Den
 }
 
 C4Section::C4Section() noexcept
-	: C4Section{AcquireEnumerationIndex()}
+	: C4Section{{}, AcquireEnumerationIndex()}
 {
 	Default();
 }
 
 C4Section::C4Section(std::string name)
-	: C4Section{}
+	: C4Section{std::move(name), AcquireEnumerationIndex()}
 {
-	this->name = std::move(name);
 }
 
-C4Section::C4Section(const std::uint32_t number) noexcept
-	: Weather{*this}, TextureMap{*this}, Material{*this}, Landscape{*this}, MassMover{*this}, PXS{*this}, Particles{*this}, Number{number}, numberAsString{std::format("{}", number)}
+C4Section::C4Section(std::string name, const std::uint32_t number) noexcept
+	: Weather{*this}, TextureMap{*this}, Material{*this}, Landscape{*this}, MassMover{*this}, PXS{*this}, Particles{*this}, Number{number}, name{std::move(name)}, numberAsString{std::format("{}", number)}
 {
 	Default();
 }
@@ -88,12 +87,11 @@ void C4Section::Clear()
 
 bool C4Section::InitFromTemplate(C4Group &scenario, const bool savegame)
 {
-	if (!savegame)
-	{
-		C4S = Game.C4S;
-	}
+	spdlog::debug("C4Section::InitFromTemplate({}, {}), Number = {}", scenario.GetFullName().getData(), savegame, Number);
 
-	if (name.empty())
+	C4S = Game.C4S;
+
+	if (IsMain())
 	{
 		if (!Group.Open(scenario.GetFullName().getData()))
 		{
@@ -170,7 +168,7 @@ bool C4Section::LoadSaveGame(C4Group &scenario, std::string_view entryName)
 		return false;
 	}
 
-	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkParAdapt(*this, false), StdStrBuf{sectionRuntimeData.GetData(), sectionRuntimeData.GetDataSize(), false}, C4CFN_SectionRuntimeData))
+	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkParAdapt(*this, false, false), StdStrBuf{sectionRuntimeData.GetData(), sectionRuntimeData.GetDataSize(), false}, C4CFN_SectionRuntimeData))
 	{
 		return false;
 	}
@@ -202,7 +200,7 @@ bool C4Section::InitFromSaveGameAfterLoad(C4Group &scenario)
 bool C4Section::SaveRuntimeData(C4Group &group)
 {
 	std::string output;
-	if (!DecompileToBuf_Log<StdCompilerINIWrite>(mkParAdapt(*this, false), &output, C4CFN_SectionRuntimeData))
+	if (!DecompileToBuf_Log<StdCompilerINIWrite>(mkParAdapt(*this, false, false), &output, C4CFN_SectionRuntimeData))
 	{
 		return false;
 	}
@@ -218,7 +216,7 @@ bool C4Section::InitMaterialTexture(C4Section *const fallback)
 	Material.Clear();
 
 	// Check for scenario local materials
-	const bool isMainSection{name.empty()};
+	const bool isMainSection{IsMain()};
 	bool haveSectionMaterials{!emptyLandscape && Group.FindEntry(C4CFN_Material)};
 
 	if (!haveSectionMaterials && fallback)
@@ -391,10 +389,10 @@ bool C4Section::InitMaterialTexture(C4Section *const fallback)
 	return true;
 }
 
-bool C4Section::InitSecondPart(C4Random &random)
+bool C4Section::InitSecondPart(C4Random &random, const bool allowScript)
 {
 	LandscapeLoaded = false;
-	if (!(emptyLandscape ? Landscape.InitEmpty(random, true, LandscapeLoaded) : Landscape.Init(Group, SaveGameGroup ? &*SaveGameGroup : nullptr, random, name.empty(), false, true, LandscapeLoaded, C4S.Head.SaveGame)))
+	if (!(emptyLandscape ? Landscape.InitEmpty(random, true, LandscapeLoaded) : Landscape.Init(Group, SaveGameGroup ? &*SaveGameGroup : nullptr, random, allowScript, false, true, LandscapeLoaded, C4S.Head.SaveGame)))
 	{
 		LogFatal(C4ResStrTableKey::IDS_ERR_GBACK);
 		return false;
@@ -485,9 +483,10 @@ bool C4Section::FinishObjectLoading(const bool renumberEverything)
 
 bool C4Section::InitThirdPart()
 {
+	const bool isMain{IsMain()};
 	for (const auto &def : Game.Defs)
 	{
-		def->Script.Call(*this, PSF_InitializeDef, {name.empty() ? C4VNull : C4VString(name.c_str())});
+		def->Script.Call(*this, PSF_InitializeDef, {isMain ? C4VNull : C4VString(name.c_str())});
 	}
 
 	// Environment
@@ -1471,6 +1470,11 @@ void C4Section::SynchronizeTransferZones()
 	Objects.UpdateTransferZones();
 }
 
+bool C4Section::IsMain() const noexcept
+{
+	return SEqualNoCase(name.c_str(), Main);
+}
+
 bool C4Section::SetStatus(const Status status)
 {
 	switch (status)
@@ -1586,7 +1590,7 @@ std::tuple<C4Section &, std::int32_t, std::int32_t> C4Section::PointToChildPoint
 	return {*childPtr, x, y};
 }
 
-void C4Section::CompileFunc(StdCompiler *const comp, const bool mainSection)
+void C4Section::CompileFunc(StdCompiler *const comp, const bool mainSection, const bool onlyEffects)
 {
 	if (!mainSection)
 	{
@@ -1602,9 +1606,14 @@ void C4Section::CompileFunc(StdCompiler *const comp, const bool mainSection)
 		}
 	}
 
-	comp->Value(mkNamingAdapt(Weather,       "Weather"));
-	comp->Value(mkNamingAdapt(Landscape,     "Landscape"));
-	comp->Value(mkNamingAdapt(Landscape.Sky, "Sky"));
+	if (!onlyEffects)
+	{
+		comp->Value(mkNamingAdapt(Weather,       "Weather"));
+		comp->Value(mkNamingAdapt(Landscape,     "Landscape"));
+		comp->Value(mkNamingAdapt(Landscape.Sky, "Sky"));
+	}
+
+	comp->Value(mkNamingAdapt(mkNamingPtrAdapt(GlobalEffects, "GlobalEffects"), "Effects"));
 }
 
 std::unique_ptr<C4Section> C4Section::FromSaveGame(C4Group &scenario, const std::string_view entryName)
@@ -1618,7 +1627,7 @@ std::unique_ptr<C4Section> C4Section::FromSaveGame(C4Group &scenario, const std:
 		return nullptr;
 	}
 
-	std::unique_ptr<C4Section> section{new C4Section{number}};
+	auto section = std::make_unique<C4Section>("", number); // name set by LoadSaveGame
 	if (section->LoadSaveGame(scenario, entryName))
 	{
 		return section;

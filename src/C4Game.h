@@ -426,18 +426,18 @@ protected:
 	void LinkScriptEngine();
 	bool InitPlayers();
 	bool OpenScenario();
+	bool LoadSections();
 	bool InitDefs();
 	bool EnumerateMaterials();
 	bool GameOverCheck();
-	bool Compile(const char *szSource);
 	bool Decompile(std::string &buf, bool fSaveSection, bool fSaveExact);
 
 public:
-	void CompileFunc(StdCompiler *pComp, CompileSettings comp);
+	void CompileFunc(StdCompiler *pComp, CompileSettings comp, std::function<C4Section &(StdCompiler &)> mainSectionProvider = {});
 	bool SaveData(C4Group &hGroup, bool fSaveSection, bool fInitial, bool fSaveExact);
 
 protected:
-	bool CompileRuntimeData(C4ComponentHost &rGameData);
+	bool CompileRuntimeData(C4ComponentHost &rGameData, std::function<C4Section &(StdCompiler &)> mainSectionProvider);
 
 
 	bool ToggleDebugMode(); // dbg modeon/off if allowed
