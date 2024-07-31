@@ -282,21 +282,21 @@ public:
 
 	// Throw helpers (might redirect)
 	template<typename... Args>
-	void excNotFound(const std::string_view message, Args... args)
+	[[noreturn]] void excNotFound(const std::string_view message, Args... args)
 	{
 		// Throw the appropriate exception
 		throw NotFoundException(getPosition(), std::vformat(message, std::make_format_args(args...)));
 	}
 
 	template<typename... Args>
-	void excEOF(const std::string_view message = "EOF", Args... args)
+	[[noreturn]] void excEOF(const std::string_view message = "EOF", Args... args)
 	{
 		// Throw the appropriate exception
 		throw EOFException(getPosition(), std::vformat(message, std::make_format_args(args...)));
 	}
 
 	template<typename... Args>
-	void excCorrupt(const std::string_view message, Args... args)
+	[[noreturn]] void excCorrupt(const std::string_view message, Args... args)
 	{
 		// Throw the appropriate exception
 		throw CorruptException(getPosition(), std::vformat(message, std::make_format_args(args...)));
