@@ -101,7 +101,7 @@ bool C4TexMapEntry::Init(C4Section &section)
 	return true;
 }
 
-C4TextureMap::C4TextureMap(C4Section &section)
+C4TextureMap::C4TextureMap(C4Section *const section)
 	: section{section}
 {
 	Default();
@@ -145,14 +145,14 @@ bool C4TextureMap::AddEntry(uint8_t byIndex, const char *szMaterial, const char 
 	Entry[byIndex].Create(szMaterial, szTexture);
 	if (fInitialized)
 	{
-		if (!Entry[byIndex].Init(section))
+		if (!Entry[byIndex].Init(*section))
 		{
 			// Clear entry if it could not be initialized
 			Entry[byIndex].Clear();
 			return false;
 		}
 		// Landscape must be notified (new valid pixel clr)
-		section.Landscape.HandleTexMapUpdate();
+		section->Landscape.HandleTexMapUpdate();
 	}
 	return true;
 }
@@ -241,7 +241,7 @@ int32_t C4TextureMap::Init()
 	int32_t i;
 	for (i = 0; i < C4M_MaxTexIndex; i++)
 		if (!Entry[i].isNull())
-			if (!Entry[i].Init(section))
+			if (!Entry[i].Init(*section))
 			{
 				LogNTr(spdlog::level::err, "Error in TextureMap initialization at entry {}", static_cast<int>(i));
 				Entry[i].Clear();
@@ -363,14 +363,14 @@ int32_t C4TextureMap::GetIndexMatTex(const char *szMaterialTexture, const char *
 		if (iMatTex = GetIndex(Material.getData(), szDefaultTexture, fAddIfNotExist))
 			return iMatTex;
 	// search material
-	const auto iMaterial = section.Material.Get(szMaterialTexture);
-	if (!section.MatValid(iMaterial))
+	const auto iMaterial = section->Material.Get(szMaterialTexture);
+	if (!section->MatValid(iMaterial))
 	{
 		if (szErrorIfFailed) DebugLog(spdlog::level::err, "Error getting MatTex for {}: Invalid material", szErrorIfFailed);
 		return 0;
 	}
 	// return default map entry
-	return section.Material.Map[iMaterial].DefaultMatTex;
+	return section->Material.Map[iMaterial].DefaultMatTex;
 }
 
 C4Texture *C4TextureMap::GetTexture(const char *szTexture)
