@@ -74,7 +74,7 @@ public:
 class C4TextureMap
 {
 public:
-	C4TextureMap(C4Section &section);
+	C4TextureMap(C4Section *section);
 	~C4TextureMap();
 
 	C4TextureMap(const C4TextureMap &other);
@@ -84,7 +84,7 @@ public:
 	C4TextureMap &operator=(C4TextureMap &&other);
 
 protected:
-	C4Section &section;
+	C4Section *section{nullptr};
 	std::array<C4TexMapEntry, C4M_MaxTexIndex> Entry;
 	std::vector<C4Texture> textures;
 	bool fOverloadMaterials;

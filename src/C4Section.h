@@ -105,7 +105,7 @@ public:
 	bool InitFromSaveGameAfterLoad(C4Group &scenario); // called after all savegame sections have been created
 	bool SaveRuntimeData(C4Group &group);
 
-	bool InitMaterialTexture(C4Section *fallback);
+	bool InitMaterialTexture(std::optional<std::tuple<C4MaterialMap &, C4TextureMap &>> fallback);
 
 	bool InitSecondPart(C4Random &random, bool allowScript);
 	bool FinishObjectLoading(const bool renumberEverything);
