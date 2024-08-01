@@ -184,6 +184,7 @@ C4Game::C4Game()
 	PlayerInfos(Parameters.PlayerInfos),
 	RestorePlayerInfos(Parameters.RestorePlayerInfos),
 	Clients(Parameters.Clients),
+	TextureMap{nullptr},
 	SectionLoadSemaphore{0}
 {
 	Default();
@@ -805,6 +806,8 @@ void C4Game::Clear()
 	GraphicsSystem.Clear();
 	Defs.Clear();
 	Particles.Clear();
+	Material.Clear();
+	TextureMap.Clear(); // texture map *MUST* be cleared after the materials, because of the patterns!
 	GraphicsResource.Clear();
 	Messages.Clear();
 	MessageInput.Clear();
@@ -1151,6 +1154,146 @@ std::int32_t C4Game::ObjectNumber(C4Object *const obj)
 	return FindFirstInAllObjects([obj](C4ObjectList &objects) { return objects.ObjectNumber(obj); });
 }
 
+bool C4Game::LoadMaterialsAndTextures(C4MaterialMap &materialMap, C4TextureMap &textureMap, C4Group *const sectionGroup, C4Group *const sectionSavegameGroup)
+{
+	// Clear old data
+	textureMap.Clear();
+	materialMap.Clear();
+
+	// Check for scenario local materials
+	const bool isMainSection{!sectionGroup};
+	bool haveSectionMaterials{sectionGroup && sectionGroup->FindEntry(C4CFN_Material)};
+
+	bool haveSectionSavegameMaterials{sectionSavegameGroup && sectionSavegameGroup->FindEntry(C4CFN_Material)};
+	bool haveScenarioFileMaterials{isMainSection && ScenarioFile.FindEntry(C4CFN_Material)};
+	bool skipNextTexMap{false};
+	bool onlyLoadTexMap{false};
+
+	// Load all materials
+	auto matRes = Parameters.GameRes.iterRes(NRT_Material);
+	bool fFirst = true, fOverloadMaterials = true, fOverloadTextures = true;
+	long tex_count = 0, mat_count = 0;
+	while (fOverloadMaterials || fOverloadTextures)
+	{
+		// Are there any scenario local materials that need to be looked at firs?
+		C4Group Mats;
+		if (haveSectionSavegameMaterials)
+		{
+			if (!Mats.OpenAsChild(sectionSavegameGroup, C4CFN_Material))
+			{
+				LogFatal(C4ResStrTableKey::IDS_ERR_SCENARIOMATERIALS, Mats.GetError());
+				return false;
+			}
+
+			// Once only
+			haveSectionSavegameMaterials = false;
+			skipNextTexMap = !isMainSection;
+			onlyLoadTexMap = !isMainSection;
+		}
+		else if (haveSectionMaterials)
+		{
+			if (!Mats.OpenAsChild(sectionGroup, C4CFN_Material))
+			{
+				LogFatal(C4ResStrTableKey::IDS_ERR_SCENARIOMATERIALS, Mats.GetError());
+				return false;
+			}
+			// Once only
+			haveSectionMaterials = false;
+		}
+		else if (haveScenarioFileMaterials)
+		{
+			if (!Mats.OpenAsChild(&ScenarioFile, C4CFN_Material))
+			{
+				LogFatal(C4ResStrTableKey::IDS_ERR_SCENARIOMATERIALS, Mats.GetError());
+				return false;
+			}
+
+			haveScenarioFileMaterials = false;
+		}
+		else
+		{
+			if (matRes == matRes.end()) break;
+			// Find next external materialMap source
+			if (!Mats.Open(matRes->getFile()))
+			{
+				LogFatal(C4ResStrTableKey::IDS_ERR_EXTERNALMATERIALS, matRes->getFile(), Mats.GetError());
+				return false;
+			}
+			++matRes;
+		}
+
+		// First materialMap file? Load texture map.
+		bool fNewOverloadMaterials = false, fNewOverloadTextures = false;
+		if (fFirst)
+		{
+			long tme_count = textureMap.LoadMap(Mats, C4CFN_TexMap, &fNewOverloadMaterials, &fNewOverloadTextures);
+			Log(C4ResStrTableKey::IDS_PRC_TEXMAPENTRIES, tme_count);
+			// Only once
+			fFirst = false;
+		}
+		else if (skipNextTexMap)
+		{
+			// Skip texture map
+			skipNextTexMap = false;
+			fNewOverloadMaterials = fOverloadMaterials;
+			fNewOverloadTextures = fOverloadTextures;
+		}
+		else
+		{
+			// Check overload-flags only
+			if (!C4TextureMap::LoadFlags(Mats, C4CFN_TexMap, &fNewOverloadMaterials, &fNewOverloadTextures))
+				fOverloadMaterials = fOverloadTextures = false;
+		}
+
+		if (onlyLoadTexMap)
+		{
+			onlyLoadTexMap = false;
+		}
+		else
+		{
+			// Load textures
+			if (fOverloadTextures)
+			{
+				int iTexs = textureMap.LoadTextures(Mats);
+				// Automatically continue search if no texture was found
+				if (!iTexs) fNewOverloadTextures = true;
+				tex_count += iTexs;
+			}
+
+			// Load materials
+			if (fOverloadMaterials)
+			{
+				int iMats = materialMap.Load(Mats);
+				// Automatically continue search if no materialMap was found
+				if (!iMats) fNewOverloadMaterials = true;
+				mat_count += iMats;
+			}
+
+			// Set flags
+			fOverloadTextures = fNewOverloadTextures;
+			fOverloadMaterials = fNewOverloadMaterials;
+		}
+	}
+
+	// Logs
+	Log(C4ResStrTableKey::IDS_PRC_TEXTURES, tex_count);
+	Log(C4ResStrTableKey::IDS_PRC_MATERIALS, mat_count);
+
+	// Load material enumeration
+	if (sectionSavegameGroup && !materialMap.LoadEnumeration(*sectionSavegameGroup))
+	{
+		LogFatal(C4ResStrTableKey::IDS_PRC_NOMATENUM); return false;
+	}
+
+	// Check materialMap number
+	if (materialMap.Num > C4MaxMaterial)
+	{
+		LogFatal(C4ResStrTableKey::IDS_PRC_TOOMANYMATS); return false;
+	}
+
+	return true;
+}
+
 C4Section *C4Game::GetSectionByNumber(const uint32_t number)
 {
 	if (const auto it = GetSectionIteratorByNumber(number); it != Sections.end())
@@ -1340,6 +1483,8 @@ void C4Game::Default()
 	Defs.Clear();
 	C4S.Default();
 	Players.Default();
+	Material.Default();
+	TextureMap.Default();
 	Rank.Default();
 	GraphicsSystem.Default();
 	Messages.Clear();
@@ -2141,17 +2286,15 @@ bool C4Game::InitGameFirstPart()
 
 	SetInitProgress(57);
 
-	auto *const front = Sections.front().get();
-
 	// Materials
-	if (!front->InitMaterialTexture(nullptr))
+	if (!LoadMaterialsAndTextures(Material, TextureMap, nullptr, nullptr))
 	{
 		return false;
 	}
 
-	for (auto &section : Sections | std::views::drop(1))
+	for (auto &section : Sections)
 	{
-		if (!section->InitMaterialTexture(front))
+		if (!section->InitMaterialTexture({{Material, TextureMap}}))
 		{
 			return false;
 		}
@@ -2160,7 +2303,7 @@ bool C4Game::InitGameFirstPart()
 	SetInitProgress(58);
 
 	// Colorize defs by material
-	Defs.ColorizeByMaterial(front->Material, GBM);
+	Defs.ColorizeByMaterial(Material, GBM);
 	SetInitProgress(60);
 
 	PreloadStatus = PreloadLevel::Basic;
@@ -3032,7 +3175,7 @@ void C4Game::SectionLoadProc(std::stop_token stopToken)
 		const bool success{(sectionLoadArgs.Landscape
 				? sectionLoadArgs.Section->InitFromEmptyLandscape(ScenarioFile, *sectionLoadArgs.Landscape)
 				: sectionLoadArgs.Section->InitFromTemplate(ScenarioFile))
-				&& sectionLoadArgs.Section->InitMaterialTexture(Sections.front().get())
+				&& sectionLoadArgs.Section->InitMaterialTexture({{Material, TextureMap}})
 				&& sectionLoadArgs.Section->InitSecondPart(*sectionLoadArgs.Random, false)};
 
 		{
