@@ -6446,7 +6446,7 @@ static bool FnRemoveSection(C4AulContext *ctx, C4ValueInt section)
 
 static bool FnSetSectionStatus(C4AulContext *ctx, C4ValueInt sectionNumber, C4ValueInt status)
 {
-	C4Section *const section{Game.GetSectionByNumber(static_cast<std::uint32_t>(sectionNumber))};
+	C4Section *const section{Game.GetSectionByNumberCheckNotLast(static_cast<std::uint32_t>(sectionNumber))};
 	if (!section) return false;
 
 	if (std::to_underlying(section->GetStatus()) == status) return true;
