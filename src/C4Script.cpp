@@ -6441,14 +6441,11 @@ static void FnSetObjectContext(C4AulContext *ctx, C4Object *obj)
 
 static bool FnRemoveSection(C4AulContext *ctx, C4ValueInt section)
 {
-	if (section == 0) return false;
 	return Game.RemoveSection(static_cast<std::uint32_t>(section));
 }
 
 static bool FnSetSectionStatus(C4AulContext *ctx, C4ValueInt sectionNumber, C4ValueInt status)
 {
-	if (sectionNumber == 0) return false;
-
 	C4Section *const section{Game.GetSectionByNumber(static_cast<std::uint32_t>(sectionNumber))};
 	if (!section) return false;
 
