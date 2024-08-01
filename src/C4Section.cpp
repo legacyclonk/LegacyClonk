@@ -644,6 +644,11 @@ void C4Section::ExecObjects() // Every Tick1 by Execute
 		else
 			// Status reset: process removal delay
 			if ((*it)->RemovalDelay > 0) (*it)->RemovalDelay--;
+
+		if (IsDeleted())
+		{
+			return;
+		}
 	}
 
 #ifdef DEBUGREC
