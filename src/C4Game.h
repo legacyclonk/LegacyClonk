@@ -318,6 +318,7 @@ public:
 	}
 
 	C4Section *GetSectionByNumber(std::uint32_t number);
+	C4Section *GetSectionByNumberCheckNotLast(std::uint32_t number);
 
 	auto GetSectionIteratorByNumber(const std::uint32_t number)
 	{
@@ -333,6 +334,8 @@ public:
 
 		return it;
 	}
+
+	std::pair<std::list<std::unique_ptr<C4Section>>::iterator, bool> GetSectionIteratorByNumberCheckNotLast(std::uint32_t number);
 
 	bool RemoveSection(std::uint32_t number);
 
