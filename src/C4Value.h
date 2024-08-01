@@ -28,6 +28,7 @@
 // class declarations
 class C4Value;
 class C4Object;
+class C4Section;
 class C4String;
 class C4ValueArray;
 class C4ValueHash;
