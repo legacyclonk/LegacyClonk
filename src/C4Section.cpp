@@ -45,7 +45,7 @@ C4Section::C4Section(std::string name)
 }
 
 C4Section::C4Section(std::string name, const std::uint32_t number) noexcept
-	: Weather{*this}, TextureMap{*this}, Material{*this}, Landscape{*this}, MassMover{*this}, PXS{*this}, Particles{*this}, Number{number}, name{std::move(name)}, numberAsString{std::format("{}", number)}
+	: Weather{*this}, TextureMap{this}, Landscape{*this}, MassMover{*this}, PXS{*this}, Particles{*this}, Number{number}, name{std::move(name)}, numberAsString{std::format("{}", number)}
 {
 	Default();
 }
@@ -209,7 +209,7 @@ bool C4Section::SaveRuntimeData(C4Group &group)
 	return group.Add(C4CFN_SectionRuntimeData, copy, false, true);
 }
 
-bool C4Section::InitMaterialTexture(C4Section *const fallback)
+bool C4Section::InitMaterialTexture(std::optional<std::tuple<C4MaterialMap &, C4TextureMap &>> fallback)
 {
 	// Clear old data
 	TextureMap.Clear();
@@ -219,16 +219,16 @@ bool C4Section::InitMaterialTexture(C4Section *const fallback)
 	const bool isMainSection{IsMain()};
 	bool haveSectionMaterials{!emptyLandscape && Group.FindEntry(C4CFN_Material)};
 
-	if (!haveSectionMaterials && fallback)
+	if (fallback && (isMainSection || !haveSectionMaterials))
 	{
-		Material.CopyMaterials(fallback->Material);
+		Material.CopyMaterials(std::get<0>(*fallback));
 
 		if (SaveGameGroup)
 		{
 			C4Group group;
 			if (group.OpenAsChild(&*SaveGameGroup, C4CFN_Material))
 			{
-				if (!TextureMap.InitFromMapAndExistingTextures(group, C4CFN_TexMap, fallback->TextureMap))
+				if (!TextureMap.InitFromMapAndExistingTextures(group, C4CFN_TexMap, std::get<1>(*fallback)))
 				{
 					LogFatal(C4ResStrTableKey::IDS_ERR_SCENARIOMATERIALS, group.GetError());
 					return false;
@@ -236,149 +236,32 @@ bool C4Section::InitMaterialTexture(C4Section *const fallback)
 			}
 			else
 			{
-				TextureMap = fallback->TextureMap;
+				TextureMap = std::get<1>(*fallback);
 			}
 		}
 		else
 		{
-			TextureMap = fallback->TextureMap;
+			TextureMap = std::get<1>(*fallback);
+		}
+
+		// Check material number
+		if (Material.Num > C4MaxMaterial)
+		{
+			LogFatal(C4ResStrTableKey::IDS_PRC_TOOMANYMATS); return false;
 		}
 	}
 	else
 	{
-		bool haveSectionSavegameMaterials{SaveGameGroup && SaveGameGroup->FindEntry(C4CFN_Material)};
-		bool haveScenarioFileMaterials{!isMainSection && Game.ScenarioFile.FindEntry(C4CFN_Material)};
-		bool skipNextTexMap{false};
-		bool onlyLoadTexMap{false};
-
-		// Load all materials
-		auto matRes = Game.Parameters.GameRes.iterRes(NRT_Material);
-		bool fFirst = true, fOverloadMaterials = true, fOverloadTextures = true;
-		long tex_count = 0, mat_count = 0;
-		while (fOverloadMaterials || fOverloadTextures)
+		if (!Game.LoadMaterialsAndTextures(Material, TextureMap, emptyLandscape || IsMain() ? nullptr : &Group, SaveGameGroup ? &*SaveGameGroup : nullptr))
 		{
-			// Are there any scenario local materials that need to be looked at firs?
-			C4Group Mats;
-			if (haveSectionSavegameMaterials)
-			{
-				if (!Mats.OpenAsChild(&*SaveGameGroup, C4CFN_Material))
-				{
-					LogFatal(C4ResStrTableKey::IDS_ERR_SCENARIOMATERIALS, Mats.GetError());
-					return false;
-				}
-
-				// Once only
-				haveSectionSavegameMaterials = false;
-				skipNextTexMap = !isMainSection;
-				onlyLoadTexMap = !isMainSection;
-			}
-			else if (haveSectionMaterials)
-			{
-				if (!Mats.OpenAsChild(&Group, C4CFN_Material))
-				{
-					LogFatal(C4ResStrTableKey::IDS_ERR_SCENARIOMATERIALS, Mats.GetError());
-					return false;
-				}
-				// Once only
-				haveSectionMaterials = false;
-			}
-			else if (haveScenarioFileMaterials)
-			{
-				if (!Mats.OpenAsChild(&Game.ScenarioFile, C4CFN_Material))
-				{
-					LogFatal(C4ResStrTableKey::IDS_ERR_SCENARIOMATERIALS, Mats.GetError());
-					return false;
-				}
-
-				haveScenarioFileMaterials = false;
-			}
-			else
-			{
-				if (matRes == matRes.end()) break;
-				// Find next external material source
-				if (!Mats.Open(matRes->getFile()))
-				{
-					LogFatal(C4ResStrTableKey::IDS_ERR_EXTERNALMATERIALS, matRes->getFile(), Mats.GetError());
-					return false;
-				}
-				++matRes;
-			}
-
-			// First material file? Load texture map.
-			bool fNewOverloadMaterials = false, fNewOverloadTextures = false;
-			if (fFirst)
-			{
-				long tme_count = TextureMap.LoadMap(Mats, C4CFN_TexMap, &fNewOverloadMaterials, &fNewOverloadTextures);
-				Log(C4ResStrTableKey::IDS_PRC_TEXMAPENTRIES, tme_count);
-				// Only once
-				fFirst = false;
-			}
-			else if (skipNextTexMap)
-			{
-				// Skip texture map
-				skipNextTexMap = false;
-				fNewOverloadMaterials = fOverloadMaterials;
-				fNewOverloadTextures = fOverloadTextures;
-			}
-			else
-			{
-				// Check overload-flags only
-				if (!C4TextureMap::LoadFlags(Mats, C4CFN_TexMap, &fNewOverloadMaterials, &fNewOverloadTextures))
-					fOverloadMaterials = fOverloadTextures = false;
-			}
-
-			if (onlyLoadTexMap)
-			{
-				onlyLoadTexMap = false;
-			}
-			else
-			{
-				// Load textures
-				if (fOverloadTextures)
-				{
-					int iTexs = TextureMap.LoadTextures(Mats);
-					// Automatically continue search if no texture was found
-					if (!iTexs) fNewOverloadTextures = true;
-					tex_count += iTexs;
-				}
-
-				// Load materials
-				if (fOverloadMaterials)
-				{
-					int iMats = Material.Load(Mats);
-					// Automatically continue search if no material was found
-					if (!iMats) fNewOverloadMaterials = true;
-					mat_count += iMats;
-				}
-
-				// Set flags
-				fOverloadTextures = fNewOverloadTextures;
-				fOverloadMaterials = fNewOverloadMaterials;
-			}
+			return false;
 		}
-
-		// Logs
-		Log(C4ResStrTableKey::IDS_PRC_TEXTURES, tex_count);
-		Log(C4ResStrTableKey::IDS_PRC_MATERIALS, mat_count);
-
-		// Load material enumeration
-		if (SaveGameGroup && !Material.LoadEnumeration(*SaveGameGroup))
-		{
-			LogFatal(C4ResStrTableKey::IDS_PRC_NOMATENUM); return false;
-		}
-
-		// Initialize texture map
-		TextureMap.Init();
 	}
+
+	TextureMap.Init();
 
 	// Cross map mats (after texture init, because Material-Texture-combinations are used)
-	Material.CrossMapMaterials();
-
-	// Check material number
-	if (Material.Num > C4MaxMaterial)
-	{
-		LogFatal(C4ResStrTableKey::IDS_PRC_TOOMANYMATS); return false;
-	}
+	Material.CrossMapMaterials(*this);
 
 	// Enumerate materials
 	if (!Landscape.EnumerateMaterials()) return false;

@@ -148,11 +148,8 @@ public:
 class C4MaterialMap
 {
 public:
-	C4MaterialMap(C4Section &section);
+	C4MaterialMap();
 	~C4MaterialMap();
-
-private:
-	C4Section &section;
 
 public:
 	int32_t Num;
@@ -188,7 +185,7 @@ public:
 	}
 
 	void UpdateScriptPointers(); // set all material script pointers
-	void CrossMapMaterials();
+	void CrossMapMaterials(C4Section &section);
 
 protected:
 	void SetMatReaction(int32_t iPXSMat, int32_t iLSMat, C4MaterialReaction *pReact);

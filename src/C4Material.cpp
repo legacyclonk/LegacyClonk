@@ -242,8 +242,8 @@ void C4Material::UpdateScriptPointers()
 
 // C4MaterialMap
 
-C4MaterialMap::C4MaterialMap(C4Section &section)
-	: section{section}, DefReactConvert(&mrfConvert), DefReactPoof(&mrfPoof), DefReactCorrode(&mrfCorrode), DefReactIncinerate(&mrfIncinerate), DefReactInsert(&mrfInsert)
+C4MaterialMap::C4MaterialMap()
+	: DefReactConvert(&mrfConvert), DefReactPoof(&mrfPoof), DefReactCorrode(&mrfCorrode), DefReactIncinerate(&mrfIncinerate), DefReactInsert(&mrfInsert)
 {
 	Default();
 }
@@ -307,7 +307,7 @@ int32_t C4MaterialMap::Get(const char *szMaterial)
 	return MNone;
 }
 
-void C4MaterialMap::CrossMapMaterials() // Called after load
+void C4MaterialMap::CrossMapMaterials(C4Section &section) // Called after load
 {
 	// build reaction function map
 	delete[] ppReactionMap;

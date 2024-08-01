@@ -158,6 +158,8 @@ public:
 	C4RoundResults RoundResults;
 	C4GameMessageList Messages;
 	C4MouseControl MouseControl;
+	C4MaterialMap Material;
+	C4TextureMap TextureMap;
 	C4ComponentHost Info;
 	C4ComponentHost Title;
 	C4ComponentHost Names;
@@ -285,6 +287,7 @@ public:
 	C4Object *ObjectPointer(std::int32_t number);
 	C4Object *SafeObjectPointer(std::int32_t number);
 	std::int32_t ObjectNumber(C4Object *obj);
+	bool LoadMaterialsAndTextures(C4MaterialMap &materialMap, C4TextureMap &textureMap, C4Group *sectionGroup, C4Group *sectionSavegameGroup);
 
 	const auto &GetAllSections()
 	{
