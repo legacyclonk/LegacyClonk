@@ -87,7 +87,7 @@ void C4Value::AddDataRef()
 		Data.Obj->AddRef(this);
 #ifndef NDEBUG
 		// check if the object actually exists
-		if (!Game.ObjectNumber(Data.Obj))
+		if (!std::ranges::any_of(Game.GetAllSections() | std::views::transform(&C4Section::Objects), [this](C4GameObjects &objects) { return objects.ObjectNumber(Data.Obj); }))
 		{
 			LogNTr(spdlog::level::warn, "using wild object ptr {}!", static_cast<void *>(Data.Obj));
 		}
