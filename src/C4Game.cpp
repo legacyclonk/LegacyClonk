@@ -1301,9 +1301,47 @@ C4Section *C4Game::GetSectionByNumber(const uint32_t number)
 	return nullptr;
 }
 
+C4Section *C4Game::GetSectionByNumberCheckNotLast(const std::uint32_t number)
+{
+	if (const auto [it, hasOther] = GetSectionIteratorByNumberCheckNotLast(number); hasOther && it != Sections.end())
+	{
+		return it->get();
+	}
+
+	return nullptr;
+}
+
+std::pair<std::list<std::unique_ptr<C4Section>>::iterator, bool> C4Game::GetSectionIteratorByNumberCheckNotLast(const std::uint32_t number)
+{
+	bool hasOtherActiveSection{false};
+	auto it = Sections.begin();
+
+	for (; it != Sections.end(); ++it)
+	{
+		if ((*it)->IsActive())
+		{
+			if ((*it)->Number == number)
+			{
+				if (!hasOtherActiveSection)
+				{
+					hasOtherActiveSection = std::ranges::any_of(std::next(it), Sections.end(), &C4Section::IsActive);
+				}
+
+				break;
+			}
+			else
+			{
+				hasOtherActiveSection = true;
+			}
+		}
+	}
+
+	return {std::move(it), hasOtherActiveSection};
+}
+
 bool C4Game::RemoveSection(uint32_t number)
 {
-	if (const auto it = GetSectionIteratorByNumber(number); it != Sections.end() && (*it)->AssignRemoval())
+	if (const auto [it, hasOther] = GetSectionIteratorByNumberCheckNotLast(number); hasOther && it != Sections.end() && (*it)->AssignRemoval())
 	{
 		++SectionsRecentlyDeleted;
 
