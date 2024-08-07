@@ -584,6 +584,13 @@ bool C4Config::Save()
 	return true;
 }
 
+#if defined(_WIN32) && defined(C4ENGINE)
+namespace C4CrashHandlerWin32
+{
+	void SetUserPath(std::string_view);
+}
+#endif
+
 void C4ConfigGeneral::DeterminePaths(bool forceWorkingDirectory)
 {
 #ifdef _WIN32
@@ -595,6 +602,11 @@ void C4ConfigGeneral::DeterminePaths(bool forceWorkingDirectory)
 	// Temp path
 	GetTempPathA(CFG_MaxString, TempPath);
 	if (TempPath[0]) AppendBackslash(TempPath);
+
+#ifdef C4ENGINE
+	C4CrashHandlerWin32::SetUserPath(UserPath);
+#endif
+
 #elif defined(__linux__)
 #ifdef C4ENGINE
 	GetParentPath(Application.Location, ExePath);
