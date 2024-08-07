@@ -34,7 +34,7 @@
 bool OpenURL(const char *szURL)
 {
 #ifdef _WIN32
-	if (reinterpret_cast<intptr_t>(ShellExecute(nullptr, "open", szURL, nullptr, nullptr, SW_SHOW)) > 32)
+	if (reinterpret_cast<intptr_t>(ShellExecuteA(nullptr, "open", szURL, nullptr, nullptr, SW_SHOW)) > 32)
 		return true;
 #endif
 #ifdef WITH_GLIB

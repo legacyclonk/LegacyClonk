@@ -613,7 +613,7 @@ bool C4ScenarioSection::EnsureTempStore(bool fExtractLandscape, bool fExtractObj
 	// main section: extract section files from main scenario group (create group as open dir)
 	if (Filename.empty())
 	{
-		if (!CreateDirectory(tmp.getData(), nullptr)) return false;
+		if (!MakeDirectory(tmp.getData(), nullptr)) return false;
 		C4Group hGroup;
 		if (!hGroup.Open(tmp.getData(), true)) { EraseItem(tmp.getData()); return false; }
 		// extract all desired section files

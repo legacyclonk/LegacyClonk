@@ -319,7 +319,7 @@ bool C4UpdatePackage::Execute(C4Group *pGroup)
 				// GrpUpdate -> file must exist
 				if (GrpUpdate) return false;
 				// create dir
-				CreateDirectory(strTarget, nullptr);
+				MakeDirectory(strTarget, nullptr);
 			}
 		*p = '\\'; lp = p + 1;
 	}
@@ -533,7 +533,7 @@ bool C4UpdatePackage::DoUpdate(C4Group *pGrpFrom, C4GroupEx *pGrpTo, const char 
 	{
 		const std::string msg{std::format("updating {}\\{}\n", pGrpTo->GetFullName().getData(), strFileName)};
 #ifdef _MSC_VER
-		OutputDebugString(msg.c_str());
+		OutputDebugStringA(msg.c_str());
 #elif !defined(NDEBUG)
 		std::print("{}", msg);
 #endif

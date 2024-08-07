@@ -27,7 +27,7 @@
 void C4Thread::SetCurrentThreadName(const std::string_view name)
 {
 #ifdef _WIN32
-	static auto *const setThreadDescription = reinterpret_cast<HRESULT(__stdcall *)(HANDLE, PCWSTR)>(GetProcAddress(GetModuleHandle("KernelBase.dll"), "SetThreadDescription"));
+	static auto *const setThreadDescription = reinterpret_cast<HRESULT(__stdcall *)(HANDLE, PCWSTR)>(GetProcAddress(GetModuleHandle(L"KernelBase.dll"), "SetThreadDescription"));
 
 	if (setThreadDescription)
 	{

@@ -183,12 +183,14 @@ INT_PTR CALLBACK ConsoleDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		switch (LOWORD(wParam))
 		{
 		case IDOK:
-			// IDC_COMBOINPUT to Console.In()
-			char buffer[16000];
-			GetDlgItemText(hDlg, IDC_COMBOINPUT, buffer, 16000);
-			if (buffer[0])
-				Console.In(buffer);
+		{
+			const std::wstring text{C4Console::GetDialogItemText(hDlg, IDC_COMBOINPUT)};
+			if (!text.empty())
+			{
+				Console.In(StdStringEncodingConverter::Utf16ToWinAcp(text).c_str());
+			}
 			return TRUE;
+		}
 
 		case IDC_BUTTONHALT:
 			Console.DoHalt();
@@ -294,25 +296,20 @@ bool C4Console::Init(CStdApp *const app, const char *const title, const C4Rect &
 	Active = true;
 	// Editing (enable even if network)
 	Editing = true;
-	// Create dialog window
 #ifdef _WIN32
+	// Init common controls
+	INITCOMMONCONTROLSEX controls{.dwSize = sizeof(controls), .dwICC = ICC_STANDARD_CLASSES};
+	if (!InitCommonControlsEx(&controls))
+	{
+		spdlog::critical("Error initializing common controls: {}", winrt::to_string(winrt::hresult_error{HRESULT_FROM_WIN32(GetLastError())}.message()));
+		return false;
+	}
+
+	// Create dialog window
 	hWindow = CreateDialog(app->hInstance, MAKEINTRESOURCE(IDD_CONSOLE), nullptr, ConsoleDlgProc);
 	if (!hWindow)
 	{
-		char *lpMsgBuf;
-		FormatMessage(
-			FORMAT_MESSAGE_ALLOCATE_BUFFER |
-			FORMAT_MESSAGE_FROM_SYSTEM |
-			FORMAT_MESSAGE_IGNORE_INSERTS,
-			nullptr,
-			GetLastError(),
-			0,
-			(LPTSTR)&lpMsgBuf,
-			0,
-			nullptr);
-		spdlog::critical("Error creating dialog window: {}", lpMsgBuf);
-		// Free the buffer.
-		LocalFree(lpMsgBuf);
+		spdlog::critical("Error creating dialog window: {}", winrt::to_string(winrt::hresult_error{HRESULT_FROM_WIN32(GetLastError())}.message()));
 		return false;
 	}
 	// Restore window position
@@ -602,14 +599,16 @@ bool C4Console::Out(std::string_view text)
 	if (!Active) return false;
 	if (text.empty()) return true;
 
-	const bool hasNewline{text.ends_with("\r\n")};
+	const std::wstring textWide{StdStringEncodingConverter::WinAcpToUtf16(text)};
 
-	std::string buffer;
+	const bool hasNewline{textWide.ends_with(L"\r\n")};
+
+	std::wstring buffer;
 	const LRESULT dlgItemTextSize{SendDlgItemMessage(hWindow, IDC_EDITOUTPUT, WM_GETTEXTLENGTH, 0, 0)};
-	buffer.resize_and_overwrite(dlgItemTextSize + text.size() + (hasNewline ? 0 : 2), [dlgItemTextSize, hasNewline,&text, this](char *const ptr, std::size_t size)
+	buffer.resize_and_overwrite(dlgItemTextSize + textWide.size() + (hasNewline ? 0 : 2), [dlgItemTextSize, hasNewline, &textWide, this](wchar_t *const ptr, std::size_t size)
 	{
 		const UINT textSize{GetDlgItemText(hWindow, IDC_EDITOUTPUT, ptr, dlgItemTextSize + 1)};
-		char *newlinePtr{ptr + textSize + text.copy(ptr + textSize, text.size())};
+		wchar_t *newlinePtr{ptr + textSize + textWide.copy(ptr + textSize, textWide.size())};
 
 		if (!hasNewline)
 		{
@@ -620,7 +619,7 @@ bool C4Console::Out(std::string_view text)
 		return newlinePtr - ptr;
 	});
 
-	const char *const newText{buffer.size() <= 60000 ? buffer.c_str() : buffer.c_str() + buffer.size() - 60000}; // max log length: Otherwise, discard beginning
+	const wchar_t *const newText{buffer.size() <= 60000 ? buffer.c_str() : buffer.c_str() + buffer.size() - 60000}; // max log length: Otherwise, discard beginning
 	SetDlgItemText(hWindow, IDC_EDITOUTPUT, newText);
 
 	const auto lines = SendDlgItemMessage(hWindow, IDC_EDITOUTPUT, EM_GETLINECOUNT, 0, 0);
@@ -653,7 +652,7 @@ bool C4Console::Out(std::string_view text)
 bool C4Console::ClearLog()
 {
 #ifdef _WIN32
-	SetDlgItemText(hWindow, IDC_EDITOUTPUT, "");
+	SetDlgItemText(hWindow, IDC_EDITOUTPUT, L"");
 	SendDlgItemMessage(hWindow, IDC_EDITOUTPUT, EM_LINESCROLL, 0, 0);
 	UpdateWindow(hWindow);
 #elif WITH_DEVELOPER_MODE
@@ -679,11 +678,12 @@ bool C4Console::UpdateStatusBars()
 	if (Game.FrameCounter != FrameCounter)
 	{
 		FrameCounter = Game.FrameCounter;
-		const std::string text{std::format("Frame: {}", FrameCounter)};
 #ifdef _WIN32
+		const std::wstring text{std::format(L"Frame: {}", FrameCounter)};
 		SetDlgItemText(hWindow, IDC_STATICFRAME, text.c_str());
 		UpdateWindow(GetDlgItem(hWindow, IDC_STATICFRAME));
 #elif WITH_DEVELOPER_MODE
+		const std::string text{std::format("Frame: {}", FrameCounter)};
 		gtk_label_set_label(GTK_LABEL(lblFrame), text.c_str());
 #endif // WITH_DEVELOPER_MODE / _WIN32
 	}
@@ -691,11 +691,12 @@ bool C4Console::UpdateStatusBars()
 	if (Game.Script.Counter != ScriptCounter)
 	{
 		ScriptCounter = Game.Script.Counter;
-		const std::string text{std::format("Script: {}", ScriptCounter)};
 #ifdef _WIN32
+		const std::wstring text{std::format(L"Script: {}", ScriptCounter)};
 		SetDlgItemText(hWindow, IDC_STATICSCRIPT, text.c_str());
 		UpdateWindow(GetDlgItem(hWindow, IDC_STATICSCRIPT));
 #elif WITH_DEVELOPER_MODE
+		const std::string text{std::format("Script: {}", ScriptCounter)};
 		gtk_label_set_label(GTK_LABEL(lblScript), text.c_str());
 #endif // WITH_DEVELOPER_MODE / _WIN32
 	}
@@ -704,11 +705,12 @@ bool C4Console::UpdateStatusBars()
 	{
 		Time = Game.Time;
 		FPS = Game.FPS;
-		const std::string text{std::format("{:02}:{:02}:{:02} ({} FPS)", Time / 3600, (Time % 3600) / 60, Time % 60, FPS)};
 #ifdef _WIN32
+		const std::wstring text{std::format(L"{:02}:{:02}:{:02} ({} FPS)", Time / 3600, (Time % 3600) / 60, Time % 60, FPS)};
 		SetDlgItemText(hWindow, IDC_STATICTIME, text.c_str());
 		UpdateWindow(GetDlgItem(hWindow, IDC_STATICTIME));
 #elif WITH_DEVELOPER_MODE
+		const std::string text{std::format("{:02}:{:02}:{:02} ({} FPS)", Time / 3600, (Time % 3600) / 60, Time % 60, FPS)};
 		gtk_label_set_label(GTK_LABEL(lblTime), text.c_str());
 #endif // WITH_DEVELOPER_MODE
 	}
@@ -851,7 +853,7 @@ bool C4Console::Message(const char *szMessage, bool fQuery)
 {
 	if (!Active) return false;
 #ifdef _WIN32
-	return (IDOK == MessageBox(hWindow, szMessage, C4ENGINECAPTION, fQuery ? (MB_OKCANCEL | MB_ICONEXCLAMATION) : MB_ICONEXCLAMATION));
+	return (IDOK == MessageBox(hWindow, StdStringEncodingConverter::WinAcpToUtf16(szMessage).c_str(), _CRT_WIDE(C4ENGINECAPTION), fQuery ? (MB_OKCANCEL | MB_ICONEXCLAMATION) : MB_ICONEXCLAMATION));
 #elif WITH_DEVELOPER_MODE
 	GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, fQuery ? (GTK_BUTTONS_OK_CANCEL) : (GTK_BUTTONS_OK), "%s", szMessage);
 	int response = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -1008,7 +1010,7 @@ bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, uin
 #endif
 {
 #ifdef _WIN32
-	OPENFILENAME ofn{};
+	OPENFILENAMEA ofn{};
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hWindow;
 	ofn.lpstrFilter = szFilter;
@@ -1018,12 +1020,12 @@ bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, uin
 
 	bool fResult;
 	if (fSave)
-		fResult = GetSaveFileName(&ofn);
+		fResult = GetSaveFileNameA(&ofn);
 	else
-		fResult = GetOpenFileName(&ofn);
+		fResult = GetOpenFileNameA(&ofn);
 
 	// Reset working directory to exe path as Windows file dialog might have changed it
-	SetCurrentDirectory(Config.General.ExePath);
+	SetCurrentDirectoryA(Config.General.ExePath);
 	return fResult;
 #elif WITH_DEVELOPER_MODE
 	GtkWidget *dialog = gtk_file_chooser_dialog_new(fSave ? "Save file..." : "Load file...", GTK_WINDOW(window), fSave ? GTK_FILE_CHOOSER_ACTION_SAVE : GTK_FILE_CHOOSER_ACTION_OPEN, "format-text-bold", GTK_RESPONSE_CANCEL, fSave ? "document-save" : "document-open", GTK_RESPONSE_ACCEPT, nullptr);
@@ -1202,8 +1204,8 @@ bool C4Console::FileQuit()
 void C4Console::HelpAbout()
 {
 #ifdef _WIN32
-	static constexpr auto Message = C4ENGINECAPTION " " C4VERSION "\n\nCopyright (c) " C4COPYRIGHT_YEAR " " C4COPYRIGHT_COMPANY;
-	MessageBox(nullptr, Message, C4ENGINECAPTION, MB_ICONINFORMATION | MB_TASKMODAL);
+	static constexpr auto Message = _CRT_WIDE(C4ENGINECAPTION) L" " _CRT_WIDE(C4VERSION) L"\n\nCopyright (c) " _CRT_WIDE(C4COPYRIGHT_YEAR) L" " _CRT_WIDE(C4COPYRIGHT_COMPANY);
+	MessageBox(nullptr, Message, _CRT_WIDE(C4ENGINECAPTION), MB_ICONINFORMATION | MB_TASKMODAL);
 #elif WITH_DEVELOPER_MODE
 	gtk_show_about_dialog(GTK_WINDOW(window), "name", C4ENGINECAPTION, "version", C4VERSION, "copyright", "Copyright (c) " C4COPYRIGHT_YEAR " " C4COPYRIGHT_COMPANY, nullptr);
 #endif // WITH_DEVELOPER_MODE / _WIN32
@@ -1219,7 +1221,7 @@ bool C4Console::UpdateCursorBar(const char *szCursor)
 	if (!Active) return false;
 #ifdef _WIN32
 	// Cursor
-	SetDlgItemText(hWindow, IDC_STATICCURSOR, szCursor);
+	SetDlgItemText(hWindow, IDC_STATICCURSOR, StdStringEncodingConverter::WinAcpToUtf16(szCursor).c_str());
 	UpdateWindow(GetDlgItem(hWindow, IDC_STATICCURSOR));
 #elif WITH_DEVELOPER_MODE
 	gtk_label_set_label(GTK_LABEL(lblCursor), Languages.IconvUtf8(szCursor).getData());
@@ -1270,13 +1272,16 @@ void C4Console::ClearViewportMenu()
 bool C4Console::AddMenuItem(HMENU hMenu, DWORD dwID, const char *szString, bool fEnabled)
 {
 	if (!Active) return false;
+
+	std::wstring text{StdStringEncodingConverter::WinAcpToUtf16(szString)};
+
 	MENUITEMINFO minfo{};
 	minfo.cbSize = sizeof(minfo);
 	minfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA | MIIM_STATE;
 	minfo.fType = MFT_STRING;
 	minfo.wID = dwID;
-	minfo.dwTypeData = const_cast<char *>(szString);
-	minfo.cch = SLen(szString);
+	minfo.dwTypeData = text.data();
+	minfo.cch = text.size();
 	if (!fEnabled) minfo.fState |= MFS_GRAYED;
 	return InsertMenuItem(hMenu, 0, FALSE, &minfo);
 }
@@ -1287,6 +1292,19 @@ bool C4Console::GetPositionData(std::string &id, std::string &subKey, bool &stor
 	subKey = Config.GetSubkeyPath("Console");
 	storeSize = false;
 	return true;
+}
+
+std::wstring C4Console::GetDialogItemText(const HWND dlg, const int item)
+{
+	std::wstring result;
+	const LRESULT textSize{SendDlgItemMessage(dlg, item, WM_GETTEXTLENGTH, 0, 0)};
+
+	result.resize_and_overwrite(textSize, [dlg, item, textSize](wchar_t *const ptr, const std::size_t size)
+	{
+		return GetDlgItemText(dlg, item, ptr, textSize + 1);
+	});
+
+	return result;
 }
 #endif // _WIN32
 
@@ -1378,7 +1396,7 @@ void C4Console::UpdateInputCtrl()
 		if (pFn->GetPublic())
 		{
 #ifdef _WIN32
-			SendMessage(hCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>((std::string{pFn->Name} + "()").c_str()));
+			SendMessage(hCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(std::format(L"{}()", StdStringEncodingConverter::WinAcpToUtf16(pFn->Name)).c_str()));
 #elif WITH_DEVELOPER_MODE
 			gtk_list_store_append(store, &iter);
 			gtk_list_store_set(store, &iter, 0, pFn->Name, -1);
@@ -1387,12 +1405,12 @@ void C4Console::UpdateInputCtrl()
 	// Add scenario script functions
 #ifdef _WIN32
 	if (pRef = Game.Script.GetSFunc(0))
-		SendMessage(hCombo, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>("----------"));
+		SendMessage(hCombo, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(L"----------"));
 #endif
 	for (cnt = 0; pRef = Game.Script.GetSFunc(cnt); cnt++)
 	{
 #ifdef _WIN32
-		SendMessage(hCombo, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>((std::string{pRef->Name} + "()").c_str()));
+		SendMessage(hCombo, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(std::format(L"{}()", StdStringEncodingConverter::WinAcpToUtf16(pRef->Name)).c_str()));
 #elif WITH_DEVELOPER_MODE
 		gtk_list_store_append(store, &iter);
 		gtk_list_store_set(store, &iter, 0, pRef->Name, -1);
@@ -1499,7 +1517,7 @@ void C4Console::UpdateMenuText(HMENU hMenu)
 	HMENU hSubMenu;
 	if (!Active) return;
 	// File
-	ModifyMenu(hMenu, MenuIndexFile, MF_BYPOSITION | MF_STRING, 0, LoadResStr(C4ResStrTableKey::IDS_MNU_FILE));
+	ModifyMenu(hMenu, MenuIndexFile, MF_BYPOSITION | MF_STRING, 0, StdStringEncodingConverter::WinAcpToUtf16(LoadResStr(C4ResStrTableKey::IDS_MNU_FILE)).c_str());
 	hSubMenu = GetSubMenu(hMenu, MenuIndexFile);
 	SetMenuItemText(hSubMenu, IDM_FILE_OPEN,       LoadResStr(C4ResStrTableKey::IDS_MNU_OPEN));
 	SetMenuItemText(hSubMenu, IDM_FILE_OPENWPLRS,  LoadResStr(C4ResStrTableKey::IDS_MNU_OPENWPLRS));
@@ -1511,17 +1529,17 @@ void C4Console::UpdateMenuText(HMENU hMenu)
 	SetMenuItemText(hSubMenu, IDM_FILE_CLOSE,      LoadResStr(C4ResStrTableKey::IDS_MNU_CLOSE));
 	SetMenuItemText(hSubMenu, IDM_FILE_QUIT,       LoadResStr(C4ResStrTableKey::IDS_MNU_QUIT));
 	// Components
-	ModifyMenu(hMenu, MenuIndexComponents, MF_BYPOSITION | MF_STRING, 0, LoadResStr(C4ResStrTableKey::IDS_MNU_COMPONENTS));
+	ModifyMenu(hMenu, MenuIndexComponents, MF_BYPOSITION | MF_STRING, 0, StdStringEncodingConverter::WinAcpToUtf16(LoadResStr(C4ResStrTableKey::IDS_MNU_COMPONENTS)).c_str());
 	hSubMenu = GetSubMenu(hMenu, MenuIndexComponents);
 	SetMenuItemText(hSubMenu, IDM_COMPONENTS_SCRIPT, LoadResStr(C4ResStrTableKey::IDS_MNU_SCRIPT));
 	SetMenuItemText(hSubMenu, IDM_COMPONENTS_TITLE,  LoadResStr(C4ResStrTableKey::IDS_MNU_TITLE));
 	SetMenuItemText(hSubMenu, IDM_COMPONENTS_INFO,   LoadResStr(C4ResStrTableKey::IDS_MNU_INFO));
 	// Player
-	ModifyMenu(hMenu, MenuIndexPlayer, MF_BYPOSITION | MF_STRING, 0, LoadResStr(C4ResStrTableKey::IDS_MNU_PLAYER));
+	ModifyMenu(hMenu, MenuIndexPlayer, MF_BYPOSITION | MF_STRING, 0, StdStringEncodingConverter::WinAcpToUtf16(LoadResStr(C4ResStrTableKey::IDS_MNU_PLAYER)).c_str());
 	hSubMenu = GetSubMenu(hMenu, MenuIndexPlayer);
 	SetMenuItemText(hSubMenu, IDM_PLAYER_JOIN, LoadResStr(C4ResStrTableKey::IDS_MNU_JOIN));
 	// Viewport
-	ModifyMenu(hMenu, MenuIndexViewport, MF_BYPOSITION | MF_STRING, 0, LoadResStr(C4ResStrTableKey::IDS_MNU_VIEWPORT));
+	ModifyMenu(hMenu, MenuIndexViewport, MF_BYPOSITION | MF_STRING, 0, StdStringEncodingConverter::WinAcpToUtf16(LoadResStr(C4ResStrTableKey::IDS_MNU_VIEWPORT)).c_str());
 	hSubMenu = GetSubMenu(hMenu, MenuIndexViewport);
 	SetMenuItemText(hSubMenu, IDM_VIEWPORT_NEW, LoadResStr(C4ResStrTableKey::IDS_MNU_NEW));
 	// Help
@@ -1539,7 +1557,7 @@ void C4Console::UpdateNetMenu()
 	ClearNetMenu();
 	// Insert menu
 #ifdef _WIN32
-	if (!InsertMenu(GetMenu(hWindow), MenuIndexHelp, MF_BYPOSITION | MF_POPUP, reinterpret_cast<UINT_PTR>(CreateMenu()), LoadResStr(C4ResStrTableKey::IDS_MNU_NET))) return;
+	if (!InsertMenu(GetMenu(hWindow), MenuIndexHelp, MF_BYPOSITION | MF_POPUP, reinterpret_cast<UINT_PTR>(CreateMenu()), StdStringEncodingConverter::WinAcpToUtf16(LoadResStr(C4ResStrTableKey::IDS_MNU_NET)).c_str())) return;
 #elif WITH_DEVELOPER_MODE
 	itemNet = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_NET));
 	GtkWidget *menuNet = gtk_menu_new();

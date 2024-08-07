@@ -197,10 +197,10 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 	succeeded = true;
 #ifdef _WIN32
 	// Close editor if open
-	HWND hwnd = FindWindow(nullptr, C4EDITORCAPTION);
+	HWND hwnd = FindWindowA(nullptr, C4EDITORCAPTION);
 	if (hwnd) PostMessage(hwnd, WM_CLOSE, 0, 0);
 	const std::string updateArgs{std::format("\"{}\" /p -w \"" C4ENGINECAPTION "\" -w \"" C4EDITORCAPTION "\" -w 2000 {}", strUpdateFile, fDeleteUpdate ? "-yd" : "-y")};
-	const auto iError = ShellExecute(nullptr, "runas", strUpdateProg.getData(), updateArgs.c_str(), Config.General.ExePath, SW_SHOW);
+	const auto iError = ShellExecuteA(nullptr, "runas", strUpdateProg.getData(), updateArgs.c_str(), Config.General.ExePath, SW_SHOW);
 	if (reinterpret_cast<intptr_t>(iError) <= 32) return false;
 	// must quit ourselves for update program to work
 	if (succeeded) Application.Quit();

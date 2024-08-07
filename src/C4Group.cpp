@@ -363,7 +363,7 @@ bool C4Group_UnpackDirectory(const char *szFilename)
 	char szFoldername[_MAX_PATH + 1];
 	SCopy(szFilename, szFoldername, _MAX_PATH);
 	MakeTempFilename(szFoldername);
-	if (!CreateDirectory(szFoldername, nullptr)) { hGroup.Close(); return false; }
+	if (!MakeDirectory(szFoldername, nullptr)) { hGroup.Close(); return false; }
 
 	// Extract files to folder
 	if (!hGroup.Extract("*", szFoldername)) { hGroup.Close(); return false; }
@@ -1571,7 +1571,7 @@ bool EraseItemSafe(const char *szFilename)
 	char Filename[_MAX_PATH + 1];
 	SCopy(szFilename, Filename, _MAX_PATH);
 	Filename[SLen(Filename) + 1] = 0;
-	SHFILEOPSTRUCT shs;
+	SHFILEOPSTRUCTA shs;
 	shs.hwnd = 0;
 	shs.wFunc = FO_DELETE;
 	shs.pFrom = Filename;
@@ -1580,7 +1580,7 @@ bool EraseItemSafe(const char *szFilename)
 	shs.fAnyOperationsAborted = false;
 	shs.hNameMappings = 0;
 	shs.lpszProgressTitle = nullptr;
-	return !SHFileOperation(&shs);
+	return !SHFileOperationA(&shs);
 #elif defined(USE_SDL_MAINLOOP) && defined(C4ENGINE) && defined(__APPLE__)
 	bool sendFileToTrash(const char *filename);
 	return sendFileToTrash(szFilename);

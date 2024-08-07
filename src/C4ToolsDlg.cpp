@@ -189,10 +189,15 @@ INT_PTR CALLBACK ToolsDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 			{
 			case CBN_SELCHANGE:
 				int32_t cursel = SendDlgItemMessage(hDlg, IDC_COMBOMATERIAL, CB_GETCURSEL, 0, 0);
-				std::string material;
-				material.resize(SendDlgItemMessage(hDlg, IDC_COMBOMATERIAL, CB_GETLBTEXTLEN, cursel, 0));
-				SendDlgItemMessage(hDlg, IDC_COMBOMATERIAL, CB_GETLBTEXT, cursel, reinterpret_cast<LPARAM>(material.data()));
-				Console.ToolsDlg.SetMaterial(material.c_str());
+				std::wstring material;
+				const LRESULT textSize{SendDlgItemMessage(hDlg, IDC_COMBOMATERIAL, CB_GETLBTEXTLEN, cursel, 0)};
+
+				material.resize_and_overwrite(textSize, [cursel, hDlg, &material](wchar_t *const ptr, const std::size_t size)
+				{
+					return SendDlgItemMessage(hDlg, IDC_COMBOMATERIAL, CB_GETLBTEXT, cursel, reinterpret_cast<LPARAM>(material.data()));
+				});
+
+				Console.ToolsDlg.SetMaterial(StdStringEncodingConverter::Utf16ToWinAcp(material).c_str());
 				break;
 			}
 			return TRUE;
@@ -202,10 +207,15 @@ INT_PTR CALLBACK ToolsDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 			{
 			case CBN_SELCHANGE:
 				int32_t cursel = SendDlgItemMessage(hDlg, IDC_COMBOTEXTURE, CB_GETCURSEL, 0, 0);
-				std::string texture;
-				texture.resize(SendDlgItemMessage(hDlg, IDC_COMBOTEXTURE, CB_GETLBTEXTLEN, cursel, 0));
-				SendDlgItemMessage(hDlg, IDC_COMBOTEXTURE, CB_GETLBTEXT, cursel, reinterpret_cast<LPARAM>(texture.data()));
-				Console.ToolsDlg.SetTexture(texture.c_str());
+				std::wstring texture;
+				const LRESULT textSize{SendDlgItemMessage(hDlg, IDC_COMBOTEXTURE, CB_GETLBTEXTLEN, cursel, 0)};
+
+				texture.resize_and_overwrite(textSize, [cursel, hDlg, &texture](wchar_t *const ptr, const std::size_t size)
+				{
+					return SendDlgItemMessage(hDlg, IDC_COMBOTEXTURE, CB_GETLBTEXT, cursel, reinterpret_cast<LPARAM>(texture.data()));
+				});
+
+				Console.ToolsDlg.SetTexture(StdStringEncodingConverter::Utf16ToWinAcp(texture).c_str());
 				break;
 			}
 			return TRUE;
@@ -260,9 +270,9 @@ bool C4ToolsDlg::Open()
 		ToolsDlgProc);
 	if (!hDialog) return false;
 	// Set text
-	SetWindowText(hDialog, LoadResStr(C4ResStrTableKey::IDS_DLG_TOOLS));
-	SetDlgItemText(hDialog, IDC_STATICMATERIAL, LoadResStr(C4ResStrTableKey::IDS_CTL_MATERIAL));
-	SetDlgItemText(hDialog, IDC_STATICTEXTURE, LoadResStr(C4ResStrTableKey::IDS_CTL_TEXTURE));
+	SetWindowText(hDialog, StdStringEncodingConverter::WinAcpToUtf16(LoadResStr(C4ResStrTableKey::IDS_DLG_TOOLS)).c_str());
+	SetDlgItemText(hDialog, IDC_STATICMATERIAL, StdStringEncodingConverter::WinAcpToUtf16(LoadResStr(C4ResStrTableKey::IDS_CTL_MATERIAL)).c_str());
+	SetDlgItemText(hDialog, IDC_STATICTEXTURE, StdStringEncodingConverter::WinAcpToUtf16(LoadResStr(C4ResStrTableKey::IDS_CTL_TEXTURE)).c_str());
 	// Load bitmaps if necessary
 	LoadBitmaps();
 	// create target ctx for OpenGL rendering
@@ -473,10 +483,10 @@ void C4ToolsDlg::InitMaterialCtrls()
 {
 	// Materials
 #ifdef _WIN32
-	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(C4TLS_MatSky));
+	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(_CRT_WIDE(C4TLS_MatSky)));
 	for (int32_t cnt = 0; cnt < Game.Material.Num; cnt++)
-		SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(Game.Material.Map[cnt].Name));
-	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(Material));
+		SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(Game.Material.Map[cnt].Name).c_str()));
+	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(Material).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 	GtkListStore *list = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(materials)));
 
@@ -513,7 +523,7 @@ void C4ToolsDlg::UpdateTextures()
 			{
 				fAnyEntry = true;
 #ifdef _WIN32
-				SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(szTexture));
+				SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(szTexture).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 				gtk_combo_box_text_prepend_text(GTK_COMBO_BOX_TEXT(textures), szTexture);
 #endif
@@ -523,7 +533,7 @@ void C4ToolsDlg::UpdateTextures()
 	if (fAnyEntry)
 	{
 #ifdef _WIN32
-		SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>("-------"));
+		SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(L"-------"));
 #elif defined(WITH_DEVELOPER_MODE)
 		gtk_combo_box_text_prepend_text(GTK_COMBO_BOX_TEXT(textures), "-------");
 #endif
@@ -536,7 +546,7 @@ void C4ToolsDlg::UpdateTextures()
 		if (Game.TextureMap.GetIndex(Material, szTexture, false) || Game.Landscape.Mode == C4LSC_Exact)
 		{
 #ifdef _WIN32
-			SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(szTexture));
+			SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(szTexture).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 			gtk_combo_box_text_prepend_text(GTK_COMBO_BOX_TEXT(textures), szTexture);
 #endif
@@ -544,7 +554,7 @@ void C4ToolsDlg::UpdateTextures()
 	}
 	// reselect current
 #ifdef _WIN32
-	SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(Texture));
+	SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(Texture).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 	g_signal_handler_block(textures, handlerTextures);
 	SelectComboBoxText(GTK_COMBO_BOX(textures), Texture);
@@ -568,7 +578,7 @@ void C4ToolsDlg::SetTexture(const char *szTexture)
 	{
 		// ensure correct texture is in dlg
 #ifdef _WIN32
-		SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(Texture));
+		SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(Texture).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 		g_signal_handler_block(textures, handlerTextures);
 		SelectComboBoxText(GTK_COMBO_BOX(textures), Texture);
@@ -814,7 +824,7 @@ void C4ToolsDlg::UpdateLandscapeModeCtrls()
 		caption = LoadResStr(C4ResStrTableKey::IDS_DLG_EXACT);
 		break;
 	}
-	SetWindowText(hDialog, caption);
+	SetWindowText(hDialog, StdStringEncodingConverter::WinAcpToUtf16(caption).c_str());
 #elif defined(WITH_DEVELOPER_MODE)
 	g_signal_handler_block(landscape_dynamic, handlerDynamic);
 	g_signal_handler_block(landscape_static,  handlerStatic);
@@ -975,7 +985,7 @@ void C4ToolsDlg::AssertValidTexture()
 bool C4ToolsDlg::SelectTexture(const char *szTexture)
 {
 #ifdef _WIN32
-	SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(szTexture));
+	SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(szTexture).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 	g_signal_handler_block(textures, handlerTextures);
 	SelectComboBoxText(GTK_COMBO_BOX(textures), szTexture);
@@ -988,7 +998,7 @@ bool C4ToolsDlg::SelectTexture(const char *szTexture)
 bool C4ToolsDlg::SelectMaterial(const char *szMaterial)
 {
 #ifdef _WIN32
-	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(szMaterial));
+	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(szMaterial).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 	g_signal_handler_block(materials, handlerMaterials);
 	SelectComboBoxText(GTK_COMBO_BOX(materials), szMaterial);
