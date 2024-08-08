@@ -67,9 +67,8 @@ C4ThreadPool::Io::Awaiter::~Awaiter() noexcept
 	}
 }
 
-bool C4ThreadPool::Io::Awaiter::await_suspend(const std::coroutine_handle<> handle)
+bool C4ThreadPool::Io::Awaiter::DoSuspend(const std::coroutine_handle<> handle)
 {
-	SetCancellablePromise(handle);
 	coroutineHandle.store(handle, std::memory_order_relaxed);
 	io.SetAwaiter(&overlapped, this);
 
@@ -130,12 +129,7 @@ void C4ThreadPool::Io::Awaiter::SetupCancellation(C4Task::CancellablePromise *co
 		[](void *const argument)
 		{
 			auto *const awaiter = reinterpret_cast<Awaiter *>(argument);
-
-			if (awaiter->state.exchange(State::Cancelled, std::memory_order_acq_rel) == State::Started)
-			{
-				awaiter->io.Cancel();
-				CancelIoEx(awaiter->io.fileHandle, &awaiter->overlapped);
-			}
+			CancelIoEx(awaiter->io.fileHandle, &awaiter->overlapped);
 		},
 		this
 	);
@@ -166,10 +160,10 @@ void C4ThreadPool::Io::Awaiter::Callback(const PTP_CALLBACK_INSTANCE instance, c
 
 	if (state.compare_exchange_strong(expected, desired, std::memory_order_acq_rel, std::memory_order_acquire))
 	{
-		CallbackMayRunLong(instance);
-
-		const auto handle = coroutineHandle.load(std::memory_order_relaxed);
-		handle.resume();
+		TrySubmitThreadpoolCallback([](const PTP_CALLBACK_INSTANCE, void *const context)
+		{
+			std::coroutine_handle<>::from_address(context).resume();
+		}, coroutineHandle.load(std::memory_order_relaxed).address(), nullptr);
 	}
 }
 
