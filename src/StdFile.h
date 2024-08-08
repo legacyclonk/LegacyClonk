@@ -26,6 +26,7 @@
 #ifdef _WIN32
 #include <io.h>
 #define F_OK 0
+#define MakeDirectory CreateDirectoryA
 #else
 #include <dirent.h>
 #include <limits.h>
@@ -33,7 +34,7 @@
 #define _MAX_PATH PATH_MAX
 #define _MAX_FNAME NAME_MAX
 
-bool CreateDirectory(const char *pathname, void * = nullptr);
+bool MakeDirectory(const char *pathname, void * = nullptr);
 bool CopyFile(const char *szSource, const char *szTarget, bool FailIfExists);
 #endif
 

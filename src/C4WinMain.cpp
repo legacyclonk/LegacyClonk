@@ -112,7 +112,7 @@ int ClonkMain(const HINSTANCE instance, const int cmdShow, const int argc, char 
 	catch (const CStdApp::StartupException &e)
 	{
 		Application.Clear();
-		MessageBox(nullptr, e.what(), STD_PRODUCT, MB_ICONERROR);
+		MessageBoxA(nullptr, e.what(), STD_PRODUCT, MB_ICONERROR);
 		return C4XRV_Failure;
 	}
 
@@ -135,7 +135,7 @@ int WINAPI WinMain(HINSTANCE hInst,
 int main(const int argc, char **const argv)
 {
 	// Get command line, go over program name
-	char *commandLine{GetCommandLine()};
+	char *commandLine{GetCommandLineA()};
 	if (*commandLine == L'"')
 	{
 		++commandLine;

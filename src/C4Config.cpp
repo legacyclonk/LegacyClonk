@@ -465,7 +465,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 					StdStrBuf filename(getenv("HOME"), false);
 					if (filename) { filename += "/"; }
 					filename += ".legacyclonk";
-					CreateDirectory(filename.getData());
+					MakeDirectory(filename.getData());
 				}
 #endif
 				// Buggy StdCompiler crashes when compiling a Null-StdStrBuf
@@ -584,17 +584,29 @@ bool C4Config::Save()
 	return true;
 }
 
+#if defined(_WIN32) && defined(C4ENGINE)
+namespace C4CrashHandlerWin32
+{
+	void SetUserPath(std::string_view);
+}
+#endif
+
 void C4ConfigGeneral::DeterminePaths(bool forceWorkingDirectory)
 {
 #ifdef _WIN32
 	// Exe path
-	if (GetModuleFileName(nullptr, ExePath, CFG_MaxString))
+	if (GetModuleFileNameA(nullptr, ExePath, CFG_MaxString))
 	{
 		TruncatePath(ExePath); AppendBackslash(ExePath);
 	}
 	// Temp path
-	GetTempPath(CFG_MaxString, TempPath);
+	GetTempPathA(CFG_MaxString, TempPath);
 	if (TempPath[0]) AppendBackslash(TempPath);
+
+#ifdef C4ENGINE
+	C4CrashHandlerWin32::SetUserPath(UserPath);
+#endif
+
 #elif defined(__linux__)
 #ifdef C4ENGINE
 	GetParentPath(Application.Location, ExePath);
@@ -635,7 +647,7 @@ void C4ConfigGeneral::DeterminePaths(bool forceWorkingDirectory)
 #ifdef C4ENGINE
 	// Create user path if it doesn't already exist
 	if (!DirectoryExists(Config.AtUserPath("")))
-		CreateDirectory(Config.AtUserPath(""), nullptr); // currently no error handling here; also: no recursive directory creation
+		MakeDirectory(Config.AtUserPath(""), nullptr); // currently no error handling here; also: no recursive directory creation
 #endif
 }
 
@@ -687,7 +699,7 @@ const char *C4Config::AtScreenshotPath(const char *szFilename)
 	if (const auto len = SLen(AtPathFilename); len > 0)
 		if (AtPathFilename[len - 1] == DirectorySeparator)
 			AtPathFilename[len - 1] = '\0';
-	if (!DirectoryExists(AtPathFilename) && !CreateDirectory(AtPathFilename, nullptr))
+	if (!DirectoryExists(AtPathFilename) && !MakeDirectory(AtPathFilename, nullptr))
 	{
 		SCopy(General.ExePath, General.ScreenshotPath, CFG_MaxString - 1);
 		SCopy(General.ScreenshotPath, AtPathFilename, _MAX_PATH);
@@ -704,7 +716,7 @@ bool C4ConfigGeneral::CreateSaveFolder(const char *strDirectory, const char *str
 {
 	// Create directory if needed
 	if (!DirectoryExists(strDirectory))
-		if (!CreateDirectory(strDirectory, nullptr))
+		if (!MakeDirectory(strDirectory, nullptr))
 			return false;
 	// Create title component if needed
 	char lang[3]; SCopy(Config.General.Language, lang, 2);
@@ -918,7 +930,7 @@ void C4Config::ExpandEnvironmentVariables(char *strPath, int iMaxLen)
 {
 #ifdef _WIN32
 	char buf[_MAX_PATH + 1];
-	ExpandEnvironmentStrings(strPath, buf, _MAX_PATH);
+	ExpandEnvironmentStringsA(strPath, buf, _MAX_PATH);
 	SCopy(buf, strPath, iMaxLen);
 #else // __linux__ or __APPLE___
 	StdStrBuf home(getenv("HOME"), false);

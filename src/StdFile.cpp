@@ -425,7 +425,7 @@ time_t FileTime(const char *szFilename)
 bool EraseFile(const char *szFilename)
 {
 #ifdef _WIN32
-	SetFileAttributes(szFilename, FILE_ATTRIBUTE_NORMAL);
+	SetFileAttributesA(szFilename, FILE_ATTRIBUTE_NORMAL);
 #endif
 	// either unlink or remove could be used. Well, stick to ANSI C where possible.
 	if (remove(szFilename))
@@ -441,8 +441,10 @@ bool EraseFile(const char *szFilename)
 	return true;
 }
 
-#ifndef _WIN32
-bool CopyFile(const char *szSource, const char *szTarget, bool FailIfExists)
+#ifdef _WIN32
+#define CopyFileTo CopyFileA
+#else
+bool CopyFileTo(const char *szSource, const char *szTarget, bool FailIfExists)
 {
 	int fds = open(szSource, O_RDONLY);
 	if (!fds) return false;
@@ -466,7 +468,7 @@ bool RenameFile(const char *szFilename, const char *szNewFilename)
 {
 	if (rename(szFilename, szNewFilename) < 0)
 	{
-		if (CopyFile(szFilename, szNewFilename, false))
+		if (CopyFileTo(szFilename, szNewFilename, false))
 		{
 			return EraseFile(szFilename);
 		}
@@ -484,7 +486,7 @@ bool MakeOriginalFilename(char *szFilename)
 	if (Inside<size_t>(SLen(szFilename), 2, 3)) if (szFilename[1] == ':')
 	{
 		szFilename[2] = '\\'; szFilename[3] = 0;
-		if (GetDriveType(szFilename) == DRIVE_NO_ROOT_DIR) return false;
+		if (GetDriveTypeA(szFilename) == DRIVE_NO_ROOT_DIR) return false;
 		return true;
 	}
 	struct _finddata_t fdt; intptr_t shnd;
@@ -513,15 +515,15 @@ const char *GetWorkingDirectory()
 bool SetWorkingDirectory(const char *path)
 {
 #ifdef _WIN32
-	return SetCurrentDirectory(path) != 0;
+	return SetCurrentDirectoryA(path) != 0;
 #else
 	return (chdir(path) == 0);
 #endif
 }
 
 #ifndef _WIN32
-// CreateDirectory: true on success
-bool CreateDirectory(const char *pathname, void *)
+// MakeDirectory: true on success
+bool MakeDirectory(const char *pathname, void *)
 {
 	// mkdir: false on success
 	return !mkdir(pathname, S_IREAD | S_IWRITE | S_IEXEC);
@@ -635,7 +637,7 @@ bool EraseDirectory(const char *szDirName)
 	}
 	// Remove directory
 #ifdef _WIN32
-	return !!RemoveDirectory(szDirName);
+	return !!RemoveDirectoryA(szDirName);
 #else
 	return (rmdir(szDirName) == 0 || errno == ENOENT);
 #endif
@@ -675,10 +677,10 @@ bool CopyItem(const char *szSource, const char *szTarget, bool fResetAttributes)
 	if (DirectoryExists(szSource))
 		return CopyDirectory(szSource, szTarget, fResetAttributes);
 	// Copy file
-	if (!CopyFile(szSource, szTarget, false)) return false;
+	if (!CopyFileTo(szSource, szTarget, false)) return false;
 	// Reset any attributes if desired
 #ifdef _WIN32
-	if (fResetAttributes) if (!SetFileAttributes(szTarget, FILE_ATTRIBUTE_NORMAL)) return false;
+	if (fResetAttributes) if (!SetFileAttributesA(szTarget, FILE_ATTRIBUTE_NORMAL)) return false;
 #else
 	if (fResetAttributes) if (chmod(szTarget, S_IRWXU)) return false;
 #endif

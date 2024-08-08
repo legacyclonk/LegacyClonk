@@ -277,7 +277,7 @@ WNDCLASSEX DialogWindow::GetWindowClass(const HINSTANCE instance) const
 		.hCursor = LoadCursor(nullptr, IDC_ARROW),
 		.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BACKGROUND),
 		.lpszMenuName = nullptr,
-		.lpszClassName = "C4GUIdlg", // keep for backwards compatibility
+		.lpszClassName = L"C4GUIdlg", // keep for backwards compatibility
 		.hIconSm = LoadIcon(instance, MAKEINTRESOURCE(IDI_00_C4X))
 	};
 }

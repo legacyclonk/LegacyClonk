@@ -29,7 +29,7 @@ bool GetRegistryDWord(HKEY hKey, const char *szSubKey, const char *szValueName, 
 	DWORD valsize = sizeof(DWORD);
 
 	// Open the key
-	if ((qerr = RegOpenKeyEx(hKey,
+	if ((qerr = RegOpenKeyExA(hKey,
 		szSubKey,
 		0,
 		KEY_READ,
@@ -37,7 +37,7 @@ bool GetRegistryDWord(HKEY hKey, const char *szSubKey, const char *szValueName, 
 	)) != ERROR_SUCCESS) return false;
 
 	// Get the value
-	if ((qerr = RegQueryValueEx(ckey,
+	if ((qerr = RegQueryValueExA(ckey,
 		szValueName,
 		nullptr,
 		&valtype,
@@ -65,7 +65,7 @@ bool GetRegistryString(const char *szSubKey,
 	DWORD valtype;
 
 	// Open the key
-	if ((qerr = RegOpenKeyEx(HKEY_CURRENT_USER,
+	if ((qerr = RegOpenKeyExA(HKEY_CURRENT_USER,
 		szSubKey,
 		0,
 		KEY_READ,
@@ -73,7 +73,7 @@ bool GetRegistryString(const char *szSubKey,
 	)) != ERROR_SUCCESS) return false;
 
 	// Get the value
-	if ((qerr = RegQueryValueEx(ckey,
+	if ((qerr = RegQueryValueExA(ckey,
 		szValueName,
 		nullptr,
 		&valtype,
@@ -101,7 +101,7 @@ bool SetRegistryString(const char *szSubKey,
 	DWORD disposition;
 
 	// Open the key
-	if ((qerr = RegCreateKeyEx(HKEY_CURRENT_USER,
+	if ((qerr = RegCreateKeyExA(HKEY_CURRENT_USER,
 		szSubKey,
 		0,
 		nullptr,
@@ -113,7 +113,7 @@ bool SetRegistryString(const char *szSubKey,
 	)) != ERROR_SUCCESS) return false;
 
 	// Set the value
-	if ((qerr = RegSetValueEx(ckey,
+	if ((qerr = RegSetValueExA(ckey,
 		szValueName,
 		0,
 		REG_SZ,
@@ -134,17 +134,17 @@ bool DeleteRegistryKey(HKEY hKey, const char *szSubKey)
 {
 	HKEY ckey;
 	// Open the key
-	if (RegOpenKeyEx(hKey, szSubKey, 0, KEY_ALL_ACCESS, &ckey) != ERROR_SUCCESS) return false;
+	if (RegOpenKeyExA(hKey, szSubKey, 0, KEY_ALL_ACCESS, &ckey) != ERROR_SUCCESS) return false;
 	// Delete all subkeys
 	char strChild[1024 + 1];
-	while (RegEnumKey(ckey, 0, strChild, 1024) == ERROR_SUCCESS)
+	while (RegEnumKeyA(ckey, 0, strChild, 1024) == ERROR_SUCCESS)
 		if (!DeleteRegistryKey(ckey, strChild))
 			return false;
 	// Close the key
 	RegCloseKey(ckey);
 
 	// Delete the key
-	if (RegDeleteKey(hKey, szSubKey) != ERROR_SUCCESS) return false;
+	if (RegDeleteKeyA(hKey, szSubKey) != ERROR_SUCCESS) return false;
 	// Success
 	return true;
 }
@@ -158,7 +158,7 @@ static HKEY ClassKeyForUser(std::string &subKey)
 static bool CreateClassKey(std::string subKey, HKEY &ckey, DWORD &disposition)
 {
 	const HKEY key{ClassKeyForUser(subKey)};
-	return RegCreateKeyEx(key, subKey.c_str(), 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, nullptr, &ckey, &disposition) == ERROR_SUCCESS;
+	return RegCreateKeyExA(key, subKey.c_str(), 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, nullptr, &ckey, &disposition) == ERROR_SUCCESS;
 }
 
 bool SetRegClassesRoot(const char *szSubKey,
@@ -174,7 +174,7 @@ bool SetRegClassesRoot(const char *szSubKey,
 	}
 
 	// Set the value
-	if (RegSetValueEx(ckey,
+	if (RegSetValueExA(ckey,
 		szValueName,
 		0,
 		REG_SZ,
@@ -204,7 +204,7 @@ bool SetRegClassesRootString(const char *szSubKey,
 	}
 
 	// Set the value
-	if (RegSetValueEx(ckey,
+	if (RegSetValueExA(ckey,
 		szValueName,
 		0,
 		REG_SZ,
@@ -378,8 +378,8 @@ bool StdCompilerConfigWrite::Default(const char *szName)
 	// Open parent
 	CreateKey();
 	// Remove key/value (failsafe)
-	RegDeleteKey(pKey->Handle, szName);
-	RegDeleteValue(pKey->Handle, szName);
+	RegDeleteKeyA(pKey->Handle, szName);
+	RegDeleteValueA(pKey->Handle, szName);
 	// Handled
 	return true;
 }
@@ -471,7 +471,7 @@ void StdCompilerConfigWrite::CreateKey(HKEY hParent)
 	if (pKey->Handle)
 		return;
 	// Open/Create registry key
-	if (RegCreateKeyEx(hParent ? hParent : pKey->Parent->Handle,
+	if (RegCreateKeyExA(hParent ? hParent : pKey->Parent->Handle,
 		pKey->Name.getData(),
 		0, nullptr, REG_OPTION_NON_VOLATILE,
 		KEY_WRITE, nullptr,
@@ -486,7 +486,7 @@ void StdCompilerConfigWrite::WriteInteger(T value)
 
 	DWORD type = sizeof(T) == 8 ? REG_QWORD : REG_DWORD;
 	// Set the value
-	if (RegSetValueEx(pKey->Parent->Handle, pKey->Name.getData(),
+	if (RegSetValueExA(pKey->Parent->Handle, pKey->Name.getData(),
 		0, type, reinterpret_cast<const BYTE *>(&value),
 		sizeof(value)) != ERROR_SUCCESS)
 		excCorrupt("Could not write key {}!", pKey->Name.getData());
@@ -500,7 +500,7 @@ void StdCompilerConfigWrite::WriteDWord(uint32_t iVal)
 void StdCompilerConfigWrite::WriteString(const char *szString)
 {
 	// Set the value
-	if (RegSetValueEx(pKey->Parent->Handle, pKey->Name.getData(),
+	if (RegSetValueExA(pKey->Parent->Handle, pKey->Name.getData(),
 		0, REG_SZ, reinterpret_cast<const BYTE *>(szString),
 		checked_cast<DWORD>(strlen(szString) + 1)) != ERROR_SUCCESS)
 		excCorrupt("Could not write key {}!", pKey->Name.getData());
@@ -514,7 +514,7 @@ StdCompilerConfigRead::StdCompilerConfigRead(HKEY hRoot, const char *szPath)
 	pKey->Name.Ref(szPath);
 	pKey->Virtual = false;
 	// Open root
-	if (RegOpenKeyEx(hRoot, szPath,
+	if (RegOpenKeyExA(hRoot, szPath,
 		0, KEY_READ,
 		&pKey->Handle) != ERROR_SUCCESS)
 		pKey->Handle = 0;
@@ -532,13 +532,13 @@ StdCompiler::NameGuard StdCompilerConfigRead::Name(const char *szName)
 	bool fFound = true;
 	// Try to open registry key
 	HKEY hSubKey; DWORD dwType = 0;
-	if (RegOpenKeyEx(pKey->Handle, szName,
+	if (RegOpenKeyExA(pKey->Handle, szName,
 		0, KEY_READ,
 		&hSubKey) != ERROR_SUCCESS)
 	{
 		hSubKey = 0;
 		// Try to query value (exists?)
-		if (RegQueryValueEx(pKey->Handle, szName,
+		if (RegQueryValueExA(pKey->Handle, szName,
 			0, &dwType, nullptr, nullptr) != ERROR_SUCCESS)
 			fFound = false;
 	}
@@ -679,7 +679,7 @@ T StdCompilerConfigRead::ReadInteger(DWORD type, DWORD alternativeType)
 	}
 	// Read
 	T iVal; DWORD iSize = sizeof(iVal);
-	if (RegQueryValueEx(pKey->Parent->Handle, pKey->Name.getData(),
+	if (RegQueryValueExA(pKey->Parent->Handle, pKey->Name.getData(),
 		0, nullptr,
 		reinterpret_cast<LPBYTE>(&iVal),
 		&iSize) != ERROR_SUCCESS)
@@ -714,7 +714,7 @@ StdStrBuf StdCompilerConfigRead::ReadString()
 	}
 	// Get size of string
 	DWORD iSize;
-	if (RegQueryValueEx(pKey->Parent->Handle, pKey->Name.getData(),
+	if (RegQueryValueExA(pKey->Parent->Handle, pKey->Name.getData(),
 		0, nullptr,
 		nullptr,
 		&iSize) != ERROR_SUCCESS)
@@ -724,7 +724,7 @@ StdStrBuf StdCompilerConfigRead::ReadString()
 	// Allocate string
 	StdStrBuf Result; Result.SetLength(iSize);
 	// Read
-	if (RegQueryValueEx(pKey->Parent->Handle, pKey->Name.getData(),
+	if (RegQueryValueExA(pKey->Parent->Handle, pKey->Name.getData(),
 		0, nullptr,
 		reinterpret_cast<BYTE *>(Result.getMData()),
 		&iSize) != ERROR_SUCCESS)

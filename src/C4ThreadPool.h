@@ -115,11 +115,21 @@ public:
 
 		public:
 			constexpr bool await_ready() const noexcept { return false; }
-			bool await_suspend(std::coroutine_handle<> handle);
+
+			template<typename T>
+			bool await_suspend(const std::coroutine_handle<T> handle)
+			{
+				SetCancellablePromise(handle);
+				return DoSuspend(handle);
+			}
+
 			std::uint64_t await_resume() const;
 			void SetupCancellation(C4Task::CancellablePromise *promise);
 
 			void Callback(PTP_CALLBACK_INSTANCE instance, ULONG result, ULONG numberOfBytesTransferred);
+
+		private:
+			bool DoSuspend(std::coroutine_handle<> handle);
 
 		private:
 			Io &io;

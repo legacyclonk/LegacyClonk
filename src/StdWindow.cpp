@@ -20,6 +20,7 @@
 #include <Standard.h>
 #include "StdApp.h"
 #include <StdRegistry.h>
+#include "StdStringEncodingConverter.h"
 #ifndef USE_CONSOLE
 #include <StdGL.h>
 #endif
@@ -51,7 +52,7 @@ bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect 
 	hWindow = CreateWindowEx(
 		exStyle,
 		windowClass.lpszClassName,
-		title,
+		StdStringEncodingConverter::WinAcpToUtf16(title).c_str(),
 		style,
 		bounds.x, bounds.y, bounds.Wdt, bounds.Hgt,
 		parent ? parent->hWindow : nullptr, nullptr, app->hInstance, this);
@@ -110,7 +111,7 @@ void CStdWindow::Clear()
 
 void CStdWindow::SetTitle(const char *const szToTitle)
 {
-	if (hWindow) SetWindowText(hWindow, szToTitle ? szToTitle : "");
+	if (hWindow) SetWindowText(hWindow, szToTitle ? StdStringEncodingConverter::WinAcpToUtf16(szToTitle).c_str() : L"");
 }
 
 bool CStdWindow::GetSize(C4Rect &rect)

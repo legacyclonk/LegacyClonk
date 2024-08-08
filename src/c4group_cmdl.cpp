@@ -315,7 +315,7 @@ bool ProcessGroup(const char *szFilename)
 							else
 							{
 								std::print("Waiting for {} to end", argv[iArg + 1]);
-								for (int i = 0; FindWindow(nullptr, argv[iArg + 1]) && (i < 5); i++)
+								for (int i = 0; FindWindowA(nullptr, argv[iArg + 1]) && (i < 5); i++)
 								{
 									Sleep(1000);
 									std::print(".");
@@ -369,7 +369,7 @@ int RegisterShellExtensions()
 	char strModule[2048];
 	char strCommand[2048];
 	char strClass[128];
-	GetModuleFileName(nullptr, strModule, 2048);
+	GetModuleFileNameA(nullptr, strModule, 2048);
 	// Groups
 	const char *strClasses = "Clonk4.Definition;Clonk4.Folder;Clonk4.Group;Clonk4.Player;Clonk4.Scenario;Clonk4.Update;Clonk4.Weblink;Clonk4.Object";
 	for (int i = 0; SCopySegment(strClasses, i, strClass); i++)
@@ -492,7 +492,7 @@ int main(int argc, char *argv[])
 	if (!fQuiet)
 	{
 		char strWorkingDirectory[_MAX_PATH + 1] = "";
-		GetCurrentDirectory(_MAX_PATH, strWorkingDirectory);
+		GetCurrentDirectoryA(_MAX_PATH, strWorkingDirectory);
 		std::println("Location: {}", strWorkingDirectory);
 	}
 
@@ -565,12 +565,12 @@ int main(int argc, char *argv[])
 	{
 		std::println("Executing: {}", strExecuteAtEnd);
 
-		STARTUPINFO startInfo{};
+		STARTUPINFOA startInfo{};
 		startInfo.cb = sizeof(startInfo);
 
 		PROCESS_INFORMATION procInfo;
 
-		CreateProcess(strExecuteAtEnd, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, &startInfo, &procInfo);
+		CreateProcessA(strExecuteAtEnd, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, &startInfo, &procInfo);
 	}
 
 	// Done

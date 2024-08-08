@@ -302,6 +302,10 @@ endif ()
 add_library(standard STATIC ${LIBSTANDARD_SOURCES})
 target_compile_definitions(standard PRIVATE C4ENGINE)
 
+if (WIN32)
+	target_compile_definitions(standard PUBLIC UNICODE _UNICODE)
+endif ()
+
 # Set C4_OS macro
 if (APPLE)
 	set(C4_OS "mac")
@@ -433,6 +437,9 @@ if (WIN32)
 	if (USE_SDL_MIXER)
 		target_link_libraries(clonk imm32.lib setupapi.lib version.lib)
 	endif ()
+
+	target_link_libraries(clonk comctl32)
+	target_link_options(clonk PRIVATE "/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'")
 endif ()
 
 # Link C++/WinRT

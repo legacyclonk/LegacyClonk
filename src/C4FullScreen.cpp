@@ -161,7 +161,7 @@ bool C4FullScreen::Init(CStdApp *const app, const char *const title, const C4Rec
 
 	hRenderWindow = CreateWindowEx(
 		0,
-		"STATIC",
+		L"STATIC",
 		nullptr,
 		WS_CHILD,
 		0, 0, rect.right - rect.left, rect.bottom - rect.top,
@@ -206,7 +206,7 @@ WNDCLASSEX C4FullScreen::GetWindowClass(const HINSTANCE instance) const
 		.hCursor = nullptr,
 		.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BACKGROUND),
 		.lpszMenuName = nullptr,
-		.lpszClassName = "C4FullScreen",
+		.lpszClassName = L"C4FullScreen",
 		.hIconSm = LoadIcon(instance, MAKEINTRESOURCE(IDI_00_C4X))
 	};
 }

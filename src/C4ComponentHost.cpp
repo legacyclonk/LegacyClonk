@@ -22,6 +22,7 @@
 #include <C4Language.h>
 
 #ifdef _WIN32
+#include "C4Console.h"
 #include "StdRegistry.h"
 #include "res/engine_resource.h"
 #endif
@@ -279,13 +280,13 @@ INT_PTR CALLBACK C4ComponentHost::ComponentDlgProc(const HWND hDlg, const UINT m
 		const auto &componentHost = *reinterpret_cast<C4ComponentHost *>(lParam);
 
 		SetWindowLongPtr(hDlg, DWLP_USER, lParam);
-		SetWindowText(hDlg, componentHost.Name);
-		SetDlgItemText(hDlg, IDOK, LoadResStr(C4ResStrTableKey::IDS_BTN_OK));
-		SetDlgItemText(hDlg, IDCANCEL, LoadResStr(C4ResStrTableKey::IDS_BTN_CANCEL));
+		SetWindowText(hDlg, StdStringEncodingConverter::WinAcpToUtf16(componentHost.Name).c_str());
+		SetDlgItemText(hDlg, IDOK, StdStringEncodingConverter::WinAcpToUtf16(LoadResStr(C4ResStrTableKey::IDS_BTN_OK)).c_str());
+		SetDlgItemText(hDlg, IDCANCEL, StdStringEncodingConverter::WinAcpToUtf16(LoadResStr(C4ResStrTableKey::IDS_BTN_CANCEL)).c_str());
 
 		if (const char *const data{componentHost.GetData()}; data)
 		{
-			SetDlgItemText(hDlg, IDC_EDITDATA, data);
+			SetDlgItemText(hDlg, IDC_EDITDATA, StdStringEncodingConverter::WinAcpToUtf16(data).c_str());
 		}
 
 		RestoreWindowPosition(hDlg, "Component", Config.GetSubkeyPath("Console"));
@@ -320,15 +321,8 @@ INT_PTR CALLBACK C4ComponentHost::ComponentDlgProc(const HWND hDlg, const UINT m
 			}
 			else
 			{
-				StdStrBuf &data{componentHost.Data};
-				data.SetLength(size);
-				GetDlgItemText(hDlg, IDC_EDITDATA, data.getMData(), static_cast<int>(size + 1));
-
-				const std::size_t actualSize{std::strlen(data.getData())};
-				if (actualSize != size)
-				{
-					data.SetLength(size);
-				}
+				const std::string text{StdStringEncodingConverter::Utf16ToWinAcp(C4Console::GetDialogItemText(hDlg, IDC_EDITDATA))};
+				componentHost.Data.Copy(text.c_str(), text.size());
 			}
 
 			componentHost.Modified = true;

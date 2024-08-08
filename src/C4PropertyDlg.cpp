@@ -60,12 +60,16 @@ INT_PTR CALLBACK PropertyDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPar
 		switch (LOWORD(wParam))
 		{
 		case IDOK:
+		{
 			// IDC_COMBOINPUT to Console.EditCursor.In()
-			char buffer[16000];
-			GetDlgItemText(hDlg, IDC_COMBOINPUT, buffer, 16000);
-			if (buffer[0])
-				Console.EditCursor.In(buffer);
+			const std::wstring text{C4Console::GetDialogItemText(hDlg, IDC_COMBOINPUT)};
+			if (!text.empty())
+			{
+				Console.EditCursor.In(StdStringEncodingConverter::Utf16ToWinAcp(text).c_str());
+			}
+
 			return TRUE;
+		}
 
 		case IDC_BUTTONRELOADDEF:
 			Game.ReloadDef(Console.PropertyDlg.idSelectedDef);
@@ -106,7 +110,7 @@ bool C4PropertyDlg::Open()
 		PropertyDlgProc);
 	if (!hDialog) return false;
 	// Set text
-	SetWindowText(hDialog, LoadResStr(C4ResStrTableKey::IDS_DLG_PROPERTIES));
+	SetWindowText(hDialog, StdStringEncodingConverter::WinAcpToUtf16(LoadResStr(C4ResStrTableKey::IDS_DLG_PROPERTIES)).c_str());
 	// Enable controls
 	EnableWindow(GetDlgItem(hDialog, IDOK), Console.Editing);
 	EnableWindow(GetDlgItem(hDialog, IDC_COMBOINPUT), Console.Editing);
@@ -253,7 +257,7 @@ bool C4PropertyDlg::Update()
 	// Update info edit control
 #ifdef _WIN32
 	const auto iLine = SendDlgItemMessage(hDialog, IDC_EDITOUTPUT, EM_GETFIRSTVISIBLELINE, 0, 0);
-	SetDlgItemText(hDialog, IDC_EDITOUTPUT, output.c_str());
+	SetDlgItemText(hDialog, IDC_EDITOUTPUT, StdStringEncodingConverter::WinAcpToUtf16(output).c_str());
 	SendDlgItemMessage(hDialog, IDC_EDITOUTPUT, EM_LINESCROLL, 0, iLine);
 	UpdateWindow(GetDlgItem(hDialog, IDC_EDITOUTPUT));
 #elif defined(WITH_DEVELOPER_MODE)
@@ -290,8 +294,14 @@ void C4PropertyDlg::UpdateInputCtrl(C4Object *pObj)
 #ifdef _WIN32
 	HWND hCombo = GetDlgItem(hDialog, IDC_COMBOINPUT);
 	// Remember old window text
-	char szLastText[500 + 1];
-	GetWindowText(hCombo, szLastText, 500);
+	std::wstring lastText;
+	const LRESULT textSize{SendMessage(hCombo, WM_GETTEXTLENGTH, 0, 0)};
+
+	lastText.resize_and_overwrite(textSize, [hCombo, textSize](wchar_t *const ptr, const std::size_t size)
+	{
+		return GetWindowText(hCombo, ptr, textSize + 1);
+	});
+
 	// Clear
 	SendMessage(hCombo, CB_RESETCONTENT, 0, 0);
 #else // _WIN32
@@ -329,7 +339,7 @@ void C4PropertyDlg::UpdateInputCtrl(C4Object *pObj)
 		if (pFn->GetPublic())
 		{
 #ifdef _WIN32
-			SendMessage(hCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>((std::string{pFn->Name} + "()").c_str()));
+			SendMessage(hCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(std::format(L"{}()", StdStringEncodingConverter::WinAcpToUtf16(pFn->Name)).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 			gtk_list_store_append(store, &iter);
 			gtk_list_store_set(store, &iter, 0, pFn->Name, -1);
@@ -349,11 +359,11 @@ void C4PropertyDlg::UpdateInputCtrl(C4Object *pObj)
 			{
 #ifdef _WIN32
 				// Insert divider if necessary
-				if (!fDivider) { SendMessage(hCombo, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>("----------")); fDivider = true; }
+				if (!fDivider) { SendMessage(hCombo, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(L"----------")); fDivider = true; }
 #endif
 				// Add function
 #ifdef _WIN32
-				SendMessage(hCombo, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>((std::string{pRef->Name} + "()").c_str()));
+				SendMessage(hCombo, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(std::format(L"{}()", StdStringEncodingConverter::WinAcpToUtf16(pRef->Name)).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 				gtk_list_store_append(store, &iter);
 				gtk_list_store_set(store, &iter, 0, pRef->Name, -1);
@@ -362,7 +372,7 @@ void C4PropertyDlg::UpdateInputCtrl(C4Object *pObj)
 
 #ifdef _WIN32
 	// Restore old text
-	SetWindowText(hCombo, szLastText);
+	SetWindowText(hCombo, lastText.c_str());
 #elif WITH_DEVELOPER_MODE
 	// Reassociate list store with completion
 	gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(store));

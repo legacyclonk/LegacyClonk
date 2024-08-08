@@ -207,7 +207,7 @@ void C4FileMonitor::StartMonitoring()
 
 void C4FileMonitor::AddDirectory(const char *const path)
 {
-	winrt::file_handle directory{CreateFile(
+	winrt::file_handle directory{CreateFileA(
 		path,
 		FILE_LIST_DIRECTORY,
 		FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,

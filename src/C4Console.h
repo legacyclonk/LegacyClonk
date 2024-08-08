@@ -81,6 +81,10 @@ public:
 	bool OpenGame(const char *szCmdLine = nullptr);
 	bool TogglePause(); // key callpack: pause
 
+#ifdef _WIN32
+	static std::wstring GetDialogItemText(HWND dlg, int item);
+#endif
+
 protected:
 	bool CloseGame();
 	bool fGameOpen;

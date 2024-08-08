@@ -209,7 +209,7 @@ WNDCLASSEX C4ViewportWindow::GetWindowClass(const HINSTANCE instance) const
 		.hCursor = LoadCursor(nullptr, IDC_ARROW),
 		.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BACKGROUND),
 		.lpszMenuName = nullptr,
-		.lpszClassName = "C4Viewport",
+		.lpszClassName = L"C4Viewport",
 		.hIconSm = LoadIcon(instance, MAKEINTRESOURCE(IDI_01_C4S))
 	};
 }
@@ -231,7 +231,7 @@ bool C4Viewport::DropFiles(HANDLE hDrop)
 	char szFilename[500 + 1];
 	for (int32_t cnt = 0; cnt < iFileNum; cnt++)
 	{
-		DragQueryFile((HDROP)hDrop, cnt, szFilename, 500);
+		DragQueryFileA((HDROP)hDrop, cnt, szFilename, 500);
 		DragQueryPoint((HDROP)hDrop, &pntPoint);
 		Game.DropFile(GetViewSection(), szFilename, ViewX + pntPoint.x, ViewY + pntPoint.y);
 	}

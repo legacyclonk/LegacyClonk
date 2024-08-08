@@ -334,13 +334,14 @@ bool SetMenuItemEnable(HMENU hMenu, WORD id, bool fEnable)
 
 bool SetMenuItemText(HMENU hMenu, WORD id, const char *szText)
 {
+	std::wstring text{StdStringEncodingConverter::WinAcpToUtf16(szText)};
 	MENUITEMINFO minfo{};
 	minfo.cbSize = sizeof(minfo);
 	minfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA;
 	minfo.fType = MFT_STRING;
 	minfo.wID = id;
-	minfo.dwTypeData = (char *)szText;
-	minfo.cch = checked_cast<UINT>(SLen(szText));
+	minfo.dwTypeData = text.data();
+	minfo.cch = checked_cast<UINT>(text.size());
 	return SetMenuItemInfo(hMenu, id, FALSE, &minfo);
 }
 

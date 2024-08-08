@@ -542,9 +542,9 @@ C4PortraitSelDlg::C4PortraitSelDlg(C4FileSel_BaseCB *pSelCallback, bool fSetPict
 	AddLocation(std::format(C4ENGINECAPTION " {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_USERPATH)).c_str(), path);
 	AddCheckedLocation(std::format(C4ENGINECAPTION " {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_PROGRAMDIRECTORY)).c_str(), Config.General.ExePath);
 #ifdef _WIN32
-	if (SHGetSpecialFolderPath(nullptr, path, CSIDL_PERSONAL,         FALSE)) AddCheckedLocation(LoadResStr(C4ResStrTableKey::IDS_TEXT_MYDOCUMENTS), path);
-	if (SHGetSpecialFolderPath(nullptr, path, CSIDL_MYPICTURES,       FALSE)) AddCheckedLocation(LoadResStr(C4ResStrTableKey::IDS_TEXT_MYPICTURES),  path);
-	if (SHGetSpecialFolderPath(nullptr, path, CSIDL_DESKTOPDIRECTORY, FALSE)) AddCheckedLocation(LoadResStr(C4ResStrTableKey::IDS_TEXT_DESKTOP),     path);
+	if (SHGetSpecialFolderPathA(nullptr, path, CSIDL_PERSONAL,         FALSE)) AddCheckedLocation(LoadResStr(C4ResStrTableKey::IDS_TEXT_MYDOCUMENTS), path);
+	if (SHGetSpecialFolderPathA(nullptr, path, CSIDL_MYPICTURES,       FALSE)) AddCheckedLocation(LoadResStr(C4ResStrTableKey::IDS_TEXT_MYPICTURES),  path);
+	if (SHGetSpecialFolderPathA(nullptr, path, CSIDL_DESKTOPDIRECTORY, FALSE)) AddCheckedLocation(LoadResStr(C4ResStrTableKey::IDS_TEXT_DESKTOP),     path);
 #endif
 #ifdef __APPLE__
 	AddCheckedLocation(LoadResStr(C4ResStrTableKey::IDS_TEXT_HOME),       getenv("HOME"));

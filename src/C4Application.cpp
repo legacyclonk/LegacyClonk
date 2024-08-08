@@ -66,10 +66,10 @@ C4Application::~C4Application()
 	{
 #ifdef _WIN32
 		char strCommandLine[_MAX_PATH + 1]; SCopy(Config.AtExePath(C4CFN_Editor), strCommandLine);
-		STARTUPINFO StartupInfo{};
+		STARTUPINFOA StartupInfo{};
 		StartupInfo.cb = sizeof(StartupInfo);
 		PROCESS_INFORMATION ProcessInfo{};
-		CreateProcess(nullptr, strCommandLine, nullptr, nullptr, TRUE, 0, nullptr, nullptr, &StartupInfo, &ProcessInfo);
+		CreateProcessA(nullptr, strCommandLine, nullptr, nullptr, TRUE, 0, nullptr, nullptr, &StartupInfo, &ProcessInfo);
 #endif
 	}
 }
@@ -209,7 +209,7 @@ void C4Application::DoInit()
 
 #if defined(_WIN32) && !defined(USE_CONSOLE)
 	// Register clonk file classes - notice: this will only work if we have administrator rights
-	char szModule[_MAX_PATH + 1]; GetModuleFileName(nullptr, szModule, _MAX_PATH);
+	char szModule[_MAX_PATH + 1]; GetModuleFileNameA(nullptr, szModule, _MAX_PATH);
 	SetC4FileClasses(szModule);
 #endif
 
