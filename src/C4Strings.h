@@ -18,6 +18,7 @@
 
 #include "C4Breakpoint.h"
 
+#include <concepts>
 #include <cstddef>
 #include <cstdio>
 #include <format>
@@ -103,29 +104,38 @@ int SLineGetCharacters(const char *szText, const char *cpPosition);
 // can match strings like  "*Cl?nk*vour" to "Clonk Endeavour"
 bool SWildcardMatchEx(const char *szString, const char *szWildcard);
 
-template<typename Char, typename Traits>
-std::basic_string<Char, Traits> ReplaceInString(std::basic_string_view<Char, Traits> string, std::basic_string_view<Char, Traits> needle, std::basic_string_view<Char, Traits> value)
+template <typename T>
+concept StringViewable = requires (T t) { std::basic_string_view{t}; };
+
+template <StringViewable T>
+using StringViewOf = decltype(std::basic_string_view{std::declval<T>()});
+
+template <StringViewable T>
+using StringOf = std::basic_string<typename StringViewOf<T>::value_type, typename StringViewOf<T>::traits_type>;
+
+template<StringViewable Subject, typename String = StringOf<Subject>>
+String ReplaceInString(Subject&& subject, StringViewOf<Subject> needle, StringViewOf<Subject> value)
 {
-	std::basic_string<Char, Traits> result;
+	String result;
 	std::size_t previousPos{0};
 	std::size_t pos{0};
 
 	for (;;)
 	{
 		previousPos = pos;
-		pos = string.find(needle, pos);
-		if (pos == decltype(string)::npos)
+		pos = subject.find(needle, pos);
+		if (pos == String::npos)
 		{
-			result.append(string, previousPos);
+			result.append(subject, previousPos);
 			return result;
 		}
 
-		result.append(string, previousPos, pos - previousPos);
+		result.append(subject, previousPos, pos - previousPos);
 		result.append(value);
 		pos += value.size();
 	}
 
-	result.append(string, previousPos, string.size() - previousPos);
+	result.append(subject, previousPos, subject.size() - previousPos);
 	return result;
 }
 
