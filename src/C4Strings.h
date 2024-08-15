@@ -110,14 +110,13 @@ std::basic_string<Char, Traits> ReplaceInString(std::basic_string_view<Char, Tra
 	std::size_t previousPos{0};
 	std::size_t pos{0};
 
-	string.find(needle);
-
 	for (;;)
 	{
 		previousPos = pos;
 		pos = string.find(needle, pos);
 		if (pos == decltype(string)::npos)
 		{
+			result.append(string, previousPos);
 			return result;
 		}
 
