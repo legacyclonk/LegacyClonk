@@ -20,6 +20,7 @@
 #include <C4Network2Reference.h>
 
 #include <C4Network2Discover.h>
+#include "C4Network2UPnP.h"
 #include <C4Application.h>
 #include <C4UserMessages.h>
 #include <C4Log.h>
@@ -106,6 +107,12 @@ bool C4Network2IO::Init(std::shared_ptr<spdlog::logger> logger, const std::uint1
 	Thread.SetCallback(Ev_Net_Disconn, this);
 	Thread.SetCallback(Ev_Net_Packet, this);
 
+	// initialize UPnP
+	if (Config.Network.EnableUPnP)
+	{
+		UPnP = std::make_unique<C4Network2UPnP>();
+	}
+
 	// initialize net i/o classes: TCP first
 	pNetIO_TCP = CreateSetupNetIO("TCP I/O", new C4NetIOTCP{}, Thread, iPortTCP);
 
@@ -169,6 +176,8 @@ void C4Network2IO::Clear() // by main thread
 	if (pNetIO_TCP)     { Thread.RemoveProc(pNetIO_TCP);     delete pNetIO_TCP;     pNetIO_TCP     = nullptr; }
 	if (pNetIO_UDP)     { Thread.RemoveProc(pNetIO_UDP);     delete pNetIO_UDP;     pNetIO_UDP     = nullptr; }
 	if (pRefServer)     { Thread.RemoveProc(pRefServer);     delete pRefServer;     pRefServer     = nullptr; }
+	// clear UPnP
+	UPnP.reset();
 	// remove auto-accepts
 	ClearAutoAccept();
 	// reset flags
@@ -699,7 +708,7 @@ C4NetIO *C4Network2IO::getNetIO(C4Network2IOProtocol eProt) // by both
 const char *C4Network2IO::getNetIOName(C4NetIO *pNetIO)
 {
 	if (!pNetIO) return "nullptr";
-	if (pNetIO == pNetIO) return "TCP";
+	if (pNetIO == pNetIO_TCP) return "TCP";
 	if (pNetIO == pNetIO_UDP) return "UDP";
 	return "UNKNOWN";
 }
@@ -707,7 +716,7 @@ const char *C4Network2IO::getNetIOName(C4NetIO *pNetIO)
 C4Network2IOProtocol C4Network2IO::getNetIOProt(C4NetIO *pNetIO)
 {
 	if (!pNetIO) return P_NONE;
-	if (pNetIO == pNetIO) return P_TCP;
+	if (pNetIO == pNetIO_TCP) return P_TCP;
 	if (pNetIO == pNetIO_UDP) return P_UDP;
 	return P_NONE;
 }

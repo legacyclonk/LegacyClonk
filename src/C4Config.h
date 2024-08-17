@@ -219,6 +219,7 @@ public:
 	uint64_t LastUpdateTime;
 	int32_t AsyncMaxWait;
 	bool UseCurl;
+	bool EnableUPnP;
 
 	static constexpr auto DefaultPuncherServer = "netpuncher.openclonk.org:11115";
 
