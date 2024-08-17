@@ -107,18 +107,10 @@ bool C4Network2IO::Init(std::shared_ptr<spdlog::logger> logger, const std::uint1
 	Thread.SetCallback(Ev_Net_Packet, this);
 
 	// initialize net i/o classes: TCP first
-	pNetIO_TCP = CreateNetIO(this->logger, "TCP I/O", new C4NetIOTCP{}, iPortTCP, Thread);
-	if (pNetIO_TCP)
-	{
-		pNetIO_TCP->SetCallback(this);
-	}
+	pNetIO_TCP = CreateSetupNetIO("TCP I/O", new C4NetIOTCP{}, Thread, iPortTCP);
 
 	// then UDP
-	pNetIO_UDP = CreateNetIO(this->logger, "UDP I/O", new C4NetIOUDP{}, iPortUDP, Thread);
-	if (pNetIO_UDP)
-	{
-		pNetIO_UDP->SetCallback(this);
-	}
+	pNetIO_UDP = CreateSetupNetIO("UDP I/O", new C4NetIOUDP{}, Thread, iPortUDP);
 
 	// no protocols?
 	if (!pNetIO_TCP && !pNetIO_UDP)
@@ -454,6 +446,35 @@ bool C4Network2IO::IsPuncherAddr(const C4NetIO::addr_t &addr) const
 		(!PuncherAddrIPv6.IsNull() && PuncherAddrIPv6 == addr);
 }
 
+template<std::derived_from<C4NetIO> T>
+T *C4Network2IO::CreateSetupNetIO(const char *const name, T *const io, C4InteractiveThread &thread, const std::uint16_t defaultPort)
+{
+	uint16_t port;
+
+	if (defaultPort == NULL)
+	{
+		port = DiscoverFreePort();
+	}
+	else
+	{
+		port = defaultPort;
+		if (!CheckPortAvailability(port))
+		{
+			logger->info("Port {} is unavailable, discovering a free one", port);
+			port = DiscoverFreePort();
+		}
+	}
+
+	T *netIO = CreateNetIO(this->logger, name, io, port, thread);
+
+	if (netIO)
+	{
+		netIO->SetCallback(this);
+	}
+
+	return netIO;
+}
+
 // C4NetIO interface
 bool C4Network2IO::OnConn(const C4NetIO::addr_t &PeerAddr, const C4NetIO::addr_t &ConnectAddr, const C4NetIO::addr_t *pOwnAddr, C4NetIO *pNetIO)
 {
@@ -678,7 +699,7 @@ C4NetIO *C4Network2IO::getNetIO(C4Network2IOProtocol eProt) // by both
 const char *C4Network2IO::getNetIOName(C4NetIO *pNetIO)
 {
 	if (!pNetIO) return "nullptr";
-	if (pNetIO == pNetIO_TCP) return "TCP";
+	if (pNetIO == pNetIO) return "TCP";
 	if (pNetIO == pNetIO_UDP) return "UDP";
 	return "UNKNOWN";
 }
@@ -686,7 +707,7 @@ const char *C4Network2IO::getNetIOName(C4NetIO *pNetIO)
 C4Network2IOProtocol C4Network2IO::getNetIOProt(C4NetIO *pNetIO)
 {
 	if (!pNetIO) return P_NONE;
-	if (pNetIO == pNetIO_TCP) return P_TCP;
+	if (pNetIO == pNetIO) return P_TCP;
 	if (pNetIO == pNetIO_UDP) return P_UDP;
 	return P_NONE;
 }
@@ -1227,6 +1248,43 @@ void C4Network2IO::SendConnPackets()
 					return;
 			}
 		}
+}
+
+bool C4Network2IO::CheckPortAvailability(const uint16_t port)
+{
+	const auto pNetIO = std::make_unique<C4NetIOUDP>();
+
+	if (port <= 0)
+	{
+		return false;
+	}
+
+	if (pNetIO->Init(port))
+	{
+		pNetIO->Close();
+
+		return true;
+	}
+
+	return false;
+}
+
+std::uint16_t C4Network2IO::DiscoverFreePort(const uint16_t attempts)
+{
+	static constexpr uint16_t maxPort = 65535;
+	uint16_t port = NULL;
+
+	for (uint16_t i = 0; i < attempts; ++i)
+	{
+		port = SafeRandom(maxPort);
+
+		if (CheckPortAvailability(port))
+		{
+			break;
+		}
+	}
+
+	return port;
 }
 
 // *** C4Network2IOConnection

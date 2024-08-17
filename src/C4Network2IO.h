@@ -155,6 +155,9 @@ public:
 	bool IsReferenceNeeded();
 
 protected:
+	// C4NetIO Setup
+	template<std::derived_from<C4NetIO> T>
+	T *CreateSetupNetIO(const char *name, T *io, C4InteractiveThread &thread, std::uint16_t defaultPort = NULL);
 	// *** callbacks
 	// C4NetIO-Callbacks
 	virtual bool OnConn(const C4NetIO::addr_t &addr, const C4NetIO::addr_t &AddrConnect, const C4NetIO::addr_t *pOwnAddr, C4NetIO *pNetIO) override;
@@ -195,6 +198,9 @@ protected:
 	void CheckTimeout();
 	void GenerateStatistics(int iInterval);
 	void SendConnPackets();
+	// misc -- ports
+	static bool CheckPortAvailability(uint16_t port);
+	static std::uint16_t DiscoverFreePort(uint16_t attempts = 32);
 };
 
 enum C4Network2IOConnStatus
