@@ -114,10 +114,10 @@ bool C4Network2IO::Init(std::shared_ptr<spdlog::logger> logger, const std::uint1
 	}
 
 	// initialize net i/o classes: TCP first
-	pNetIO_TCP = CreateSetupNetIO("TCP I/O", new C4NetIOTCP{}, Thread, iPortTCP);
+	pNetIO_TCP = CreateSetupNetIO(P_TCP, "TCP I/O", new C4NetIOTCP{}, Thread, iPortTCP);
 
 	// then UDP
-	pNetIO_UDP = CreateSetupNetIO("UDP I/O", new C4NetIOUDP{}, Thread, iPortUDP);
+	pNetIO_UDP = CreateSetupNetIO(P_UDP, "UDP I/O", new C4NetIOUDP{}, Thread, iPortUDP);
 
 	// no protocols?
 	if (!pNetIO_TCP && !pNetIO_UDP)
@@ -456,7 +456,7 @@ bool C4Network2IO::IsPuncherAddr(const C4NetIO::addr_t &addr) const
 }
 
 template<std::derived_from<C4NetIO> T>
-T *C4Network2IO::CreateSetupNetIO(const char *const name, T *const io, C4InteractiveThread &thread, const std::uint16_t defaultPort)
+T *C4Network2IO::CreateSetupNetIO(const C4Network2IOProtocol protocol, const char *const name, T *const io, C4InteractiveThread &thread, const std::uint16_t defaultPort)
 {
 	uint16_t port;
 
@@ -479,6 +479,11 @@ T *C4Network2IO::CreateSetupNetIO(const char *const name, T *const io, C4Interac
 	if (netIO)
 	{
 		netIO->SetCallback(this);
+
+		if (Config.Network.EnableUPnP)
+		{
+			UPnP->AddMapping(protocol, port, 0);
+		}
 	}
 
 	return netIO;
