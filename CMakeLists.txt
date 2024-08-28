@@ -22,6 +22,9 @@ cmake_policy(SET CMP0072 NEW)
 # Enable <PackageName>_ROOT for find_package
 cmake_policy(SET CMP0074 NEW)
 
+# Enable option() honoring existing variables
+cmake_policy(SET CMP0077 NEW)
+
 if (APPLE)
 	set(LANGUAGE_OBJCXX OBJCXX)
 endif ()
