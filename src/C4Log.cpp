@@ -328,7 +328,9 @@ std::shared_ptr<spdlog::logger> C4LogSystem::GetOrCreate(std::string name, C4Log
 		return logger;
 	}
 
-	return CreateLogger(std::move(name), std::move(options));
+	auto logger = CreateLogger(std::move(name), std::move(options));
+	spdlog::register_logger(logger);
+	return logger;
 }
 
 void C4LogSystem::EnableDebugLog(const bool enable)
