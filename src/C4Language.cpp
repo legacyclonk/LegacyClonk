@@ -429,6 +429,10 @@ bool C4Language::LoadStringTable(C4Group &hGroup, const char *strCode)
 	// Set the internal charset
 	SCopy(LoadResStr(C4ResStrTableKey::IDS_LANG_CHARSET), Config.General.LanguageCharset);
 
+#ifdef _WIN32
+	Application.LogSystem.SetConsoleCharset(C4Config::GetCharsetCodePage(Config.General.LanguageCharset));
+#endif
+
 #ifdef HAVE_ICONV_AND_LANGINFO_H
 	const char *const to_set = nl_langinfo(CODESET);
 	if (local_to_host == iconv_t(-1))

@@ -382,6 +382,17 @@ void C4LogSystem::ClearRingbuffer()
 	ringbufferSink->Clear();
 }
 
+#ifdef _WIN32
+
+void C4LogSystem::SetConsoleCharset(const std::int32_t charset)
+{
+	SetConsoleCP(charset);
+	SetConsoleOutputCP(charset);
+}
+
+#endif
+
+
 void LogNTr(const spdlog::level::level_enum level, const std::string_view message)
 {
 	Application.LogSystem.GetLogger()->log(level, message);
