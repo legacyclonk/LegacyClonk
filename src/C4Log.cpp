@@ -108,7 +108,7 @@ C4LogSystem::LogSink::LogSink()
 	// open
 	int iLog = 2;
 #ifdef _WIN32
-	while (!(file = _fsopen(logFileName.c_str(), "wt", _SH_DENYWR)))
+	while (!(file = _fsopen(logFileName.c_str(), "wb", _SH_DENYWR)))
 #else
 	while (!(file = fopen(logFileName.c_str(), "wb")))
 #endif

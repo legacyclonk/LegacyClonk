@@ -433,6 +433,7 @@ set(SPDLOG_USE_STD_FORMAT ON)
 
 FetchContent_MakeAvailable(spdlog)
 
+target_compile_definitions(spdlog PUBLIC SPDLOG_EOL=\"\\x0A\")
 target_link_libraries(standard spdlog::spdlog)
 
 # Link Windows Imaging Component
