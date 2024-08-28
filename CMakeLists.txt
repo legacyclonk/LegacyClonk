@@ -50,6 +50,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(CheckCXXSymbolExists)
 include(CheckIncludeFileCXX)
 include(CMakeDependentOption)
+include(FetchContent)
 
 # Make sure headers of the project are found
 include_directories(src)
@@ -419,7 +420,19 @@ if (USE_SDL_MIXER)
 endif ()
 
 # Link spdlog
-find_package(spdlog REQUIRED)
+FetchContent_Declare(
+	spdlog
+	GIT_REPOSITORY https://github.com/gabime/spdlog.git
+	GIT_TAG v1.14.1
+)
+
+set(SPDLOG_BUILD_EXAMPLE OFF)
+set(SPDLOG_DISABLE_DEFAULT_LOGGER ON)
+set(SPDLOG_ENABLE_PCH ${USE_PCH})
+set(SPDLOG_USE_STD_FORMAT ON)
+
+FetchContent_MakeAvailable(spdlog)
+
 target_link_libraries(standard spdlog::spdlog)
 
 # Link Windows Imaging Component
