@@ -209,7 +209,6 @@ void C4GameControl::Clear()
 {
 	StopRecord();
 	ChangeToLocal();
-	logger = nullptr;
 	Default();
 }
 
