@@ -132,7 +132,7 @@ String ReplaceInString(Subject&& subject, StringViewOf<Subject> needle, StringVi
 
 		result.append(subject, previousPos, pos - previousPos);
 		result.append(value);
-		pos += value.size();
+		pos += needle.size();
 	}
 
 	result.append(subject, previousPos, subject.size() - previousPos);
