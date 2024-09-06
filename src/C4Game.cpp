@@ -3384,13 +3384,13 @@ bool C4Game::InitKeyboard()
 	};
 
 	// fullscreen menu
-	KeyboardInput.RegisterKey(new C4CustomKey(keyWithGamepadGuiControl(K_LEFT, KEY_JOY_Left), "FullscreenMenuLeft",   KEYSCOPE_FullSMenu, new C4KeyCBEx<C4FullScreen, uint8_t>(FullScreen, COM_MenuLeft,  &C4FullScreen::MenuKeyControl)));
+	KeyboardInput.RegisterKey(new C4CustomKey(keyWithGamepadGuiControl(K_LEFT, KEY_JOY_Left),   "FullscreenMenuLeft",   KEYSCOPE_FullSMenu, new C4KeyCBEx<C4FullScreen, uint8_t>(FullScreen, COM_MenuLeft,  &C4FullScreen::MenuKeyControl)));
 	KeyboardInput.RegisterKey(new C4CustomKey(keyWithGamepadGuiControl(K_RIGHT, KEY_JOY_Right), "FullscreenMenuRight",  KEYSCOPE_FullSMenu, new C4KeyCBEx<C4FullScreen, uint8_t>(FullScreen, COM_MenuRight, &C4FullScreen::MenuKeyControl)));
-	KeyboardInput.RegisterKey(new C4CustomKey(keyWithGamepadGuiControl(K_UP, KEY_JOY_Up), "FullscreenMenuUp",     KEYSCOPE_FullSMenu, new C4KeyCBEx<C4FullScreen, uint8_t>(FullScreen, COM_MenuUp,    &C4FullScreen::MenuKeyControl)));
-	KeyboardInput.RegisterKey(new C4CustomKey(keyWithGamepadGuiControl(K_DOWN, KEY_JOY_Down), "FullscreenMenuDown",   KEYSCOPE_FullSMenu, new C4KeyCBEx<C4FullScreen, uint8_t>(FullScreen, COM_MenuDown,  &C4FullScreen::MenuKeyControl)));
-	KeyboardInput.RegisterKey(new C4CustomKey(keyWithGamepadGuiControl(K_SPACE, KEY_JOY_AnyLowButton, K_RETURN), "FullscreenMenuOK",     KEYSCOPE_FullSMenu, new C4KeyCBEx<C4FullScreen, uint8_t>(FullScreen, COM_MenuEnter, &C4FullScreen::MenuKeyControl))); // name used by PlrControlKeyName
-	KeyboardInput.RegisterKey(new C4CustomKey(keyWithGamepadGuiControl(K_ESCAPE, KEY_JOY_AnyHighButton), "FullscreenMenuCancel", KEYSCOPE_FullSMenu, new C4KeyCBEx<C4FullScreen, uint8_t>(FullScreen, COM_MenuClose, &C4FullScreen::MenuKeyControl))); // name used by PlrControlKeyName
-	KeyboardInput.RegisterKey(new C4CustomKey(keyWithGamepadGuiControl(K_SPACE, KEY_JOY_AnyButton), "FullscreenMenuOpen",   KEYSCOPE_FreeView,  new C4KeyCB  <C4FullScreen>      (FullScreen,                &C4FullScreen::ActivateMenuMain))); // name used by C4MainMenu!
+	KeyboardInput.RegisterKey(new C4CustomKey(keyWithGamepadGuiControl(K_UP, KEY_JOY_Up),       "FullscreenMenuUp",     KEYSCOPE_FullSMenu, new C4KeyCBEx<C4FullScreen, uint8_t>(FullScreen, COM_MenuUp,    &C4FullScreen::MenuKeyControl)));
+	KeyboardInput.RegisterKey(new C4CustomKey(keyWithGamepadGuiControl(K_DOWN, KEY_JOY_Down),   "FullscreenMenuDown",   KEYSCOPE_FullSMenu, new C4KeyCBEx<C4FullScreen, uint8_t>(FullScreen, COM_MenuDown,  &C4FullScreen::MenuKeyControl)));
+	KeyboardInput.RegisterKey(new C4CustomKey(keyWithGamepadGuiControl(K_SPACE, KEY_JOY_AnyLowButton, K_RETURN),  "FullscreenMenuOK",     KEYSCOPE_FullSMenu, new C4KeyCBEx<C4FullScreen, uint8_t>(FullScreen, COM_MenuEnter, &C4FullScreen::MenuKeyControl))); // name used by PlrControlKeyName
+	KeyboardInput.RegisterKey(new C4CustomKey(keyWithGamepadGuiControl(K_ESCAPE, KEY_JOY_AnyHighButton),          "FullscreenMenuCancel", KEYSCOPE_FullSMenu, new C4KeyCBEx<C4FullScreen, uint8_t>(FullScreen, COM_MenuClose, &C4FullScreen::MenuKeyControl))); // name used by PlrControlKeyName
+	KeyboardInput.RegisterKey(new C4CustomKey(keyWithGamepadGuiControl(K_SPACE, KEY_JOY_AnyButton),               "FullscreenMenuOpen",   KEYSCOPE_FreeView,  new C4KeyCB  <C4FullScreen>      (FullScreen,                &C4FullScreen::ActivateMenuMain))); // name used by C4MainMenu!
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_RIGHT), "FilmNextPlayer",       KEYSCOPE_FilmView,  new C4KeyCB  <C4GraphicsSystem>  (GraphicsSystem,            &C4GraphicsSystem::ViewportNextPlayer)));
 
 	// chat
