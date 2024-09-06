@@ -23,7 +23,7 @@ class C4DeletionTrackable
 	class Tracker
 	{
 	public:
-		constexpr Tracker(C4DeletionTrackable *tracked) noexcept : tracked{tracked}
+		constexpr Tracker(C4DeletionTrackable *const tracked) noexcept : tracked{tracked}
 		{
 			assert(!tracked->tracker);
 			tracked->tracker = this;
@@ -46,7 +46,7 @@ class C4DeletionTrackable
 
 		constexpr Tracker &operator=(Tracker &&other) noexcept
 		{
-			clear();
+			Clear();
 			tracked = std::exchange(other.tracked, nullptr);
 			isDeleted = other.isDeleted;
 
@@ -61,7 +61,7 @@ class C4DeletionTrackable
 
 		constexpr ~Tracker() noexcept
 		{
-			clear();
+			Clear();
 		}
 
 		constexpr bool IsDeleted() const noexcept
@@ -70,7 +70,7 @@ class C4DeletionTrackable
 		}
 
 	private:
-		constexpr void clear() noexcept
+		constexpr void Clear() noexcept
 		{
 			if (tracked && !isDeleted)
 			{
