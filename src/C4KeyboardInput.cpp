@@ -373,7 +373,12 @@ std::string C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bo
 #elif defined(USE_X11)
 	return XKeysymToString(wCode);
 #elif defined(USE_SDL_MAINLOOP)
-	return SDL_GetScancodeName(static_cast<SDL_Scancode>(wCode));
+	const auto name = SDL_GetScancodeName(static_cast<SDL_Scancode>(wCode));
+	if (!name)
+	{
+		return "invalid";
+	}
+	return name;
 #else
 	return "unknown";
 #endif
