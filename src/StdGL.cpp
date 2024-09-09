@@ -1020,13 +1020,6 @@ bool CStdGL::RestoreDeviceObjects()
 
 	if (Config.Graphics.Shader && !BlitShader)
 	{
-		glEnable(GL_DEBUG_OUTPUT);
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-		glDebugMessageCallback([](auto, auto, auto, auto, auto, const GLchar *const message, auto)
-		{
-			LogF("%s", message);
-		}, nullptr);
-
 		try
 		{
 			CStdGLShader vertexShader{CStdShader::Type::Vertex,
