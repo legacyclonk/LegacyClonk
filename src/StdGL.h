@@ -269,6 +269,7 @@ protected:
 	CStdGLTexture<GL_TEXTURE_1D, 1> GammaRedTexture;
 	CStdGLTexture<GL_TEXTURE_1D, 1> GammaGreenTexture;
 	CStdGLTexture<GL_TEXTURE_1D, 1> GammaBlueTexture;
+	bool gammaDisabled{false};
 
 public:
 	// General

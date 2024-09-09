@@ -946,23 +946,9 @@ void CStdGL::DrawPixInt(C4Surface *const sfcTarget,
 
 void CStdGL::DisableGamma()
 {
-	if (Config.Graphics.DisableGamma)
+	if (gammaDisabled)
 	{
 		return;
-	}
-	else if (Config.Graphics.Shader && Config.Graphics.UseShaderGamma)
-	{
-		GammaRedTexture.Clear();
-		GammaGreenTexture.Clear();
-		GammaBlueTexture.Clear();
-
-		glActiveTexture(GL_TEXTURE3);
-		glDisable(GL_TEXTURE_1D);
-		glActiveTexture(GL_TEXTURE4);
-		glDisable(GL_TEXTURE_1D);
-		glActiveTexture(GL_TEXTURE5);
-		glDisable(GL_TEXTURE_1D);
-		glActiveTexture(GL_TEXTURE0);
 	}
 	else
 	{
@@ -972,13 +958,9 @@ void CStdGL::DisableGamma()
 
 void CStdGL::EnableGamma()
 {
-	if (Config.Graphics.DisableGamma)
+	if (gammaDisabled)
 	{
 		return;
-	}
-	else if (Config.Graphics.Shader && Config.Graphics.UseShaderGamma)
-	{
-		assert(GammaRedTexture && GammaGreenTexture && GammaBlueTexture);
 	}
 
 	CStdDDraw::EnableGamma();
@@ -986,9 +968,9 @@ void CStdGL::EnableGamma()
 
 bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool force)
 {
-	if (Config.Graphics.DisableGamma) return true;
+	if (gammaDisabled) return true;
 
-	else if (Config.Graphics.Shader && Config.Graphics.UseShaderGamma)
+	else if (GammaRedTexture)
 	{
 		glActiveTexture(GL_TEXTURE3);
 		GammaRedTexture.UpdateData(ramp.red);
@@ -1005,7 +987,7 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool force)
 
 bool CStdGL::SaveDefaultGammaRamp(CStdWindow *window)
 {
-	if ((Config.Graphics.Shader && Config.Graphics.UseShaderGamma) || Config.Graphics.DisableGamma)
+	if (gammaDisabled || GammaRedTexture)
 	{
 		DefRamp.Default();
 		Gamma.Set(0x000000, 0x808080, 0xffffff, 256, &DefRamp);
@@ -1034,6 +1016,7 @@ bool CStdGL::RestoreDeviceObjects()
 
 	blitOffset = static_cast<float>(Config.Graphics.BlitOffset) / 100;
 	texIndent = static_cast<float>(Config.Graphics.TexIndent) / 1000;
+	gammaDisabled = Config.Graphics.DisableGamma;
 
 	if (Config.Graphics.Shader && !BlitShader)
 	{
@@ -1101,7 +1084,7 @@ bool CStdGL::RestoreDeviceObjects()
 				)"
 			};
 
-			if (Config.Graphics.UseShaderGamma && !Config.Graphics.DisableGamma)
+			if (Config.Graphics.UseShaderGamma && !gammaDisabled)
 			{
 				blitFragmentShader.SetMacro("LC_GAMMA", "1");
 			}
@@ -1168,7 +1151,7 @@ bool CStdGL::RestoreDeviceObjects()
 				landscapeFragmentShader.SetMacro("LC_COLOR_ANIMATION", "1");
 			}
 
-			if (Config.Graphics.UseShaderGamma && !Config.Graphics.DisableGamma)
+			if (Config.Graphics.UseShaderGamma && !gammaDisabled)
 			{
 				landscapeFragmentShader.SetMacro("LC_GAMMA", "1");
 			}
@@ -1179,7 +1162,7 @@ bool CStdGL::RestoreDeviceObjects()
 			LandscapeShader.AddShader(&landscapeFragmentShader);
 			LandscapeShader.Link();
 
-			if (Config.Graphics.UseShaderGamma && !Config.Graphics.DisableGamma)
+			if (Config.Graphics.UseShaderGamma && !gammaDisabled)
 			{
 				CStdGLShader dummyVertexShader{CStdShader::Type::Vertex,
 				R"(
@@ -1226,7 +1209,7 @@ bool CStdGL::RestoreDeviceObjects()
 				program.SetUniform("blitOffset", blitOffset);
 				program.SetUniform("textureSampler", glUniform1i, 0);
 
-				if (Config.Graphics.UseShaderGamma && !Config.Graphics.DisableGamma)
+				if (Config.Graphics.UseShaderGamma && !gammaDisabled)
 				{
 					program.SetUniform("gammaRed", glUniform1i, 3);
 					program.SetUniform("gammaGreen", glUniform1i, 4);
@@ -1255,7 +1238,7 @@ bool CStdGL::RestoreDeviceObjects()
 
 			CStdShaderProgram::Deselect();
 
-			if (Config.Graphics.UseShaderGamma && !Config.Graphics.DisableGamma)
+			if (Config.Graphics.UseShaderGamma && !gammaDisabled)
 			{
 				const auto createTexture = [this](auto &texture, const std::int32_t offset)
 				{
@@ -1293,7 +1276,7 @@ bool CStdGL::InvalidateDeviceObjects()
 {
 	// clear gamma
 #ifdef USE_SDL_MAINLOOP
-	if (Config.Graphics.Shader && Config.Graphics.UseShaderGamma)
+	if (GammaRedTexture)
 #endif
 		CStdGL::DisableGamma();
 	// deactivate
@@ -1308,6 +1291,24 @@ bool CStdGL::InvalidateDeviceObjects()
 		LandscapeShader.Clear();
 		DummyShader.Clear();
 	}
+
+	if (GammaRedTexture)
+	{
+		GammaRedTexture.Clear();
+		GammaGreenTexture.Clear();
+		GammaBlueTexture.Clear();
+
+		glActiveTexture(GL_TEXTURE3);
+		glDisable(GL_TEXTURE_1D);
+		glActiveTexture(GL_TEXTURE4);
+		glDisable(GL_TEXTURE_1D);
+		glActiveTexture(GL_TEXTURE5);
+		glDisable(GL_TEXTURE_1D);
+		glActiveTexture(GL_TEXTURE0);
+	}
+
+	gammaDisabled = false;
+
 	return true;
 }
 
