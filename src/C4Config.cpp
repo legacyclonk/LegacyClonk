@@ -205,6 +205,7 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 #endif
 
 	pComp->Value(mkNamingAdapt(ShowFolderMaps, "ShowFolderMaps", true));
+	pComp->Value(mkNamingAdapt(UseShaderGamma, "UseShaderGamma", true));
 }
 
 void C4ConfigSound::CompileFunc(StdCompiler *pComp)

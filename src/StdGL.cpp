@@ -949,7 +949,7 @@ void CStdGL::DisableGamma()
 	{
 		return;
 	}
-	else if (Config.Graphics.Shader)
+	else if (Config.Graphics.Shader && Config.Graphics.UseShaderGamma)
 	{
 		GammaRedTexture.Clear();
 		GammaGreenTexture.Clear();
@@ -975,7 +975,7 @@ void CStdGL::EnableGamma()
 	{
 		return;
 	}
-	else if (Config.Graphics.Shader)
+	else if (Config.Graphics.Shader && Config.Graphics.UseShaderGamma)
 	{
 		assert(GammaRedTexture && GammaGreenTexture && GammaBlueTexture);
 	}
@@ -987,7 +987,7 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool force)
 {
 	if (Config.Graphics.DisableGamma) return true;
 
-	else if (Config.Graphics.Shader)
+	else if (Config.Graphics.Shader && Config.Graphics.UseShaderGamma)
 	{
 		glActiveTexture(GL_TEXTURE3);
 		GammaRedTexture.UpdateData(ramp.red);
@@ -1004,7 +1004,7 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool force)
 
 bool CStdGL::SaveDefaultGammaRamp(CStdWindow *window)
 {
-	if (Config.Graphics.Shader || Config.Graphics.DisableGamma)
+	if ((Config.Graphics.Shader && Config.Graphics.UseShaderGamma) || Config.Graphics.DisableGamma)
 	{
 		DefRamp.Default();
 		Gamma.Set(0x000000, 0x808080, 0xffffff, 256, &DefRamp);
@@ -1100,7 +1100,7 @@ bool CStdGL::RestoreDeviceObjects()
 				)"
 			};
 
-			if (!Config.Graphics.DisableGamma)
+			if (Config.Graphics.UseShaderGamma && !Config.Graphics.DisableGamma)
 			{
 				blitFragmentShader.SetMacro("LC_GAMMA", "1");
 			}
@@ -1167,7 +1167,7 @@ bool CStdGL::RestoreDeviceObjects()
 				landscapeFragmentShader.SetMacro("LC_COLOR_ANIMATION", "1");
 			}
 
-			if (!Config.Graphics.DisableGamma)
+			if (Config.Graphics.UseShaderGamma && !Config.Graphics.DisableGamma)
 			{
 				landscapeFragmentShader.SetMacro("LC_GAMMA", "1");
 			}
@@ -1178,7 +1178,7 @@ bool CStdGL::RestoreDeviceObjects()
 			LandscapeShader.AddShader(&landscapeFragmentShader);
 			LandscapeShader.Link();
 
-			if (!Config.Graphics.DisableGamma)
+			if (Config.Graphics.UseShaderGamma && !Config.Graphics.DisableGamma)
 			{
 				CStdGLShader dummyVertexShader{CStdShader::Type::Vertex,
 				R"(
@@ -1225,7 +1225,7 @@ bool CStdGL::RestoreDeviceObjects()
 				program.SetUniform("blitOffset", blitOffset);
 				program.SetUniform("textureSampler", glUniform1i, 0);
 
-				if (!Config.Graphics.DisableGamma)
+				if (Config.Graphics.UseShaderGamma && !Config.Graphics.DisableGamma)
 				{
 					program.SetUniform("gammaRed", glUniform1i, 3);
 					program.SetUniform("gammaGreen", glUniform1i, 4);
@@ -1254,7 +1254,7 @@ bool CStdGL::RestoreDeviceObjects()
 
 			CStdShaderProgram::Deselect();
 
-			if (!Config.Graphics.DisableGamma)
+			if (Config.Graphics.UseShaderGamma && !Config.Graphics.DisableGamma)
 			{
 				const auto createTexture = [this](auto &texture, const std::int32_t offset)
 				{
@@ -1292,7 +1292,7 @@ bool CStdGL::InvalidateDeviceObjects()
 {
 	// clear gamma
 #ifdef USE_SDL_MAINLOOP
-	if (Config.Graphics.Shader)
+	if (Config.Graphics.Shader && Config.Graphics.UseShaderGamma)
 #endif
 		CStdGL::DisableGamma();
 	// deactivate
