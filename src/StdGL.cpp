@@ -1001,8 +1001,6 @@ bool CStdGL::RestoreDeviceObjects()
 {
 	// safety
 	if (!lpPrimary) return false;
-	// delete any previous objects
-	InvalidateDeviceObjects();
 	// restore primary/back
 	RenderTarget = lpPrimary;
 	lpPrimary->AttachSfc(nullptr);
