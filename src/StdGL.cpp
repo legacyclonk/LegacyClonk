@@ -277,6 +277,7 @@ void CStdGLTexture<T, Dimensions>::Clear()
 	if (texture)
 	{
 		glDeleteTextures(1, &texture);
+		texture = GL_NONE;
 	}
 }
 
