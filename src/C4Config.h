@@ -169,6 +169,7 @@ public:
 	int PositionY;
 #endif
 	bool ShowFolderMaps; // if true, folder maps are shown
+	bool UseShaderGamma; // whether to use shader-based gamma correction
 
 	void CompileFunc(StdCompiler *pComp);
 };

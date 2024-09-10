@@ -143,45 +143,9 @@ void CStdGLShader::PrepareSource()
 void CStdGLShaderProgram::Link()
 {
 	EnsureProgram();
-
 	glLinkProgram(shaderProgram);
 
-	GLint status = 0;
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &status);
-	if (!status)
-	{
-		GLint size = 0;
-		glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &size);
-		assert(size);
-		if (size)
-		{
-			std::string errorMessage;
-			errorMessage.resize(size);
-			glGetProgramInfoLog(shaderProgram, size, nullptr, errorMessage.data());
-			errorMessage = errorMessage.c_str();
-			throw Exception{errorMessage};
-		}
-
-		throw Exception{"Link failed"};
-	}
-
-	glValidateProgram(shaderProgram);
-	glGetProgramiv(shaderProgram, GL_VALIDATE_STATUS, &status);
-	if (!status)
-	{
-		GLint size = 0;
-		glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &size);
-		if (size)
-		{
-			std::string errorMessage;
-			errorMessage.resize(size);
-			glGetProgramInfoLog(shaderProgram, size, nullptr, errorMessage.data());
-			errorMessage = errorMessage.c_str();
-			throw Exception{errorMessage};
-		}
-
-		throw Exception{"Validation failed"};
-	}
+	CheckStatus(GL_LINK_STATUS);
 
 	for (const auto &shader : shaders)
 	{
@@ -189,6 +153,13 @@ void CStdGLShaderProgram::Link()
 	}
 
 	shaders.clear();
+}
+
+void CStdGLShaderProgram::Validate()
+{
+	EnsureProgram();
+	glValidateProgram(shaderProgram);
+	CheckStatus(GL_VALIDATE_STATUS);
 }
 
 void CStdGLShaderProgram::Clear()
@@ -239,6 +210,118 @@ void CStdGLShaderProgram::OnSelect()
 void CStdGLShaderProgram::OnDeselect()
 {
 	glUseProgram(GL_NONE);
+}
+
+void CStdGLShaderProgram::CheckStatus(const GLenum type)
+{
+	GLint status{0};
+	glGetProgramiv(shaderProgram, type, &status);
+	if (!status)
+	{
+		GLint size = 0;
+		glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &size);
+		if (size)
+		{
+			std::string errorMessage;
+			errorMessage.resize(size);
+			glGetProgramInfoLog(shaderProgram, size, NULL, errorMessage.data());
+			errorMessage = errorMessage.c_str();
+			throw Exception{errorMessage};
+		}
+
+		throw Exception{"Status error"};
+	}
+}
+
+template<GLenum T, std::size_t Dimensions>
+CStdGLTexture<T, Dimensions>::CStdGLTexture(std::array<int32_t, Dimensions> dimensions, const GLenum internalFormat, const GLenum format, const GLenum type)
+	: dimensions{std::move(dimensions)}, internalFormat{internalFormat}, format{format}, type{type}
+{
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	ThrowIfGLError();
+	glGenTextures(1, &texture);
+	ThrowIfGLError();
+}
+
+template<GLenum T, std::size_t Dimensions>
+CStdGLTexture<T, Dimensions>::~CStdGLTexture()
+{
+	Clear();
+}
+
+template<GLenum T, std::size_t Dimensions>
+void CStdGLTexture<T, Dimensions>::Bind(const GLenum offset)
+{
+	glActiveTexture(GL_TEXTURE0 + offset);
+	glBindTexture(Target, texture);
+}
+
+template<GLenum T, std::size_t Dimensions>
+void CStdGLTexture<T, Dimensions>::SetData(const void *const data)
+{
+	std::apply(GetSetDataFunction(), std::tuple_cat(std::tuple{Target, 0, internalFormat}, dimensions, std::tuple{0, format, type, data}));
+	ThrowIfGLError();
+}
+
+template<GLenum T, std::size_t Dimensions>
+void CStdGLTexture<T, Dimensions>::UpdateData(const void *const data)
+{
+	constexpr std::array<std::int32_t, Dimensions> Offset{};
+	std::apply(GetUpdateDataFunction(), std::tuple_cat(std::tuple{Target, 0}, Offset, dimensions, std::tuple{format, type, data}));
+	ThrowIfGLError();
+}
+
+template<GLenum T, std::size_t Dimensions>
+void CStdGLTexture<T, Dimensions>::Clear()
+{
+	if (texture)
+	{
+		glDeleteTextures(1, &texture);
+		texture = GL_NONE;
+	}
+}
+
+template<GLenum T, std::size_t Dimensions>
+void CStdGLTexture<T, Dimensions>::ThrowIfGLError()
+{
+	if (const GLenum error{glGetError()}; error != GL_NO_ERROR)
+	{
+		throw Exception{reinterpret_cast<const char *>(gluErrorString(error))};
+	}
+}
+
+template<GLenum T, std::size_t Dimensions>
+auto CStdGLTexture<T, Dimensions>::GetSetDataFunction()
+{
+	if constexpr (Dimensions == 1)
+	{
+		return glTexImage1D;
+	}
+	else if constexpr (Dimensions == 2)
+	{
+		return glTexImage2D;
+	}
+	else if constexpr (Dimensions == 3)
+	{
+		return glTexImage3D;
+	}
+}
+
+template<GLenum T, std::size_t Dimensions>
+auto CStdGLTexture<T, Dimensions>::GetUpdateDataFunction()
+{
+	if constexpr (Dimensions == 1)
+	{
+		return glTexSubImage1D;
+	}
+	else if constexpr (Dimensions == 2)
+	{
+		return glTexSubImage2D;
+	}
+	else if constexpr (Dimensions == 3)
+	{
+		return glTexSubImage3D;
+	}
 }
 
 static void glColorDw(const uint32_t dwClr)
@@ -782,6 +865,10 @@ void CStdGL::DrawQuadDw(C4Surface *const sfcTarget, int *const ipVtx,
 	const int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
 	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, iAdditive ? GL_ONE : GL_SRC_ALPHA);
 	// draw two triangles
+	if (DummyShader)
+	{
+		DummyShader.Select();
+	}
 	glBegin(GL_TRIANGLE_STRIP);
 	glColorDw(dwClr1); glVertex2f(ipVtx[0] + blitOffset, ipVtx[1] + blitOffset);
 	glColorDw(dwClr2); glVertex2f(ipVtx[2] + blitOffset, ipVtx[3] + blitOffset);
@@ -808,6 +895,10 @@ void CStdGL::DrawLineDw(C4Surface *const sfcTarget,
 	// use a different blendfunc here, because GL_LINE_SMOOTH expects this one
 	glBlendFunc(GL_SRC_ALPHA, iAdditive ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA);
 	// draw one line
+	if (DummyShader)
+	{
+		DummyShader.Select();
+	}
 	glBegin(GL_LINES);
 	// global clr modulation map
 	uint32_t dwClr1 = dwClr;
@@ -843,18 +934,73 @@ void CStdGL::DrawPixInt(C4Surface *const sfcTarget,
 	// use a different blendfunc here because of GL_POINT_SMOOTH
 	glBlendFunc(GL_SRC_ALPHA, iAdditive ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA);
 	// convert the alpha value for that blendfunc
+	if (DummyShader)
+	{
+		DummyShader.Select();
+	}
 	glBegin(GL_POINTS);
 	glColorDw(InvertRGBAAlpha(dwClr));
 	glVertex2f(tx + 0.5f, ty + 0.5f);
 	glEnd();
 }
 
+void CStdGL::DisableGamma()
+{
+	if (gammaDisabled)
+	{
+		return;
+	}
+	else
+	{
+		CStdDDraw::DisableGamma();
+	}
+}
+
+void CStdGL::EnableGamma()
+{
+	if (gammaDisabled)
+	{
+		return;
+	}
+
+	CStdDDraw::EnableGamma();
+}
+
+bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool force)
+{
+	if (gammaDisabled) return true;
+
+	else if (GammaRedTexture)
+	{
+		glActiveTexture(GL_TEXTURE3);
+		GammaRedTexture.UpdateData(ramp.red);
+		glActiveTexture(GL_TEXTURE4);
+		GammaGreenTexture.UpdateData(ramp.green);
+		glActiveTexture(GL_TEXTURE5);
+		GammaBlueTexture.UpdateData(ramp.blue);
+		glActiveTexture(GL_TEXTURE0);
+		return true;
+	}
+
+	return ApplyGammaRampToMonitor(ramp, force);
+}
+
+bool CStdGL::SaveDefaultGammaRamp(CStdWindow *window)
+{
+	if (gammaDisabled || GammaRedTexture)
+	{
+		DefRamp.Default();
+		Gamma.Set(0x000000, 0x808080, 0xffffff, 256, &DefRamp);
+		return true;
+	}
+
+	return SaveDefaultGammaRampToMonitor(window);
+}
+
 bool CStdGL::RestoreDeviceObjects()
 {
 	// safety
 	if (!lpPrimary) return false;
-	// delete any previous objects
-	InvalidateDeviceObjects();
 	// restore primary/back
 	RenderTarget = lpPrimary;
 	lpPrimary->AttachSfc(nullptr);
@@ -863,13 +1009,12 @@ bool CStdGL::RestoreDeviceObjects()
 	const bool fSuccess = pCurrCtx ? pCurrCtx->Select() : MainCtx.Select();
 	// activate if successful
 	Active = fSuccess;
-	// restore gamma if active
-	if (Active) EnableGamma();
 	// reset blit states
 	dwBlitMode = 0;
 
 	blitOffset = static_cast<float>(Config.Graphics.BlitOffset) / 100;
 	texIndent = static_cast<float>(Config.Graphics.TexIndent) / 1000;
+	gammaDisabled = Config.Graphics.DisableGamma;
 
 	if (Config.Graphics.Shader && !BlitShader)
 	{
@@ -900,6 +1045,12 @@ bool CStdGL::RestoreDeviceObjects()
 
 				uniform sampler2D textureSampler;
 
+				#ifdef LC_GAMMA
+				uniform sampler1D gammaRed;
+				uniform sampler1D gammaGreen;
+				uniform sampler1D gammaBlue;
+				#endif
+
 				void main()
 				{
 					vec4 fragColor = texture2D(textureSampler, gl_TexCoord[0].st);
@@ -912,10 +1063,22 @@ bool CStdGL::RestoreDeviceObjects()
 					fragColor.rgb = clamp(fragColor.rgb, 0.0, 1.0);
 					fragColor.a = clamp(fragColor.a + gl_Color.a, 0.0, 1.0);
 				#endif
+
+				#ifdef LC_GAMMA
+					fragColor.r = texture1D(gammaRed, fragColor.r).r;
+					fragColor.g = texture1D(gammaGreen, fragColor.g).r;
+					fragColor.b = texture1D(gammaBlue, fragColor.b).r;
+				#endif
+
 					gl_FragColor = fragColor;
 				}
 				)"
 			};
+
+			if (Config.Graphics.UseShaderGamma && !gammaDisabled)
+			{
+				blitFragmentShader.SetMacro("LC_GAMMA", "1");
+			}
 
 			blitFragmentShader.Compile();
 
@@ -924,6 +1087,7 @@ bool CStdGL::RestoreDeviceObjects()
 			BlitShader.Link();
 
 			blitFragmentShader.SetMacro("LC_MOD2", "1");
+
 			blitFragmentShader.Compile();
 
 			BlitShaderMod2.AddShader(&vertexShader);
@@ -941,6 +1105,12 @@ bool CStdGL::RestoreDeviceObjects()
 				uniform vec4 modulation;
 				#endif
 
+				#ifdef LC_GAMMA
+				uniform sampler1D gammaRed;
+				uniform sampler1D gammaGreen;
+				uniform sampler1D gammaBlue;
+				#endif
+
 				void main()
 				{
 					vec4 fragColor = texture2D(textureSampler,  gl_TexCoord[0].st);
@@ -955,6 +1125,12 @@ bool CStdGL::RestoreDeviceObjects()
 					fragColor.rgb = clamp(fragColor.rgb, 0.0, 1.0) * gl_Color.rgb;
 					fragColor.a = clamp(fragColor.a + gl_Color.a, 0.0, 1.0);
 
+				#ifdef LC_GAMMA
+					fragColor.r = texture1D(gammaRed, fragColor.r).r;
+					fragColor.g = texture1D(gammaGreen, fragColor.g).r;
+					fragColor.b = texture1D(gammaBlue, fragColor.b).r;
+				#endif
+
 					gl_FragColor = fragColor;
 				}
 				)"};
@@ -966,27 +1142,114 @@ bool CStdGL::RestoreDeviceObjects()
 				landscapeFragmentShader.SetMacro("LC_COLOR_ANIMATION", "1");
 			}
 
+			if (Config.Graphics.UseShaderGamma && !gammaDisabled)
+			{
+				landscapeFragmentShader.SetMacro("LC_GAMMA", "1");
+			}
+
 			landscapeFragmentShader.Compile();
 
 			LandscapeShader.AddShader(&vertexShader);
 			LandscapeShader.AddShader(&landscapeFragmentShader);
 			LandscapeShader.Link();
 
-			for (auto *const shader : {&BlitShader, &BlitShaderMod2, &LandscapeShader})
+			if (Config.Graphics.UseShaderGamma && !gammaDisabled)
 			{
-				shader->Select();
-				shader->SetUniform("texIndent", texIndent);
-				shader->SetUniform("blitOffset", blitOffset);
-				shader->SetUniform("textureSampler", glUniform1i, 0);
+				CStdGLShader dummyVertexShader{CStdShader::Type::Vertex,
+				R"(
+					#version 120
 
-				if (shader == &LandscapeShader)
-				{
-					shader->SetUniform("maskSampler", glUniform1i, 1);
-					shader->SetUniform("liquidSampler", glUniform1i, 2);
-				}
+					void main()
+					{
+						gl_Position = ftransform();
+						gl_FrontColor = gl_Color;
+					}
+				)"};
+
+				dummyVertexShader.Compile();
+
+				CStdGLShader dummyFragmentShader{CStdShader::Type::Fragment,
+					R"(
+					#version 120
+
+					uniform sampler1D gammaRed;
+					uniform sampler1D gammaGreen;
+					uniform sampler1D gammaBlue;
+
+					void main()
+					{
+						gl_FragColor.r = texture1D(gammaRed, gl_Color.r).r;
+						gl_FragColor.g = texture1D(gammaGreen, gl_Color.g).r;
+						gl_FragColor.b = texture1D(gammaBlue, gl_Color.b).r;
+						gl_FragColor.a = gl_Color.a;
+					}
+					)"
+				};
+
+				dummyFragmentShader.Compile();
+
+				DummyShader.AddShader(&dummyVertexShader);
+				DummyShader.AddShader(&dummyFragmentShader);
+				DummyShader.Link();
 			}
 
+			const auto setUniforms = [this](CStdGLShaderProgram &program)
+			{
+				program.Select();
+				program.SetUniform("texIndent", texIndent);
+				program.SetUniform("blitOffset", blitOffset);
+				program.SetUniform("textureSampler", glUniform1i, 0);
+
+				if (Config.Graphics.UseShaderGamma && !gammaDisabled)
+				{
+					program.SetUniform("gammaRed", glUniform1i, 3);
+					program.SetUniform("gammaGreen", glUniform1i, 4);
+					program.SetUniform("gammaBlue", glUniform1i, 5);
+				}
+			};
+
+			setUniforms(BlitShader);
+			BlitShader.Validate();
+
+			setUniforms(BlitShaderMod2);
+			BlitShaderMod2.Validate();
+
+			if (DummyShader)
+			{
+				setUniforms(DummyShader);
+				DummyShader.Validate();
+			}
+
+			setUniforms(LandscapeShader); // Last so that the shader is selected for the subsequent calls
+
+			LandscapeShader.SetUniform("maskSampler", glUniform1i, 1);
+			LandscapeShader.SetUniform("liquidSampler", glUniform1i, 2);
+
+			LandscapeShader.Validate();
+
 			CStdShaderProgram::Deselect();
+
+			if (Config.Graphics.UseShaderGamma && !gammaDisabled)
+			{
+				const auto createTexture = [this](auto &texture, const std::int32_t offset)
+				{
+					texture = {{Gamma.GetSize()}, GL_R16, GL_RED, GL_UNSIGNED_SHORT};
+					texture.Bind(offset);
+					glEnable(GL_TEXTURE_1D);
+
+					glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+
+					texture.SetData(nullptr);
+				};
+
+				createTexture(GammaRedTexture, 3);
+				createTexture(GammaGreenTexture, 4);
+				createTexture(GammaBlueTexture, 5);
+
+				// Don't switch back to GL_TEXTURE0 - EnableGamma does this
+			}
 		}
 		catch (const CStdRenderException &e)
 		{
@@ -994,6 +1257,8 @@ bool CStdGL::RestoreDeviceObjects()
 			return Active = false;
 		}
 	}
+	// restore gamma if active
+	if (Active) EnableGamma();
 	// done
 	return Active;
 }
@@ -1001,9 +1266,10 @@ bool CStdGL::RestoreDeviceObjects()
 bool CStdGL::InvalidateDeviceObjects()
 {
 	// clear gamma
-#ifndef USE_SDL_MAINLOOP
-	DisableGamma();
+#ifdef USE_SDL_MAINLOOP
+	if (GammaRedTexture)
 #endif
+		CStdGL::DisableGamma();
 	// deactivate
 	Active = false;
 	// invalidate font objects
@@ -1014,7 +1280,26 @@ bool CStdGL::InvalidateDeviceObjects()
 		BlitShader.Clear();
 		BlitShaderMod2.Clear();
 		LandscapeShader.Clear();
+		DummyShader.Clear();
 	}
+
+	if (GammaRedTexture)
+	{
+		GammaRedTexture.Clear();
+		GammaGreenTexture.Clear();
+		GammaBlueTexture.Clear();
+
+		glActiveTexture(GL_TEXTURE3);
+		glDisable(GL_TEXTURE_1D);
+		glActiveTexture(GL_TEXTURE4);
+		glDisable(GL_TEXTURE_1D);
+		glActiveTexture(GL_TEXTURE5);
+		glDisable(GL_TEXTURE_1D);
+		glActiveTexture(GL_TEXTURE0);
+	}
+
+	gammaDisabled = false;
+
 	return true;
 }
 

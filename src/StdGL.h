@@ -60,6 +60,7 @@ public:
 	explicit operator bool() const override { return /*glIsProgram(*/shaderProgram/*)*/; }
 
 	void Link() override;
+	void Validate() override;
 	void Clear() override;
 
 	void EnsureProgram() override;
@@ -121,6 +122,9 @@ protected:
 		return true;
 	}
 
+private:
+	void CheckStatus(GLenum type);
+
 protected:
 	GLuint shaderProgram{GL_NONE};
 
@@ -128,6 +132,81 @@ protected:
 	Locations uniformLocations;
 
 	std::string group;
+};
+
+// one OpenGL texture
+template<GLenum T, std::size_t Dimensions>
+class CStdGLTexture
+{
+	static_assert(Dimensions >= 1 && Dimensions <= 3);
+
+public:
+	static constexpr GLenum Target{T};
+
+public:
+	class Exception : public CStdRenderException
+	{
+	public:
+		using CStdRenderException::CStdRenderException;
+	};
+
+public:
+	CStdGLTexture() = default;
+
+	CStdGLTexture(std::array<std::int32_t, Dimensions> dimensions, GLenum internalFormat, GLenum format, GLenum type);
+
+	CStdGLTexture(const CStdGLTexture &) = delete;
+	CStdGLTexture &operator=(const CStdGLTexture &) = delete;
+
+	CStdGLTexture(CStdGLTexture &&other)
+		: CStdGLTexture{}
+	{
+		swap(*this, other);
+	}
+
+	CStdGLTexture &operator=(CStdGLTexture &&other)
+	{
+		CStdGLTexture temp{std::move(other)};
+		swap(*this, temp);
+		return *this;
+	}
+
+	~CStdGLTexture();
+
+public:
+	GLuint GetTexture() const { return texture; }
+
+	void Bind(GLenum offset);
+	void SetData(const void *const data);
+	void UpdateData(const void *data);
+
+	void Clear();
+
+public:
+	explicit operator bool() const { return texture; }
+
+private:
+	static void ThrowIfGLError();
+	static auto GetSetDataFunction();
+	static auto GetUpdateDataFunction();
+
+private:
+	std::array<std::int32_t, Dimensions> dimensions;
+	GLenum internalFormat;
+	GLenum format;
+	GLenum type;
+	GLuint texture{GL_NONE};
+
+private:
+	friend void swap(CStdGLTexture &first, CStdGLTexture &second)
+	{
+		using std::swap;
+		swap(first.dimensions, second.dimensions);
+		swap(first.internalFormat, second.internalFormat);
+		swap(first.format, second.format);
+		swap(first.type, second.type);
+		swap(first.texture, second.texture);
+	}
 };
 
 // one OpenGL context
@@ -186,6 +265,11 @@ protected:
 	CStdGLShaderProgram BlitShader;
 	CStdGLShaderProgram BlitShaderMod2;
 	CStdGLShaderProgram LandscapeShader;
+	CStdGLShaderProgram DummyShader;
+	CStdGLTexture<GL_TEXTURE_1D, 1> GammaRedTexture;
+	CStdGLTexture<GL_TEXTURE_1D, 1> GammaGreenTexture;
+	CStdGLTexture<GL_TEXTURE_1D, 1> GammaBlueTexture;
+	bool gammaDisabled{false};
 
 public:
 	// General
@@ -218,8 +302,10 @@ public:
 	void DrawPixInt(C4Surface *sfcDest, float tx, float ty, uint32_t dwCol) override;
 
 	// Gamma
-	virtual bool ApplyGammaRamp(CGammaControl &ramp, bool fForce) override;
-	virtual bool SaveDefaultGammaRamp(CStdWindow *pWindow) override;
+	void DisableGamma() override;
+	void EnableGamma() override;
+	virtual bool ApplyGammaRamp(CGammaControl &ramp, bool force) override;
+	virtual bool SaveDefaultGammaRamp(CStdWindow *window) override;
 
 	// device objects
 	bool RestoreDeviceObjects() override; // init/restore device dependent objects
@@ -242,6 +328,10 @@ protected:
 	// Size of gamma ramps
 	int gammasize{};
 #endif
+
+private:
+	bool ApplyGammaRampToMonitor(CGammaControl &ramp, bool force);
+	bool SaveDefaultGammaRampToMonitor(CStdWindow *window);
 
 	friend class C4Surface;
 	friend class C4TexRef;
