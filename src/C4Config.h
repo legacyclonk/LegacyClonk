@@ -84,7 +84,9 @@ public:
 	bool UseWhiteLobbyChat;
 	bool ShowLogTimestamps;
 	bool Preloading;
+#ifndef _WIN32
 	std::uint32_t ThreadPoolThreadCount;
+#endif
 
 public:
 	static int GetLanguageSequence(const char *strSource, char *strTarget);
