@@ -107,8 +107,7 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 #endif
 
 #ifndef _WIN32
-	pComp->Value(mkNamingAdapt(ThreadPoolMinimumThreadCount, "ThreadPoolMinimumThreadCount", 5));
-	pComp->Value(mkNamingAdapt(ThreadPoolMaximumThreadCount, "ThreadPoolMaximumThreadCount", 10));
+	pComp->Value(mkNamingAdapt(ThreadPoolThreadCount, "ThreadPoolThreadCount", 8));
 #endif
 }
 
