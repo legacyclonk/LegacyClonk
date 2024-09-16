@@ -135,7 +135,7 @@ void C4ThreadPool::Io::Awaiter::SetupCancellation(C4Task::CancellablePromise *co
 	);
 }
 
-void C4ThreadPool::Io::Awaiter::Callback(const PTP_CALLBACK_INSTANCE instance, const ULONG result, const ULONG numberOfBytesTransferred)
+void C4ThreadPool::Io::Awaiter::Callback(const PTP_CALLBACK_INSTANCE instance, const ULONG result, const ULONG_PTR numberOfBytesTransferred)
 {
 	State expected{State::Started};
 	State desired;
