@@ -221,7 +221,7 @@ C4ThreadPool::C4ThreadPool(const std::uint32_t minimum, const std::uint32_t maxi
 
 		SetThreadpoolCallbackPool(&callbackEnvironment, pool.get());
 
-		SetThreadpoolThreadMaximum(pool.get(), static_cast<DWORD>(minimum));
+		SetThreadpoolThreadMaximum(pool.get(), static_cast<DWORD>(maximum));
 		winrt::check_bool(SetThreadpoolThreadMinimum(pool.get(), static_cast<DWORD>(minimum)));
 
 		cleanupGroup.attach(winrt::check_pointer(CreateThreadpoolCleanupGroup()));
