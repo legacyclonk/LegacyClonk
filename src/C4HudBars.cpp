@@ -663,7 +663,7 @@ void C4HudBarsAdapt::CompileFunc(StdCompiler *comp)
 		if (bars)
 		{
 			std::vector<C4HudBarsDef::Gfx> temp;
-			for (const auto it : bars->def->gfxs)
+			for (const auto &it: bars->def->gfxs)
 				temp.emplace_back(it.second);
 
 			comp->Value(mkNamingAdapt(mkSTLContainerAdapt(temp), "Gfx", std::vector<C4HudBarsDef::Gfx>{}));
