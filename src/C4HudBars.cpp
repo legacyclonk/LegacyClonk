@@ -38,7 +38,7 @@ C4HudBars::C4HudBars(std::shared_ptr<const C4HudBarsDef> def) noexcept : def{std
 {
 	for (const auto &bardef : def->bars)
 	{
-		if (bardef.physical == C4HudBarDef::EBP_None)
+		if (bardef.physical == C4HudBarDef::Physical::None)
 			values.emplace_back(bardef.value, bardef.max, bardef.visible);
 	}
 }
@@ -87,11 +87,11 @@ void C4HudBars::DrawHudBars(C4Facet &cgo, C4Object &obj) const noexcept
 		std::int32_t value{0};
 		std::int32_t max{0};
 		bool visible{true};
-		const auto hideHUDBars = static_cast<bool>(bardef.hide & C4HudBarDef::EBH_HideHUDBars);
+		const auto hideHUDBars = static_cast<bool>(bardef.hide & C4HudBarDef::Hide::HideHUDBars);
 
 		switch (bardef.physical)
 		{
-		case C4HudBarDef::EBP_Energy:
+		case C4HudBarDef::Physical::Energy:
 			if (hideHUDBars && obj.Def->HideHUDBars & C4Def::HB_Energy)
 			{
 				visible = false;
@@ -101,7 +101,7 @@ void C4HudBars::DrawHudBars(C4Facet &cgo, C4Object &obj) const noexcept
 			max = obj.GetPhysical()->Energy;
 			break;
 
-		case C4HudBarDef::EBP_Breath:
+		case C4HudBarDef::Physical::Breath:
 			if (hideHUDBars && obj.Def->HideHUDBars & C4Def::HB_Breath)
 			{
 				visible = false;
@@ -111,7 +111,7 @@ void C4HudBars::DrawHudBars(C4Facet &cgo, C4Object &obj) const noexcept
 			max = obj.GetPhysical()->Breath;
 			break;
 
-		case C4HudBarDef::EBP_Magic:
+		case C4HudBarDef::Physical::Magic:
 			if (hideHUDBars && obj.Def->HideHUDBars & C4Def::HB_MagicEnergy)
 			{
 				visible = false;
@@ -129,7 +129,7 @@ void C4HudBars::DrawHudBars(C4Facet &cgo, C4Object &obj) const noexcept
 			break;
 		}
 
-		if ((bardef.hide & C4HudBarDef::EBH_Empty && value == 0) || (bardef.hide & C4HudBarDef::EBH_Full && value >= max))
+		if (((bardef.hide & C4HudBarDef::Hide::Empty) == C4HudBarDef::Hide::Empty && value == 0) || ((bardef.hide & C4HudBarDef::Hide::Full) == C4HudBarDef::Hide::Full && value >= max))
 		{
 			visible = false;
 		}
@@ -166,7 +166,7 @@ void C4HudBars::DrawHudBars(C4Facet &cgo, C4Object &obj) const noexcept
 
 
 C4HudBarDef::C4HudBarDef() noexcept :
-	physical{EBP_None}, hide{EBH_Empty}, index{}, advance{true},
+	physical{Physical::None}, hide{Hide::Empty}, index{}, advance{true},
 	valueIndex{-1}, value{0}, max{C4HudBar::Maximum}, visible{true}, scale{1.0f}
 {}
 
@@ -195,15 +195,15 @@ C4HudBarDef::Hide C4HudBarDef::DefaultHide(const C4HudBarDef::Physical physical)
 {
 	switch (physical)
 	{
-	case EBP_Energy:
-		return EBH_Never | EBH_HideHUDBars;
+	case Physical::Energy:
+		return Hide::Never | Hide::HideHUDBars;
 
-	case EBP_Breath:
-		return EBH_Full | EBH_HideHUDBars;
+	case Physical::Breath:
+		return Hide::Full | Hide::HideHUDBars;
 
-	case EBP_Magic:
+	case Physical::Magic:
 	default:
-		return EBH_Empty | EBH_HideHUDBars;
+		return Hide::Empty | Hide::HideHUDBars;
 	}
 }
 
@@ -211,13 +211,13 @@ int32_t C4HudBarDef::DefaultIndex(const C4HudBarDef::Physical physical) noexcept
 {
 	switch (physical)
 	{
-	case EBP_Energy:
+	case Physical::Energy:
 		return 0;
 
-	case EBP_Magic:
+	case Physical::Magic:
 		return 1;
 
-	case EBP_Breath:
+	case Physical::Breath:
 		return 2;
 
 	default:
@@ -228,8 +228,8 @@ int32_t C4HudBarDef::DefaultIndex(const C4HudBarDef::Physical physical) noexcept
 std::size_t C4HudBarDef::GetHash() const noexcept
 {
 	std::size_t result{std::hash<std::string>{}(name)};
-	HashCombine(result, std::hash<std::int32_t>{}(physical));
-	HashCombine(result, std::hash<std::int32_t>{}(hide));
+	HashCombine(result, std::hash<Physical>{}(physical));
+	HashCombine(result, std::hash<Hide>{}(hide));
 	HashCombine(result, std::hash<std::string>{}(gfx));
 	HashCombine(result, std::hash<std::int32_t>{}(index));
 	HashCombine(result, std::hash<bool>{}(advance));
@@ -245,20 +245,20 @@ void C4HudBarDef::CompileFunc(StdCompiler *const comp)
 	comp->Value(mkNamingAdapt(name, "Name"));
 	StdEnumEntry<Physical> PhysicalEntries[]
 	{
-		{ "Energy", EBP_Energy },
-		{ "Magic", EBP_Magic },
-		{ "Breath", EBP_Breath },
+		{ "Energy", Physical::Energy },
+		{ "Magic", Physical::Magic },
+		{ "Breath", Physical::Breath },
 	};
-	comp->Value(mkNamingAdapt(mkEnumAdaptT<std::uint8_t>(physical, PhysicalEntries), "Physical", EBP_None));
+	comp->Value(mkNamingAdapt(mkEnumAdaptT<std::uint8_t>(physical, PhysicalEntries), "Physical", Physical::None));
 	StdBitfieldEntry<std::uint8_t> HideEntries[]
 	{
-		{ "HideHud", EBH_HideHUDBars },
-		{ "Empty", EBH_Empty },
-		{ "Full", EBH_Full },
+		{ "HideHud", std::to_underlying(Hide::HideHUDBars) },
+		{ "Empty", std::to_underlying(Hide::Empty) },
+		{ "Full", std::to_underlying(Hide::Full) },
 	};
 
 	auto hideVal = static_cast<std::uint8_t>(hide);
-	comp->Value(mkNamingAdapt(mkBitfieldAdapt<std::uint8_t>(hideVal, HideEntries), "Hide", EBH_Empty));
+	comp->Value(mkNamingAdapt(mkBitfieldAdapt<std::uint8_t>(hideVal, HideEntries), "Hide", Hide::Empty));
 	hide = static_cast<Hide>(hideVal);
 
 	comp->Value(mkNamingAdapt(gfx, "Gfx"));
@@ -368,9 +368,9 @@ std::shared_ptr<C4HudBars> C4HudBarsUniquifier::DefaultBars()
 				std::move(gfxs),
 				C4HudBarsDef::Bars
 				{
-					C4HudBarDef{"Energy", File, gfx, 0, C4HudBarDef::EBP_Energy},
-					C4HudBarDef{"Magic", File, gfx, 1, C4HudBarDef::EBP_Magic},
-					C4HudBarDef{"Breath", File, gfx, 2, C4HudBarDef::EBP_Breath}
+					C4HudBarDef{"Energy", File, gfx, 0, C4HudBarDef::Physical::Energy},
+					C4HudBarDef{"Magic", File, gfx, 1, C4HudBarDef::Physical::Magic},
+					C4HudBarDef{"Breath", File, gfx, 2, C4HudBarDef::Physical::Breath}
 				}
 			)
 		);
@@ -610,12 +610,12 @@ void C4HudBarsUniquifier::ProcessHudBar(std::int32_t &valueIndex, const C4HudBar
 
 	C4Value physical{bar[C4VString("physical")]};
 	auto _physical = static_cast<C4HudBarDef::Physical>(physical.getInt());
-	if (C4HudBarDef::EBP_First <= _physical && _physical <= C4HudBarDef::EBP_Last) error("physical", physical);
+	if (C4HudBarDef::Physical::First <= _physical && _physical <= C4HudBarDef::Physical::Last) error("physical", physical);
 
 	C4Value hide{bar[C4VString("hide")]};
-	auto _hide = C4HudBarDef::EBH_Empty;
+	auto _hide = C4HudBarDef::Hide::Empty;
 	if (hide) _hide = static_cast<C4HudBarDef::Hide>(hide.getInt());
-	if (_hide & ~C4HudBarDef::EBH_All) error("hide", hide);
+	if ((_hide & ~C4HudBarDef::Hide::All) != C4HudBarDef::Hide::Never) error("hide", hide);
 
 	C4Value index{bar[C4VString("index")]};
 	C4Value value{bar[C4VString("value")]};

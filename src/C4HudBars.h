@@ -39,29 +39,29 @@ public:
 class C4HudBarDef
 {
 public:
-	enum Physical
+	enum class Physical
 	{
-		EBP_None = 0,
-		EBP_Energy = 1,
-		EBP_Magic = 2,
-		EBP_Breath = 3,
-		EBP_First = EBP_None,
-		EBP_Last = EBP_Breath
+		None = 0,
+		Energy = 1,
+		Magic = 2,
+		Breath = 3,
+		First = None,
+		Last = Breath
 	};
 
-	enum Hide
+	enum class Hide
 	{
-		EBH_Never = 0,
-		EBH_HideHUDBars = 0x1, // according to C4Def::HideHUDBars; otherwise HideHUDBars is ignored
-		EBH_Empty = 0x2,
-		EBH_Full = 0x4,
-		EBH_EmptyFull = EBH_Empty | EBH_Full,
-		EBH_All = EBH_EmptyFull | EBH_HideHUDBars
+		Never = 0,
+		HideHUDBars = 0x1, // according to C4Def::HideHUDBars; otherwise HideHUDBars is ignored
+		Empty = 0x2,
+		Full = 0x4,
+		EmptyFull = Empty | Full,
+		All = EmptyFull | HideHUDBars
 	};
 
 public:
 	C4HudBarDef() noexcept;
-	C4HudBarDef(std::string_view name, std::string_view file, std::shared_ptr<C4FacetExID> gfx, std::int32_t index, Physical physical = EBP_None);
+	C4HudBarDef(std::string_view name, std::string_view file, std::shared_ptr<C4FacetExID> gfx, std::int32_t index, Physical physical = Physical::None);
 
 	bool operator==(const C4HudBarDef &rhs) const noexcept;
 
@@ -88,10 +88,21 @@ public:
 	float scale; // calculated from gfx.scale
 };
 
+
+constexpr C4HudBarDef::Hide operator &(const C4HudBarDef::Hide a, const C4HudBarDef::Hide b) noexcept
+{
+	return static_cast<C4HudBarDef::Hide>(std::to_underlying(a) & std::to_underlying(b));
+}
+
 constexpr C4HudBarDef::Hide operator|(const C4HudBarDef::Hide a, const C4HudBarDef::Hide b) noexcept
 {
 	using und_t = std::underlying_type_t<C4HudBarDef::Hide>;
 	return static_cast<C4HudBarDef::Hide>(static_cast<und_t>(a) | static_cast<und_t>(b));
+}
+
+constexpr C4HudBarDef::Hide operator~(const C4HudBarDef::Hide a) noexcept
+{
+	return static_cast<C4HudBarDef::Hide>(~std::to_underlying(a));
 }
 
 class C4HudBarsDef

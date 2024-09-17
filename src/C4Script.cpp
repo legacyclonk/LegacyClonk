@@ -6406,14 +6406,14 @@ static constexpr C4ScriptConstDef C4ScriptConstMap[] =
 	{ "C4MN_Add_ForceCount",  C4V_Int, C4MN_Add_ForceCount },
 	{ "C4MN_Add_ForceNoDesc", C4V_Int, C4MN_Add_ForceNoDesc },
 
-	{ "EBP_None",        C4V_Int, C4HudBarDef::EBP_None },
-	{ "EBP_Energy",      C4V_Int, C4HudBarDef::EBP_Energy },
-	{ "EBP_Magic",       C4V_Int, C4HudBarDef::EBP_Magic },
-	{ "EBP_Breath",      C4V_Int, C4HudBarDef::EBP_Breath },
-	{ "EBH_Never",       C4V_Int, C4HudBarDef::EBH_Never },
-	{ "EBH_Empty",       C4V_Int, C4HudBarDef::EBH_Empty },
-	{ "EBH_Full",        C4V_Int, C4HudBarDef::EBH_Full },
-	{ "EBH_HideHUDBars", C4V_Int, C4HudBarDef::EBH_HideHUDBars },
+	{ "EBP_None",        C4V_Int, static_cast<C4ValueInt>(C4HudBarDef::Physical::None) },
+	{ "EBP_Energy",      C4V_Int, static_cast<C4ValueInt>(C4HudBarDef::Physical::Energy) },
+	{ "EBP_Magic",       C4V_Int, static_cast<C4ValueInt>(C4HudBarDef::Physical::Magic) },
+	{ "EBP_Breath",      C4V_Int, static_cast<C4ValueInt>(C4HudBarDef::Physical::Breath) },
+	{ "EBH_Never",       C4V_Int, static_cast<C4ValueInt>(C4HudBarDef::Hide::Never) },
+	{ "EBH_Empty",       C4V_Int, static_cast<C4ValueInt>(C4HudBarDef::Hide::Empty) },
+	{ "EBH_Full",        C4V_Int, static_cast<C4ValueInt>(C4HudBarDef::Hide::Full) },
+	{ "EBH_HideHUDBars", C4V_Int, static_cast<C4ValueInt>(C4HudBarDef::Hide::HideHUDBars) },
 
 	{ "FX_OK",                  C4V_Int, C4Fx_OK }, // generic standard behaviour for all effect callbacks
 	{ "FX_Effect_Deny",         C4V_Int, C4Fx_Effect_Deny }, // delete effect
