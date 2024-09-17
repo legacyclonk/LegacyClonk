@@ -722,8 +722,8 @@ void C4HudBarsAdapt::CompileFunc(StdCompiler *comp)
 			bar.scale = static_cast<float>(def->gfxs.at(bar.gfx).scale) / 100.0f;
 		}
 
-		const auto uniqueDef = Game.HudBars.UniqueifyDefinition(std::move(def));
-		const auto instance = Game.HudBars.Instantiate(uniqueDef);
+		auto uniqueDef = Game.HudBars.UniqueifyDefinition(std::move(def));
+		const auto instance = Game.HudBars.Instantiate(std::move(uniqueDef));
 		comp->Value(mkNamingAdapt(mkSTLContainerAdapt(instance->values), "Bar", std::vector<C4HudBar>{}));
 
 		bars = instance;
