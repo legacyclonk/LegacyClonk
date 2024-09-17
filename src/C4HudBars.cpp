@@ -460,7 +460,7 @@ std::shared_ptr<C4HudBars> C4HudBarsUniquifier::DefineHudBars(C4AulContext *cthr
 	const auto error = [cthr](std::string msg) { throw C4AulExecError{cthr->Obj, std::format("DefineHudBars: {}", msg)}; };
 	C4HudBarsDef::PopulateNamesFromValues(error, bars, names);
 
-	auto def = UniqueifyDefinition(std::move(std::make_unique<C4HudBarsDef>(gfx, bars, names)));
+	auto def = UniqueifyDefinition(std::make_unique<C4HudBarsDef>(gfx, bars, names));
 	return Instantiate(def);
 }
 
