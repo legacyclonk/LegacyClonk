@@ -131,3 +131,14 @@ constexpr void HashCombine(std::size_t &hash, std::size_t nextHash)
 		hash ^= nextHash + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 	}
 }
+
+struct C4TransparentHash
+{
+	using is_transparent = void;
+
+	template<typename T>
+	std::size_t operator()(const T &t) const noexcept(noexcept(std::hash<T>{}(t)))
+	{
+		return std::hash<T>{}(t);
+	}
+};
