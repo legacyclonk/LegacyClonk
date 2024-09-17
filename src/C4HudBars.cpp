@@ -34,7 +34,7 @@ void C4HudBar::CompileFunc(StdCompiler *comp)
 	comp->Value(mkNamingAdapt(Visible, "Visible", true));
 }
 
-C4HudBars::C4HudBars(std::shared_ptr<const C4HudBarsDef> def) noexcept : def{def}
+C4HudBars::C4HudBars(std::shared_ptr<const C4HudBarsDef> def) noexcept : def{std::move(def)}
 {
 	for (const auto &bardef : def->bars)
 	{
@@ -156,9 +156,9 @@ C4HudBarDef::C4HudBarDef() noexcept :
 	value_index{-1}, value{0}, max{C4HudBar::Maximum}, visible{true}, scale{1.0f}
 {}
 
-C4HudBarDef::C4HudBarDef(std::string_view name, std::string_view gfx, const std::shared_ptr<C4FacetExID> &facet, std::int32_t index, Physical physical) :
+C4HudBarDef::C4HudBarDef(std::string_view name, std::string_view gfx, std::shared_ptr<C4FacetExID> facet, std::int32_t index, Physical physical) :
 	name{name}, physical{physical}, hide{DefaultHide(physical)},
-	gfx{gfx}, facet{facet}, index{index}, advance{true},
+	gfx{gfx}, facet{std::move(facet)}, index{index}, advance{true},
 	value_index{-1}, value{0}, max{C4HudBar::Maximum}, visible{true}, scale{1.0f}
 {}
 
@@ -259,7 +259,12 @@ namespace
 
 C4HudBarsDef::Gfx::Gfx() noexcept : key{}, file{}, amount{0}, scale{0} {}
 
-C4HudBarsDef::Gfx::Gfx(std::string key, std::string file, std::int32_t amount, std::int32_t scale) noexcept : key{key}, file{file}, amount{amount}, scale{scale} {}
+C4HudBarsDef::Gfx::Gfx(std::string key, std::string file, std::int32_t amount, std::int32_t scale) noexcept
+	: key{std::move(key)},
+	  file{std::move(file)},
+	  amount{amount},
+	  scale{scale}
+{}
 
 bool C4HudBarsDef::Gfx::operator==(const Gfx &rhs) const noexcept
 {
@@ -431,7 +436,7 @@ std::shared_ptr<const C4HudBarsDef> C4HudBarsUniquifier::UniqueifyDefinition(std
 std::shared_ptr<C4HudBars> C4HudBarsUniquifier::Instantiate(std::shared_ptr<const C4HudBarsDef> definition)
 {
 	if (!definition) return nullptr;
-	return std::make_shared<C4HudBars>(definition);
+	return std::make_shared<C4HudBars>(std::move(definition));
 }
 
 std::shared_ptr<C4HudBars> C4HudBarsUniquifier::DefineHudBars(C4AulContext *cthr, C4ValueHash &graphics, const C4ValueArray &definition)

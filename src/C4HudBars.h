@@ -55,7 +55,7 @@ public:
 
 public:
 	C4HudBarDef() noexcept;
-	C4HudBarDef(std::string_view name, std::string_view file, const std::shared_ptr<C4FacetExID> &gfx, std::int32_t index, Physical physical = EBP_None);
+	C4HudBarDef(std::string_view name, std::string_view file, std::shared_ptr<C4FacetExID> gfx, std::int32_t index, Physical physical = EBP_None);
 
 	bool operator==(const C4HudBarDef &rhs) const noexcept;
 
