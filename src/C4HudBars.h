@@ -145,6 +145,9 @@ public:
 	bool operator==(const C4HudBar &rhs) const noexcept;
 
 	void CompileFunc(StdCompiler *comp);
+
+public:
+	static constexpr std::int32_t Max{1000000};
 };
 
 class C4HudBars

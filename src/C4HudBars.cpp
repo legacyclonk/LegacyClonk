@@ -28,7 +28,7 @@
 #include <format>
 
 C4HudBar::C4HudBar() noexcept
- : value{0}, max{1000000}, visible{true}
+ : value{0}, max{Max}, visible{true}
 {}
 
 C4HudBar::C4HudBar(std::int32_t value, std::int32_t max, bool visible) noexcept
@@ -43,7 +43,7 @@ bool C4HudBar::operator==(const C4HudBar &rhs) const noexcept
 void C4HudBar::CompileFunc(StdCompiler *comp)
 {
 	comp->Value(mkNamingAdapt(value, "Value", 0));
-	comp->Value(mkNamingAdapt(max, "Max", 1000000));
+	comp->Value(mkNamingAdapt(max, "Max", Max));
 	comp->Value(mkNamingAdapt(visible, "Visible", true));
 }
 
@@ -167,13 +167,13 @@ void C4HudBars::DrawHudBars(C4Facet &cgo, C4Object &obj) const noexcept
 
 C4HudBarDef::C4HudBarDef() noexcept :
 	physical{EBP_None}, hide{EBH_Empty}, index{}, advance{true},
-	value_index{-1}, value{0}, max{1000000}, visible{true}, scale{1.0f}
+	value_index{-1}, value{0}, max{C4HudBar::Max}, visible{true}, scale{1.0f}
 {}
 
 C4HudBarDef::C4HudBarDef(std::string_view name, std::string_view gfx, const std::shared_ptr<C4FacetExID> &facet, std::int32_t index, Physical physical) :
 	name{name}, physical{physical}, hide{DefaultHide(physical)},
 	gfx{gfx}, facet{facet}, index{index}, advance{true},
-	value_index{-1}, value{0}, max{1000000}, visible{true}, scale{1.0f}
+	value_index{-1}, value{0}, max{C4HudBar::Max}, visible{true}, scale{1.0f}
 {}
 
 bool C4HudBarDef::operator==(const C4HudBarDef &rhs) const noexcept
@@ -256,7 +256,7 @@ void C4HudBarDef::CompileFunc(StdCompiler *comp)
 	comp->Value(mkNamingAdapt(advance, "Advance", true));
 	comp->Value(mkNamingAdapt(value_index, "ValueIndex", -1));
 	comp->Value(mkNamingAdapt(value, "Value", 0));
-	comp->Value(mkNamingAdapt(max, "Max", 1000000));
+	comp->Value(mkNamingAdapt(max, "Max", C4HudBar::Max));
 	comp->Value(mkNamingAdapt(visible, "Visible", true));
 	// gfx and scale are restored from def.gfxs
 }
@@ -607,7 +607,7 @@ void C4HudBarsUniquifier::ProcessHudBar(C4AulContext *cthr, std::int32_t &value_
 	if (_index < 0) error("index", index);
 	if (_value < 0) error("value", value);
 
-	C4ValueInt _max{1000000};
+	C4ValueInt _max{C4HudBar::Max};
 	if (bar.contains(C4VString("max")))
 	{
 		auto max = bar[C4VString("max")];
