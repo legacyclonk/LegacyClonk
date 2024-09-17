@@ -2518,9 +2518,6 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 				CreateObject(C4Id("GOAL"), nullptr);
 	SetInitProgress(96);
 
-	// close any gfx groups, because they are no longer needed (after sky is initialized)
-	GraphicsResource.CloseFiles();
-
 	if (!section)
 	{
 		// Music
