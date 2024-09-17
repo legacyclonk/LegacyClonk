@@ -502,9 +502,9 @@ static std::string_view StringToStringView(const C4String *const string)
 
 void C4HudBarsUniquifier::ProcessGraphics(C4ValueHash &map, C4HudBarsDef::Gfxs &gfx)
 {
-	const auto keyAmount = C4VString("amount");
-	const auto keyScale = C4VString("scale");
-	const auto keyFile = C4VString("file");
+	const auto keyAmount = C4VString("Amount");
+	const auto keyScale = C4VString("Scale");
+	const auto keyFile = C4VString("File");
 
 	for (const auto &[key, val] : map)
 	{
@@ -592,11 +592,11 @@ void C4HudBarsUniquifier::ProcessGroup(std::int32_t &valueIndex, const C4HudBars
 
 void C4HudBarsUniquifier::ProcessHudBar(std::int32_t &valueIndex, const C4HudBarsDef::Gfxs &graphics, const C4ValueHash &bar, C4HudBarsDef::Bars &bars, const bool advance)
 {
-	auto name = bar[C4VString("name")];
+	auto name = bar[C4VString("Name")];
 	const auto *_name = name.getStr();
 	if (!_name)
 	{
-		throw C4HudBarException{std::format("HudBar definition has invalid name, got: {}", name.GetDataString())};
+		throw C4HudBarException{std::format("HudBar definition has invalid Name, got: {}", name.GetDataString())};
 	}
 
 	const auto error = [_name](const char *property, C4Value &val)
@@ -604,38 +604,38 @@ void C4HudBarsUniquifier::ProcessHudBar(std::int32_t &valueIndex, const C4HudBar
 		throw C4HudBarException{std::format("\"{}\" definition has invalid {}, got {}", val.GetDataString(), property, StringToStringView(_name))};
 	};
 
-	C4Value gfx{bar[C4VString("gfx")]};
+	C4Value gfx{bar[C4VString("Gfx")]};
 	const auto *_gfx = gfx.getStr();
-	if (!_gfx) error("gfx", gfx);
+	if (!_gfx) error("Gfx", gfx);
 
-	C4Value physical{bar[C4VString("physical")]};
+	C4Value physical{bar[C4VString("Physical")]};
 	auto _physical = static_cast<C4HudBarDef::Physical>(physical.getInt());
-	if (C4HudBarDef::Physical::First <= _physical && _physical <= C4HudBarDef::Physical::Last) error("physical", physical);
+	if (C4HudBarDef::Physical::First <= _physical && _physical <= C4HudBarDef::Physical::Last) error("Physical", physical);
 
-	C4Value hide{bar[C4VString("hide")]};
+	C4Value hide{bar[C4VString("Hide")]};
 	auto _hide = C4HudBarDef::Hide::Empty;
 	if (hide) _hide = static_cast<C4HudBarDef::Hide>(hide.getInt());
-	if ((_hide & ~C4HudBarDef::Hide::All) != C4HudBarDef::Hide::Never) error("hide", hide);
+	if ((_hide & ~C4HudBarDef::Hide::All) != C4HudBarDef::Hide::Never) error("Hide", hide);
 
-	C4Value index{bar[C4VString("index")]};
-	C4Value value{bar[C4VString("value")]};
+	C4Value index{bar[C4VString("Index")]};
+	C4Value value{bar[C4VString("Value")]};
 	const auto _index = index.getInt();
 	const auto _value = value.getInt();
-	if (_index < 0) error("index", index);
-	if (_value < 0) error("value", value);
+	if (_index < 0) error("Index", index);
+	if (_value < 0) error("Value", value);
 
 	C4ValueInt _max{C4HudBar::Maximum};
-	if (bar.contains(C4VString("max")))
+	if (bar.contains(C4VString("Max")))
 	{
-		auto max = bar[C4VString("max")];
+		auto max = bar[C4VString("Max")];
 		_max = max.getInt();
-		if (_max < 0) error("max", max);
+		if (_max < 0) error("Max", max);
 	}
 
 	bool _visible{true};
-	if (bar.contains(C4VString("visible")))
+	if (bar.contains(C4VString("Visible")))
 	{
-		auto visible = bar[C4VString("visible")];
+		auto visible = bar[C4VString("Visible")];
 		_visible = visible.getBool();
 	}
 
