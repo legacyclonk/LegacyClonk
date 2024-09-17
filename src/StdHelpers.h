@@ -132,6 +132,14 @@ constexpr void HashCombine(std::size_t &hash, std::size_t nextHash)
 	}
 }
 
+template<typename... Args>
+constexpr std::size_t HashArguments(Args &&...args)
+{
+	std::size_t result{0};
+	(..., HashCombine(result, std::hash<std::decay_t<Args>>{}(args)));
+	return result;
+}
+
 struct C4TransparentHash
 {
 	using is_transparent = void;
