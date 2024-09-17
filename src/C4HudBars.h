@@ -75,7 +75,7 @@ public:
 	std::int32_t index;
 	bool advance;
 
-	std::int32_t value_index;
+	std::int32_t valueIndex;
 	std::int32_t value;
 	std::int32_t max;
 	bool visible;
@@ -182,8 +182,8 @@ public:
 
 private:
 	void ProcessGraphics(C4AulContext *cthr, C4ValueHash &map, C4HudBarsDef::Gfxs &gfx);
-	void ProcessGroup(C4AulContext *cthr, std::int32_t &value_index, const C4HudBarsDef::Gfxs &graphics, const C4ValueArray &group, C4HudBarsDef::Bars &bars, bool advanceAlways);
-	void ProcessHudBar(C4AulContext *cthr, std::int32_t &value_index, const C4HudBarsDef::Gfxs &graphics, const C4ValueHash &bar, C4HudBarsDef::Bars &bars, bool advance);
+	void ProcessGroup(C4AulContext *cthr, std::int32_t &valueIndex, const C4HudBarsDef::Gfxs &graphics, const C4ValueArray &group, C4HudBarsDef::Bars &bars, bool advanceAlways);
+	void ProcessHudBar(C4AulContext *cthr, std::int32_t &valueIndex, const C4HudBarsDef::Gfxs &graphics, const C4ValueHash &bar, C4HudBarsDef::Bars &bars, bool advance);
 
 	using C4HudBarsDefRef = std::reference_wrapper<const C4HudBarsDef>;
 	using Definitions = std::unordered_map<C4HudBarsDefRef, std::weak_ptr<const C4HudBarsDef>, std::hash<const C4HudBarsDef>, std::equal_to<const C4HudBarsDef>>;
