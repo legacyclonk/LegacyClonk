@@ -43,7 +43,7 @@ C4HudBars::C4HudBars(std::shared_ptr<const C4HudBarsDef> def) noexcept : def{std
 	}
 }
 
-C4HudBar *C4HudBars::BarVal(C4AulContext *cthr, const char *functionName, const std::string &name)
+C4HudBar *C4HudBars::BarVal(const char *functionName, const std::string &name)
 {
 	try
 	{
@@ -55,28 +55,25 @@ C4HudBar *C4HudBars::BarVal(C4AulContext *cthr, const char *functionName, const 
 		}
 		else
 		{
-			throw C4AulExecError{cthr->Obj, std::format("{}: bar \"{}\" is based on physical and can not be set directly.", functionName, name)};
+			throw C4HudBarException{std::format("bar \"{}\" is based is based on physical and can not be set directly.", name)};
 		}
 	}
 	catch (const std::out_of_range &)
 	{
-		throw C4AulExecError{cthr->Obj, std::format("{}: bar \"{}\" was not defined.", functionName, name)};
+		throw C4HudBarException{std::format("bar \"{}\" was not defined.", name)};
 	}
-
-	// should never get here
-	throw C4AulExecError{cthr->Obj, std::format("{}: bar \"{}\" an unexpected error occured.", functionName, name)};
 }
 
-void C4HudBars::SetHudBarValue(C4AulContext *cthr, const std::string &name, std::int32_t value, std::int32_t max)
+void C4HudBars::SetHudBarValue(const std::string &name, std::int32_t value, std::int32_t max)
 {
-	const auto barval = BarVal(cthr, "SetHudBarValue", name);
+	const auto barval = BarVal("SetHudBarValue", name);
 	barval->Value = value;
 	if(max > 0) barval->Max = max;
 }
 
-void C4HudBars::SetHudBarVisibility(C4AulContext *cthr, const std::string &name, bool visible)
+void C4HudBars::SetHudBarVisibility(const std::string &name, bool visible)
 {
-	const auto barval = BarVal(cthr, "SetHudBarVisibility", name);
+	const auto barval = BarVal("SetHudBarVisibility", name);
 	barval->Visible = visible;
 }
 
@@ -471,17 +468,17 @@ std::shared_ptr<C4HudBars> C4HudBarsUniquifier::Instantiate(std::shared_ptr<cons
 	return std::make_shared<C4HudBars>(std::move(definition));
 }
 
-std::shared_ptr<C4HudBars> C4HudBarsUniquifier::DefineHudBars(C4AulContext *cthr, C4ValueHash &graphics, const C4ValueArray &definition)
+std::shared_ptr<C4HudBars> C4HudBarsUniquifier::DefineHudBars(C4ValueHash &graphics, const C4ValueArray &definition)
 {
 	std::int32_t valueIndex{0};
 	C4HudBarsDef::Gfxs gfx;
 	C4HudBarsDef::Bars bars;
 	C4HudBarsDef::Names names;
 
-	ProcessGraphics(cthr, graphics, gfx);
-	ProcessGroup(cthr, valueIndex, gfx, definition, bars, true);
+	ProcessGraphics(graphics, gfx);
+	ProcessGroup(valueIndex, gfx, definition, bars, true);
 
-	const auto error = [cthr](std::string msg) { throw C4AulExecError{cthr->Obj, std::format("DefineHudBars: {}", msg)}; };
+	const auto error = [](std::string msg) { throw C4HudBarException{std::move(msg)}; };
 	C4HudBarsDef::PopulateNamesFromValues(error, bars, names);
 
 	auto def = UniqueifyDefinition(std::make_unique<C4HudBarsDef>(gfx, bars, names));
@@ -503,7 +500,7 @@ static std::string_view StringToStringView(const C4String *const string)
 	return StdStrBufToStringView(string->Data);
 }
 
-void C4HudBarsUniquifier::ProcessGraphics(C4AulContext *cthr, C4ValueHash &map, C4HudBarsDef::Gfxs &gfx)
+void C4HudBarsUniquifier::ProcessGraphics(C4ValueHash &map, C4HudBarsDef::Gfxs &gfx)
 {
 	const auto keyAmount = C4VString("amount");
 	const auto keyScale = C4VString("scale");
@@ -513,14 +510,14 @@ void C4HudBarsUniquifier::ProcessGraphics(C4AulContext *cthr, C4ValueHash &map, 
 	{
 		if (key.GetType() != C4V_String)
 		{
-			throw C4AulExecError{cthr->Obj, "DefineHudBars: keys within maps are expected to be of type string"};
+			throw C4HudBarException{"keys within maps are expected to be of type string"};
 		}
 
 		const auto _key = key.GetRefVal()._getStr()->Data;
 
 		if (val.GetType() != C4V_Map)
 		{
-			throw C4AulExecError{cthr->Obj, std::format("DefineHudBars: key \"{}\" is not a map, got: {}", StdStrBufToStringView(_key), val.GetDataString())};
+			throw C4HudBarException{std::format("key \"{}\" is not a map, got: {}", StdStrBufToStringView(_key), val.GetDataString())};
 		}
 
 		const auto &m = *val.GetRefVal()._getMap();
@@ -538,18 +535,17 @@ void C4HudBarsUniquifier::ProcessGraphics(C4AulContext *cthr, C4ValueHash &map, 
 
 		if (const auto success = gfx.try_emplace(std::string{StdStrBufToStringView(_key)}, std::string{StdStrBufToStringView(_key)}, std::string{StdStrBufToStringView(_file)}, amount, scale).second; !success)
 		{
-			throw C4AulExecError{cthr->Obj, std::format("DefineHudBars: duplicate key \"{}\" in gfx description ", StdStrBufToStringView(_key))};
+			throw C4HudBarException{std::format("duplicate key \"{}\" in gfx description ", StdStrBufToStringView(_key))};
 		}
 	}
 }
 
-void C4HudBarsUniquifier::ProcessGroup(C4AulContext *cthr, std::int32_t &valueIndex, const C4HudBarsDef::Gfxs &graphics, const C4ValueArray &group, C4HudBarsDef::Bars &bars, const bool advanceAlways)
+void C4HudBarsUniquifier::ProcessGroup(std::int32_t &valueIndex, const C4HudBarsDef::Gfxs &graphics, const C4ValueArray &group, C4HudBarsDef::Bars &bars, bool advanceAlways)
 {
-	const auto error = [cthr](const char *msg, const C4Value &val)
+	const auto error = [](const char *msg, const C4Value &val)
 	{
-		auto format = std::string{"DefineHudBars: "} + msg;
 		const std::string dataString{val.GetDataString()};
-		throw C4AulExecError{cthr->Obj, std::vformat(format, std::make_format_args(dataString))};
+		throw C4HudBarException{std::vformat(msg, std::make_format_args(dataString))};
 	};
 
 	const std::int32_t size{group.GetSize()};
@@ -562,7 +558,7 @@ void C4HudBarsUniquifier::ProcessGroup(C4AulContext *cthr, std::int32_t &valueIn
 		case C4V_Map:
 			if (const auto *map = element._getMap(); map)
 			{
-				ProcessHudBar(cthr, valueIndex, graphics, *map, bars, advanceAlways || i == size-1);
+				ProcessHudBar(valueIndex, graphics, *map, bars, advanceAlways || i == size-1);
 			}
 			else
 			{
@@ -575,7 +571,7 @@ void C4HudBarsUniquifier::ProcessGroup(C4AulContext *cthr, std::int32_t &valueIn
 			{
 				if (const auto *array = element._getArray(); array)
 				{
-					ProcessGroup(cthr, valueIndex, graphics, *array, bars, false);
+					ProcessGroup(valueIndex, graphics, *array, bars, false);
 				}
 				else
 				{
@@ -594,21 +590,18 @@ void C4HudBarsUniquifier::ProcessGroup(C4AulContext *cthr, std::int32_t &valueIn
 	}
 }
 
-void C4HudBarsUniquifier::ProcessHudBar(C4AulContext *cthr, std::int32_t &valueIndex, const C4HudBarsDef::Gfxs &graphics, const C4ValueHash &bar, C4HudBarsDef::Bars &bars, const bool advance)
+void C4HudBarsUniquifier::ProcessHudBar(std::int32_t &valueIndex, const C4HudBarsDef::Gfxs &graphics, const C4ValueHash &bar, C4HudBarsDef::Bars &bars, bool advance)
 {
 	auto name = bar[C4VString("name")];
 	const auto *_name = name.getStr();
 	if (!_name)
 	{
-		throw C4AulExecError{cthr->Obj, std::format("DefineHudBars: HudBar definition has invalid name, got: {}", name.GetDataString())};
+		throw C4HudBarException{std::format("HudBar definition has invalid name, got: {}", name.GetDataString())};
 	}
 
-	const auto error = [cthr, _name](const char *property, C4Value &val)
+	const auto error = [_name](const char *property, C4Value &val)
 	{
-		auto format = std::string{"DefineHudBars: \"{}\" definition has invalid "} + property + ", got {}";
-		const std::string dataString{val.GetDataString()};
-		const char *const data{_name->Data.getData()};
-		throw C4AulExecError{cthr->Obj, std::vformat(format, std::make_format_args(data, dataString))};
+		throw C4HudBarException{std::format("\"{}\" definition has invalid {}, got {}", val.GetDataString(), property, StringToStringView(_name))};
 	};
 
 	C4Value gfx{bar[C4VString("gfx")]};
@@ -649,9 +642,9 @@ void C4HudBarsUniquifier::ProcessHudBar(C4AulContext *cthr, std::int32_t &valueI
 	{
 		const auto file = _gfx->Data;
 
-		const auto facetError = [cthr, _name](std::string msg)
+		const auto facetError = [_name](std::string msg)
 		{
-			throw C4AulExecError{cthr->Obj, std::format("DefineHudBars: HudBar \"{}\" {}", StringToStringView(_name), msg)};
+			throw C4HudBarException{std::format("HudBar \"{}\" {}", StringToStringView(_name), msg)};
 		};
 
 		const auto facet = GetFacet(facetError, graphics, file.getData());

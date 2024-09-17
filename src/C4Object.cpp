@@ -2694,7 +2694,7 @@ void C4Object::DrawLine(C4FacetEx &cgo)
 	FinishedDrawing();
 }
 
-bool C4Object::DefineHudBars(C4AulContext *cthr, C4ValueHash *graphics, C4ValueArray *definition)
+bool C4Object::DefineHudBars(C4ValueHash *graphics, C4ValueArray *definition)
 {
 	// If null pointer is given restore default hud bars
 	if (!graphics || !definition)
@@ -2703,7 +2703,7 @@ bool C4Object::DefineHudBars(C4AulContext *cthr, C4ValueHash *graphics, C4ValueA
 		return true;
 	}
 
-	auto bars = Game.HudBars.DefineHudBars(cthr, *graphics, *definition);
+	auto bars = Game.HudBars.DefineHudBars(*graphics, *definition);
 	if (bars != nullptr)
 	{
 		hudBars = bars;
@@ -2712,14 +2712,14 @@ bool C4Object::DefineHudBars(C4AulContext *cthr, C4ValueHash *graphics, C4ValueA
 	return false;
 }
 
-void C4Object::SetHudBarValue(C4AulContext *cthr, const char *name, int32_t value, int32_t max)
+void C4Object::SetHudBarValue(const char *name, int32_t value, int32_t max)
 {
-	hudBars->SetHudBarValue(cthr, name, value, max);
+	hudBars->SetHudBarValue(name, value, max);
 }
 
-void C4Object::SetHudBarVisibility(C4AulContext *cthr, const char *name, bool visible)
+void C4Object::SetHudBarVisibility(const char *name, bool visible)
 {
-	hudBars->SetHudBarVisibility(cthr, name, visible);
+	hudBars->SetHudBarVisibility(name, visible);
 }
 
 void C4Object::DrawHudBars(C4Facet &cgo)

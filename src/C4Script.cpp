@@ -1766,21 +1766,45 @@ static bool FnDefineHudBars(C4AulContext *cthr, C4ValueHash *graphics, C4ValueAr
 {
 	const auto obj = cthr->Obj;
 	if (!obj) return false;
-	return obj->DefineHudBars(cthr, graphics, bars);
+
+	try
+	{
+		return obj->DefineHudBars(graphics, bars);
+	}
+	catch (const C4HudBarException &e)
+	{
+		throw C4AulExecError{cthr->Obj, std::format("DefineHudBars: {}", e.what())};
+	}
 }
 
 static void FnSetHudBarValue(C4AulContext *cthr, C4String *name, C4ValueInt newValue, C4ValueInt newMax)
 {
 	const auto obj = cthr->Obj;
 	if (!obj) return;
-	obj->SetHudBarValue(cthr, FnStringPar(name), newValue, newMax);
+
+	try
+	{
+		obj->SetHudBarValue(FnStringPar(name), newValue, newMax);
+	}
+	catch (const C4HudBarException &e)
+	{
+		throw C4AulExecError{cthr->Obj, std::format("SetHudBarValue: {}", e.what())};
+	}
 }
 
 static void FnSetHudBarVisibility(C4AulContext *cthr, C4String *name, bool visible)
 {
 	const auto obj = cthr->Obj;
 	if (!obj) return;
-	obj->SetHudBarVisibility(cthr, FnStringPar(name), visible);
+
+	try
+	{
+		obj->SetHudBarVisibility(FnStringPar(name), visible);
+	}
+	catch (const C4HudBarException &e)
+	{
+		throw C4AulExecError{cthr->Obj, std::format("SetHudBarVisibility: {}", e.what())};
+	}
 }
 
 // Check / Status
