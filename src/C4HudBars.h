@@ -133,21 +133,17 @@ public:
 	Names names;
 };
 
-class C4HudBar
+struct C4HudBar
 {
-public:
-	std::int32_t value;
-	std::int32_t max;
-	bool visible;
+	static constexpr std::int32_t Maximum{1000000};
 
-	C4HudBar() noexcept;
-	C4HudBar(std::int32_t value, std::int32_t max, bool visible) noexcept;
-	bool operator==(const C4HudBar &rhs) const noexcept;
+	std::int32_t Value{0};
+	std::int32_t Max{Maximum};
+	bool Visible{true};
+
+	bool operator==(const C4HudBar &rhs) const noexcept = default;
 
 	void CompileFunc(StdCompiler *comp);
-
-public:
-	static constexpr std::int32_t Max{1000000};
 };
 
 class C4HudBars
