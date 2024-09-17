@@ -133,6 +133,12 @@ constexpr void HashCombine(std::size_t &hash, std::size_t nextHash)
 }
 
 template<typename... Args>
+constexpr void HashCombineArguments(std::size_t &hash, Args &&...args)
+{
+	(..., HashCombine(hash, std::hash<std::decay_t<Args>>{}(args)));
+}
+
+template<typename... Args>
 constexpr std::size_t HashArguments(Args &&...args)
 {
 	std::size_t result{0};
