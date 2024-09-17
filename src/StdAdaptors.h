@@ -909,6 +909,9 @@ struct StdBitfieldAdapt
 {
 	typedef StdBitfieldEntry<T> Entry;
 
+	template<typename U>
+	using UnderlyingType = std::conditional_t<std::is_enum_v<U>, std::underlying_type<U>, std::type_identity<U>>::type;
+
 	StdBitfieldAdapt(T &rVal, const Entry *pNames) : rVal(rVal), pNames(pNames) { assert(pNames); }
 	T &rVal; const Entry *pNames;
 
@@ -986,8 +989,8 @@ struct StdBitfieldAdapt
 		}
 	}
 
-	template <class D> inline bool operator==(const D &nValue) const { return rVal == nValue; }
-	template <class D> inline auto &operator=(const D &nValue) { rVal = nValue; return *this; }
+	template <class D> inline bool operator==(const D &nValue) const { return static_cast<std::common_type_t<UnderlyingType<T>, UnderlyingType<D>>>(rVal) == static_cast<std::common_type_t<UnderlyingType<T>, UnderlyingType<D>>>(nValue); }
+	template <class D> inline auto &operator=(const D &nValue) { rVal = static_cast<T>(nValue); return *this; }
 };
 
 template <class T, size_t N>
