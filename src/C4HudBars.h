@@ -112,7 +112,7 @@ public:
 	C4HudBarsDef &operator=(const C4HudBarsDef &other) = default;
 	C4HudBarsDef &operator=(C4HudBarsDef &&other) = default;
 
-	static void PopulateNamesFromValues(const std::function<void(StdStrBuf)> &error, const Bars &bars, Names &names);
+	static void PopulateNamesFromValues(const std::function<void (std::string)> &error, const Bars &bars, Names &names);
 
 	bool operator==(const C4HudBarsDef &rhs) const noexcept;
 	std::size_t GetHash() const noexcept;
@@ -168,7 +168,7 @@ class C4HudBarsUniquifier
 {
 public:
 	std::shared_ptr<C4HudBars>          DefaultBars();
-	std::shared_ptr<C4FacetExID>        GetFacet(const std::function<void(StdStrBuf)> &error, const C4HudBarsDef::Gfxs &gfx, std::string_view file);
+	std::shared_ptr<C4FacetExID>        GetFacet(const std::function<void(std::string)> &error, const C4HudBarsDef::Gfxs &gfx, std::string_view file);
 	std::shared_ptr<const C4HudBarsDef> UniqueifyDefinition(std::unique_ptr<C4HudBarsDef> definition);
 	std::shared_ptr<C4HudBars>          Instantiate(std::shared_ptr<const C4HudBarsDef> definition);
 	std::shared_ptr<C4HudBars>          DefineHudBars(C4AulContext *cthr, C4ValueHash &graphics, const C4ValueArray &definition);

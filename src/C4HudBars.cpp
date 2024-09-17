@@ -15,8 +15,6 @@
 
 #include "C4HudBars.h"
 
-#include "C4Include.h"
-
 #include "C4Def.h"
 #include "C4Game.h"
 #include "C4Log.h"
@@ -26,6 +24,8 @@
 #include "C4Wrappers.h"
 
 #include "StdHelpers.h"
+
+#include <format>
 
 C4HudBar::C4HudBar() noexcept
   : value{0}, max{1000000}, visible{true}
@@ -69,16 +69,16 @@ C4HudBar *C4HudBars::BarVal(C4AulContext *cthr, const char *functionName, const 
 		}
 		else
 		{
-			throw C4AulExecError{cthr->Obj, FormatString("%s: bar \"%s\" is based on physical and can not be set directly.", functionName, name.c_str()).getData()};
+			throw C4AulExecError{cthr->Obj, std::format("{}: bar \"{}\" is based on physical and can not be set directly.", functionName, name)};
 		}
 	}
 	catch (const std::out_of_range &)
 	{
-		throw C4AulExecError{cthr->Obj, FormatString("%s: bar \"%s\" was not defined.", functionName, name.c_str()).getData()};
+		throw C4AulExecError{cthr->Obj, std::format("{}: bar \"{}\" was not defined.", functionName, name)};
 	}
 
 	// should never get here
-	throw C4AulExecError{cthr->Obj, FormatString("%s: bar \"%s\" an unexpected error occured.", functionName, name.c_str()).getData()};
+	throw C4AulExecError{cthr->Obj, std::format("{}: bar \"{}\" an unexpected error occured.", functionName, name)};
 }
 
 void C4HudBars::SetHudBarValue(C4AulContext *cthr, const std::string &name, std::int32_t value, std::int32_t max)
@@ -290,12 +290,12 @@ void C4HudBarsDef::Gfx::CompileFunc(StdCompiler *comp)
 
 C4HudBarsDef::C4HudBarsDef(Gfxs &&gfxs, Bars &&bars) : gfxs{std::move(gfxs)}, bars{std::move(bars)}
 {
-	PopulateNamesFromValues([](StdStrBuf msg) { LogFatal(msg.getData()); }, this->bars, names);
+	PopulateNamesFromValues([](std::string msg) { LogFatalNTr(msg); }, this->bars, names);
 }
 
 C4HudBarsDef::C4HudBarsDef(const Gfxs &gfxs, const C4HudBarsDef::Bars &bars, const C4HudBarsDef::Names &names) : gfxs{gfxs}, bars{bars}, names{names} {}
 
-void C4HudBarsDef::PopulateNamesFromValues(const std::function<void(StdStrBuf)> &error, const C4HudBarsDef::Bars &bars, C4HudBarsDef::Names &names)
+void C4HudBarsDef::PopulateNamesFromValues(const std::function<void(std::string)> &error, const C4HudBarsDef::Bars &bars, C4HudBarsDef::Names &names)
 {
 	std::int32_t i{0};
 	for (const auto &bar : bars)
@@ -303,7 +303,7 @@ void C4HudBarsDef::PopulateNamesFromValues(const std::function<void(StdStrBuf)> 
 		const auto success = names.emplace(bar.name, i);
 		if (!success.second)
 		{
-			error(FormatString("C4HudBarsDef %s definition, names must be unique, duplicate detected", bar.name.c_str()));
+			error(std::format("C4HudBarsDef {} definition, names must be unique, duplicate detected", bar.name));
 		}
 		++i;
 	}
@@ -343,7 +343,7 @@ std::shared_ptr<C4HudBars> C4HudBarsUniquifier::DefaultBars()
 	{
 		constexpr auto file = "EnergyBars";
 		C4HudBarsDef::Gfxs gfxs{{file, C4HudBarsDef::Gfx{file, file, 3, 100}}};
-		const auto gfx = GetFacet([file](StdStrBuf msg) { LogFatal(FormatString("could not load default hud bars \"%s\"", file).getData()); }, gfxs, file);
+		const auto gfx = GetFacet([file](std::string msg) { LogFatalNTr(std::format("could not load default hud bars \"{}\"", file)); }, gfxs, file);
 		const auto def = UniqueifyDefinition
 		(
 			std::make_unique<C4HudBarsDef>
@@ -363,7 +363,7 @@ std::shared_ptr<C4HudBars> C4HudBarsUniquifier::DefaultBars()
 	return defaultBars;
 }
 
-std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<void(StdStrBuf)> &error, const C4HudBarsDef::Gfxs &gfxs, std::string_view gfx)
+std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<void(std::string)> &error, const C4HudBarsDef::Gfxs &gfxs, std::string_view gfx)
 {
 	const std::string key{gfx};
 
@@ -391,7 +391,7 @@ std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<v
 	}
 	catch (const std::out_of_range &)
 	{
-		error(FormatString("missing key \"%s\" in graphics definition", key.c_str()));
+		error(std::format("missing key \"{}\" in graphics definition", key));
 		return nullptr;
 	}
 
@@ -407,7 +407,7 @@ std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<v
 	const bool success{Game.GraphicsResource.LoadFile(*facet, file.c_str(), Game.GraphicsResource.Files)};
 	if(!success)
 	{
-		error(FormatString("could not load hud bar graphic \"%s\"", file.c_str()));
+		error(std::format("could not load hud bar graphic \"{}\"", file));
 		return nullptr;
 	}
 
@@ -457,11 +457,26 @@ std::shared_ptr<C4HudBars> C4HudBarsUniquifier::DefineHudBars(C4AulContext *cthr
 
 	ProcessGraphics(cthr, graphics, gfx);
 	ProcessGroup(cthr, value_index, gfx, definition, bars, true);
-	const auto error = [cthr](StdStrBuf msg) { throw C4AulExecError{cthr->Obj, FormatString("DefineHudBars: %s", msg.getData()).getData()}; };
+	const auto error = [cthr](std::string msg) { throw C4AulExecError{cthr->Obj, std::format("DefineHudBars: {}", msg)}; };
 	C4HudBarsDef::PopulateNamesFromValues(error, bars, names);
 
 	auto def = UniqueifyDefinition(std::move(std::make_unique<C4HudBarsDef>(gfx, bars, names)));
 	return Instantiate(def);
+}
+
+static std::string_view StdStrBufToStringView(const StdStrBuf &buf)
+{
+	if (buf.isNull())
+	{
+		return {};
+	}
+
+	return {buf.getData(), buf.getLength()};
+}
+
+static std::string_view StringToStringView(const C4String *const string)
+{
+	return StdStrBufToStringView(string->Data);
 }
 
 void C4HudBarsUniquifier::ProcessGraphics(C4AulContext *cthr, C4ValueHash &map, C4HudBarsDef::Gfxs &gfx)
@@ -475,16 +490,16 @@ void C4HudBarsUniquifier::ProcessGraphics(C4AulContext *cthr, C4ValueHash &map, 
 		if (key.GetType() != C4V_String) {
 			throw C4AulExecError{cthr->Obj, "DefineHudBars: keys within maps are expected to be of type string"};
 		}
-		const auto _key = key.GetRefVal()._getStr()->Data.getData();
+		const auto _key = key.GetRefVal()._getStr()->Data;
 
 		if (val.GetType() != C4V_Map)
 		{
-			throw C4AulExecError{cthr->Obj, FormatString("DefineHudBars: key \"%s\" is not a map, got: %s", _key, val.GetDataString().getData()).getData()};
+			throw C4AulExecError{cthr->Obj, std::format("DefineHudBars: key \"{}\" is not a map, got: {}", StdStrBufToStringView(_key), val.GetDataString())};
 		}
 		const auto &m = *val.GetRefVal()._getMap();
 
 		C4Value file = m[keyFile];
-		const auto _file = file ? file.getStr()->Data.getData() : _key;
+		const auto _file = file ? file.getStr()->Data : _key;
 
 		// TODO: Check Type and const?
 		auto _amount = m[keyAmount];
@@ -494,9 +509,9 @@ void C4HudBarsUniquifier::ProcessGraphics(C4AulContext *cthr, C4ValueHash &map, 
 		if (amount == 0) amount = 1;
 		if (scale == 0) scale = 100;
 
-		if (const auto success = gfx.emplace(_key, C4HudBarsDef::Gfx{_key, _file, amount, scale}).second; !success)
+		if (const auto success = gfx.try_emplace(std::string{StdStrBufToStringView(_key)}, std::string{StdStrBufToStringView(_key)}, std::string{StdStrBufToStringView(_file)}, amount, scale).second; !success)
 		{
-			throw C4AulExecError{cthr->Obj, FormatString("DefineHudBars: duplicate key \"%s\" in gfx description ", _key).getData()};
+			throw C4AulExecError{cthr->Obj, std::format("DefineHudBars: duplicate key \"{}\" in gfx description ", StdStrBufToStringView(_key))};
 		}
 	}
 }
@@ -505,7 +520,8 @@ void C4HudBarsUniquifier::ProcessGroup(C4AulContext *cthr, std::int32_t &value_i
 {
 	const auto error = [cthr](const char *msg, const C4Value &val) {
 		auto format = std::string{"DefineHudBars: "} + msg;
-		throw C4AulExecError{cthr->Obj, FormatString(format.c_str(), val.GetDataString().getData()).getData()};
+		const std::string dataString{val.GetDataString()};
+		throw C4AulExecError{cthr->Obj, std::vformat(format, std::make_format_args(dataString))};
 	};
 
 	const std::int32_t size{group.GetSize()};
@@ -521,7 +537,7 @@ void C4HudBarsUniquifier::ProcessGroup(C4AulContext *cthr, std::int32_t &value_i
 			}
 			else
 			{
-				error("got unexpected value: %s", element);
+				error("got unexpected value: {}", element);
 			}
 			break;
 		case C4V_Array:
@@ -533,17 +549,17 @@ void C4HudBarsUniquifier::ProcessGroup(C4AulContext *cthr, std::int32_t &value_i
 				}
 				else
 				{
-					error("got unexpected value: %s", element);
+					error("got unexpected value: {}", element);
 				}
 			}
 			else
 			{
-				error("groups in groups are not allowed: %s", element);
+				error("groups in groups are not allowed: {}", element);
 			}
 			break;
 
 		default:
-			error("array or map expected, got: %s", element);
+			error("array or map expected, got: {}", element);
 		}
 	}
 }
@@ -554,13 +570,15 @@ void C4HudBarsUniquifier::ProcessHudBar(C4AulContext *cthr, std::int32_t &value_
 	const auto *_name = name.getStr();
 	if (!_name)
 	{
-		throw C4AulExecError{cthr->Obj, FormatString("DefineHudBars: HudBar definition has invalid name, got: %s", name.GetDataString().getData()).getData()};
+		throw C4AulExecError{cthr->Obj, std::format("DefineHudBars: HudBar definition has invalid name, got: {}", name.GetDataString())};
 	}
 
 	const auto error = [cthr, _name](const char *property, C4Value &val)
 	{
-		auto format = std::string{"DefineHudBars: \"%s\" definition has invalid "} + property + ", got %s";
-		throw C4AulExecError{cthr->Obj, FormatString(format.c_str(), _name->Data.getData(), val.GetDataString().getData()).getData()};
+		auto format = std::string{"DefineHudBars: \"{}\" definition has invalid "} + property + ", got {}";
+		const std::string dataString{val.GetDataString()};
+		const char *const data{_name->Data.getData()};
+		throw C4AulExecError{cthr->Obj, std::vformat(format, std::make_format_args(data, dataString))};
 	};
 
 	C4Value gfx = bar[C4VString("gfx")];
@@ -599,14 +617,14 @@ void C4HudBarsUniquifier::ProcessHudBar(C4AulContext *cthr, std::int32_t &value_
 	}
 
 	{
-		const auto file = _gfx->Data.getData();
-		const auto facetError = [cthr, _name](StdStrBuf msg)
+		const auto file = _gfx->Data;
+		const auto facetError = [cthr, _name](std::string msg)
 		{
-			throw C4AulExecError{cthr->Obj, FormatString("DefineHudBars: HudBar \"%s\" %s", _name->Data.getData(), msg.getData()).getData()};
+			throw C4AulExecError{cthr->Obj, std::format("DefineHudBars: HudBar \"{}\" {}", StringToStringView(_name), msg)};
 		};
-		const auto facet = GetFacet(facetError, graphics, file);
+		const auto facet = GetFacet(facetError, graphics, file.getData());
 
-		C4HudBarDef bar{_name->Data.getData(), file, facet, _index, _physical};
+		C4HudBarDef bar{StringToStringView(_name), StdStrBufToStringView(file), facet, _index, _physical};
 		if (physical)
 		{
 			bar.physical = _physical;
@@ -621,7 +639,7 @@ void C4HudBarsUniquifier::ProcessHudBar(C4AulContext *cthr, std::int32_t &value_
 		bar.max = _max;
 		bar.visible = _visible;
 		bar.advance = advance;
-		auto scale = graphics.at(file).scale;
+		auto scale = graphics.at(file.getData()).scale;
 		bar.scale = static_cast<float>(scale) / 100.0f;
 		bars.push_back(bar);
 	}
@@ -658,7 +676,7 @@ void C4HudBarsAdapt::CompileFunc(StdCompiler *comp)
 		auto def = std::make_unique<C4HudBarsDef>(std::move(gfxs_), std::move(bars_));
 
 		// get facets and restore scale from gfxs
-		const auto facetError = [comp](StdStrBuf msg) { comp->Warn("Error loading HudBars %s", msg.getData()); };
+		const auto facetError = [comp](std::string msg) { comp->Warn("Error loading HudBars {}", msg); };
 		for (auto &bar : def->bars)
 		{
 			bar.facet = Game.HudBars.GetFacet(facetError, def->gfxs, bar.gfx.c_str());
