@@ -621,6 +621,7 @@ void C4Game::Clear()
 	CloseScenario();
 	GroupSet.Clear();
 	KeyboardInput.Clear();
+	HudBars.Clear();
 
 	if (Application.MusicSystem)
 	{
@@ -2421,6 +2422,12 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 			// Call it here for overloads by C4GroupSet (definitions, Extra.c4g, scenario, folders etc.)
 			Log(C4ResStrTableKey::IDS_PRC_GFXRES);
 			if (!GraphicsResource.Init())
+			{
+				return false;
+			}
+
+			// Load default HUD bars
+			if (!HudBars.LoadDefaultBars())
 			{
 				return false;
 			}

@@ -61,7 +61,7 @@ public:
 
 public:
 	C4HudBarDef() noexcept;
-	C4HudBarDef(std::string_view name, std::string_view file, std::shared_ptr<C4FacetExID> gfx, std::int32_t index, Physical physical = Physical::None);
+	C4HudBarDef(std::string_view name, std::string_view file, std::shared_ptr<C4FacetExID> gfx, std::uint32_t index, Physical physical = Physical::None);
 
 	bool operator==(const C4HudBarDef &rhs) const noexcept;
 
@@ -78,7 +78,7 @@ public:
 
 	std::string gfx;
 	std::shared_ptr<C4FacetExID> facet; // calculated from gfx
-	std::int32_t index;
+	std::uint32_t index;
 	bool advance;
 
 	std::int32_t valueIndex;
@@ -123,9 +123,9 @@ public:
 		void CompileFunc(StdCompiler *comp);
 	};
 
-	using Gfxs = std::map<std::string, Gfx>;
+	using Gfxs = std::map<std::string, Gfx, std::less<>>;
 	using Bars = std::vector<C4HudBarDef>;
-	using Names = std::unordered_map<std::string, std::int32_t>;
+	using Names = std::unordered_map<std::string, std::uint32_t, C4TransparentHash, std::equal_to<>>;
 
 	C4HudBarsDef() = default;
 	C4HudBarsDef(Gfxs &&gfxs, Bars &&bars);
@@ -172,11 +172,11 @@ public:
 	C4HudBars(std::shared_ptr<const C4HudBarsDef> def) noexcept;
 
 	void DrawHudBars(C4Facet &cgo, C4Object &obj) const noexcept;
-	void SetHudBarValue(const std::string &name, std::int32_t value, std::int32_t max = 0);
-	void SetHudBarVisibility(const std::string &name, bool visible);
+	void SetHudBarValue(std::string_view name, std::int32_t value, std::int32_t max = 0);
+	void SetHudBarVisibility(std::string_view name, bool visible);
 
 private:
-	C4HudBar *BarVal(const char *functionName, const std::string &name);
+	C4HudBar &BarVal(const char *functionName, std::string_view name);
 };
 
 namespace std
@@ -191,8 +191,11 @@ namespace std
 class C4HudBarsUniquifier
 {
 public:
-	std::shared_ptr<C4HudBars> DefaultBars();
-	std::shared_ptr<C4FacetExID> GetFacet(const std::function<void(std::string)> &error, const C4HudBarsDef::Gfxs &gfx, std::string_view file);
+	bool LoadDefaultBars();
+	void Clear();
+
+	const std::shared_ptr<C4HudBars> &DefaultBars() const noexcept { return defaultBars; }
+	std::shared_ptr<C4FacetExID> GetFacet(const std::function<void(std::string)> &error, const C4HudBarsDef::Gfxs &gfx, std::string_view file, C4GroupSet &groupSet);
 	std::shared_ptr<const C4HudBarsDef> UniqueifyDefinition(std::unique_ptr<C4HudBarsDef> definition);
 	std::shared_ptr<C4HudBars> Instantiate(std::shared_ptr<const C4HudBarsDef> definition);
 	std::shared_ptr<C4HudBars> DefineHudBars(C4ValueHash &graphics, const C4ValueArray &definition);
@@ -205,7 +208,7 @@ private:
 	using C4HudBarsDefRef = std::reference_wrapper<const C4HudBarsDef>;
 	using Definitions = std::unordered_map<C4HudBarsDefRef, std::weak_ptr<const C4HudBarsDef>, std::hash<const C4HudBarsDef>, std::equal_to<const C4HudBarsDef>>;
 
-	std::unordered_map<std::string, std::weak_ptr<C4FacetExID>> graphics;
+	std::unordered_map<std::string, std::weak_ptr<C4FacetExID>, C4TransparentHash, std::equal_to<>> graphics;
 	Definitions definitions;
 
 	std::shared_ptr<C4HudBars> defaultBars;

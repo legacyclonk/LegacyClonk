@@ -36,45 +36,51 @@ void C4HudBar::CompileFunc(StdCompiler *const comp)
 
 C4HudBars::C4HudBars(std::shared_ptr<const C4HudBarsDef> def) noexcept : def{std::move(def)}
 {
-	for (const auto &bardef : def->bars)
+	for (const auto &bardef : this->def->bars)
 	{
 		if (bardef.physical == C4HudBarDef::Physical::None)
 			values.emplace_back(bardef.value, bardef.max, bardef.visible);
 	}
 }
 
-C4HudBar *C4HudBars::BarVal(const char *const functionName, const std::string &name)
+C4HudBar &C4HudBars::BarVal(const char *const functionName, const std::string_view name)
 {
-	try
+	if (const auto index = def->names.find(name); index != def->names.end())
 	{
-		const auto index = def->names.at(name);
-		auto &bardef = def->bars.at(index);
-		if (bardef.valueIndex >= 0)
+		if (index->second < def->bars.size())
 		{
-			return &values.at(bardef.valueIndex);
-		}
-		else
-		{
-			throw C4HudBarException{std::format("bar \"{}\" is based is based on physical and can not be set directly.", name)};
+			auto &bardef = def->bars[index->second];
+			if (bardef.valueIndex >= 0)
+			{
+				if (std::cmp_less(bardef.valueIndex, values.size()))
+				{
+					return values.at(bardef.valueIndex);
+				}
+				else
+				{
+					throw C4HudBarException{std::format("bar \"{}\" value index out of range.", name)};
+				}
+			}
+			else
+			{
+				throw C4HudBarException{std::format("bar \"{}\" is based is based on physical and can not be set directly.", name)};
+			}
 		}
 	}
-	catch (const std::out_of_range &)
-	{
-		throw C4HudBarException{std::format("bar \"{}\" was not defined.", name)};
-	}
+
+	throw C4HudBarException{std::format("bar \"{}\" was not defined.", name)};
 }
 
-void C4HudBars::SetHudBarValue(const std::string &name, const std::int32_t value, const std::int32_t max)
+void C4HudBars::SetHudBarValue(const std::string_view name, const std::int32_t value, const std::int32_t max)
 {
-	const auto barval = BarVal("SetHudBarValue", name);
-	barval->Value = value;
-	if(max > 0) barval->Max = max;
+	C4HudBar &barVal{BarVal("SetHudBarValue", name)};
+	barVal.Value = value;
+	if(max > 0) barVal.Max = max;
 }
 
-void C4HudBars::SetHudBarVisibility(const std::string &name, const bool visible)
+void C4HudBars::SetHudBarVisibility(const std::string_view name, const bool visible)
 {
-	const auto barval = BarVal("SetHudBarVisibility", name);
-	barval->Visible = visible;
+	BarVal("SetHudBarVisibility", name).Visible = visible;
 }
 
 void C4HudBars::DrawHudBars(C4Facet &cgo, C4Object &obj) const noexcept
@@ -170,7 +176,7 @@ C4HudBarDef::C4HudBarDef() noexcept :
 	valueIndex{-1}, value{0}, max{C4HudBar::Maximum}, visible{true}, scale{1.0f}
 {}
 
-C4HudBarDef::C4HudBarDef(const std::string_view name, const std::string_view gfx, std::shared_ptr<C4FacetExID> facet, const std::int32_t index, const Physical physical) :
+C4HudBarDef::C4HudBarDef(const std::string_view name, const std::string_view gfx, std::shared_ptr<C4FacetExID> facet, const std::uint32_t index, const Physical physical) :
 	name{name}, physical{physical}, hide{DefaultHide(physical)},
 	gfx{gfx}, facet{std::move(facet)}, index{index}, advance{true},
 	valueIndex{-1}, value{0}, max{C4HudBar::Maximum}, visible{true}, scale{1.0f}
@@ -227,17 +233,7 @@ int32_t C4HudBarDef::DefaultIndex(const C4HudBarDef::Physical physical) noexcept
 
 std::size_t C4HudBarDef::GetHash() const noexcept
 {
-	std::size_t result{std::hash<std::string>{}(name)};
-	HashCombine(result, std::hash<Physical>{}(physical));
-	HashCombine(result, std::hash<Hide>{}(hide));
-	HashCombine(result, std::hash<std::string>{}(gfx));
-	HashCombine(result, std::hash<std::int32_t>{}(index));
-	HashCombine(result, std::hash<bool>{}(advance));
-	HashCombine(result, std::hash<std::int32_t>{}(valueIndex));
-	HashCombine(result, std::hash<std::int32_t>{}(value));
-	HashCombine(result, std::hash<std::int32_t>{}(max));
-	HashCombine(result, std::hash<bool>{}(visible));
-	return result;
+	return HashArguments(name, physical, hide, gfx, index, advance, valueIndex, value, max, visible);
 }
 
 void C4HudBarDef::CompileFunc(StdCompiler *const comp)
@@ -334,10 +330,7 @@ std::size_t C4HudBarsDef::GetHash() const noexcept
 	std::size_t result{0};
 	for (const auto &gfx : gfxs)
 	{
-		HashCombine(result, std::hash<std::string>{}(gfx.second.key));
-		HashCombine(result, std::hash<std::string>{}(gfx.second.file));
-		HashCombine(result, std::hash<std::uint32_t>{}(gfx.second.amount));
-		HashCombine(result, std::hash<std::uint32_t>{}(gfx.second.scale));
+		HashCombineArguments(result, gfx.second.key, gfx.second.file, gfx.second.amount, gfx.second.scale);
 	}
 
 	for (const auto &bardef : bars)
@@ -353,76 +346,83 @@ std::size_t std::hash<const C4HudBarsDef>::operator()(const C4HudBarsDef &value)
 	return value.GetHash();
 }
 
-std::shared_ptr<C4HudBars> C4HudBarsUniquifier::DefaultBars()
+bool C4HudBarsUniquifier::LoadDefaultBars()
 {
-	if (!defaultBars)
-	{
-		static constexpr auto File = "EnergyBars";
+	static constexpr auto File = "EnergyBars";
 
-		C4HudBarsDef::Gfxs gfxs{{File, C4HudBarsDef::Gfx{File, File, 3, 100}}};
-		const auto gfx = GetFacet([](std::string msg) { LogFatalNTr(std::format("could not load default hud bars \"{}\"", File)); }, gfxs, File);
-		const auto def = UniqueifyDefinition
-		(
-			std::make_unique<C4HudBarsDef>
-			(
-				std::move(gfxs),
-				C4HudBarsDef::Bars
-				{
-					C4HudBarDef{"Energy", File, gfx, 0, C4HudBarDef::Physical::Energy},
-					C4HudBarDef{"Magic", File, gfx, 1, C4HudBarDef::Physical::Magic},
-					C4HudBarDef{"Breath", File, gfx, 2, C4HudBarDef::Physical::Breath}
-				}
-			)
-		);
-		defaultBars = Instantiate(def);
+	C4HudBarsDef::Gfxs gfxs{{File, C4HudBarsDef::Gfx{File, File, 3, 100}}};
+
+	const auto gfx = GetFacet([](std::string msg) { LogFatalNTr(std::format("Could not load default hud bars \"{}\": {}", File, msg)); }, gfxs, File, Game.GraphicsResource.Files);
+	if (!gfx)
+	{
+		return false;
 	}
 
-	return defaultBars;
+	const auto def = UniqueifyDefinition
+	(
+		std::make_unique<C4HudBarsDef>
+		(
+			std::move(gfxs),
+			C4HudBarsDef::Bars
+			{
+				C4HudBarDef{"Energy", File, gfx, 0, C4HudBarDef::Physical::Energy},
+				C4HudBarDef{"Magic", File, gfx, 1, C4HudBarDef::Physical::Magic},
+				C4HudBarDef{"Breath", File, gfx, 2, C4HudBarDef::Physical::Breath}
+			}
+		)
+	);
+	defaultBars = Instantiate(def);
+
+	return true;
 }
 
-std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<void(std::string)> &error, const C4HudBarsDef::Gfxs &gfxs, const std::string_view gfx)
+void C4HudBarsUniquifier::Clear()
 {
-	const std::string key{gfx};
+	defaultBars.reset();
+	assert(graphics.empty());
+	assert(definitions.empty());
+}
 
-	try
+std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<void(std::string)> &error, const C4HudBarsDef::Gfxs &gfxs, const std::string_view gfx, C4GroupSet &groupSet)
+{
+
+	spdlog::debug("graphics: {}, gfx: {}", graphics | std::views::keys | std::views::join_with(',') | std::ranges::to<std::string>(), gfx);
+	if (const auto it = graphics.find(gfx); it != graphics.end())
 	{
-		const auto facet = graphics.at(key).lock();
-		if (facet) return facet;
-	}
-	catch (const std::out_of_range &)
-	{
-		// handled by code below
+		auto facet = it->second.lock();
+		if (facet)
+		{
+			return facet;
+		}
 	}
 
 	// facet needs to be loaded
-	std::int32_t amount{0};
-	std::int32_t scale{100};
-	std::string file;
+	std::int32_t amount;
+	std::int32_t scale;
+	std::string_view file;
 
-	try
+	spdlog::debug("gfxs: {}, gfx: {}", gfxs | std::views::keys | std::views::join_with(',') | std::ranges::to<std::string>(), gfx);
+
+	if (const auto it = gfxs.find(gfx); it != gfxs.end())
 	{
-		const auto &gfx = gfxs.at(key);
-		amount = gfx.amount;
-		scale = gfx.scale;
-		file = gfx.file;
+		amount = it->second.amount;
+		scale = it->second.scale;
+		file = it->second.file;
 	}
-	catch (const std::out_of_range &)
+	else
 	{
-		error(std::format("missing key \"{}\" in graphics definition", key));
+		error(std::format("missing key \"{}\" in graphics definition", gfx));
 		return nullptr;
 	}
 
-	Game.GraphicsResource.RegisterGlobalGraphics();
-	Game.GraphicsResource.RegisterMainGroups();
-
-	const auto deleter = [key, this](C4FacetExID *facet)
+	const auto deleter = [key{std::string{gfx}}, this](C4FacetExID *facet)
 	{
 		graphics.erase(key);
 		delete facet;
 	};
 
 	const std::shared_ptr<C4FacetExID> facet{new C4FacetExID, deleter};
-	const bool success{Game.GraphicsResource.LoadFile(*facet, file.c_str(), Game.GraphicsResource.Files)};
+	const bool success{Game.GraphicsResource.LoadFile(*facet, file.data(), groupSet)};
 	if(!success)
 	{
 		error(std::format("could not load hud bar graphic \"{}\"", file));
@@ -436,7 +436,7 @@ std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<v
 
 	facet->Set(facet->Surface, 0, 0, scaledWdt, scaledHgt);
 
-	graphics.emplace(key, std::weak_ptr<C4FacetExID>{facet});
+	graphics.emplace(gfx, std::weak_ptr<C4FacetExID>{facet});
 	return facet;
 }
 
@@ -647,9 +647,9 @@ void C4HudBarsUniquifier::ProcessHudBar(std::int32_t &valueIndex, const C4HudBar
 			throw C4HudBarException{std::format("HudBar \"{}\" {}", StringToStringView(_name), msg)};
 		};
 
-		const auto facet = GetFacet(facetError, graphics, file.getData());
+		const auto facet = GetFacet(facetError, graphics, file.getData(), Game.GroupSet);
 
-		C4HudBarDef bar{StringToStringView(_name), StdStrBufToStringView(file), facet, _index, _physical};
+		C4HudBarDef bar{StringToStringView(_name), StdStrBufToStringView(file), facet, static_cast<std::uint32_t>(_index), _physical};
 
 		if (physical)
 		{
@@ -706,7 +706,7 @@ void C4HudBarsAdapt::CompileFunc(StdCompiler *const comp)
 		const auto facetError = [comp](std::string msg) { comp->Warn("Error loading HudBars {}", msg); };
 		for (auto &bar : def->bars)
 		{
-			bar.facet = Game.HudBars.GetFacet(facetError, def->gfxs, bar.gfx.c_str());
+			bar.facet = Game.HudBars.GetFacet(facetError, def->gfxs, bar.gfx.c_str(), Game.GroupSet);
 			if (!bar.facet)
 			{
 				bars = Game.HudBars.DefaultBars();
