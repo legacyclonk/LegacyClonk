@@ -1762,7 +1762,7 @@ static bool FnSetMenuTextProgress(C4AulContext *cthr, C4ValueInt iNewProgress, C
 
 // Custom Energy Bars
 
-static bool FnDefineHudBars(C4AulContext *cthr, C4ValueHash *graphics, C4ValueArray *bars)
+static bool FnDefineHudBars(C4AulContext *const cthr, C4ValueHash *const graphics, C4ValueArray *const bars)
 {
 	const auto obj = cthr->Obj;
 	if (!obj) return false;
@@ -1777,7 +1777,7 @@ static bool FnDefineHudBars(C4AulContext *cthr, C4ValueHash *graphics, C4ValueAr
 	}
 }
 
-static void FnSetHudBarValue(C4AulContext *cthr, C4String *name, C4ValueInt newValue, C4ValueInt newMax)
+static void FnSetHudBarValue(C4AulContext *const cthr, C4String *const name, const C4ValueInt newValue, const C4ValueInt newMax)
 {
 	const auto obj = cthr->Obj;
 	if (!obj) return;
@@ -1792,7 +1792,7 @@ static void FnSetHudBarValue(C4AulContext *cthr, C4String *name, C4ValueInt newV
 	}
 }
 
-static void FnSetHudBarVisibility(C4AulContext *cthr, C4String *name, bool visible)
+static void FnSetHudBarVisibility(C4AulContext *const cthr, C4String *const name, const bool visible)
 {
 	const auto obj = cthr->Obj;
 	if (!obj) return;

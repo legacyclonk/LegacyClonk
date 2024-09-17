@@ -27,7 +27,7 @@
 
 #include <format>
 
-void C4HudBar::CompileFunc(StdCompiler *comp)
+void C4HudBar::CompileFunc(StdCompiler *const comp)
 {
 	comp->Value(mkNamingAdapt(Value, "Value", 0));
 	comp->Value(mkNamingAdapt(Max, "Max", Maximum));
@@ -43,7 +43,7 @@ C4HudBars::C4HudBars(std::shared_ptr<const C4HudBarsDef> def) noexcept : def{std
 	}
 }
 
-C4HudBar *C4HudBars::BarVal(const char *functionName, const std::string &name)
+C4HudBar *C4HudBars::BarVal(const char *const functionName, const std::string &name)
 {
 	try
 	{
@@ -64,14 +64,14 @@ C4HudBar *C4HudBars::BarVal(const char *functionName, const std::string &name)
 	}
 }
 
-void C4HudBars::SetHudBarValue(const std::string &name, std::int32_t value, std::int32_t max)
+void C4HudBars::SetHudBarValue(const std::string &name, const std::int32_t value, const std::int32_t max)
 {
 	const auto barval = BarVal("SetHudBarValue", name);
 	barval->Value = value;
 	if(max > 0) barval->Max = max;
 }
 
-void C4HudBars::SetHudBarVisibility(const std::string &name, bool visible)
+void C4HudBars::SetHudBarVisibility(const std::string &name, const bool visible)
 {
 	const auto barval = BarVal("SetHudBarVisibility", name);
 	barval->Visible = visible;
@@ -170,7 +170,7 @@ C4HudBarDef::C4HudBarDef() noexcept :
 	valueIndex{-1}, value{0}, max{C4HudBar::Maximum}, visible{true}, scale{1.0f}
 {}
 
-C4HudBarDef::C4HudBarDef(std::string_view name, std::string_view gfx, std::shared_ptr<C4FacetExID> facet, std::int32_t index, Physical physical) :
+C4HudBarDef::C4HudBarDef(const std::string_view name, const std::string_view gfx, std::shared_ptr<C4FacetExID> facet, const std::int32_t index, const Physical physical) :
 	name{name}, physical{physical}, hide{DefaultHide(physical)},
 	gfx{gfx}, facet{std::move(facet)}, index{index}, advance{true},
 	valueIndex{-1}, value{0}, max{C4HudBar::Maximum}, visible{true}, scale{1.0f}
@@ -191,7 +191,7 @@ bool C4HudBarDef::operator==(const C4HudBarDef &rhs) const noexcept
 		visible == rhs.visible;
 }
 
-C4HudBarDef::Hide C4HudBarDef::DefaultHide(C4HudBarDef::Physical physical) noexcept
+C4HudBarDef::Hide C4HudBarDef::DefaultHide(const C4HudBarDef::Physical physical) noexcept
 {
 	switch (physical)
 	{
@@ -207,7 +207,7 @@ C4HudBarDef::Hide C4HudBarDef::DefaultHide(C4HudBarDef::Physical physical) noexc
 	}
 }
 
-int32_t C4HudBarDef::DefaultIndex(C4HudBarDef::Physical physical) noexcept
+int32_t C4HudBarDef::DefaultIndex(const C4HudBarDef::Physical physical) noexcept
 {
 	switch (physical)
 	{
@@ -240,7 +240,7 @@ std::size_t C4HudBarDef::GetHash() const noexcept
 	return result;
 }
 
-void C4HudBarDef::CompileFunc(StdCompiler *comp)
+void C4HudBarDef::CompileFunc(StdCompiler *const comp)
 {
 	comp->Value(mkNamingAdapt(name, "Name"));
 	StdEnumEntry<Physical> PhysicalEntries[]
@@ -283,7 +283,7 @@ namespace
 
 C4HudBarsDef::Gfx::Gfx() noexcept : key{}, file{}, amount{0}, scale{0} {}
 
-C4HudBarsDef::Gfx::Gfx(std::string key, std::string file, std::int32_t amount, std::int32_t scale) noexcept
+C4HudBarsDef::Gfx::Gfx(std::string key, std::string file, const std::int32_t amount, const std::int32_t scale) noexcept
 	: key{std::move(key)},
 	  file{std::move(file)},
 	  amount{amount},
@@ -295,7 +295,7 @@ bool C4HudBarsDef::Gfx::operator==(const Gfx &rhs) const noexcept
 	return key == rhs.key && file == rhs.file && amount == rhs.amount && scale == rhs.scale;
 }
 
-void C4HudBarsDef::Gfx::CompileFunc(StdCompiler *comp)
+void C4HudBarsDef::Gfx::CompileFunc(StdCompiler *const comp)
 {
 	comp->Value(mkNamingAdapt(key, "Key"));
 	comp->Value(mkNamingAdapt(file, "File"));
@@ -380,7 +380,7 @@ std::shared_ptr<C4HudBars> C4HudBarsUniquifier::DefaultBars()
 	return defaultBars;
 }
 
-std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<void(std::string)> &error, const C4HudBarsDef::Gfxs &gfxs, std::string_view gfx)
+std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<void(std::string)> &error, const C4HudBarsDef::Gfxs &gfxs, const std::string_view gfx)
 {
 	const std::string key{gfx};
 
@@ -540,7 +540,7 @@ void C4HudBarsUniquifier::ProcessGraphics(C4ValueHash &map, C4HudBarsDef::Gfxs &
 	}
 }
 
-void C4HudBarsUniquifier::ProcessGroup(std::int32_t &valueIndex, const C4HudBarsDef::Gfxs &graphics, const C4ValueArray &group, C4HudBarsDef::Bars &bars, bool advanceAlways)
+void C4HudBarsUniquifier::ProcessGroup(std::int32_t &valueIndex, const C4HudBarsDef::Gfxs &graphics, const C4ValueArray &group, C4HudBarsDef::Bars &bars, const bool advanceAlways)
 {
 	const auto error = [](const char *msg, const C4Value &val)
 	{
@@ -590,7 +590,7 @@ void C4HudBarsUniquifier::ProcessGroup(std::int32_t &valueIndex, const C4HudBars
 	}
 }
 
-void C4HudBarsUniquifier::ProcessHudBar(std::int32_t &valueIndex, const C4HudBarsDef::Gfxs &graphics, const C4ValueHash &bar, C4HudBarsDef::Bars &bars, bool advance)
+void C4HudBarsUniquifier::ProcessHudBar(std::int32_t &valueIndex, const C4HudBarsDef::Gfxs &graphics, const C4ValueHash &bar, C4HudBarsDef::Bars &bars, const bool advance)
 {
 	auto name = bar[C4VString("name")];
 	const auto *_name = name.getStr();
@@ -673,7 +673,7 @@ void C4HudBarsUniquifier::ProcessHudBar(std::int32_t &valueIndex, const C4HudBar
 }
 
 
-void C4HudBarsAdapt::CompileFunc(StdCompiler *comp)
+void C4HudBarsAdapt::CompileFunc(StdCompiler *const comp)
 {
 	if (!comp->isCompiler())
 	{

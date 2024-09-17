@@ -2712,12 +2712,12 @@ bool C4Object::DefineHudBars(C4ValueHash *graphics, C4ValueArray *definition)
 	return false;
 }
 
-void C4Object::SetHudBarValue(const char *name, int32_t value, int32_t max)
+void C4Object::SetHudBarValue(const char *const name, const int32_t value, const int32_t max)
 {
 	hudBars->SetHudBarValue(name, value, max);
 }
 
-void C4Object::SetHudBarVisibility(const char *name, bool visible)
+void C4Object::SetHudBarVisibility(const char *const name, const bool visible)
 {
 	hudBars->SetHudBarVisibility(name, visible);
 }
