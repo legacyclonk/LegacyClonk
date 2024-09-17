@@ -352,7 +352,7 @@ bool C4HudBarsUniquifier::LoadDefaultBars()
 
 	C4HudBarsDef::Gfxs gfxs{{File, C4HudBarsDef::Gfx{File, File, 3, 100}}};
 
-	const auto gfx = GetFacet([](std::string msg) { LogFatalNTr(std::format("Could not load default hud bars \"{}\": {}", File, msg)); }, gfxs, File, Game.GraphicsResource.Files);
+	const auto gfx = GetFacet([](std::string msg) { LogFatalNTr(std::format("Could not load default hud bars \"{}\": {}", File, msg)); }, gfxs, File);
 	if (!gfx)
 	{
 		return false;
@@ -383,7 +383,7 @@ void C4HudBarsUniquifier::Clear()
 	assert(definitions.empty());
 }
 
-std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<void(std::string)> &error, const C4HudBarsDef::Gfxs &gfxs, const std::string_view gfx, C4GroupSet &groupSet)
+std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<void(std::string)> &error, const C4HudBarsDef::Gfxs &gfxs, const std::string_view gfx)
 {
 
 	spdlog::debug("graphics: {}, gfx: {}", graphics | std::views::keys | std::views::join_with(',') | std::ranges::to<std::string>(), gfx);
@@ -422,7 +422,7 @@ std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<v
 	};
 
 	const std::shared_ptr<C4FacetExID> facet{new C4FacetExID, deleter};
-	const bool success{Game.GraphicsResource.LoadFile(*facet, file.data(), groupSet)};
+	const bool success{Game.GraphicsResource.LoadFile(*facet, file.data(), Game.GraphicsResource.Files)};
 	if(!success)
 	{
 		error(std::format("could not load hud bar graphic \"{}\"", file));
@@ -647,7 +647,7 @@ void C4HudBarsUniquifier::ProcessHudBar(std::int32_t &valueIndex, const C4HudBar
 			throw C4HudBarException{std::format("HudBar \"{}\" {}", StringToStringView(_name), msg)};
 		};
 
-		const auto facet = GetFacet(facetError, graphics, file.getData(), Game.GroupSet);
+		const auto facet = GetFacet(facetError, graphics, file.getData());
 
 		C4HudBarDef bar{StringToStringView(_name), StdStrBufToStringView(file), facet, static_cast<std::uint32_t>(_index), _physical};
 
@@ -706,7 +706,7 @@ void C4HudBarsAdapt::CompileFunc(StdCompiler *const comp)
 		const auto facetError = [comp](std::string msg) { comp->Warn("Error loading HudBars {}", msg); };
 		for (auto &bar : def->bars)
 		{
-			bar.facet = Game.HudBars.GetFacet(facetError, def->gfxs, bar.gfx.c_str(), Game.GroupSet);
+			bar.facet = Game.HudBars.GetFacet(facetError, def->gfxs, bar.gfx.c_str());
 			if (!bar.facet)
 			{
 				bars = Game.HudBars.DefaultBars();
