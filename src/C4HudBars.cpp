@@ -28,7 +28,7 @@
 #include <format>
 
 C4HudBar::C4HudBar() noexcept
-  : value{0}, max{1000000}, visible{true}
+ : value{0}, max{1000000}, visible{true}
 {}
 
 C4HudBar::C4HudBar(std::int32_t value, std::int32_t max, bool visible) noexcept
@@ -127,13 +127,13 @@ void C4HudBars::DrawHudBars(C4Facet &cgo, C4Object &obj) const noexcept
 		default:
 			const auto &barval = values.at(bardef.value_index);
 			value = barval.value;
-			max   = barval.max;
+			max = barval.max;
 			visible = barval.visible;
 			break;
 		}
 
-		if (bardef.hide & C4HudBarDef::EBH_Empty && value == 0)   visible = false;
-		if (bardef.hide & C4HudBarDef::EBH_Full  && value >= max) visible = false;
+		if (bardef.hide & C4HudBarDef::EBH_Empty && value == 0) visible = false;
+		if (bardef.hide & C4HudBarDef::EBH_Full && value >= max) visible = false;
 
 		if (!visible)
 		{
@@ -208,7 +208,7 @@ int32_t C4HudBarDef::DefaultIndex(C4HudBarDef::Physical physical) noexcept
 	switch (physical)
 	{
 	case EBP_Energy: return 0;
-	case EBP_Magic:  return 1;
+	case EBP_Magic: return 1;
 	case EBP_Breath: return 2;
 	default:
 		return 0;
@@ -236,15 +236,15 @@ void C4HudBarDef::CompileFunc(StdCompiler *comp)
 	StdEnumEntry<Physical> PhysicalEntries[] =
 	{
 		{ "Energy", EBP_Energy },
-		{ "Magic",  EBP_Magic },
+		{ "Magic", EBP_Magic },
 		{ "Breath", EBP_Breath },
 	};
 	comp->Value(mkNamingAdapt(mkEnumAdaptT<std::uint8_t>(physical, PhysicalEntries), "Physical", EBP_None));
 	StdBitfieldEntry<std::uint8_t> HideEntries[] =
 	{
 		{ "HideHud", EBH_HideHUDBars },
-		{ "Empty",   EBH_Empty },
-		{ "Full",    EBH_Full },
+		{ "Empty", EBH_Empty },
+		{ "Full", EBH_Full },
 	};
 
 	std::uint8_t hideVal = hide;
@@ -352,7 +352,7 @@ std::shared_ptr<C4HudBars> C4HudBarsUniquifier::DefaultBars()
 				C4HudBarsDef::Bars
 				{
 					C4HudBarDef{"Energy", file, gfx, 0, C4HudBarDef::EBP_Energy},
-					C4HudBarDef{"Magic",  file, gfx, 1, C4HudBarDef::EBP_Magic},
+					C4HudBarDef{"Magic", file, gfx, 1, C4HudBarDef::EBP_Magic},
 					C4HudBarDef{"Breath", file, gfx, 2, C4HudBarDef::EBP_Breath}
 				}
 			)
@@ -379,7 +379,7 @@ std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<v
 
 	// facet needs to be loaded
 	std::int32_t amount = 0;
-	std::int32_t scale  = 100;
+	std::int32_t scale = 100;
 	std::string file;
 
 	try
@@ -482,20 +482,23 @@ static std::string_view StringToStringView(const C4String *const string)
 void C4HudBarsUniquifier::ProcessGraphics(C4AulContext *cthr, C4ValueHash &map, C4HudBarsDef::Gfxs &gfx)
 {
 	const auto keyAmount = C4VString("amount");
-	const auto keyScale  = C4VString("scale");
-	const auto keyFile   = C4VString("file");
+	const auto keyScale = C4VString("scale");
+	const auto keyFile = C4VString("file");
 
 	for (const auto &[key, val] : map)
 	{
-		if (key.GetType() != C4V_String) {
+		if (key.GetType() != C4V_String)
+		{
 			throw C4AulExecError{cthr->Obj, "DefineHudBars: keys within maps are expected to be of type string"};
 		}
+
 		const auto _key = key.GetRefVal()._getStr()->Data;
 
 		if (val.GetType() != C4V_Map)
 		{
 			throw C4AulExecError{cthr->Obj, std::format("DefineHudBars: key \"{}\" is not a map, got: {}", StdStrBufToStringView(_key), val.GetDataString())};
 		}
+
 		const auto &m = *val.GetRefVal()._getMap();
 
 		C4Value file = m[keyFile];
@@ -503,9 +506,9 @@ void C4HudBarsUniquifier::ProcessGraphics(C4AulContext *cthr, C4ValueHash &map, 
 
 		// TODO: Check Type and const?
 		auto _amount = m[keyAmount];
-		auto _scale  = m[keyScale];
+		auto _scale = m[keyScale];
 		std::int32_t amount = _amount.getInt();
-		std::int32_t scale  = _scale.getInt();
+		std::int32_t scale = _scale.getInt();
 		if (amount == 0) amount = 1;
 		if (scale == 0) scale = 100;
 
@@ -518,13 +521,15 @@ void C4HudBarsUniquifier::ProcessGraphics(C4AulContext *cthr, C4ValueHash &map, 
 
 void C4HudBarsUniquifier::ProcessGroup(C4AulContext *cthr, std::int32_t &value_index, const C4HudBarsDef::Gfxs &graphics, const C4ValueArray &group, C4HudBarsDef::Bars &bars, bool advanceAlways)
 {
-	const auto error = [cthr](const char *msg, const C4Value &val) {
+	const auto error = [cthr](const char *msg, const C4Value &val)
+	{
 		auto format = std::string{"DefineHudBars: "} + msg;
 		const std::string dataString{val.GetDataString()};
 		throw C4AulExecError{cthr->Obj, std::vformat(format, std::make_format_args(dataString))};
 	};
 
 	const std::int32_t size{group.GetSize()};
+
 	for (std::int32_t i = 0; i < size; ++i)
 	{
 		const auto &element = group[i];
@@ -540,6 +545,7 @@ void C4HudBarsUniquifier::ProcessGroup(C4AulContext *cthr, std::int32_t &value_i
 				error("got unexpected value: {}", element);
 			}
 			break;
+
 		case C4V_Array:
 			if(advanceAlways)
 			{
@@ -618,13 +624,16 @@ void C4HudBarsUniquifier::ProcessHudBar(C4AulContext *cthr, std::int32_t &value_
 
 	{
 		const auto file = _gfx->Data;
+
 		const auto facetError = [cthr, _name](std::string msg)
 		{
 			throw C4AulExecError{cthr->Obj, std::format("DefineHudBars: HudBar \"{}\" {}", StringToStringView(_name), msg)};
 		};
+
 		const auto facet = GetFacet(facetError, graphics, file.getData());
 
 		C4HudBarDef bar{StringToStringView(_name), StdStrBufToStringView(file), facet, _index, _physical};
+
 		if (physical)
 		{
 			bar.physical = _physical;
@@ -634,6 +643,7 @@ void C4HudBarsUniquifier::ProcessHudBar(C4AulContext *cthr, std::int32_t &value_
 		{
 			bar.value_index = value_index++;
 		}
+
 		if (hide) bar.hide = _hide;
 		bar.value = _value;
 		bar.max = _max;
