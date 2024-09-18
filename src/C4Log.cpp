@@ -108,7 +108,7 @@ C4LogSystem::LogSink::LogSink()
 	// open
 	int iLog = 2;
 #ifdef _WIN32
-	while (!(file = _fsopen(logFileName.c_str(), "wt", _SH_DENYWR)))
+	while (!(file = _fsopen(logFileName.c_str(), "wb", _SH_DENYWR)))
 #else
 	while (!(file = fopen(logFileName.c_str(), "wb")))
 #endif
@@ -328,7 +328,9 @@ std::shared_ptr<spdlog::logger> C4LogSystem::GetOrCreate(std::string name, C4Log
 		return logger;
 	}
 
-	return CreateLogger(std::move(name), std::move(options));
+	auto logger = CreateLogger(std::move(name), std::move(options));
+	spdlog::register_logger(logger);
+	return logger;
 }
 
 void C4LogSystem::EnableDebugLog(const bool enable)
@@ -381,6 +383,17 @@ void C4LogSystem::ClearRingbuffer()
 {
 	ringbufferSink->Clear();
 }
+
+#ifdef _WIN32
+
+void C4LogSystem::SetConsoleCharset(const std::int32_t charset)
+{
+	SetConsoleCP(charset);
+	SetConsoleOutputCP(charset);
+}
+
+#endif
+
 
 void LogNTr(const spdlog::level::level_enum level, const std::string_view message)
 {

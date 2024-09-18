@@ -22,6 +22,9 @@ cmake_policy(SET CMP0072 NEW)
 # Enable <PackageName>_ROOT for find_package
 cmake_policy(SET CMP0074 NEW)
 
+# Enable option() honoring existing variables
+cmake_policy(SET CMP0077 NEW)
+
 if (APPLE)
 	set(LANGUAGE_OBJCXX OBJCXX)
 endif ()
@@ -47,6 +50,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(CheckCXXSymbolExists)
 include(CheckIncludeFileCXX)
 include(CMakeDependentOption)
+include(FetchContent)
 
 # Make sure headers of the project are found
 include_directories(src)
@@ -95,6 +99,8 @@ CMAKE_DEPENDENT_OPTION(WITH_DEVELOPER_MODE "Use GTK for the developer mode" OFF
 	"NOT USE_CONSOLE" OFF)
 # USE_LIBNOTIFY
 CMAKE_DEPENDENT_OPTION(USE_LIBNOTIFY "Use libnotify for desktop notifications" ON "WITH_DEVELOPER_MODE AND NOT USE_CONSOLE AND NOT WIN32" OFF)
+# USE_MINIUPNPC
+option(USE_MINIUPNPC "Use miniupnpc for UPnP support" ON)
 # USE_WINDOWS_RUNTIME
 CMAKE_DEPENDENT_OPTION(USE_WINDOWS_RUNTIME "Use Windows Runtime features" ON "WIN32" OFF)
 
@@ -240,6 +246,12 @@ endif ()
 if (USE_LIBNOTIFY)
 	list(APPEND CLONK_SOURCES
 		src/C4ToastLibNotify.cpp src/C4ToastLibNotify.h)
+endif ()
+
+if (USE_MINIUPNPC)
+	list(APPEND CLONK_SOURCES src/C4Network2UPnPMiniUPnPc.cpp)
+else ()
+	list(APPEND CLONK_SOURCES src/C4Network2UPnPDummy.cpp)
 endif ()
 
 if (USE_WINDOWS_RUNTIME)
@@ -408,7 +420,20 @@ if (USE_SDL_MIXER)
 endif ()
 
 # Link spdlog
-find_package(spdlog REQUIRED)
+FetchContent_Declare(
+	spdlog
+	GIT_REPOSITORY https://github.com/gabime/spdlog.git
+	GIT_TAG v1.14.1
+)
+
+set(SPDLOG_BUILD_EXAMPLE OFF)
+set(SPDLOG_DISABLE_DEFAULT_LOGGER ON)
+set(SPDLOG_ENABLE_PCH ${USE_PCH})
+set(SPDLOG_USE_STD_FORMAT ON)
+
+FetchContent_MakeAvailable(spdlog)
+
+target_compile_definitions(spdlog PUBLIC SPDLOG_EOL=\"\\x0A\")
 target_link_libraries(standard spdlog::spdlog)
 
 # Link Windows Imaging Component
@@ -428,6 +453,12 @@ if (USE_LIBNOTIFY)
 	find_package(PkgConfig REQUIRED)
 	pkg_check_modules(libnotify REQUIRED IMPORTED_TARGET libnotify)
 	target_link_libraries(clonk PkgConfig::libnotify)
+endif ()
+
+# Link miniupnpc
+if (USE_MINIUPNPC)
+	find_package(miniupnpc CONFIG REQUIRED)
+	target_link_libraries(clonk miniupnpc::miniupnpc)
 endif ()
 
 # Link Windows libraries

@@ -126,6 +126,10 @@ public:
 	void EnableDebugLog(bool enable);
 	void SetVerbose(bool verbose);
 
+#ifdef _WIN32
+	void SetConsoleCharset(std::int32_t charset);
+#endif
+
 private:
 	std::shared_ptr<spdlog::logger> logger;
 	std::shared_ptr<spdlog::logger> loggerSilent;

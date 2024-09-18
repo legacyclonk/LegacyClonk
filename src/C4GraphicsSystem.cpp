@@ -527,7 +527,7 @@ bool C4GraphicsSystem::SaveScreenshot(bool fSaveAll)
 	}
 	else
 	{
-		Log(C4ResStrTableKey::IDS_PRC_SCREENSHOTERR, Config.AtExeRelativePath(Config.AtScreenshotPath(szFilename)));
+		Log(C4ResStrTableKey::IDS_PRC_SCREENSHOTERROR, Config.AtExeRelativePath(Config.AtScreenshotPath(szFilename)));
 	}
 
 	// return success
@@ -584,7 +584,10 @@ bool C4GraphicsSystem::DoSaveScreenshot(bool fSaveAll, const char *szFilename)
 				// transfer each pixel - slooow...
 				for (int32_t iY2 = 0; iY2 < bkHgt2; ++iY2)
 					for (int32_t iX2 = 0; iX2 < bkWdt2; ++iX2)
-						bmp.SetPixel24(iRealX + iX2, iRealY + iY2, Application.DDraw->ApplyGammaTo(Application.DDraw->lpBack->GetPixDw(iX2, iY2, false, scale)));
+					{
+						const std::uint32_t pixel{Application.DDraw->lpBack->GetPixDw(iX2, iY2, false, scale)};
+						bmp.SetPixel24(iRealX + iX2, iRealY + iY2, Config.Graphics.Shader ? pixel : Application.DDraw->ApplyGammaTo(pixel));
+					}
 				// done; unlock
 				Application.DDraw->lpBack->Unlock();
 			}
@@ -607,7 +610,7 @@ bool C4GraphicsSystem::DoSaveScreenshot(bool fSaveAll, const char *szFilename)
 		return true;
 	}
 	// Save primary surface
-	return Application.DDraw->lpBack->SavePNG(szFilename, false, true, false, scale);
+	return Application.DDraw->lpBack->SavePNG(szFilename, false, !Config.Graphics.Shader, false, scale);
 }
 
 void C4GraphicsSystem::DeactivateDebugOutput()

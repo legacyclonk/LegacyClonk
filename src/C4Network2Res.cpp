@@ -1443,27 +1443,31 @@ void C4Network2ResList::Add(C4Network2Res *pRes)
 C4Network2Res::Ref C4Network2ResList::AddByFile(const char *strFilePath, bool fTemp, C4Network2ResType eType, int32_t iResID, const char *szResName, bool fAllowUnloadable)
 {
 	// already in list?
-	C4Network2Res::Ref pRes = getRefRes(strFilePath);
-	if (pRes) return pRes;
+	if (C4Network2Res::Ref pRes = getRefRes(strFilePath); pRes)
+	{
+		return pRes;
+	}
+
 	// get ressource ID
 	if (iResID < 0) iResID = nextResID();
 	if (iResID < 0) { logger->error("AddByFile: no more ressource IDs available!"); return nullptr; }
 	// create new
-	pRes = new C4Network2Res(this);
+	auto res = std::make_unique<C4Network2Res>(this);
 	// initialize
-	if (!pRes->SetByFile(strFilePath, fTemp, eType, iResID, szResName)) { return nullptr; }
+	if (!res->SetByFile(strFilePath, fTemp, eType, iResID, szResName)) { return nullptr; }
 	// create standalone for non-system files
 	// system files shouldn't create a standalone; they should never be marked loadable!
 	if (eType != NRT_System)
-		if (!pRes->GetStandalone(nullptr, 0, true, fAllowUnloadable))
+		if (!res->GetStandalone(nullptr, 0, true, fAllowUnloadable))
 			if (!fAllowUnloadable)
 			{
-				delete pRes;
 				return nullptr;
 			}
+
 	// add to list
-	Add(pRes);
-	return pRes;
+	const auto resPtr = res.release();
+	Add(resPtr);
+	return resPtr;
 }
 
 C4Network2Res::Ref C4Network2ResList::AddByCore(const C4Network2ResCore &Core, bool fLoad) // by main thread

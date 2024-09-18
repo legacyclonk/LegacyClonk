@@ -84,8 +84,9 @@ public:
 	bool UseWhiteLobbyChat;
 	bool ShowLogTimestamps;
 	bool Preloading;
-	std::uint32_t ThreadPoolMinimumThreadCount;
-	std::uint32_t ThreadPoolMaximumThreadCount;
+#ifndef _WIN32
+	std::uint32_t ThreadPoolThreadCount;
+#endif
 
 public:
 	static int GetLanguageSequence(const char *strSource, char *strTarget);
@@ -169,6 +170,7 @@ public:
 	int PositionY;
 #endif
 	bool ShowFolderMaps; // if true, folder maps are shown
+	bool UseShaderGamma; // whether to use shader-based gamma correction
 
 	void CompileFunc(StdCompiler *pComp);
 };
@@ -219,6 +221,7 @@ public:
 	uint64_t LastUpdateTime;
 	int32_t AsyncMaxWait;
 	bool UseCurl;
+	bool EnableUPnP;
 
 	static constexpr auto DefaultPuncherServer = "netpuncher.openclonk.org:11115";
 

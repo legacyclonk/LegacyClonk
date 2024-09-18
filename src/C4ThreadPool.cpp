@@ -135,7 +135,7 @@ void C4ThreadPool::Io::Awaiter::SetupCancellation(C4Task::CancellablePromise *co
 	);
 }
 
-void C4ThreadPool::Io::Awaiter::Callback(const PTP_CALLBACK_INSTANCE instance, const ULONG result, const ULONG numberOfBytesTransferred)
+void C4ThreadPool::Io::Awaiter::Callback(const PTP_CALLBACK_INSTANCE instance, const ULONG result, const ULONG_PTR numberOfBytesTransferred)
 {
 	State expected{State::Started};
 	State desired;
@@ -221,7 +221,7 @@ C4ThreadPool::C4ThreadPool(const std::uint32_t minimum, const std::uint32_t maxi
 
 		SetThreadpoolCallbackPool(&callbackEnvironment, pool.get());
 
-		SetThreadpoolThreadMaximum(pool.get(), static_cast<DWORD>(minimum));
+		SetThreadpoolThreadMaximum(pool.get(), static_cast<DWORD>(maximum));
 		winrt::check_bool(SetThreadpoolThreadMinimum(pool.get(), static_cast<DWORD>(minimum)));
 
 		cleanupGroup.attach(winrt::check_pointer(CreateThreadpoolCleanupGroup()));

@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "C4DeletionTrackable.h"
 #include "C4Menu.h"
 
 enum
@@ -44,7 +45,7 @@ enum
 	C4MN_Contents = 18
 };
 
-class C4ObjectMenu : public C4Menu
+class C4ObjectMenu : public C4Menu, private C4DeletionTrackable
 {
 public:
 	C4ObjectMenu();
@@ -63,7 +64,6 @@ protected:
 	CallbackType eCallbackType;
 	bool UserMenu; // set for script created menus; user menus do CloseQuery and MenuSelection callbacks
 	bool CloseQuerying; // recursion check for close query callback
-	bool *IsDeleted{nullptr};
 
 	void LocalInit(C4Object *pObject, bool fUserMenu);
 

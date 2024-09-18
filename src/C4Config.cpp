@@ -107,8 +107,7 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 #endif
 
 #ifndef _WIN32
-	pComp->Value(mkNamingAdapt(ThreadPoolMinimumThreadCount, "ThreadPoolMinimumThreadCount", 5));
-	pComp->Value(mkNamingAdapt(ThreadPoolMaximumThreadCount, "ThreadPoolMaximumThreadCount", 10));
+	pComp->Value(mkNamingAdapt(ThreadPoolThreadCount, "ThreadPoolThreadCount", 8));
 #endif
 }
 
@@ -205,6 +204,7 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 #endif
 
 	pComp->Value(mkNamingAdapt(ShowFolderMaps, "ShowFolderMaps", true));
+	pComp->Value(mkNamingAdapt(UseShaderGamma, "UseShaderGamma", true));
 }
 
 void C4ConfigSound::CompileFunc(StdCompiler *pComp)
@@ -262,6 +262,7 @@ void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(LeagueAccount,     "LeagueNick",      "",               false, false));
 	pComp->Value(mkNamingAdapt(LeagueAutoLogin,   "LeagueAutoLogin", true,             false, false));
 	pComp->Value(mkNamingAdapt(UseCurl,           "UseCurl",         true));
+	pComp->Value(mkNamingAdapt(EnableUPnP,        "EnableUPnP",      true));
 }
 
 void C4ConfigLobby::CompileFunc(StdCompiler *pComp)

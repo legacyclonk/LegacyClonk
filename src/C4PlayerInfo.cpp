@@ -1669,7 +1669,7 @@ bool C4PlayerInfoList::SetAsRestoreInfos(C4PlayerInfoList &rFromPlayers, bool fS
 
 						// O(n) is fast.
 						// If not, blame whoever wrote Replace! ;)
-						newName = ReplaceInString(std::string_view{newName}, std::string_view{"%"}, std::string_view{"%25"});
+						newName = ReplaceInString(newName, "%", "%25");
 						for (int ch = 128; ch < 256; ++ch)
 						{
 							const char *hexChars = "0123456789abcdef";
@@ -1677,7 +1677,7 @@ bool C4PlayerInfoList::SetAsRestoreInfos(C4PlayerInfoList &rFromPlayers, bool fS
 							char safe[] = { '%', 'x', 'x', 0 };
 							safe[1] = hexChars[ch / 16];
 							safe[2] = hexChars[ch % 16];
-							newName = ReplaceInString(std::string_view{newName}, std::string_view{old}, std::string_view{safe});
+							newName = ReplaceInString(newName, old, safe);
 						}
 
 						pInfo->SetFilename(newName.c_str());

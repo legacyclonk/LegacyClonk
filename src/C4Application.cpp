@@ -146,7 +146,7 @@ void C4Application::DoInit()
 #ifdef _WIN32
 	C4ThreadPool::Global = std::make_shared<C4ThreadPool>();
 #else
-	C4ThreadPool::Global = std::make_shared<C4ThreadPool>(Config.General.ThreadPoolMinimumThreadCount, Config.General.ThreadPoolMaximumThreadCount);
+	C4ThreadPool::Global = std::make_shared<C4ThreadPool>(Config.General.ThreadPoolThreadCount, Config.General.ThreadPoolThreadCount);
 #endif
 
 	// Initialize curl

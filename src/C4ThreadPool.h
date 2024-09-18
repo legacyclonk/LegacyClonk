@@ -126,7 +126,7 @@ public:
 			std::uint64_t await_resume() const;
 			void SetupCancellation(C4Task::CancellablePromise *promise);
 
-			void Callback(PTP_CALLBACK_INSTANCE instance, ULONG result, ULONG numberOfBytesTransferred);
+			void Callback(PTP_CALLBACK_INSTANCE instance, ULONG result, ULONG_PTR numberOfBytesTransferred);
 
 		private:
 			bool DoSuspend(std::coroutine_handle<> handle);

@@ -56,6 +56,9 @@ protected:
 	// discovery net i/o
 	class C4Network2IODiscover *pNetIODiscover;
 
+	// UPnP
+	std::unique_ptr<class C4Network2UPnP> UPnP;
+
 	// reference server
 	class C4Network2RefServer *pRefServer;
 
