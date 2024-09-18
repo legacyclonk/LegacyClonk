@@ -2409,7 +2409,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 				auto group = std::make_unique<C4Group>();
 				if (!group->Open(def.getFile()))
 				{
-					LogFatal(C4ResStrTableKey::IDS_ERR_OPENRES, def.getFile(), group->GetError());
+					LogFatal(C4ResStrTableKey::IDS_ERR_LOAD_OPENRES, def.getFile(), group->GetError());
 					return false;
 				}
 

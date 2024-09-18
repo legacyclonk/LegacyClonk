@@ -518,7 +518,7 @@ bool C4GraphicsSystem::SaveScreenshot(bool fSaveAll)
 	}
 	else
 	{
-		Log(C4ResStrTableKey::IDS_PRC_SCREENSHOTERR, Config.AtExeRelativePath(Config.AtScreenshotPath(szFilename)));
+		Log(C4ResStrTableKey::IDS_PRC_SCREENSHOTERROR, Config.AtExeRelativePath(Config.AtScreenshotPath(szFilename)));
 	}
 
 	// return success
