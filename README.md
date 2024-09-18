@@ -72,7 +72,7 @@ If you want to use an existing game folder (e.g. obtained via the simple binary 
 1. Create an empty folder at the desired location.
 The guide assumes the directory path to be `~/clonk`.
 1. Create a symbolic link to the binary in the folder
-	- Windows: `New-Item -ItemType Junction -Path ~/clonk/MyClonk.exe -Target build/clonk.exe`
+	- Windows: `New-Item -ItemType Symlink -Path ~/clonk/MyClonk.exe -Target build/clonk.exe` (needs to be run in a terminal with administrator rights)
 	- Linux: `ln -s build/clonk ~/clonk/myclonk`
 	- macOS: `ln -s build/clonk.app ~/clonk/myclonk.app`
 1. Create symbolic links to [Graphics.c4g](planet/Graphics.c4g) and [System.c4g](planet/System.c4g). Without them, the engine won’t start.
