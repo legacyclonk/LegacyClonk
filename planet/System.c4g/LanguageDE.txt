@@ -1134,6 +1134,7 @@ IDS_NET_RUNTIMEJOINFREE=Laufzeitbeitritt freigegeben
 IDS_NET_RUNTIMEJOIN_DESC=Gibt an, ob weitere Clients nach dem Spielstart beitreten können.
 IDS_NET_SAVE_ERR_ADDDYNDATARES=Netzwerk: Laufzeitdaten konnten nicht zur Ressourcenliste hinzugefügt werden!
 IDS_NET_SAVE_ERR_CREATEDYNFILE=Netzwerk: Datei für Laufzeitdaten konnte nicht erstellt werden!
+IDS_NET_SAVE_ERR_SAVEDYNFILE=Netzwerk: Datei für Laufzeitdaten konnte nicht gespeichert werden!
 IDS_NET_SAVING=Netzwerk: Spiel wird gespeichert...
 IDS_NET_SERVERREDIRECT=Server-Umleitung
 IDS_NET_SERVERREDIRECTDONE=Die Server-Umleitung wurde eingetragen.

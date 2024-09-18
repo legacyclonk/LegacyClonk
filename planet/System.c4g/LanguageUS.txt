@@ -1135,6 +1135,7 @@ IDS_NET_RUNTIMEJOINFREE=Runtime join allowed
 IDS_NET_RUNTIMEJOIN_DESC=Specifies whether additional computers may connect to the game after start.
 IDS_NET_SAVE_ERR_ADDDYNDATARES=Network: could not add dynamic data file to resource list!
 IDS_NET_SAVE_ERR_CREATEDYNFILE=Network: could not create dynamic data file!
+IDS_NET_SAVE_ERR_SAVEDYNFILE=Network: could not save dynamic data file!
 IDS_NET_SAVING=Network: Creating savegame...
 IDS_NET_SERVERREDIRECT=Server Redirection
 IDS_NET_SERVERREDIRECTDONE=Server redirection has been applied.
