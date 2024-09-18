@@ -385,8 +385,6 @@ void C4HudBarsUniquifier::Clear()
 
 std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<void(std::string)> &error, const C4HudBarsDef::Gfxs &gfxs, const std::string_view gfx)
 {
-
-	spdlog::debug("graphics: {}, gfx: {}", graphics | std::views::keys | std::views::join_with(',') | std::ranges::to<std::string>(), gfx);
 	if (const auto it = graphics.find(gfx); it != graphics.end())
 	{
 		auto facet = it->second.lock();
@@ -400,8 +398,6 @@ std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<v
 	std::int32_t amount;
 	std::int32_t scale;
 	std::string_view file;
-
-	spdlog::debug("gfxs: {}, gfx: {}", gfxs | std::views::keys | std::views::join_with(',') | std::ranges::to<std::string>(), gfx);
 
 	if (const auto it = gfxs.find(gfx); it != gfxs.end())
 	{
