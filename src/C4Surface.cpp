@@ -344,7 +344,7 @@ bool C4Surface::AttachSfc(void *sfcSurface)
 	return true;
 }
 
-bool C4Surface::Read(CStdStream &hGroup, bool fOwnPal)
+bool C4Surface::Read(C4Group &hGroup, bool fOwnPal)
 {
 	int lcnt, iLineRest;
 	CBitmap256Info BitmapInfo;
@@ -912,7 +912,7 @@ bool C4Surface::Load(C4Group &hGroup, const char *szFilename, bool fOwnPal, bool
 	return fSuccess;
 }
 
-bool C4Surface::ReadPNG(CStdStream &hGroup)
+bool C4Surface::ReadPNG(C4Group &hGroup)
 {
 	// create mem block
 	int iSize = hGroup.AccessedEntrySize();
@@ -1026,7 +1026,7 @@ bool C4Surface::Copy(C4Surface &fromSfc)
 	return true;
 }
 
-bool C4Surface::ReadJPEG(CStdStream &hGroup)
+bool C4Surface::ReadJPEG(C4Group &hGroup)
 {
 	// create mem block
 	size_t size = hGroup.AccessedEntrySize();

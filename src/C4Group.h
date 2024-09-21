@@ -145,7 +145,7 @@ const int GRPF_Inactive = 0,
           GRPF_File = 1,
           GRPF_Folder = 2;
 
-class C4Group : public CStdStream
+class C4Group
 {
 public:
 	C4Group();
@@ -223,8 +223,8 @@ public:
 		size_t *iSize = nullptr,
 		bool *fChild = nullptr,
 		bool fStartAtFilename = false);
-	bool Read(void *pBuffer, size_t iSize) override;
-	bool Advance(size_t iOffset) override;
+	bool Read(void *pBuffer, size_t iSize);
+	bool Advance(size_t iOffset);
 	void SetMaker(const char *szMaker);
 	void SetStdOutput(bool fStatus);
 	void MakeOriginal(bool fOriginal);
@@ -236,7 +236,7 @@ public:
 	StdStrBuf GetFullName() const;
 	int EntryCount(const char *szWildCard = nullptr);
 	int EntrySize(const char *szWildCard = nullptr);
-	size_t AccessedEntrySize() override { return iCurrFileSize; } // retrieve size of last accessed entry
+	size_t AccessedEntrySize() { return iCurrFileSize; } // retrieve size of last accessed entry
 	uint32_t EntryTime(const char *szFilename);
 	unsigned int EntryCRC32(const char *szWildCard = nullptr);
 	int32_t GetCreation();

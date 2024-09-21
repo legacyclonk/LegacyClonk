@@ -109,7 +109,7 @@ bool CSurface8::Create(int iWdt, int iHgt, bool fOwnPal)
 	return true;
 }
 
-bool CSurface8::Read(CStdStream &hGroup, bool fOwnPal)
+bool CSurface8::Read(C4Group &hGroup, bool fOwnPal)
 {
 	int cnt, lcnt, iLineRest;
 	CBitmap256Info BitmapInfo;

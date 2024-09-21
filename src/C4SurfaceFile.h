@@ -22,10 +22,9 @@
 
 #include <cstdint>
 
-class CStdStream;
 class C4Surface;
 
-C4Surface *GroupReadSurface(CStdStream &hGroup, uint8_t *bpPalette = nullptr);
-CSurface8 *GroupReadSurface8(CStdStream &hGroup);
-C4Surface *GroupReadSurfacePNG(CStdStream &hGroup);
-CSurface8 *GroupReadSurfaceOwnPal8(CStdStream &hGroup);
+C4Surface *GroupReadSurface(C4Group &hGroup, uint8_t *bpPalette = nullptr);
+CSurface8 *GroupReadSurface8(C4Group &hGroup);
+C4Surface *GroupReadSurfacePNG(C4Group &hGroup);
+CSurface8 *GroupReadSurfaceOwnPal8(C4Group &hGroup);

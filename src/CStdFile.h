@@ -26,17 +26,7 @@
 
 constexpr unsigned int CStdFileBufSize = 4096;
 
-class CStdStream
-{
-public:
-	virtual bool Read(void *pBuffer, size_t iSize) = 0;
-	virtual bool Advance(size_t iOffset) = 0;
-	// Get size. compatible with c4group!
-	virtual size_t AccessedEntrySize() = 0;
-	virtual ~CStdStream() {}
-};
-
-class CStdFile : public CStdStream
+class CStdFile
 {
 public:
 	CStdFile();
@@ -58,12 +48,12 @@ public:
 	bool Append(const char *szFilename); // append (uncompressed only)
 	bool Close();
 	bool Default();
-	bool Read(void *pBuffer, size_t iSize) override { return Read(pBuffer, iSize, nullptr); }
+	bool Read(void *pBuffer, size_t iSize) { return Read(pBuffer, iSize, nullptr); }
 	bool Read(void *pBuffer, size_t iSize, size_t *ipFSize);
 	bool Write(const void *pBuffer, size_t iSize);
 	bool WriteString(const char *szStr);
 	bool Rewind();
-	bool Advance(size_t iOffset) override;
+	bool Advance(size_t iOffset);
 	// Single line commands
 	bool Load(const char *szFileName, uint8_t **lpbpBuf,
 		size_t *ipSize = nullptr, int iAppendZeros = 0,
@@ -73,7 +63,7 @@ public:
 		bool fCompressed = false);
 	// flush contents to disk
 	inline bool Flush() { if (ModeWrite && BufferLoad) return SaveBuffer(); else return true; }
-	size_t AccessedEntrySize() override;
+	size_t AccessedEntrySize();
 
 protected:
 	void ClearBuffer();

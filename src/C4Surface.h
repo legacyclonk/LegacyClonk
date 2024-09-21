@@ -103,7 +103,7 @@ public:
 	void Default();
 	void Clip(int iX, int iY, int iX2, int iY2);
 	void NoClip();
-	bool Read(class CStdStream &hGroup, bool fOwnPal = false);
+	bool Read(C4Group &hGroup, bool fOwnPal = false);
 	bool SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma, bool fSaveOverlayOnly, float scale = 1.0f);
 	bool Wipe(); // empty to transparent
 	bool GetSurfaceSize(int &irX, int &irY); // get surface size
@@ -116,8 +116,8 @@ public:
 	bool Load(C4Group &hGroup, const char *szFilename, bool fOwnPal = false, bool fNoErrIfNotFound = false);
 	bool SavePNG(C4Group &hGroup, const char *szFilename, bool fSaveAlpha = true, bool fApplyGamma = false, bool fSaveOverlayOnly = false);
 	bool Copy(C4Surface &fromSfc);
-	bool ReadPNG(CStdStream &hGroup);
-	bool ReadJPEG(CStdStream &hGroup);
+	bool ReadPNG(C4Group &hGroup);
+	bool ReadJPEG(C4Group &hGroup);
 
 private:
 	bool CreateTextures(); // create ppTex-array
