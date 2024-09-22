@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "C4ForwardDeclarations.h"
 #include <Standard.h>
 #include <StdColors.h>
 
