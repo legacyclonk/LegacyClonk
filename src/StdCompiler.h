@@ -255,10 +255,6 @@ public:
 	protected:
 		Exception(std::string pos, std::string msg) : runtime_error{std::move(msg)}, Pos{std::move(pos)} {}
 
-	private:
-		// do not copy
-		Exception(const Exception &Exc) = delete;
-
 	public:
 		std::string Pos;
 	};
