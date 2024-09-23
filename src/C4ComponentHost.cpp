@@ -24,6 +24,7 @@
 #ifdef _WIN32
 #include "C4Console.h"
 #include "StdRegistry.h"
+#include "StdStringEncodingConverter.h"
 #include "res/engine_resource.h"
 #endif
 

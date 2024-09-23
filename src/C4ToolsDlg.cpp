@@ -27,6 +27,7 @@
 
 #ifdef _WIN32
 #include "StdRegistry.h"
+#include "StdStringEncodingConverter.h"
 #include "res/engine_resource.h"
 #endif
 

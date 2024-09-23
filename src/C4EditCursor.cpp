@@ -25,6 +25,7 @@
 #include <C4Wrappers.h>
 
 #ifdef _WIN32
+#include "StdStringEncodingConverter.h"
 #include "res/engine_resource.h"
 #endif
 
