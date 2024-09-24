@@ -80,9 +80,9 @@ int iC4GroupRewindFilePtrNoWarn = 0;
 
 namespace
 {
-	bool FileExistsNonEmpty(const char *filePath)
+	bool ItemExistsNonEmpty(const char *filePath)
 	{
-		return FileSize(filePath) > 0;
+		return DirectoryExists(filePath) || FileSize(filePath) > 0;
 	}
 }
 
@@ -267,7 +267,7 @@ bool C4Group_PackDirectoryTo(const char *szFilename, const char *szFilenameTo)
 	// Check file type
 	if (!DirectoryExists(szFilename)) return false;
 	// Target mustn't exist
-	if (FileExistsNonEmpty(szFilenameTo)) return false;
+	if (ItemExistsNonEmpty(szFilenameTo)) return false;
 	// Ignore
 	if (C4Group_TestIgnore(szFilename))
 		return true;
@@ -673,7 +673,7 @@ bool C4Group::Open(const char *szGroupName, bool fCreate)
 	SReplaceChar(szGroupNameN, '\\', DirectorySeparator);
 
 	// Real reference
-	if (FileExistsNonEmpty(szGroupNameN))
+	if (ItemExistsNonEmpty(szGroupNameN))
 	{
 		// Init
 		Init();
