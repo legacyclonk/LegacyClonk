@@ -611,7 +611,7 @@ int main(int argc, char *argv[])
 	// Execute when done
 	if (strExecuteAtEnd[0])
 	{
-		printf("Executing: {}\n", strExecuteAtEnd);
+		std::println("Executing: {}", strExecuteAtEnd);
 		switch (fork())
 		{
 		// Error
