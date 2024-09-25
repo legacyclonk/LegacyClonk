@@ -38,9 +38,10 @@
 #include <C4Version.h>
 #include <C4Update.h>
 #include <C4Config.h>
-#include "StdRegistry.h"
 
 #ifdef _WIN32
+#include "StdRegistry.h"
+
 #include <shellapi.h>
 #include <conio.h>
 
