@@ -349,7 +349,7 @@ bool C4HudBarsUniquifier::LoadDefaultBars()
 		return false;
 	}
 
-	const auto def = UniqueifyDefinition
+	const auto def = UniquifyDefinition
 	(
 		std::make_unique<C4HudBarsDef>
 		(
@@ -427,7 +427,7 @@ std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<v
 	return facet;
 }
 
-std::shared_ptr<const C4HudBarsDef> C4HudBarsUniquifier::UniqueifyDefinition(std::unique_ptr<C4HudBarsDef> definition)
+std::shared_ptr<const C4HudBarsDef> C4HudBarsUniquifier::UniquifyDefinition(std::unique_ptr<C4HudBarsDef> definition)
 {
 	// definition always gets owned by a shared_ptr,
 	// that either ends up being the canonical shared_ptr,
@@ -468,7 +468,7 @@ std::shared_ptr<C4HudBars> C4HudBarsUniquifier::DefineHudBars(C4ValueHash &graph
 	const auto error = [](std::string msg) { throw C4HudBarException{std::move(msg)}; };
 	C4HudBarsDef::PopulateNamesFromValues(error, bars, names);
 
-	auto def = UniqueifyDefinition(std::make_unique<C4HudBarsDef>(gfx, bars, names));
+	auto def = UniquifyDefinition(std::make_unique<C4HudBarsDef>(gfx, bars, names));
 	return Instantiate(def);
 }
 
@@ -702,7 +702,7 @@ void C4HudBarsAdapt::CompileFunc(StdCompiler *const comp)
 			bar.scale = static_cast<float>(def->gfxs.at(bar.gfx).scale) / 100.0f;
 		}
 
-		auto uniqueDef = Game.HudBars.UniqueifyDefinition(std::move(def));
+		auto uniqueDef = Game.HudBars.UniquifyDefinition(std::move(def));
 		const auto instance = Game.HudBars.Instantiate(std::move(uniqueDef));
 		comp->Value(mkNamingAdapt(mkSTLContainerAdapt(instance->values), "Bar", std::vector<C4HudBar>{}));
 
