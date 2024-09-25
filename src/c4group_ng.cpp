@@ -414,7 +414,7 @@ bool ProcessGroup(const char *FilenamePar)
 								// Wait for specified process to end
 								std::println("Waiting for {} to end", argv[iArg + 1]);
 
-								for (std::size_t i{0}; i < 5 && FindWindow(nullptr, argv[iArg + 1]); ++i)
+								for (std::size_t i{0}; i < 5 && FindWindowA(nullptr, argv[iArg + 1]); ++i)
 								{
 									Sleep(1000);
 									std::print(".");
@@ -472,7 +472,7 @@ int RegisterShellExtensions()
 	char strModule[2048];
 	char strCommand[2048];
 	char strClass[128];
-	GetModuleFileName(nullptr, strModule, 2048);
+	GetModuleFileNameA(nullptr, strModule, 2048);
 	// Groups
 	const char *strClasses = "Clonk4.Definition;Clonk4.Folder;Clonk4.Group;Clonk4.Player;Clonk4.Scenario;Clonk4.Update;Clonk4.Weblink;Clonk4.Object";
 	for (int i = 0; SCopySegment(strClasses, i, strClass); i++)
@@ -675,12 +675,12 @@ int main(int argc, char *argv[])
 		std::println("Executing: {}", strExecuteAtEnd);
 
 #ifdef _WIN32
-		STARTUPINFO startInfo{};
+		STARTUPINFOA startInfo{};
 		startInfo.cb = sizeof(startInfo);
 
 		PROCESS_INFORMATION procInfo;
 
-		CreateProcess(strExecuteAtEnd, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, &startInfo, &procInfo);
+		CreateProcessA(strExecuteAtEnd, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, &startInfo, &procInfo);
 #else
 		switch (fork())
 		{
