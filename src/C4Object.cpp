@@ -149,7 +149,7 @@ void C4Object::Default()
 	FirstRef = nullptr;
 	pGfxOverlay = nullptr;
 	iLastAttachMovementFrame = -1;
-	hudBars = nullptr;
+	HudBars = nullptr;
 }
 
 bool C4Object::Init(C4Def *pDef, C4Object *pCreator,
@@ -222,7 +222,7 @@ bool C4Object::Init(C4Def *pDef, C4Object *pCreator,
 	LocalNamed.SetNameList(&pDef->Script.LocalNamed);
 
 	// default hud bars
-	hudBars = Game.HudBars.DefaultBars();
+	HudBars = Game.HudBars.DefaultBars();
 
 	// finished initializing
 	Initializing = false;
@@ -2699,32 +2699,21 @@ bool C4Object::DefineHudBars(C4ValueHash *graphics, C4ValueArray *definition)
 	// If null pointer is given restore default hud bars
 	if (!graphics || !definition)
 	{
-		hudBars = Game.HudBars.DefaultBars();
+		HudBars = Game.HudBars.DefaultBars();
 		return true;
 	}
 
-	auto bars = Game.HudBars.DefineHudBars(*graphics, *definition);
-	if (bars != nullptr)
+	if (auto bars = Game.HudBars.DefineHudBars(*graphics, *definition); bars)
 	{
-		hudBars = bars;
+		HudBars = bars;
 		return true;
 	}
 	return false;
 }
 
-void C4Object::SetHudBarValue(const char *const name, const int32_t value, const int32_t max)
-{
-	hudBars->SetHudBarValue(name, value, max);
-}
-
-void C4Object::SetHudBarVisibility(const char *const name, const bool visible)
-{
-	hudBars->SetHudBarVisibility(name, visible);
-}
-
 void C4Object::DrawHudBars(C4Facet &cgo)
 {
-	hudBars->DrawHudBars(cgo, *this);
+	HudBars->Draw(cgo, *this);
 }
 
 void C4Object::CompileFunc(StdCompiler *pComp)
@@ -2818,7 +2807,7 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingPtrAdapt(pDrawTransform,                       "DrawTransform"));
 	pComp->Value(mkNamingPtrAdapt(pEffects,                             "Effects"));
 	pComp->Value(mkNamingAdapt(C4GraphicsOverlayListAdapt(pGfxOverlay), "GfxOverlay",         nullptr));
-	pComp->Value(mkNamingAdapt(C4HudBarsAdapt(hudBars), "HudBars", Game.HudBars.DefaultBars()));
+	pComp->Value(mkNamingAdapt(C4HudBarsAdapt(HudBars), "HudBars", Game.HudBars.DefaultBars()));
 
 
 	if (PhysicalTemporary)

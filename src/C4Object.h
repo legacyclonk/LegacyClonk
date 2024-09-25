@@ -201,7 +201,7 @@ public:
 
 	class C4GraphicsOverlay *pGfxOverlay; // singly linked list of overlay graphics
 
-	std::shared_ptr<C4HudBars> hudBars;
+	std::shared_ptr<C4HudBars> HudBars;
 
 protected:
 	std::string CustomName;
@@ -261,10 +261,7 @@ public:
 	void CompileFunc(StdCompiler *pComp);
 
 	bool DefineHudBars(C4ValueHash *graphics, C4ValueArray *definition);
-	void SetHudBarValue(const char *name, int32_t value, int32_t max = 0);
-	void SetHudBarVisibility(const char *name, bool fVisible);
 	void DrawHudBars(C4Facet &cgo);
-
 	void DrawLine(C4FacetEx &cgo);
 	void DrawCommands(C4Facet &cgo, C4Facet &cgo2, C4RegionList *pRegions);
 	void DrawCommand(C4Facet &cgoBar, int32_t iAlign, const char *szFunctionFormat,

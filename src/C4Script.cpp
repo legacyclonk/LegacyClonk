@@ -1784,7 +1784,7 @@ static void FnSetHudBarValue(C4AulContext *const cthr, C4String *const name, con
 
 	try
 	{
-		obj->SetHudBarValue(FnStringPar(name), newValue, newMax);
+		obj->HudBars->SetValue(FnStringPar(name), newValue, newMax);
 	}
 	catch (const C4HudBarException &e)
 	{
@@ -1799,7 +1799,7 @@ static void FnSetHudBarVisibility(C4AulContext *const cthr, C4String *const name
 
 	try
 	{
-		obj->SetHudBarVisibility(FnStringPar(name), visible);
+		obj->HudBars->SetVisibility(FnStringPar(name), visible);
 	}
 	catch (const C4HudBarException &e)
 	{
