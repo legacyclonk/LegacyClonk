@@ -34,7 +34,7 @@ jobs:
             arch: x64
             env: Linux
             config: Debugrec
-          - os: macos-12
+          - os: macos-13
             arch: x64
             env: Mac
     runs-on: ${{ matrix.os }}
