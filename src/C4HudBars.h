@@ -38,10 +38,10 @@ public:
 
 struct C4HudBar
 {
-	static constexpr std::int32_t Maximum{1'000'000};
+	static constexpr std::int32_t DefaultMaximum{1'000'000};
 
 	std::int32_t Value{0};
-	std::int32_t Max{Maximum};
+	std::int32_t Max{DefaultMaximum};
 	bool Visible{true};
 
 	bool operator==(const C4HudBar &rhs) const noexcept = default;
@@ -96,7 +96,7 @@ public:
 
 	std::int32_t valueIndex{-1};
 	std::int32_t value{0};
-	std::int32_t max{C4HudBar::Maximum};
+	std::int32_t max{C4HudBar::DefaultMaximum};
 	bool visible{true};
 	float scale{1.0f}; // calculated from gfx.scale
 };

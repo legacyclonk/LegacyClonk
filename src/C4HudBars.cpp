@@ -255,7 +255,7 @@ void C4HudBarDef::CompileFunc(StdCompiler *const comp)
 	comp->Value(mkNamingAdapt(advance, "Advance", true));
 	comp->Value(mkNamingAdapt(valueIndex, "ValueIndex", -1));
 	comp->Value(mkNamingAdapt(value, "Value", 0));
-	comp->Value(mkNamingAdapt(max, "Max", C4HudBar::Maximum));
+	comp->Value(mkNamingAdapt(max, "Max", C4HudBar::DefaultMaximum));
 	comp->Value(mkNamingAdapt(visible, "Visible", true));
 	// gfx and scale are restored from def.gfxs
 }
@@ -611,7 +611,7 @@ void C4HudBarsUniquifier::ProcessHudBar(std::int32_t &valueIndex, const C4HudBar
 	if (_index < 0) error("Index", index);
 	if (_value < 0) error("Value", value);
 
-	C4ValueInt _max{C4HudBar::Maximum};
+	C4ValueInt _max{C4HudBar::DefaultMaximum};
 	if (bar.contains(C4VString("Max")))
 	{
 		auto max = bar[C4VString("Max")];
