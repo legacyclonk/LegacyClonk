@@ -38,7 +38,7 @@ public:
 
 struct C4HudBar
 {
-	static constexpr std::int32_t Maximum{1000000};
+	static constexpr std::int32_t Maximum{1'000'000};
 
 	std::int32_t Value{0};
 	std::int32_t Max{Maximum};
