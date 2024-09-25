@@ -439,7 +439,7 @@ std::shared_ptr<const C4HudBarsDef> C4HudBarsUniquifier::UniquifyDefinition(std:
 		delete def;
 	};
 
-	const std::shared_ptr<const C4HudBarsDef> shared{definition.release(), deleter};
+	std::shared_ptr<const C4HudBarsDef> shared{definition.release(), deleter};
 	const auto &[it, success] = definitions.emplace(*shared.get(), std::weak_ptr<const C4HudBarsDef>(shared));
 	if (!success)
 	{
