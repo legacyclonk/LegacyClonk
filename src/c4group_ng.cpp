@@ -120,7 +120,7 @@ bool ProcessGroup(const char *FilenamePar)
 	size_t len = strlen(szFilename);
 	if (szFilename[len - 1] == DirectorySeparator) szFilename[len - 1] = 0;
 	// Current filename
-	LogF("Group: {}", szFilename);
+	std::println("Group: {}", szFilename);
 
 	// Open group file
 	if (hGroup.Open(szFilename, true))
@@ -286,7 +286,7 @@ bool ProcessGroup(const char *FilenamePar)
 						break;
 					// Pack
 					case 'p':
-						Log("Packing...");
+						std::println("Packing...");
 						// Close
 						if (!hGroup.Close())
 						{
@@ -305,7 +305,7 @@ bool ProcessGroup(const char *FilenamePar)
 						break;
 					// Unpack
 					case 'u':
-						LogF("Unpacking...");
+						std::println("Unpacking...");
 						// Close
 						if (!hGroup.Close())
 						{
@@ -324,7 +324,7 @@ bool ProcessGroup(const char *FilenamePar)
 						break;
 					// Unpack
 					case 'x':
-						Log("Exploding...");
+						std::println("Exploding...");
 						// Close
 						if (!hGroup.Close())
 						{
@@ -377,7 +377,7 @@ bool ProcessGroup(const char *FilenamePar)
 
 					// Apply an update
 					case 'y':
-						Log("Applying update...");
+						std::println("Applying update...");
 						if (C4Group_ApplyUpdate(hGroup))
 						{
 							if (argv[iArg][2] == 'd') fDeleteGroup = true;
@@ -396,7 +396,7 @@ bool ProcessGroup(const char *FilenamePar)
 					case 'w':
 						if (iArg + 1 >= argc || argv[iArg + 1][0] == '-')
 						{
-							printf("Missing argument for wait command");
+							std::println("Missing argument for wait command");
 						}
 						else
 						{
@@ -406,21 +406,21 @@ bool ProcessGroup(const char *FilenamePar)
 							if (milliseconds > 0)
 							{
 								// Wait for specified time
-								printf("Waiting...\n");
+								std::println("Waiting..");
 								Sleep(milliseconds);
 							}
 							else
 							{
 								// Wait for specified process to end
-								printf("Waiting for %s to end", argv[iArg + 1]);
+								std::println("Waiting for {} to end", argv[iArg + 1]);
 
 								for (std::size_t i{0}; i < 5 && FindWindow(nullptr, argv[iArg + 1]); ++i)
 								{
 									Sleep(1000);
-									printf(".");
+									std::print(".");
 								}
 
-								printf("\n");
+								std::println("");
 							}
 
 							++iArg;
@@ -452,7 +452,7 @@ bool ProcessGroup(const char *FilenamePar)
 		// Delete group file if desired (i.e. after apply update)
 		if (fDeleteGroup)
 		{
-			LogF("Deleting {}...", GetFilename(szFilename));
+			std::println("Deleting {}...", GetFilename(szFilename));
 			EraseItem(szFilename);
 		}
 	}
@@ -586,7 +586,7 @@ int main(int argc, char *argv[])
 		++iFirstCommand;
 
 	// Program info
-	LogF("LegacyClonk C4Group {}", C4VERSION);
+	std::println("LegacyClonk C4Group {}", C4VERSION);
 
 	// Load configuration
 	Config.Init();
@@ -600,7 +600,7 @@ int main(int argc, char *argv[])
 	// Display current working directory
 	if (!fQuiet)
 	{
-		printf("Location: %s\n", GetWorkingDirectory());
+		std::println("Location: {}", GetWorkingDirectory());
 	}
 
 	// Store command line parameters
