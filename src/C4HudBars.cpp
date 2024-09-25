@@ -209,11 +209,6 @@ int32_t C4HudBarDef::DefaultIndex(const C4HudBarDef::Physical physical) noexcept
 	}
 }
 
-std::size_t C4HudBarDef::GetHash() const noexcept
-{
-	return HashArguments(name, physical, hide, gfx, index, advance, valueIndex, value, max, visible);
-}
-
 void C4HudBarDef::CompileFunc(StdCompiler *const comp)
 {
 	comp->Value(mkNamingAdapt(name, "Name"));
@@ -243,6 +238,11 @@ void C4HudBarDef::CompileFunc(StdCompiler *const comp)
 	comp->Value(mkNamingAdapt(max, "Max", C4HudBar::DefaultMaximum));
 	comp->Value(mkNamingAdapt(visible, "Visible", true));
 	// gfx and scale are restored from def.gfxs
+}
+
+std::size_t std::hash<C4HudBarDef>::operator()(const C4HudBarDef &bar) const noexcept
+{
+	return HashArguments(bar.name, bar.physical, bar.hide, bar.gfx, bar.index, bar.advance, bar.valueIndex, bar.value, bar.max, bar.visible);
 }
 
 namespace
@@ -289,25 +289,20 @@ bool C4HudBarsDef::operator==(const C4HudBarsDef &rhs) const noexcept
 	return MapCompare(gfxs, rhs.gfxs) && bars == rhs.bars;
 }
 
-std::size_t C4HudBarsDef::GetHash() const noexcept
+std::size_t std::hash<const C4HudBarsDef>::operator()(const C4HudBarsDef &value) const noexcept
 {
 	std::size_t result{0};
-	for (const auto &gfx : gfxs)
+	for (const auto &gfx : value.gfxs)
 	{
 		HashCombineArguments(result, gfx.second.Key, gfx.second.File, gfx.second.Amount, gfx.second.Scale);
 	}
 
-	for (const auto &bardef : bars)
+	for (const auto &bardef : value.bars)
 	{
-		HashCombine(result, bardef.GetHash());
+		HashCombineArguments(result, bardef);
 	}
 
 	return result;
-}
-
-std::size_t std::hash<const C4HudBarsDef>::operator()(const C4HudBarsDef &value) const noexcept
-{
-	return value.GetHash();
 }
 
 bool C4HudBarsUniquifier::LoadDefaultBars()

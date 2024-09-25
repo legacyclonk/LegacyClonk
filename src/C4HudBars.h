@@ -81,7 +81,6 @@ public:
 	static Hide DefaultHide(Physical physical) noexcept;
 	static std::int32_t DefaultIndex(Physical physical) noexcept;
 
-	std::size_t GetHash() const noexcept;
 	void CompileFunc(StdCompiler *comp);
 
 public:
@@ -101,7 +100,6 @@ public:
 	float scale{1.0f}; // calculated from gfx.scale
 };
 
-
 constexpr C4HudBarDef::Hide operator &(const C4HudBarDef::Hide a, const C4HudBarDef::Hide b) noexcept
 {
 	return static_cast<C4HudBarDef::Hide>(std::to_underlying(a) & std::to_underlying(b));
@@ -117,6 +115,12 @@ constexpr C4HudBarDef::Hide operator~(const C4HudBarDef::Hide a) noexcept
 {
 	return static_cast<C4HudBarDef::Hide>(~std::to_underlying(a));
 }
+
+template<>
+struct std::hash<C4HudBarDef>
+{
+	std::size_t operator()(const C4HudBarDef &bar) const noexcept;
+};
 
 class C4HudBarsDef
 {
@@ -150,8 +154,6 @@ public:
 
 	bool operator==(const C4HudBarsDef &rhs) const noexcept;
 
-	std::size_t GetHash() const noexcept;
-
 public:
 	// the definiton is processed and flattened into a vector of energy bar values
 	// they contain everything needed to draw the energy bars
@@ -159,6 +161,15 @@ public:
 	Bars bars;
 	Names names;
 };
+
+namespace std
+{
+	template<>
+	struct hash<const C4HudBarsDef>
+	{
+		std::size_t operator()(const C4HudBarsDef &value) const noexcept;
+	};
+}
 
 class C4HudBars
 {
@@ -175,15 +186,6 @@ public:
 private:
 	C4HudBar &BarVal(std::string_view name);
 };
-
-namespace std
-{
-	template<>
-	struct hash<const C4HudBarsDef>
-	{
-		std::size_t operator()(const C4HudBarsDef &value) const noexcept;
-	};
-}
 
 class C4HudBarsUniquifier
 {
