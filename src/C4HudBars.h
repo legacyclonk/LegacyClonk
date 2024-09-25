@@ -196,8 +196,7 @@ public:
 
 	const std::shared_ptr<C4HudBars> &DefaultBars() const noexcept { return defaultBars; }
 	std::shared_ptr<C4FacetExID> GetFacet(const std::function<void(std::string)> &error, const C4HudBarsDef::Gfxs &gfx, std::string_view file);
-	std::shared_ptr<const C4HudBarsDef> UniquifyDefinition(std::unique_ptr<C4HudBarsDef> definition);
-	std::shared_ptr<C4HudBars> Instantiate(std::shared_ptr<const C4HudBarsDef> definition);
+	std::shared_ptr<C4HudBars> RegisterAndCreateInstance(std::unique_ptr<C4HudBarsDef> definition);
 	std::shared_ptr<C4HudBars> DefineHudBars(C4ValueHash &graphics, const C4ValueArray &definition);
 
 private:

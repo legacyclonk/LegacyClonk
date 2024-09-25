@@ -349,7 +349,7 @@ bool C4HudBarsUniquifier::LoadDefaultBars()
 		return false;
 	}
 
-	const auto def = UniquifyDefinition
+	defaultBars = RegisterAndCreateInstance
 	(
 		std::make_unique<C4HudBarsDef>
 		(
@@ -362,7 +362,6 @@ bool C4HudBarsUniquifier::LoadDefaultBars()
 			}
 		)
 	);
-	defaultBars = Instantiate(def);
 
 	return true;
 }
@@ -427,7 +426,7 @@ std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<v
 	return facet;
 }
 
-std::shared_ptr<const C4HudBarsDef> C4HudBarsUniquifier::UniquifyDefinition(std::unique_ptr<C4HudBarsDef> definition)
+std::shared_ptr<C4HudBars> C4HudBarsUniquifier::RegisterAndCreateInstance(std::unique_ptr<C4HudBarsDef> definition)
 {
 	// definition always gets owned by a shared_ptr,
 	// that either ends up being the canonical shared_ptr,
@@ -444,15 +443,9 @@ std::shared_ptr<const C4HudBarsDef> C4HudBarsUniquifier::UniquifyDefinition(std:
 	if (!success)
 	{
 		// definition already existed, create shared ptr from existing weak_ptr
-		return it->second.lock();
+		return std::make_shared<C4HudBars>(it->second.lock());
 	}
-	return shared;
-}
-
-std::shared_ptr<C4HudBars> C4HudBarsUniquifier::Instantiate(std::shared_ptr<const C4HudBarsDef> definition)
-{
-	if (!definition) return nullptr;
-	return std::make_shared<C4HudBars>(std::move(definition));
+	return std::make_shared<C4HudBars>(std::move(shared));
 }
 
 std::shared_ptr<C4HudBars> C4HudBarsUniquifier::DefineHudBars(C4ValueHash &graphics, const C4ValueArray &definition)
@@ -468,8 +461,7 @@ std::shared_ptr<C4HudBars> C4HudBarsUniquifier::DefineHudBars(C4ValueHash &graph
 	const auto error = [](std::string msg) { throw C4HudBarException{std::move(msg)}; };
 	C4HudBarsDef::PopulateNamesFromValues(error, bars, names);
 
-	auto def = UniquifyDefinition(std::make_unique<C4HudBarsDef>(gfx, bars, names));
-	return Instantiate(def);
+	return RegisterAndCreateInstance(std::make_unique<C4HudBarsDef>(gfx, bars, names));
 }
 
 static std::string_view StdStrBufToStringView(const StdStrBuf &buf)
@@ -702,8 +694,7 @@ void C4HudBarsAdapt::CompileFunc(StdCompiler *const comp)
 			bar.scale = static_cast<float>(def->gfxs.at(bar.gfx).scale) / 100.0f;
 		}
 
-		auto uniqueDef = Game.HudBars.UniquifyDefinition(std::move(def));
-		const auto instance = Game.HudBars.Instantiate(std::move(uniqueDef));
+		const auto instance = Game.HudBars.RegisterAndCreateInstance(std::move(def));
 		comp->Value(mkNamingAdapt(mkSTLContainerAdapt(instance->values), "Bar", std::vector<C4HudBar>{}));
 
 		bars = instance;
