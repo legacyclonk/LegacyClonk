@@ -52,11 +52,11 @@ public:
 	enum class Hide
 	{
 		Never = 0,
-		HideHUDBars = 0x1, // according to C4Def::HideHUDBars; otherwise HideHUDBars is ignored
+		AsDef = 0x1, // according to C4Def::HideHUDBars; otherwise HideHUDBars is ignored
 		Empty = 0x2,
 		Full = 0x4,
 		EmptyFull = Empty | Full,
-		All = EmptyFull | HideHUDBars
+		All = EmptyFull | AsDef
 	};
 
 public:

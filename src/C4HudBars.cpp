@@ -93,7 +93,7 @@ void C4HudBars::DrawHudBars(C4Facet &cgo, C4Object &obj) const noexcept
 		std::int32_t value{0};
 		std::int32_t max{0};
 		bool visible{true};
-		const auto hideHUDBars = static_cast<bool>(bardef.hide & C4HudBarDef::Hide::HideHUDBars);
+		const auto hideHUDBars = static_cast<bool>(bardef.hide & C4HudBarDef::Hide::AsDef);
 
 		switch (bardef.physical)
 		{
@@ -202,14 +202,14 @@ C4HudBarDef::Hide C4HudBarDef::DefaultHide(const C4HudBarDef::Physical physical)
 	switch (physical)
 	{
 	case Physical::Energy:
-		return Hide::Never | Hide::HideHUDBars;
+		return Hide::Never | Hide::AsDef;
 
 	case Physical::Breath:
-		return Hide::Full | Hide::HideHUDBars;
+		return Hide::Full | Hide::AsDef;
 
 	case Physical::Magic:
 	default:
-		return Hide::Empty | Hide::HideHUDBars;
+		return Hide::Empty | Hide::AsDef;
 	}
 }
 
@@ -248,7 +248,7 @@ void C4HudBarDef::CompileFunc(StdCompiler *const comp)
 	comp->Value(mkNamingAdapt(mkEnumAdaptT<std::uint8_t>(physical, PhysicalEntries), "Physical", Physical::None));
 	StdBitfieldEntry<std::uint8_t> HideEntries[]
 	{
-		{ "HideHud", std::to_underlying(Hide::HideHUDBars) },
+		{ "HideHud", std::to_underlying(Hide::AsDef) },
 		{ "Empty", std::to_underlying(Hide::Empty) },
 		{ "Full", std::to_underlying(Hide::Full) },
 	};
