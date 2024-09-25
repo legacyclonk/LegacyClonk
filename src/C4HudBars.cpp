@@ -30,7 +30,7 @@
 void C4HudBar::CompileFunc(StdCompiler *const comp)
 {
 	comp->Value(mkNamingAdapt(Value, "Value", 0));
-	comp->Value(mkNamingAdapt(Max, "Max", Maximum));
+	comp->Value(mkNamingAdapt(Max, "Max", DefaultMaximum));
 	comp->Value(mkNamingAdapt(Visible, "Visible", true));
 }
 
