@@ -101,9 +101,9 @@ bool Log(const std::string_view msg)
 }
 
 template<typename... Args>
-bool LogF(const char *strMessage, Args... args)
+bool Log(const std::format_string<Args...> fmt, Args &&...args)
 {
-	return Log(fmt::sprintf(strMessage, args...));
+	return Log(std::format(fmt, std::forward<Args>(args)...));
 }
 
 bool ProcessGroup(const char *FilenamePar)
@@ -120,7 +120,7 @@ bool ProcessGroup(const char *FilenamePar)
 	size_t len = strlen(szFilename);
 	if (szFilename[len - 1] == DirectorySeparator) szFilename[len - 1] = 0;
 	// Current filename
-	std::println("Group: {}", szFilename);
+	Log("Group: {}", szFilename);
 
 	// Open group file
 	if (hGroup.Open(szFilename, true))
@@ -305,7 +305,7 @@ bool ProcessGroup(const char *FilenamePar)
 						break;
 					// Unpack
 					case 'u':
-						std::println("Unpacking...");
+						Log("Unpacking...");
 						// Close
 						if (!hGroup.Close())
 						{
@@ -452,7 +452,7 @@ bool ProcessGroup(const char *FilenamePar)
 		// Delete group file if desired (i.e. after apply update)
 		if (fDeleteGroup)
 		{
-			std::println("Deleting {}...", GetFilename(szFilename));
+			Log("Deleting {}...", GetFilename(szFilename));
 			EraseItem(szFilename);
 		}
 	}
@@ -586,7 +586,7 @@ int main(int argc, char *argv[])
 		++iFirstCommand;
 
 	// Program info
-	std::println("LegacyClonk C4Group {}", C4VERSION);
+	Log("LegacyClonk C4Group {}", C4VERSION);
 
 	// Load configuration
 	Config.Init();
