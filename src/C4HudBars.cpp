@@ -270,24 +270,12 @@ namespace
 	}
 }
 
-C4HudBarsDef::Gfx::Gfx(std::string key, std::string file, const std::int32_t amount, const std::int32_t scale) noexcept
-	: key{std::move(key)},
-	  file{std::move(file)},
-	  amount{amount},
-	  scale{scale}
-{}
-
-bool C4HudBarsDef::Gfx::operator==(const Gfx &rhs) const noexcept
-{
-	return key == rhs.key && file == rhs.file && amount == rhs.amount && scale == rhs.scale;
-}
-
 void C4HudBarsDef::Gfx::CompileFunc(StdCompiler *const comp)
 {
-	comp->Value(mkNamingAdapt(key, "Key"));
-	comp->Value(mkNamingAdapt(file, "File"));
-	comp->Value(mkNamingAdapt(amount, "Amount"));
-	comp->Value(mkNamingAdapt(scale, "Scale"));
+	comp->Value(mkNamingAdapt(Key, "Key"));
+	comp->Value(mkNamingAdapt(File, "File"));
+	comp->Value(mkNamingAdapt(Amount, "Amount"));
+	comp->Value(mkNamingAdapt(Scale, "Scale"));
 }
 
 C4HudBarsDef::C4HudBarsDef(Gfxs &&gfxs, Bars &&bars) : gfxs{std::move(gfxs)}, bars{std::move(bars)}
@@ -321,7 +309,7 @@ std::size_t C4HudBarsDef::GetHash() const noexcept
 	std::size_t result{0};
 	for (const auto &gfx : gfxs)
 	{
-		HashCombineArguments(result, gfx.second.key, gfx.second.file, gfx.second.amount, gfx.second.scale);
+		HashCombineArguments(result, gfx.second.Key, gfx.second.File, gfx.second.Amount, gfx.second.Scale);
 	}
 
 	for (const auto &bardef : bars)
@@ -391,9 +379,9 @@ std::shared_ptr<C4FacetExID> C4HudBarsUniquifier::GetFacet(const std::function<v
 
 	if (const auto it = gfxs.find(gfx); it != gfxs.end())
 	{
-		amount = it->second.amount;
-		scale = it->second.scale;
-		file = it->second.file;
+		amount = it->second.Amount;
+		scale = it->second.Scale;
+		file = it->second.File;
 	}
 	else
 	{
@@ -645,7 +633,7 @@ void C4HudBarsUniquifier::ProcessHudBar(std::int32_t &valueIndex, const C4HudBar
 		bar.max = _max;
 		bar.visible = _visible;
 		bar.advance = advance;
-		auto scale = graphics.at(file.getData()).scale;
+		auto scale = graphics.at(file.getData()).Scale;
 		bar.scale = static_cast<float>(scale) / 100.0f;
 		bars.push_back(bar);
 	}
@@ -674,7 +662,7 @@ void C4HudBarsAdapt::CompileFunc(StdCompiler *const comp)
 		std::vector<C4HudBarsDef::Gfx> temp;
 		comp->Value(mkNamingAdapt(mkSTLContainerAdapt(temp), "Gfx", std::vector<C4HudBarsDef::Gfx>{}));
 		for (const auto &gfx : temp)
-			gfxs_.emplace(gfx.key, gfx);
+			gfxs_.emplace(gfx.Key, gfx);
 
 		C4HudBarsDef::Bars bars_;
 		comp->Value(mkNamingAdapt(mkSTLContainerAdapt(bars_), "Def", C4HudBarsDef::Bars{}));
@@ -691,7 +679,7 @@ void C4HudBarsAdapt::CompileFunc(StdCompiler *const comp)
 				bars = Game.HudBars.DefaultBars();
 				return;
 			}
-			bar.scale = static_cast<float>(def->gfxs.at(bar.gfx).scale) / 100.0f;
+			bar.scale = static_cast<float>(def->gfxs.at(bar.gfx).Scale) / 100.0f;
 		}
 
 		const auto instance = Game.HudBars.RegisterAndCreateInstance(std::move(def));

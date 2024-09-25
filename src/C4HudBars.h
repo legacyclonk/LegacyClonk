@@ -123,15 +123,12 @@ class C4HudBarsDef
 public:
 	struct Gfx
 	{
-		std::string key;
-		std::string file;
-		std::int32_t amount{0};
-		std::int32_t scale{0};
+		std::string Key;
+		std::string File;
+		std::int32_t Amount{0};
+		std::int32_t Scale{0};
 
-		Gfx() noexcept = default;
-		Gfx(std::string key, std::string file, std::int32_t amount, std::int32_t scale) noexcept;
-
-		bool operator==(const Gfx &rhs) const noexcept;
+		constexpr bool operator==(const Gfx &rhs) const noexcept = default;
 
 		void CompileFunc(StdCompiler *comp);
 	};
