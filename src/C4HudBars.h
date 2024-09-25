@@ -176,7 +176,7 @@ public:
 	void SetVisibility(std::string_view name, bool visible);
 
 private:
-	C4HudBar &BarVal(const char *functionName, std::string_view name);
+	C4HudBar &BarVal(std::string_view name);
 };
 
 namespace std
