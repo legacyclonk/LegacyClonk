@@ -171,9 +171,9 @@ public:
 
 	C4HudBars(std::shared_ptr<const C4HudBarsDef> def) noexcept;
 
-	void DrawHudBars(C4Facet &cgo, C4Object &obj) const noexcept;
-	void SetHudBarValue(std::string_view name, std::int32_t value, std::int32_t max = 0);
-	void SetHudBarVisibility(std::string_view name, bool visible);
+	void Draw(C4Facet &cgo, C4Object &obj) const noexcept;
+	void SetValue(std::string_view name, std::int32_t value, std::int32_t max = 0);
+	void SetVisibility(std::string_view name, bool visible);
 
 private:
 	C4HudBar &BarVal(const char *functionName, std::string_view name);

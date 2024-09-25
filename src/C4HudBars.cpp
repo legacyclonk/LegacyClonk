@@ -71,19 +71,19 @@ C4HudBar &C4HudBars::BarVal(const char *const functionName, const std::string_vi
 	throw C4HudBarException{std::format("bar \"{}\" was not defined.", name)};
 }
 
-void C4HudBars::SetHudBarValue(const std::string_view name, const std::int32_t value, const std::int32_t max)
+void C4HudBars::SetValue(const std::string_view name, const std::int32_t value, const std::int32_t max)
 {
 	C4HudBar &barVal{BarVal("SetHudBarValue", name)};
 	barVal.Value = value;
 	if(max > 0) barVal.Max = max;
 }
 
-void C4HudBars::SetHudBarVisibility(const std::string_view name, const bool visible)
+void C4HudBars::SetVisibility(const std::string_view name, const bool visible)
 {
 	BarVal("SetHudBarVisibility", name).Visible = visible;
 }
 
-void C4HudBars::DrawHudBars(C4Facet &cgo, C4Object &obj) const noexcept
+void C4HudBars::Draw(C4Facet &cgo, C4Object &obj) const noexcept
 {
 	bool needsAdvance = false;
 	std::int32_t maxWidth = 0;
