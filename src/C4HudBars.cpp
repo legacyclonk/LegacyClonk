@@ -170,16 +170,9 @@ void C4HudBars::DrawHudBars(C4Facet &cgo, C4Object &obj) const noexcept
 	}
 }
 
-
-C4HudBarDef::C4HudBarDef() noexcept :
-	physical{Physical::None}, hide{Hide::Empty}, index{}, advance{true},
-	valueIndex{-1}, value{0}, max{C4HudBar::Maximum}, visible{true}, scale{1.0f}
-{}
-
 C4HudBarDef::C4HudBarDef(const std::string_view name, const std::string_view gfx, std::shared_ptr<C4FacetExID> facet, const std::uint32_t index, const Physical physical) :
 	name{name}, physical{physical}, hide{DefaultHide(physical)},
-	gfx{gfx}, facet{std::move(facet)}, index{index}, advance{true},
-	valueIndex{-1}, value{0}, max{C4HudBar::Maximum}, visible{true}, scale{1.0f}
+	gfx{gfx}, facet{std::move(facet)}, index{index}
 {}
 
 bool C4HudBarDef::operator==(const C4HudBarDef &rhs) const noexcept
@@ -276,8 +269,6 @@ namespace
 			&& std::equal(lhs.begin(), lhs.end(), rhs.begin());
 	}
 }
-
-C4HudBarsDef::Gfx::Gfx() noexcept : key{}, file{}, amount{0}, scale{0} {}
 
 C4HudBarsDef::Gfx::Gfx(std::string key, std::string file, const std::int32_t amount, const std::int32_t scale) noexcept
 	: key{std::move(key)},

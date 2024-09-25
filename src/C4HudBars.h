@@ -36,6 +36,19 @@ public:
 	using runtime_error::runtime_error;
 };
 
+struct C4HudBar
+{
+	static constexpr std::int32_t Maximum{1000000};
+
+	std::int32_t Value{0};
+	std::int32_t Max{Maximum};
+	bool Visible{true};
+
+	bool operator==(const C4HudBar &rhs) const noexcept = default;
+
+	void CompileFunc(StdCompiler *comp);
+};
+
 class C4HudBarDef
 {
 public:
@@ -60,7 +73,7 @@ public:
 	};
 
 public:
-	C4HudBarDef() noexcept;
+	C4HudBarDef() noexcept = default;
 	C4HudBarDef(std::string_view name, std::string_view file, std::shared_ptr<C4FacetExID> gfx, std::uint32_t index, Physical physical = Physical::None);
 
 	bool operator==(const C4HudBarDef &rhs) const noexcept;
@@ -73,19 +86,19 @@ public:
 
 public:
 	std::string name;
-	Physical physical;
-	Hide hide;
+	Physical physical{Physical::None};
+	Hide hide{Hide::Empty};
 
 	std::string gfx;
 	std::shared_ptr<C4FacetExID> facet; // calculated from gfx
-	std::uint32_t index;
-	bool advance;
+	std::uint32_t index{0};
+	bool advance{true};
 
-	std::int32_t valueIndex;
-	std::int32_t value;
-	std::int32_t max;
-	bool visible;
-	float scale; // calculated from gfx.scale
+	std::int32_t valueIndex{-1};
+	std::int32_t value{0};
+	std::int32_t max{C4HudBar::Maximum};
+	bool visible{true};
+	float scale{1.0f}; // calculated from gfx.scale
 };
 
 
@@ -112,10 +125,10 @@ public:
 	{
 		std::string key;
 		std::string file;
-		std::int32_t amount;
-		std::int32_t scale;
+		std::int32_t amount{0};
+		std::int32_t scale{0};
 
-		Gfx() noexcept;
+		Gfx() noexcept = default;
 		Gfx(std::string key, std::string file, std::int32_t amount, std::int32_t scale) noexcept;
 
 		bool operator==(const Gfx &rhs) const noexcept;
@@ -148,19 +161,6 @@ public:
 	Gfxs gfxs;
 	Bars bars;
 	Names names;
-};
-
-struct C4HudBar
-{
-	static constexpr std::int32_t Maximum{1000000};
-
-	std::int32_t Value{0};
-	std::int32_t Max{Maximum};
-	bool Visible{true};
-
-	bool operator==(const C4HudBar &rhs) const noexcept = default;
-
-	void CompileFunc(StdCompiler *comp);
 };
 
 class C4HudBars
