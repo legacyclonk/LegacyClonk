@@ -6413,7 +6413,7 @@ static constexpr C4ScriptConstDef C4ScriptConstMap[] =
 	{ "EBH_Never",       C4V_Int, static_cast<C4ValueInt>(C4HudBarDef::Hide::Never) },
 	{ "EBH_Empty",       C4V_Int, static_cast<C4ValueInt>(C4HudBarDef::Hide::Empty) },
 	{ "EBH_Full",        C4V_Int, static_cast<C4ValueInt>(C4HudBarDef::Hide::Full) },
-	{ "EBH_HideHUDBars", C4V_Int, static_cast<C4ValueInt>(C4HudBarDef::Hide::HideHUDBars) },
+	{ "EBH_AsDef",       C4V_Int, static_cast<C4ValueInt>(C4HudBarDef::Hide::AsDef) },
 
 	{ "FX_OK",                  C4V_Int, C4Fx_OK }, // generic standard behaviour for all effect callbacks
 	{ "FX_Effect_Deny",         C4V_Int, C4Fx_Effect_Deny }, // delete effect
