@@ -175,21 +175,6 @@ C4HudBarDef::C4HudBarDef(const std::string_view name, const std::string_view gfx
 	gfx{gfx}, facet{std::move(facet)}, index{index}
 {}
 
-bool C4HudBarDef::operator==(const C4HudBarDef &rhs) const noexcept
-{
-	return
-		name == rhs.name &&
-		physical == rhs.physical &&
-		hide == rhs.hide &&
-		gfx == rhs.gfx &&
-		facet == rhs.facet &&
-		index == rhs.index &&
-		advance == rhs.advance &&
-		value == rhs.value &&
-		max == rhs.max &&
-		visible == rhs.visible;
-}
-
 C4HudBarDef::Hide C4HudBarDef::DefaultHide(const C4HudBarDef::Physical physical) noexcept
 {
 	switch (physical)

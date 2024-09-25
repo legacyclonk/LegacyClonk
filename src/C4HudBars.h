@@ -76,7 +76,7 @@ public:
 	C4HudBarDef() noexcept = default;
 	C4HudBarDef(std::string_view name, std::string_view file, std::shared_ptr<C4FacetExID> gfx, std::uint32_t index, Physical physical = Physical::None);
 
-	bool operator==(const C4HudBarDef &rhs) const noexcept;
+	constexpr bool operator==(const C4HudBarDef &rhs) const noexcept = default;
 
 	static Hide DefaultHide(Physical physical) noexcept;
 	static std::int32_t DefaultIndex(Physical physical) noexcept;
