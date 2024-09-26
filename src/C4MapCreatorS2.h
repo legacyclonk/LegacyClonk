@@ -349,7 +349,10 @@ class C4MapCreatorS2 : public C4MCNode
 {
 public:
 	C4MapCreatorS2(C4SLandscape *pLandscape, C4TextureMap *pTexMap, C4MaterialMap *pMatMap, int iPlayerCount);
+	C4MapCreatorS2(C4MCNode *pOwner, C4MapCreatorS2 &rTemplate, C4SLandscape *pLandscape, bool fClone); // construct of template
 	~C4MapCreatorS2();
+
+	C4MapCreatorS2 *clone(C4MCNode *pToNode, C4SLandscape *pLandscape) { return new C4MapCreatorS2(pToNode, *this, pLandscape, true); }
 
 	void Default(); // set default data
 	void Clear(); // clear any data
