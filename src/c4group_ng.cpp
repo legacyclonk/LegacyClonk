@@ -363,7 +363,7 @@ bool ProcessGroup(const char *FilenamePar)
 								std::println(stderr, "Closing failed: {}", hGroup.GetError());
 							}
 							// generate
-							else if (!Upd.MakeUpdate(argv[iArg + 1], argv[iArg + 2], szFilename, argv[iArg + 3]))
+							else if (!Upd.MakeUpdate(argv[iArg + 1], argv[iArg + 2], szFilename, argv[iArg + 3], argv[iArg][2] == 'a'))
 							{
 								std::println(stderr, "Update generation failed.");
 							}
@@ -645,7 +645,7 @@ int main(int argc, char *argv[])
 		std::println("          -v View  -l List  -d Delete  -r Rename  -s Sort");
 		std::println("          -p Pack  -u Unpack  -x Explode");
 		std::println("          -k Print maker");
-		std::println("          -g [source] [target] [title] Make update");
+		std::println("          -g[a] [source] [target] [title] Make update [allow missing target]");
 		std::println("          -y[d] Apply update [and delete group file]");
 		std::println("");
 		std::println("Options:  -v Verbose -r Recursive -p Prompt at end");

@@ -34,6 +34,7 @@ public:
 	char DestPath[_MAX_PATH + 1];
 	int32_t GrpUpdate;
 	int32_t UpGrpCnt; // number of file versions that can be updated by this package
+	bool AllowMissingTarget; // if true, missing target files are not considered an error
 	uint32_t GrpChks1[C4UP_MaxUpGrpCnt], GrpChks2;
 	uint32_t GrpContentsCRC1[C4UP_MaxUpGrpCnt], GrpContentsCRC2;
 
@@ -59,7 +60,7 @@ public:
 	bool Execute(C4Group *pGroup);
 	static bool Optimize(C4Group *pGrpFrom, const char *strTarget);
 	CheckResult Check(C4Group *pGroup);
-	bool MakeUpdate(const char *strFile1, const char *strFile2, const char *strUpdateFile, const char *strName = nullptr);
+	bool MakeUpdate(const char *strFile1, const char *strFile2, const char *strUpdateFile, const char *strName, bool allowMissingTarget);
 
 protected:
 	bool DoUpdate(C4Group *pGrpFrom, class C4GroupEx *pGrpTo, const char *strFileName);
