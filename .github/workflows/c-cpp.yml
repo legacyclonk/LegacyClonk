@@ -2,8 +2,8 @@ name: Autobuild
 
 on:
   push:
-    branches-ignore: 'build-test*'
-    tags: '*'
+    branches: '*'
+    tags-ignore: '*'
   pull_request:
     branches: '*'
 
@@ -12,192 +12,12 @@ defaults:
     shell: bash
 
 jobs:
+  generate-ci-config:
+    name: Generate CI Configuration
+    uses: './.github/workflows/ci-config.yml'
+
   Autobuild:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            arch: x86
-            env: Windows
-          - os: windows-latest
-            arch: x86
-            env: Windows
-            config: Debugrec
-          - os: windows-latest
-            arch: x64
-            env: Windows
-          - os: ubuntu-20.04
-            arch: x64
-            env: Linux
-          - os: ubuntu-20.04
-            arch: x64
-            env: Linux
-            config: Debugrec
-          - os: macos-13
-            arch: x64
-            env: Mac
-    runs-on: ${{ matrix.os }}
-    env:
-      IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/') }}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - name: "Setup Directories"
-        run: mkdir output
-
-      - name: "Configure Platform"
-        run: |
-          echo "CONFIG_SUFFIX=${{ matrix.env }}-${{ matrix.arch }}" >> $GITHUB_ENV
-          autobuild/${{ matrix.env }}.sh
-
-      - name: "Configure Platform Architecture"
-        run: |
-          autobuild/${{ matrix.env }}-${{ matrix.arch }}.sh
-
-      - name: "Linux: Setup"
-        if: ${{ matrix.env == 'Linux' }}
-        run: $CHROOT autobuild/setup_linux.sh
-
-      - name: "Mac: Work around libpng mess"
-        if: ${{ matrix.env == 'Mac' }}
-        run: sudo rm -r /Library/Frameworks/Mono.framework/Headers
-
-      - name: "Windows: Setup VS Dev Environment"
-        if: ${{ matrix.env == 'Windows' }}
-        uses: seanmiddleditch/gha-setup-vsdevenv@v4
-        with:
-          arch: ${{ env.VS_ARCH }}
-
-      - name: "Dependencies"
-        run: |
-          mkdir deps
-          cd deps
-          curl -L https://github.com/legacyclonk/deps/releases/download/2024-11-18/lc_deps-$CONFIG_SUFFIX.tar.gz | tar -xz
-          ./fix_paths.sh
-
-      - name: Configure
-        run: |
-          $CHROOT cmake -B build . -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_TESTS=On -DCMAKE_CTEST_ARGUMENTS=--output-on-failure $CMAKE_CONFIGURE_ARGS
-
-      - name: "Enable Debugrec"
-        if: ${{ matrix.config == 'Debugrec' }}
-        run: |
-          cmake -B build -DDEBUGREC=On
-          echo "CONFIG_SUFFIX=${{ matrix.env }}-${{ matrix.arch }}-debugrec" >> $GITHUB_ENV
-
-      - name: "Disable PCH"
-        if: ${{ matrix.config == 'Debugrec' && matrix.env == 'Linux' }}
-        run: |
-          cmake -B build -DUSE_PCH=Off
-
-      - name: Build
-        run: |
-          $CHROOT cmake --build build $CMAKE_BUILD_ARGS
-
-      - name: Test
-        run: |
-          $CHROOT cmake --build build --target test
-
-      - name: "Build c4gs"
-        if: ${{ matrix.env == 'Linux' }}
-        run: |
-          C4GROUP=$PWD/build/c4group tools/make_Graphics.c4g.sh
-          C4GROUP=$PWD/build/c4group tools/make_System.c4g.sh
-
-      - name: "Windows: Collect binaries"
-        if: ${{ matrix.env == 'Windows' }}
-        run: |
-          cd build
-          mv *.{exe,pdb} ../output
-
-      - name: "Linux: Collect binaries"
-        if: ${{ matrix.env == 'Linux' }}
-        run: |
-          cd build
-          cp clonk c4group ../output
-
-      - name: "Linux: Create AppImage"
-        if: ${{ matrix.env == 'Linux' }}
-        run: |
-          tools/make_AppImage.sh
-
-      - name: "Mac: Create Bundle"
-        if: ${{ matrix.env == 'Mac' }}
-        run: |
-          cd build
-          DESTDIR=inst ninja install
-          mv inst/usr/local/c4group inst/usr/local/clonk.app ../output
-
-      - name: "Publish Main Artifact"
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ env.CONFIG_SUFFIX }}
-          path: output/*
-
-      - name: "Publish System.c4g"
-        if: ${{ matrix.env == 'Linux' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: System.c4g
-          path: System.c4g
-
-      - name: "Publish Graphics.c4g"
-        if: ${{ matrix.env == 'Linux' && matrix.config != 'Debugrec' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: Graphics.c4g
-          path: Graphics.c4g
-
-      - name: "Pack: Windows"
-        if: ${{ matrix.env == 'Windows' }}
-        run: |
-          cd output
-          7z a LegacyClonk-$CONFIG_SUFFIX.zip *
-
-      - name: "Pack: Linux"
-        if: ${{ matrix.env == 'Linux' }}
-        run: |
-          cd output
-          mv clonk.AppImage clonk
-          tar czf LegacyClonk-$CONFIG_SUFFIX.tar.gz *
-
-      - name: "Pack: Mac"
-        if: ${{ matrix.env == 'Mac' }}
-        run: |
-          cd output
-          zip -r LegacyClonk-$CONFIG_SUFFIX.zip *
-
-      - name: "Release: Windows / Mac"
-        uses: ncipollo/release-action@v1.11.2
-        if: ${{ env.IS_RELEASE == 'true' && matrix.env != 'Linux' }}
-        with:
-          artifacts: output/LegacyClonk-${{ env.CONFIG_SUFFIX }}.zip
-          allowUpdates: true
-          artifactErrorsFailBuild: true
-          replacesArtifacts: true
-          generateReleaseNotes: true
-
-      - name: "Release: Linux"
-        uses: ncipollo/release-action@v1.11.2
-        if: ${{ env.IS_RELEASE == 'true' && matrix.env == 'Linux' }}
-        with:
-          artifacts: output/LegacyClonk-${{ env.CONFIG_SUFFIX }}.tar.gz
-          allowUpdates: true
-          artifactErrorsFailBuild: true
-          replacesArtifacts: true
-          generateReleaseNotes: true
-
-      - name: "Release: c4gs"
-        uses: ncipollo/release-action@v1.11.2
-        if: ${{ env.IS_RELEASE == 'true' && matrix.env == 'Linux' && matrix.config != 'Debugrec' }}
-        with:
-          artifacts: |
-            System.c4g
-            Graphics.c4g
-          allowUpdates: true
-          artifactErrorsFailBuild: true
-          replacesArtifacts: true
-          generateReleaseNotes: true
+    needs: [generate-ci-config]
+    uses: './.github/workflows/build.yml'
+    with:
+      matrix: ${{ needs.generate-ci-config.outputs.matrix }}

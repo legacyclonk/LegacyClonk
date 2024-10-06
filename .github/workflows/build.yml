@@ -1,0 +1,168 @@
+name: Build Binaries
+
+on:
+  workflow_call:
+    inputs:
+      matrix:
+        type: string
+        description: "Matrix to use for build"
+        required: true
+      pack-engine-and-c4group:
+        type: boolean
+        description: "Upload artifacts with the old format"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-binaries:
+    name: Build Binaries
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(inputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: "Setup Directories"
+        run: mkdir output
+
+      - name: "Configure Platform"
+        run: |
+          autobuild/${{ matrix.os }}.sh
+
+      - name: "Configure Platform Architecture"
+        run: |
+          autobuild/${{ matrix.os }}-${{ matrix.arch }}.sh
+
+      - name: "Linux: Setup"
+        if: ${{ matrix.os == 'Linux' }}
+        run: $CHROOT autobuild/setup_linux.sh
+
+      - name: "Mac: Work around libpng mess"
+        if: ${{ matrix.os == 'Mac' }}
+        run: sudo rm -r /Library/Frameworks/Mono.framework/Headers
+
+      - name: "Windows: Setup VS Dev Environment"
+        if: ${{ matrix.os == 'Windows' }}
+        uses: seanmiddleditch/gha-setup-vsdevenv@v4
+        with:
+          arch: ${{ env.VS_ARCH }}
+
+      - name: "Dependencies"
+        run: |
+          mkdir deps
+          cd deps
+          curl -L https://github.com/legacyclonk/deps/releases/download/2024-11-18/lc_deps-${{ matrix.os }}-${{ matrix.arch }}.tar.gz | tar -xz
+          ./fix_paths.sh
+
+      - name: Configure
+        run: |
+          $CHROOT cmake -B build . -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_TESTS=On -DCMAKE_CTEST_ARGUMENTS=--output-on-failure $CMAKE_CONFIGURE_ARGS
+
+      - name: "Enable Debugrec"
+        if: ${{ matrix.debugrec }}
+        run: |
+          cmake -B build -DDEBUGREC=On
+
+      - name: "Disable PCH"
+        if: ${{ matrix.debugrec && matrix.os == 'Linux' }}
+        run: |
+          cmake -B build -DUSE_PCH=Off
+
+      - name: Build
+        run: |
+          $CHROOT cmake --build build $CMAKE_BUILD_ARGS
+
+      - name: Test
+        run: |
+          $CHROOT cmake --build build --target test
+
+      - name: "Windows: Collect binaries"
+        if: ${{ matrix.os == 'Windows' }}
+        run: |
+          cd build
+          mv *.{exe,pdb} ../output
+
+      - name: "Linux: Collect binaries"
+        if: ${{ matrix.os == 'Linux' }}
+        run: |
+          cd build
+          cp clonk c4group ../output
+
+      - name: "Linux: Create AppImage"
+        if: ${{ matrix.os == 'Linux' }}
+        run: |
+          tools/make_AppImage.sh
+          mv output/clonk.AppImage output/clonk
+
+      - name: "Mac: Create Bundle"
+        if: ${{ matrix.os == 'Mac' }}
+        run: |
+          cd build
+          DESTDIR=inst ninja install
+          mv inst/usr/local/c4group inst/usr/local/clonk.app ../output
+
+      - name: "Publish Engine"
+        id: publish-engine
+        uses: actions/upload-artifact@v4
+        with:
+          name: clonk-${{ matrix.config-suffix }}
+          path: output/clonk*
+
+      - name: "Publish c4group"
+        id: publish-c4group
+        uses: actions/upload-artifact@v4
+        with:
+          name: c4group-${{ matrix.config-suffix }}
+          path: output/c4group*
+
+      - name: "Build c4gs"
+        if: ${{ matrix.include-groups }}
+        run: |
+          C4GROUP=output/c4group tools/make_Graphics.c4g.sh
+          C4GROUP=output/c4group tools/make_System.c4g.sh
+
+      - name: "Publish System.c4g"
+        if: ${{ matrix.include-groups }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: System.c4g
+          path: System.c4g
+
+      - name: "Publish Graphics.c4g"
+        if: ${{ matrix.include-groups }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Graphics.c4g
+          path: Graphics.c4g
+
+      - name: "Combine Engine And C4Group"
+        if: ${{ inputs.pack-engine-and-c4group && matrix.os != 'Linux' }}
+        shell: pwsh
+        run: |
+          [System.IO.Compression.ZipFile]::CreateFromDirectory("$(Join-Path $PWD output)", "LegacyClonk-${{ matrix.config-suffix }}.zip")
+
+      - name: "Combine Engine And C4Group"
+        if: ${{ inputs.pack-engine-and-c4group && matrix.os == 'Linux' }}
+        run: |
+          cd output
+          tar czf LegacyClonk-${{ matrix.config-suffix }}.tar.gz *
+
+      - name: "Publish Combined"
+        if: ${{ inputs.pack-engine-and-c4group && matrix.os != 'Linux' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: LegacyClonk-${{ matrix.config-suffix }}.zip
+          path: LegacyClonk-${{ matrix.config-suffix }}.zip
+
+      - name: "Publish Combined"
+        if: ${{ inputs.pack-engine-and-c4group && matrix.os == 'Linux' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: LegacyClonk-${{ matrix.config-suffix }}.tar.gz
+          path: output/LegacyClonk-${{ matrix.config-suffix }}.tar.gz

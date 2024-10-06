@@ -1,0 +1,6 @@
+[[prereqs]]
+name = "vcredist-2019-x86"
+
+[[actions]]
+name = "play"
+path = "clonk.exe"

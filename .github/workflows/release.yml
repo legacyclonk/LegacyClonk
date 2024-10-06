@@ -1,0 +1,457 @@
+name: Release
+on:
+  push:
+    tags:
+      - '*'
+
+defaults:
+  run:
+    shell: pwsh
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate-ci-config:
+    name: Generate CI Configuration
+    uses: './.github/workflows/ci-config.yml'
+
+  build-binaries:
+    name: Build Binaries
+    needs: [generate-ci-config]
+    uses: './.github/workflows/build.yml'
+    with:
+      matrix: ${{ needs.generate-ci-config.outputs.matrix }}
+      pack-engine-and-c4group: true
+
+  build-content:
+    name: Content
+    runs-on: windows-latest
+    needs: [generate-ci-config, build-binaries]
+    env:
+      C4GROUP: ../c4group.exe
+      LC_GROUPS: ${{ needs.generate-ci-config.outputs.groups }}
+      OBJVERSION: ${{ needs.generate-ci-config.outputs.objversion }}
+      OBJVERSIONNODOTS: ${{ needs.generate-ci-config.outputs.objversionnodots }}
+      VERSION: ${{ needs.generate-ci-config.outputs.buildversion }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            autobuild
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/content
+          path: content
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: c4group-Windows-x64
+
+      - name: Create output directory
+        run: New-Item -Path content/output -ItemType Directory
+
+      - name: Pack groups & create updates
+        run: |
+          Set-Location content
+          ../autobuild/MakeContentGroupsAndUpdateGroups.ps1 -OutDir output
+
+      - name: Publish content
+        uses: actions/upload-artifact@v4
+        with:
+          name: content
+          path: content/output/*.c4[dgf]
+
+      - name: Publish content updates
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-updates
+          path: |
+            content/output/*.c4[dgf].c4u
+            !content/output/lc_${{ env.OBJVERSIONNODOTS }}.c4u
+
+      - name: Publish combined update
+        uses: actions/upload-artifact@v4
+        with:
+          name: lc_${{ env.OBJVERSIONNODOTS }}.c4u
+          path: content/output/lc_${{ env.OBJVERSIONNODOTS }}.c4u
+
+  build-system-graphics-updates:
+    name: "Update Groups: System.c4g & Graphics.c4g"
+    runs-on: windows-latest
+    needs: [generate-ci-config, build-binaries]
+    env:
+      C4GROUP: ./c4group.exe
+      LC_GROUPS: ${{ needs.generate-ci-config.outputs.groups }}
+      OBJVERSION: ${{ needs.generate-ci-config.outputs.objversion }}
+      VERSION: ${{ needs.generate-ci-config.outputs.buildversion }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            autobuild
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: System.c4g
+      - uses: actions/download-artifact@v4
+        with:
+          name: Graphics.c4g
+      - uses: actions/download-artifact@v4
+        with:
+          name: c4group-Windows-x64
+
+      - name: Create output directory
+        run: New-Item -Path output -ItemType Directory
+
+      - name: Create System.c4g update group
+        run: autobuild/MakeEngineGroupUpdateGroups.ps1 -GroupPath System.c4g -OutDir output
+      - name: Create Graphics.c4g update group
+        run: autobuild/MakeEngineGroupUpdateGroups.ps1 -GroupPath Graphics.c4g -OutDir output
+
+      - name: Publish System.c4g.c4u
+        uses: actions/upload-artifact@v4
+        with:
+          name: System.c4g.c4u
+          path: output/System.c4g.c4u
+
+      - name: Publish Graphics.c4g.c4u
+        uses: actions/upload-artifact@v4
+        with:
+          name: Graphics.c4g.c4u
+          path: output/Graphics.c4g.c4u
+
+  pack-zips:
+    name: Pack ZIP Archives
+    runs-on: windows-latest
+    needs: [generate-ci-config, build-content, build-system-graphics-updates]
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.generate-ci-config.outputs.matrix) }}
+    env:
+      OBJVERSION: ${{ needs.generate-ci-config.outputs.objversion }}
+      VERSION: ${{ needs.generate-ci-config.outputs.buildversion }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+           autobuild
+      - uses: actions/download-artifact@v4
+        with:
+          name: clonk-${{ matrix.config-suffix }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: c4group-${{ matrix.config-suffix }}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: '*.c4g'
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: content
+
+      - name: Create output directory
+        run: New-Item -Path output -ItemType Directory
+
+      - name: Create Engine Archive
+        run: |
+          cd output
+          New-Item -Path lc_${{ env.VERSION }}_${{ matrix.platform-suffix }} -ItemType Directory | Push-Location
+          Copy-Item -Path ../../clonk* -Destination .
+          Copy-Item -Path ../../c4group* -Destination .
+          Copy-Item -Path ../../* -Include @('System.c4g', 'Graphics.c4g') -Destination .
+
+      - name: Create Full Archive
+        run: |
+          cd output
+          New-Item -Path lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }} -ItemType Directory | Push-Location
+          Copy-Item -Path ../../clonk* -Destination .
+          Copy-Item -Path ../../c4group* -Destination .
+          Move-Item -Path ../../*.c4? -Destination .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}.zip
+          path: output/lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}.zip
+          path: output/lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}
+
+  build-combined-update-groups:
+    name: Build Combined Update Groups
+    runs-on: ${{ matrix.runner }}
+    needs: [generate-ci-config, build-content, build-system-graphics-updates]
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.generate-ci-config.outputs.matrix) }}
+    env:
+      C4GROUP: ${{ matrix.os == 'Windows' && './c4group.exe' || './c4group' }}
+      MAJOR_UPDATE: ${{ needs.generate-ci-config.outputs.major-update }}
+      OBJVERSION: ${{ needs.generate-ci-config.outputs.objversion }}
+      OBJVERSIONNODOTS: ${{ needs.generate-ci-config.outputs.objversionnodots }}
+      VERSION: ${{ needs.generate-ci-config.outputs.buildversion }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            autobuild
+      - uses: actions/download-artifact@v4
+        with:
+          name: clonk-${{ matrix.config-suffix }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: c4group-${{ matrix.config-suffix }}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: '*.c4g.c4u'
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: lc_${{ env.OBJVERSIONNODOTS }}.c4u
+      - uses: actions/download-artifact@v4
+        with:
+          name: content-updates
+
+      - name: Set Executable Bit
+        if: ${{ matrix.os != 'Windows' }}
+        run: |
+          chmod +x ./clonk
+          chmod +x ./c4group
+
+      - name: Create output directory
+        run: New-Item -Path output -ItemType Directory
+
+      - name: Build Engine Update
+        run: autobuild/MakeEngineUpdateGroups.ps1 -PlatformSuffix ${{ matrix.platform-suffix }} -RequireVersion ${{ env.OBJVERSION }} -OutDir output
+
+      - name: Publish Engine Update
+        uses: actions/upload-artifact@v4
+        with:
+          name: lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}.c4u
+          path: output/lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}.c4u
+
+      - name: Build Combined Update
+        run: autobuild/MakeCombinedUpdateGroups.ps1 -PlatformSuffix ${{ matrix.platform-suffix }} -EngineUpdatePath output/lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}.c4u -OutDir output
+
+      - name: Publish Combined Update
+        if: ${{ !env.MAJOR_UPDATE }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lc_${{ env.OBJVERSIONNODOTS }}_${{ env.VERSION }}_${{ matrix.platform-suffix }}.c4u
+          path: output/lc_${{ env.OBJVERSIONNODOTS }}_${{ env.VERSION }}_${{ matrix.platform-suffix }}.c4u
+
+      - name: Publish Combined Major Update
+        if: ${{ env.MAJOR_UPDATE }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lc_${{ env.OBJVERSIONNODOTS }}_${{ matrix.platform-suffix }}.c4u
+          path: output/lc_${{ env.OBJVERSIONNODOTS }}_${{ matrix.platform-suffix }}.c4u
+
+  build-setup:
+    name: Build Setup
+    runs-on: windows-latest
+    needs: [generate-ci-config, build-content, build-system-graphics-updates]
+    env:
+      C4GROUP: ./c4group.exe
+      MAJOR_UPDATE: ${{ needs.generate-ci-config.outputs.major-update }}
+      OBJVERSION: ${{ needs.generate-ci-config.outputs.objversion }}
+      OBJVERSIONNODOTS: ${{ needs.generate-ci-config.outputs.objversionnodots }}
+      VERSION: ${{ needs.generate-ci-config.outputs.buildversion }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            licenses
+            src/res
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: clonk-Windows-x64
+      - uses: actions/download-artifact@v4
+        with:
+          name: c4group-Windows-x64
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: clonk-Windows-x86
+          path: x86
+      - uses: actions/download-artifact@v4
+        with:
+          name: c4group-Windows-x86
+          path: x86
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: '*.c4g'
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: content
+
+      - name: Move Licenses
+        run:
+          Move-Item -Path licenses/* -Include @('clonk_content_license.txt', 'clonk_trademark_license.txt') -Destination .
+
+      - name: Build Installer
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+        with:
+          path: src/res/setup.iss
+          options: >
+            /DC4VERSION="${{ env.OBJVERSION }}"
+            /DC4XVERBUILD=${{ env.VERSION }}
+            /DC4SOURCEDIR=${{ github.workspace }}
+
+      - name: Publish Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: lc_setup_win.exe
+          path: Output/lc_setup_win.exe
+
+  publish-github:
+    name: Publish To GitHub Release
+    runs-on: ${{ matrix.runner }}
+    needs:
+      - generate-ci-config
+      - build-binaries
+      - build-content
+      - build-system-graphics-updates
+      - pack-zips
+      - build-combined-update-groups
+      - build-setup
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include: ${{ fromJson(needs.generate-ci-config.outputs.matrix) }}
+    steps:
+      - uses: actions/download-artifact@v4
+        if: ${{ matrix.os != 'Linux' }}
+        with:
+          name: LegacyClonk-${{ matrix.config-suffix }}.zip
+      - uses: actions/download-artifact@v4
+        if: ${{ matrix.os == 'Linux' }}
+        with:
+          name: LegacyClonk-${{ matrix.config-suffix }}.tar.gz
+      - uses: actions/download-artifact@v4
+        if: ${{ matrix.publish-groups }}
+        with:
+          name: System.c4g
+      - uses: actions/download-artifact@v4
+        if: ${{ matrix.publish-groups }}
+        with:
+          name: Graphics.c4g
+      - uses: actions/download-artifact@v4
+        if: ${{ matrix.publish-groups }}
+        with:
+          name: content
+          path: content
+      - uses: actions/download-artifact@v4
+        if: ${{ matrix.publish-groups }}
+        with:
+          name: lc_setup_win.exe
+
+      - name: Pack Content
+        if: ${{ matrix.publish-groups }}
+        run: |
+          [System.IO.Compression.ZipFile]::CreateFromDirectory("content", "content.zip")
+
+      - name: Publish Binaries
+        if: ${{ matrix.os != 'Linux' }}
+        uses: ncipollo/release-action@v1.11.2
+        with:
+          artifacts: LegacyClonk-${{ matrix.config-suffix }}.zip
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          replacesArtifacts: true
+          generateReleaseNotes: true
+      - name: Publish Binaries
+        if: ${{ matrix.os == 'Linux' }}
+        uses: ncipollo/release-action@v1.11.2
+        with:
+          artifacts: LegacyClonk-${{ matrix.config-suffix }}.tar.gz
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          replacesArtifacts: true
+          generateReleaseNotes: true
+      - name: Publish System.c4g
+        if: ${{ matrix.publish-groups }}
+        uses: ncipollo/release-action@v1.11.2
+        with:
+          artifacts: System.c4g
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          replacesArtifacts: true
+          generateReleaseNotes: true
+
+      - name: Publish Graphics.c4g
+        if: ${{ matrix.publish-groups }}
+        uses: ncipollo/release-action@v1.11.2
+        with:
+          artifacts: Graphics.c4g
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          replacesArtifacts: true
+          generateReleaseNotes: true
+
+      - name: Publish Content
+        if: ${{ matrix.publish-groups }}
+        uses: ncipollo/release-action@v1.11.2
+        with:
+          artifacts: content.zip
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          replacesArtifacts: true
+          generateReleaseNotes: true
+
+      - name: Publish Installer
+        if: ${{ matrix.publish-groups }}
+        uses: ncipollo/release-action@v1.11.2
+        with:
+          artifacts: lc_setup_win.exe
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          replacesArtifacts: true
+          generateReleaseNotes: true
+
+  publish-itch:
+    name: Publish To Itch.io
+    runs-on: ${{ matrix.runner }}
+    needs: [generate-ci-config, publish-github]
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.generate-ci-config.outputs.matrix-itch) }}
+    env:
+      BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+      MAJOR_UPDATE: ${{ needs.generate-ci-config.outputs.major-update }}
+      OBJVERSION: ${{ needs.generate-ci-config.outputs.objversion }}
+      OBJVERSIONNODOTS: ${{ needs.generate-ci-config.outputs.objversionnodots }}
+      VERSION: ${{ needs.generate-ci-config.outputs.buildversion }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            autobuild
+      - uses: actions/download-artifact@v4
+        with:
+          name: lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}.zip
+          path: lc_full
+
+      - name: Publish To Itch
+        run: >
+          autobuild/PublishToItch.ps1
+          -OS ${{ matrix.os }}
+          -Arch ${{ matrix.arch }}
+          -PlatformSuffix ${{ matrix.platform-suffix }}
+          -Manifest autobuild/itch/${{ matrix.itch-manifest }}.toml
+          -Tag ${{ github.ref_name }}

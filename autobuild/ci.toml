@@ -1,0 +1,134 @@
+major-update = true
+
+[groups.'System.c4g']
+parts = [
+    'continuous-v335',
+    'continuous-v336',
+    'continuous-v337',
+    'continuous-v338',
+    'continuous-v339',
+    'continuous-v340',
+    'v341',
+    'v343',
+    'v344',
+    'v345',
+    'v346',
+    'v347',
+    'v349',
+    'v352',
+    'v353',
+    'v356',
+    'v359',
+]
+
+[groups.'Graphics.c4g']
+parts = [
+    'continuous-v335',
+    'continuous-v336',
+    'continuous-v339',
+    'v341',
+    'v343',
+    'v347',
+    'v349',
+    'v352',
+    'v353',
+    'v356',
+    'v359',
+]
+
+[groups.content]
+parts = [
+    'https://update.clonkspot.org/lc/lc_49108.zip',
+    'https://update.clonkspot.org/lc/lc_49109.zip',
+    'https://update.clonkspot.org/lc/lc_491010.zip',
+    'https://update.clonkspot.org/lc/lc_491011.zip',
+    'https://update.clonkspot.org/lc/lc_491012.zip',
+    'https://update.clonkspot.org/lc/lc_491013.zip',
+    'https://update.clonkspot.org/lc/lc_491014.zip',
+    'https://update.clonkspot.org/lc/lc_491015.zip',
+    'https://ccan.de/cgi-bin/ccan/ccan-dl-auth.pl/4137/Hazard2043.zip',
+]
+
+[groups.content.'Fantasy.c4d']
+
+[groups.content.'Fantasy.c4f']
+
+[groups.content.'FarWorlds.c4d']
+
+[groups.content.'FarWorlds.c4f']
+
+[groups.content.'Hazard.c4d']
+allow-missing-target = true
+
+[groups.content.'Hazard.c4f']
+allow-missing-target = true
+
+[groups.content.'Knights.c4d']
+
+[groups.content.'Knights.c4f']
+
+[groups.content.'Material.c4g']
+
+[groups.content.'Melees.c4f']
+
+[groups.content.'Missions.c4f']
+
+[groups.content.'Music.c4g']
+
+[groups.content.'Objects.c4d']
+
+[groups.content.'Races.c4f']
+
+[groups.content.'Sound.c4g']
+
+[groups.content.'Tutorial.c4f']
+
+[groups.content.'Western.c4d']
+
+[groups.content.'Western.c4f']
+
+[groups.content.'Worlds.c4f']
+
+[matrix.windows]
+runner = 'windows-latest'
+
+[[matrix.windows.config]]
+arch = 'x86'
+platform-suffix = 'win32'
+itch-manifest = 'win32'
+
+[[matrix.windows.config]]
+arch = 'x64'
+platform-suffix = 'win64'
+itch-manifest = 'win64'
+vs_arch = 'amd64'
+include-groups = true
+publish-groups = true
+
+[[matrix.windows.config]]
+name = 'debugrec'
+arch = 'x86'
+platform-suffix = 'win32'
+debugrec = true
+
+[matrix.linux]
+runner = 'ubuntu-20.04'
+
+[[matrix.linux.config]]
+arch = 'x64'
+platform-suffix = 'linux64'
+itch-manifest = 'linux'
+
+[[matrix.linux.config]]
+name = 'debugrec'
+arch = 'x64'
+platform-suffix = 'linux64'
+debugrec = true
+
+[matrix.mac]
+runner = 'macos-13'
+
+[[matrix.mac.config]]
+arch = 'x64'
+platform-suffix = 'mac'
+itch-manifest = 'mac'

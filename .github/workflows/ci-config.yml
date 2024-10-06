@@ -1,0 +1,56 @@
+name: Generate CI Configuration
+on:
+  workflow_call:
+    outputs:
+      groups:
+        value: ${{ jobs.generate-ci-config.outputs.groups }}
+      major-update:
+        value: ${{ jobs.generate-ci-config.outputs.major-update }}
+      matrix:
+        value: ${{ jobs.generate-ci-config.outputs.matrix }}
+      matrix-itch:
+        value: ${{ jobs.generate-ci-config.outputs.matrix-itch }}
+      objversion:
+        value: ${{ jobs.generate-ci-config.outputs.objversion }}
+      objversionnodots:
+        value: ${{ jobs.generate-ci-config.outputs.objversionnodots }}
+      buildversion:
+        value: ${{ jobs.generate-ci-config.outputs.buildversion }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  generate-ci-config:
+    name: Generate CI Configuration
+    outputs:
+      groups: ${{ steps.generate-ci-config.outputs.groups }}
+      major-update: ${{ steps.generate-ci-config.outputs.major-update }}
+      matrix: ${{ steps.generate-ci-config.outputs.matrix }}
+      matrix-itch: ${{ steps.generate-ci-config.outputs.matrix-itch }}
+      objversion: ${{ steps.extract-version.outputs.objversion }}
+      objversionnodots: ${{ steps.extract-version.outputs.objversionnodots }}
+      buildversion: ${{ steps.extract-version.outputs.buildversion }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            autobuild
+            src
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Generate CI config
+        id: generate-ci-config
+        run: |
+          python3 autobuild/generate_ci_config.py autobuild/ci.toml >> $GITHUB_OUTPUT
+      - name: Extract version numbers
+        id: extract-version
+        run: |
+          OBJVERSION=$(grep -P '#define C4XVER\d' src/C4Version.h | cut -d ' ' -f3 | paste -sd .)
+          echo "objversion=$OBJVERSION" >> $GITHUB_OUTPUT
+          echo "objversionnodots=${OBJVERSION//./}" >> $GITHUB_OUTPUT
+          BUILDVERSION=$(grep -P '#define C4XVERBUILD' src/C4Version.h | cut -d ' ' -f3)
+          echo "buildversion=$BUILDVERSION" >> $GITHUB_OUTPUT
