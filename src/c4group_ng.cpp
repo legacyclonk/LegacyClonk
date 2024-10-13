@@ -645,7 +645,7 @@ int main(int argc, char *argv[])
 		std::println("          -v View  -l List  -d Delete  -r Rename  -s Sort");
 		std::println("          -p Pack  -u Unpack  -x Explode");
 		std::println("          -k Print maker");
-		std::println("          -g[a] [source] [target] [title] Make update [allow missing target]");
+		std::println("          -g[a] [source] [target] [title] Make update [and allow missing target group when applying update]");
 		std::println("          -y[d] Apply update [and delete group file]");
 		std::println("");
 		std::println("Options:  -v Verbose -r Recursive -p Prompt at end");
