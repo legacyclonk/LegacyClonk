@@ -811,7 +811,7 @@ bool C4UpdatePackage::MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGrp, bo
 			extern const char **C4Group_SortList;
 			UpdGroup.SortByList(C4Group_SortList, ChildGrp2.GetName());
 			UpdGroup.Close(false);
-			// always add the entire group if mising targets are allowed
+			// always add the entire group if missing targets are allowed
 			// otherwise check entry times
 			if (AllowMissingTarget || !pGrp1 || (pGrp1->EntryTime(strItemName) != pGrp2->EntryTime(strItemName)))
 				childIncludeInUpdate = true;
