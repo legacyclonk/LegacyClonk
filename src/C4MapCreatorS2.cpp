@@ -141,8 +141,12 @@ C4MCNode::C4MCNode(C4MCNode *pOwner, C4MCNode &rTemplate, bool fClone)
 	// copy children from template
 	for (C4MCNode *pChild = rTemplate.Child0; pChild; pChild = pChild->Next)
 		pChild->clone(this);
-	// no name
-	*Name = 0;
+
+    // Preserve the name if pOwner is a MCN_Node, which is only the case if pOwner is a C4MapCreatorS2
+    if (pOwner && pOwner->Type() == MCN_Node)
+        SCopy(rTemplate.Name, Name, C4MaxName);
+    else 
+        *Name = 0;  // Default behavior: reset the name
 }
 
 C4MCNode::~C4MCNode()
@@ -686,6 +690,21 @@ C4MapCreatorS2::C4MapCreatorS2(C4SLandscape *pLandscape, C4TextureMap *pTexMap, 
 	// store members
 	Landscape = pLandscape; TexMap = pTexMap; MatMap = pMatMap;
 	PlayerCount = iPlayerCount;
+	// set engine field for default stuff
+	DefaultMap.MapCreator = this;
+	DefaultOverlay.MapCreator = this;
+	DefaultPoint.MapCreator = this;
+	// default to landscape settings
+	Default();
+}
+
+C4MapCreatorS2::C4MapCreatorS2(C4MapCreatorS2 &rTemplate, C4SLandscape *pLandscape) : C4MCNode(nullptr, rTemplate, true)
+{
+	// me r b creator
+	MapCreator = this;
+	// store members
+	Landscape = pLandscape; TexMap = rTemplate.TexMap; MatMap = rTemplate.MatMap;
+	PlayerCount = rTemplate.PlayerCount;
 	// set engine field for default stuff
 	DefaultMap.MapCreator = this;
 	DefaultOverlay.MapCreator = this;

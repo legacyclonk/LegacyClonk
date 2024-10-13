@@ -2659,11 +2659,16 @@ bool C4Landscape::DrawMap(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, co
 	FakeLS.MapWdt.Set(iMapWdt, 0, iMapWdt, iMapWdt);
 	FakeLS.MapHgt.Set(iMapHgt, 0, iMapHgt, iMapHgt);
 	// create map creator
-	C4MapCreatorS2 MapCreator(&FakeLS, &Game.TextureMap, &Game.Material, Game.Parameters.StartupPlayerCount);
+	std::unique_ptr<C4MapCreatorS2> MapCreator;
+	// If KeepMapCreator=1 we copy the existing creator to gain access to the named overlays
+	if (!pMapCreator) 
+		MapCreator = std::make_unique<C4MapCreatorS2>(&FakeLS, &Game.TextureMap, &Game.Material, Game.Parameters.StartupPlayerCount);
+	else
+	    MapCreator = std::make_unique<C4MapCreatorS2>(*pMapCreator, &FakeLS);
 	// read file
-	MapCreator.ReadScript(szMapDef);
+	MapCreator->ReadScript(szMapDef);
 	// render map
-	CSurface8 *sfcMap = MapCreator.Render(nullptr);
+	CSurface8 *sfcMap = MapCreator->Render(nullptr);
 	if (!sfcMap) return false;
 	// map it to the landscape
 	bool fSuccess = MapToLandscape(sfcMap, 0, 0, iMapWdt, iMapHgt, iX, iY);
