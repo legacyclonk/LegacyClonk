@@ -67,7 +67,7 @@ protected:
 	bool DoGrpUpdate(C4Group *pUpdateData, class C4GroupEx *pGrpTo);
 	static bool Optimize(C4Group *pGrpFrom, class C4GroupEx *pGrpTo, const char *strFileName);
 
-	bool MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGr, bool *fModified);
+	bool MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGr, bool &includeInUpdate);
 
 	CStdFile Log;
 

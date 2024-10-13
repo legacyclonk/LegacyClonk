@@ -732,8 +732,8 @@ bool C4UpdatePackage::MakeUpdate(const char *strFile1, const char *strFile2, con
 	}
 
 	// compare groups, create update
-	bool fModified = false;
-	bool fSuccess = MkUp(&Group1, &Group2, &UpGroup, &fModified);
+	bool includeInUpdate{false};
+	bool fSuccess = MkUp(&Group1, &Group2, &UpGroup, includeInUpdate);
 	// close (save) it
 	UpGroup.Close(false);
 	// error?
@@ -748,7 +748,7 @@ bool C4UpdatePackage::MakeUpdate(const char *strFile1, const char *strFile2, con
 	return true;
 }
 
-bool C4UpdatePackage::MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGrp, bool *fModified)
+bool C4UpdatePackage::MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGrp, bool &includeInUpdate)
 {
 	// (CAUTION: pGrp1 may be nullptr - that means that there is no counterpart for Grp2
 	//           in the base group)
@@ -759,14 +759,14 @@ bool C4UpdatePackage::MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGrp, bo
 		pGrp1->GetOriginal() != pGrp2->GetOriginal() ||
 		!SEqual(pGrp1->GetMaker(), pGrp2->GetMaker()) ||
 		!SEqual(pGrp1->GetPassword(), pGrp2->GetPassword()))
-		*fModified = true;
+		includeInUpdate = true;
 	// set header
 	pUpGrp->SetHead(*pGrp2);
 	// compare entries
 	char strItemName[_MAX_PATH], strItemName2[_MAX_PATH];
 	std::string entryList;
 	strItemName[0] = strItemName2[0] = 0;
-	pGrp2->ResetSearch(); if (!*fModified) pGrp1->ResetSearch();
+	pGrp2->ResetSearch(); if (!includeInUpdate) pGrp1->ResetSearch();
 	int iChangedEntries = 0;
 	while (pGrp2->FindNextEntry("*", strItemName, nullptr, nullptr, !!strItemName[0]))
 	{
@@ -774,12 +774,12 @@ bool C4UpdatePackage::MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGrp, bo
 		if (!entryList.empty()) entryList += '|';
 		entryList += std::format("{}={}", strItemName, pGrp2->EntryTime(strItemName));
 		// no modification detected yet? then check order
-		if (!AllowMissingTarget && !*fModified)
+		if (!AllowMissingTarget && !includeInUpdate)
 		{
 			if (!pGrp1->FindNextEntry("*", strItemName2, nullptr, nullptr, !!strItemName2[0]))
-				*fModified = true;
+				includeInUpdate = true;
 			else if (!SEqual(strItemName, strItemName2))
-				*fModified = true;
+				includeInUpdate = true;
 		}
 
 		// TODO: write DeleteEntries.txt
@@ -805,8 +805,8 @@ bool C4UpdatePackage::MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGrp, bo
 				if (!UpdGroup.Open(strTempGroupName, true)) { delete pChildGrp1; WriteLog("Error: could not create temp group\n"); return false; }
 			}
 			// do nested MkUp-search
-			bool Modified = false;
-			bool fSuccess = MkUp(pChildGrp1, &ChildGrp2, &UpdGroup, &Modified);
+			bool childIncludeInUpdate{false};
+			bool fSuccess = MkUp(pChildGrp1, &ChildGrp2, &UpdGroup, childIncludeInUpdate);
 			// sort & close
 			extern const char **C4Group_SortList;
 			UpdGroup.SortByList(C4Group_SortList, ChildGrp2.GetName());
@@ -814,9 +814,9 @@ bool C4UpdatePackage::MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGrp, bo
 			// always add the entire group if mising targets are allowed
 			// otherwise check entry times
 			if (AllowMissingTarget || !pGrp1 || (pGrp1->EntryTime(strItemName) != pGrp2->EntryTime(strItemName)))
-				Modified = true;
+				childIncludeInUpdate = true;
 			// add group (if modified)
-			if (fSuccess && Modified)
+			if (fSuccess && childIncludeInUpdate)
 			{
 				if (strTempGroupName[0])
 					if (!pUpGrp->Move(strTempGroupName, strItemName))
@@ -828,7 +828,7 @@ bool C4UpdatePackage::MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGrp, bo
 				pUpGrp->SaveEntryCore(*pGrp2, strItemName);
 				pUpGrp->SetSavedEntryCore(strItemName);
 				// got a modification in a subgroup
-				*fModified = true;
+				includeInUpdate = true;
 				iChangedEntries++;
 			}
 			else
@@ -869,7 +869,7 @@ bool C4UpdatePackage::MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGrp, bo
 					// set entry core
 					pUpGrp->SetSavedEntryCore(strItemName);
 					// modified...
-					*fModified = true;
+					includeInUpdate = true;
 					fCopied = true;
 				}
 				iChangedEntries++;
@@ -887,7 +887,7 @@ bool C4UpdatePackage::MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGrp, bo
 	}
 
 	if (iChangedEntries > 0)
-		WriteLog("{}: {}/{} changed ({})\n", pGrp2->GetFullName().getData(), iChangedEntries, pGrp2->EntryCount(), *fModified ? "update" : "skip");
+		WriteLog("{}: {}/{} changed ({})\n", pGrp2->GetFullName().getData(), iChangedEntries, pGrp2->EntryCount(), includeInUpdate ? "update" : "skip");
 
 	// success
 	return true;
