@@ -611,7 +611,7 @@ bool C4Network2Res::GetStandalone(char *pTo, int32_t iMaxL, bool fSetOfficial, b
 			{
 				if (!fSilent) pParent->logger->error("GetStandalone: could not find free name for temporary file!"); szStandalone[0] = '\0'; return false;
 			}
-			if (!C4Group_PackDirectoryTo(szFile, szStandalone))
+			if (!C4Group_PackDirectoryTo(szFile, szStandalone, true))
 			{
 				if (!fSilent) pParent->logger->error("GetStandalone: could not pack directory!"); szStandalone[0] = '\0'; return false;
 			}

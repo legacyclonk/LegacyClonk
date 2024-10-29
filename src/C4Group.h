@@ -66,7 +66,7 @@ bool C4Group_IsGroup(const char *szFilename);
 bool C4Group_CopyItem(const char *szSource, const char *szTarget, bool fNoSort = false, bool fResetAttributes = false);
 bool C4Group_MoveItem(const char *szSource, const char *szTarget, bool fNoSort = false);
 bool C4Group_DeleteItem(const char *szItem, bool fRecycle = false);
-bool C4Group_PackDirectoryTo(const char *szFilename, const char *szFilenameTo);
+bool C4Group_PackDirectoryTo(const char *szFilename, const char *szFilenameTo, bool overwriteTarget = false);
 bool C4Group_PackDirectory(const char *szFilename);
 bool C4Group_UnpackDirectory(const char *szFilename);
 bool C4Group_ExplodeDirectory(const char *szFilename);
@@ -148,6 +148,13 @@ const int GRPF_Inactive = 0,
 class C4Group
 {
 public:
+	enum class OpenFlags
+	{
+		None = 0,
+		Overwrite = 1 << 0
+	};
+
+public:
 	C4Group();
 	~C4Group();
 
@@ -181,7 +188,7 @@ protected:
 	bool NoSort; // If this flag is set, all entries will be marked NoSort in AddEntry
 
 public:
-	bool Open(const char *szGroupName, bool fCreate = false);
+	bool Open(const char *szGroupName, bool fCreate = false, OpenFlags flags = OpenFlags::None);
 	bool Close();
 	bool Save(bool fReOpen);
 	bool OpenAsChild(C4Group *pMother, const char *szEntryName, bool fExclusive = false);
@@ -283,3 +290,13 @@ protected:
 	C4GroupEntry *GetNextFolderEntry();
 	bool CalcCRC32(C4GroupEntry *pEntry);
 };
+
+inline C4Group::OpenFlags operator|(const C4Group::OpenFlags first, const C4Group::OpenFlags second) noexcept
+{
+	return static_cast<C4Group::OpenFlags>(std::to_underlying(first) | std::to_underlying(second));
+}
+
+inline C4Group::OpenFlags operator&(const C4Group::OpenFlags first, const C4Group::OpenFlags second) noexcept
+{
+	return static_cast<C4Group::OpenFlags>(std::to_underlying(first) & std::to_underlying(second));
+}

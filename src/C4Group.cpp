@@ -78,14 +78,6 @@ int iC4GroupRewindFilePtrNoWarn = 0;
 #endif
 #endif
 
-namespace
-{
-	bool ItemExistsNonEmpty(const char *filePath)
-	{
-		return DirectoryExists(filePath) || FileSize(filePath) > 0;
-	}
-}
-
 // Global C4Group_Functions
 
 char C4Group_Maker[C4GroupMaxMaker + 1] = "";
@@ -262,12 +254,12 @@ bool C4Group_DeleteItem(const char *szItem, bool fRecycle)
 	return true;
 }
 
-bool C4Group_PackDirectoryTo(const char *szFilename, const char *szFilenameTo)
+bool C4Group_PackDirectoryTo(const char *szFilename, const char *szFilenameTo, const bool overwriteTarget)
 {
 	// Check file type
 	if (!DirectoryExists(szFilename)) return false;
 	// Target mustn't exist
-	if (ItemExistsNonEmpty(szFilenameTo)) return false;
+	if (!overwriteTarget && FileExists(szFilenameTo)) return false;
 	// Ignore
 	if (C4Group_TestIgnore(szFilename))
 		return true;
@@ -276,7 +268,7 @@ bool C4Group_PackDirectoryTo(const char *szFilename, const char *szFilenameTo)
 		C4Group_ProcessCallback(szFilename, 0);
 	// Create group file
 	C4Group hGroup;
-	if (!hGroup.Open(szFilenameTo, true))
+	if (!hGroup.Open(szFilenameTo, true, overwriteTarget ? C4Group::OpenFlags::Overwrite : C4Group::OpenFlags::None))
 		return false;
 	// Add folder contents to group
 	DirectoryIterator i(szFilename);
@@ -662,7 +654,7 @@ void C4Group::SetStdOutput(bool fStatus)
 	StdOutput = fStatus;
 }
 
-bool C4Group::Open(const char *szGroupName, bool fCreate)
+bool C4Group::Open(const char *szGroupName, bool fCreate, const OpenFlags openFlags)
 {
 	if (!szGroupName) return Error("Open: Null filename");
 	if (!szGroupName[0]) return Error("Open: Empty filename");
@@ -673,7 +665,7 @@ bool C4Group::Open(const char *szGroupName, bool fCreate)
 	SReplaceChar(szGroupNameN, '\\', DirectorySeparator);
 
 	// Real reference
-	if (ItemExistsNonEmpty(szGroupNameN))
+	if (!(fCreate && (openFlags & OpenFlags::Overwrite) == OpenFlags::Overwrite) && FileExists(szGroupNameN))
 	{
 		// Init
 		Init();
