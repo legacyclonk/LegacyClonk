@@ -375,7 +375,7 @@ bool C4ToolsDlg::Open()
 		gtk_box_pack_start(GTK_BOX(local_hbox), vbox, TRUE, TRUE, 0); // ???
 		gtk_widget_show_all(hbox);
 
-		C4DevmodeDlg::AddPage(hbox, GTK_WINDOW(Console.window), LoadResStrUtf8(C4ResStrTableKey::IDS_DLG_TOOLS).getData());
+		C4DevmodeDlg::AddPage(hbox, GTK_WINDOW(Console.window), LoadResStrGtk(C4ResStrTableKey::IDS_DLG_TOOLS).c_str());
 
 		handlerDynamic =   g_signal_connect(G_OBJECT(landscape_dynamic), "toggled",       G_CALLBACK(OnButtonModeDynamic), this);
 		handlerStatic =    g_signal_connect(G_OBJECT(landscape_static),  "toggled",       G_CALLBACK(OnButtonModeStatic),  this);
@@ -843,23 +843,23 @@ void C4ToolsDlg::UpdateLandscapeModeCtrls()
 	g_signal_handler_unblock(landscape_static,  handlerStatic);
 	g_signal_handler_unblock(landscape_exact,   handlerExact);
 
-	StdStrBuf title;
+	C4Console::GCharStringWrapper title;
 	switch (iMode)
 	{
 	case C4LSC_Dynamic:
-		title = LoadResStrUtf8(C4ResStrTableKey::IDS_DLG_EXACT);
+		title = LoadResStrGtk(C4ResStrTableKey::IDS_DLG_EXACT);
 		break;
 
 	case C4LSC_Static:
-		title = LoadResStrUtf8(C4ResStrTableKey::IDS_DLG_EXACT);
+		title = LoadResStrGtk(C4ResStrTableKey::IDS_DLG_EXACT);
 		break;
 
 	default:
-		title = LoadResStrUtf8(C4ResStrTableKey::IDS_DLG_EXACT);
+		title = LoadResStrGtk(C4ResStrTableKey::IDS_DLG_EXACT);
 		break;
 	}
 
-	C4DevmodeDlg::SetTitle(hbox, title.getData());
+	C4DevmodeDlg::SetTitle(hbox, title.c_str());
 #endif
 }
 

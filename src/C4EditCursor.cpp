@@ -87,9 +87,9 @@ bool C4EditCursor::Init()
 #ifdef WITH_DEVELOPER_MODE
 	menuContext = gtk_menu_new();
 
-	itemDelete =       gtk_menu_item_new_with_label(LoadResStrUtf8(C4ResStrTableKey::IDS_MNU_DELETE).getData());
-	itemDuplicate =    gtk_menu_item_new_with_label(LoadResStrUtf8(C4ResStrTableKey::IDS_MNU_DUPLICATE).getData());
-	itemGrabContents = gtk_menu_item_new_with_label(LoadResStrUtf8(C4ResStrTableKey::IDS_MNU_CONTENTS).getData());
+	itemDelete =       gtk_menu_item_new_with_label(LoadResStrGtk(C4ResStrTableKey::IDS_MNU_DELETE).c_str());
+	itemDuplicate =    gtk_menu_item_new_with_label(LoadResStrGtk(C4ResStrTableKey::IDS_MNU_DUPLICATE).c_str());
+	itemGrabContents = gtk_menu_item_new_with_label(LoadResStrGtk(C4ResStrTableKey::IDS_MNU_CONTENTS).c_str());
 	itemProperties =   gtk_menu_item_new_with_label(""); // Set dynamically in DoContextMenu
 
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuContext), itemDelete);
@@ -615,7 +615,14 @@ bool C4EditCursor::DoContextMenu()
 	gtk_widget_set_sensitive(itemProperties,   Mode != C4CNS_ModePlay);
 
 	GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(itemProperties)));
-	gtk_label_set_text(label, LoadResStrUtf8Choice(Mode == C4CNS_ModeEdit, C4ResStrTableKey::IDS_CNS_PROPERTIES, C4ResStrTableKey::IDS_CNS_TOOLS).getData());
+	if (Mode == C4CNS_ModeEdit)
+	{
+		gtk_label_set_text(label, LoadResStrGtk(C4ResStrTableKey::IDS_CNS_PROPERTIES).c_str());
+	}
+	else
+	{
+		gtk_label_set_text(label, LoadResStrGtk(C4ResStrTableKey::IDS_CNS_TOOLS).c_str());
+	}
 
 	gtk_menu_popup_at_pointer(GTK_MENU(menuContext), nullptr);
 #endif

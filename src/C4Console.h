@@ -50,6 +50,16 @@ typedef CStdWindow C4ConsoleBase;
 
 class C4Console : public C4ConsoleBase
 {
+#ifdef WITH_DEVELOPER_MODE
+public:
+	struct GCharStringWrapper
+	{
+		std::u8string String;
+
+		const gchar *c_str() const noexcept { return reinterpret_cast<const char *>(String.c_str()); }
+	};
+#endif
+
 public:
 	C4Console();
 	virtual ~C4Console();
@@ -82,6 +92,8 @@ public:
 
 #ifdef _WIN32
 	static std::wstring GetDialogItemText(HWND dlg, int item);
+#elif defined(WITH_DEVELOPER_MODE)
+	static GCharStringWrapper ClonkToGtk(std::string_view text);
 #endif
 
 protected:
@@ -246,3 +258,14 @@ protected:
 };
 
 extern C4Console Console;
+
+#ifdef WITH_DEVELOPER_MODE
+
+C4Console::GCharStringWrapper LoadResStrGtkV(C4ResStrTableKey id);
+
+inline C4Console::GCharStringWrapper LoadResStrGtk(const C4ResStrTableKeyFormat<> id)
+{
+	return LoadResStrGtkV(id.Id);
+}
+
+#endif

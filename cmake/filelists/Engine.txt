@@ -299,6 +299,8 @@ src/C4Teams.cpp
 src/C4Teams.h
 src/C4Texture.cpp
 src/C4Texture.h
+src/C4TextEncoding.cpp
+src/C4TextEncoding.h
 src/C4Thread.cpp
 src/C4Thread.h
 src/C4ThreadPool.cpp

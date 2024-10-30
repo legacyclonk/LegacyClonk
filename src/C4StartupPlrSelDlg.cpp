@@ -29,6 +29,7 @@
 #include <C4Language.h>
 #include <C4FileSelDlg.h>
 #include <C4Log.h>
+#include "C4TextEncoding.h"
 
 #include <format>
 
@@ -874,7 +875,7 @@ void C4StartupPlrSelDlg::OnNewBtn(C4GUI::Control *btn)
 	pDlg->SetPos(std::min<int32_t>(GetBounds().Wdt / 10, GetBounds().Wdt - pDlg->GetBounds().Wdt), std::min<int32_t>(GetBounds().Hgt / 4, GetBounds().Hgt - pDlg->GetBounds().Hgt));
 }
 
-bool C4StartupPlrSelDlg::CheckPlayerName(const StdStrBuf &Playername, StdStrBuf &Filename, const StdStrBuf *pPrevFilename, bool fWarnEmpty)
+bool C4StartupPlrSelDlg::CheckPlayerName(const StdStrBuf &Playername, std::string &filename, const StdStrBuf *pPrevFilename, bool fWarnEmpty)
 {
 	// must not be empty
 	if (!Playername.getLength())
@@ -883,30 +884,29 @@ bool C4StartupPlrSelDlg::CheckPlayerName(const StdStrBuf &Playername, StdStrBuf 
 		return false;
 	}
 	// generate valid filename
-	Filename.Take(C4Language::IconvSystem(Playername.getData()));
+	filename = TextEncodingConverter.ClonkToSystem(Playername.getData());
 	// Slashes in Filenames are no good
-	SReplaceChar(Filename.getMData(), '\\', '_');
-	SReplaceChar(Filename.getMData(), '/', '_');
-	SReplaceChar(Filename.getMData(), ':', '_');
-	SReplaceChar(Filename.getMData(), '*', '_');
-	SReplaceChar(Filename.getMData(), '?', '_');
-	SReplaceChar(Filename.getMData(), '"', '_');
-	SReplaceChar(Filename.getMData(), '<', '_');
-	SReplaceChar(Filename.getMData(), '>', '_');
-	SReplaceChar(Filename.getMData(), '|', '_');
-	if (*Filename.getData() == '.') *Filename.getMData() = '_';
-	Filename.Append(".c4p");
-	StdStrBuf Path(""); // start at local path
-	Path.Append(Config.General.PlayerPath);
-	Path.Append(Filename);
+	SReplaceChar(filename.data(), '\\', '_');
+	SReplaceChar(filename.data(), '/', '_');
+	SReplaceChar(filename.data(), ':', '_');
+	SReplaceChar(filename.data(), '*', '_');
+	SReplaceChar(filename.data(), '?', '_');
+	SReplaceChar(filename.data(), '"', '_');
+	SReplaceChar(filename.data(), '<', '_');
+	SReplaceChar(filename.data(), '>', '_');
+	SReplaceChar(filename.data(), '|', '_');
+	if (filename[0] == '.') filename[0] = '_';
+	filename.append(".c4p");
+	std::string path{Config.General.PlayerPath}; // start at local path
+	path.append(filename);
 	// validity check: Must not exist yet if renamed
-	if (!pPrevFilename || !ItemIdentical(Path.getData(), pPrevFilename->getData())) if (ItemExists(Path.getData()))
+	if (!pPrevFilename || !ItemIdentical(path.c_str(), pPrevFilename->getData())) if (ItemExists(path.c_str()))
 	{
 		C4GUI::Screen::GetScreenS()->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_ERR_PLRNAME_TAKEN,
 			Playername.getData()).c_str(), "", C4GUI::Ico_Error);
 		return false;
 	}
-	Filename.Take(Path);
+	filename = std::move(path);
 	return true;
 }
 
@@ -923,12 +923,12 @@ void C4StartupPlrSelDlg::SetPlayerMode()
 {
 	// change view to listing players
 	C4GUI::GUISound("DoorClose");
-	StdStrBuf LastPlrFilename;
-	LastPlrFilename.Copy(static_cast<const StdStrBuf &>(CurrPlayer.Grp.GetFullName()));
+	StdStrBuf fullName{CurrPlayer.Grp.GetFullName()};
+	std::string lastPlrFilename{fullName.getData(), fullName.getLength()};
 	CurrPlayer.Grp.Close();
 	eMode = PSDM_Player;
 	UpdatePlayerList();
-	SelectItem(LastPlrFilename, false);
+	SelectItem(lastPlrFilename, false);
 	UpdateSelection();
 }
 
@@ -988,11 +988,11 @@ void C4StartupPlrSelDlg::OnDelBtnConfirm(ListItem *pSel)
 	UpdatePlayerList();
 }
 
-void C4StartupPlrSelDlg::SelectItem(const StdStrBuf &Filename, bool fActivate)
+void C4StartupPlrSelDlg::SelectItem(const std::string &filename, bool fActivate)
 {
 	// find item
 	for (ListItem *pPlrItem = static_cast<ListItem *>(pPlrListBox->GetFirst()); pPlrItem; pPlrItem = pPlrItem->GetNext())
-		if (ItemIdentical(pPlrItem->GetFilename().getData(), Filename.getData()))
+		if (ItemIdentical(pPlrItem->GetFilename().getData(), filename.c_str()))
 		{
 			// select it
 			pPlrListBox->SelectEntry(pPlrItem, false);
@@ -1360,8 +1360,9 @@ void C4StartupPlrPropertiesDlg::UserClose(bool fOK)
 	// check name validity
 	if (fOK)
 	{
-		StdStrBuf PlrName(pNameEdit->GetText(), false), Filename;
-		if (!C4StartupPlrSelDlg::CheckPlayerName(PlrName, Filename, pForPlayer ? &pForPlayer->GetFilename() : nullptr, true)) return;
+		StdStrBuf PlrName(pNameEdit->GetText(), false);
+		std::string filename;
+		if (!C4StartupPlrSelDlg::CheckPlayerName(PlrName, filename, pForPlayer ? &pForPlayer->GetFilename() : nullptr, true)) return;
 	}
 	Close(fOK);
 }
@@ -1371,8 +1372,9 @@ void C4StartupPlrPropertiesDlg::OnClosed(bool fOK)
 	if (fOK)
 	{
 		// store selected data if desired
-		StdStrBuf PlrName(pNameEdit->GetText(), false), Filename;
-		if (C4StartupPlrSelDlg::CheckPlayerName(PlrName, Filename, pForPlayer ? &pForPlayer->GetFilename() : nullptr, true))
+		StdStrBuf PlrName(pNameEdit->GetText(), false);
+		std::string filename;
+		if (C4StartupPlrSelDlg::CheckPlayerName(PlrName, filename, pForPlayer ? &pForPlayer->GetFilename() : nullptr, true))
 		{
 			SCopy(PlrName.getData(), C4P.PrefName, C4MaxName);
 			C4Group PlrGroup;
@@ -1380,13 +1382,13 @@ void C4StartupPlrPropertiesDlg::OnClosed(bool fOK)
 			// existent player: update file
 			if (pForPlayer)
 			{
-				if (!pForPlayer->MoveFilename(Filename.getData()))
+				if (!pForPlayer->MoveFilename(filename.c_str()))
 					GetScreen()->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_FAIL_RENAME), "", C4GUI::Ico_Error);
 				// update picture/bigicon
 				if (fClearPicture || fClearBigIcon || fctNewPicture.Surface || fctNewBigIcon.Surface)
 				{
 					C4Group PlrGroup;
-					if (PlrGroup.Open(Filename.getData()))
+					if (PlrGroup.Open(filename.c_str()))
 					{
 						if (fClearPicture || fctNewPicture.Surface) PlrGroup.Delete(C4CFN_Portrait);
 						if (fClearBigIcon || fctNewBigIcon.Surface) PlrGroup.Delete(C4CFN_BigIcon);
@@ -1408,7 +1410,7 @@ void C4StartupPlrPropertiesDlg::OnClosed(bool fOK)
 			else
 			{
 				// NewPlayer: Open new player group
-				if (PlrGroup.Open(Filename.getData(), true))
+				if (PlrGroup.Open(filename.c_str(), true))
 				{
 					// Do not overwrite (should have been caught earlier anyway)
 					if (PlrGroup.FindEntry(C4CFN_PlayerInfoCore)) return;
@@ -1439,13 +1441,13 @@ void C4StartupPlrPropertiesDlg::OnClosed(bool fOK)
 					if (pMainDlg)
 					{
 						pMainDlg->UpdatePlayerList();
-						pMainDlg->SelectItem(Filename, true);
+						pMainDlg->SelectItem(filename, true);
 					}
 					else
 					{
 						// no main player selection dialog: This means that this dlg was shown as a creation dialog from the main startup dlg
 						// Just set the newly created player as current selection
-						SCopy(Config.AtExeRelativePath(Filename.getData()), Config.General.Participants, sizeof(Config.General.Participants));
+						SCopy(Config.AtExeRelativePath(filename.c_str()), Config.General.Participants, sizeof(Config.General.Participants));
 					}
 				}
 			}

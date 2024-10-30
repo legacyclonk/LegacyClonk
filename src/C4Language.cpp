@@ -28,20 +28,7 @@
 #include <C4Log.h>
 #include <C4Config.h>
 #include <C4Game.h>
-
-#if defined(HAVE_ICONV) && !defined(_WIN32)
-
-#define HAVE_ICONV_AND_LANGINFO_H 1
-
-#include <cerrno>
-
-#include <langinfo.h>
-
-iconv_t C4Language::host_to_local = iconv_t(-1);
-iconv_t C4Language::local_to_utf_8 = iconv_t(-1);
-iconv_t C4Language::local_to_host = iconv_t(-1);
-
-#endif
+#include "C4TextEncoding.h"
 
 C4Language Languages;
 
@@ -105,113 +92,7 @@ void C4Language::Clear()
 	PackDirectory.Close();
 	// Clear infos
 	Infos.clear();
-
-#ifdef HAVE_ICONV
-	if (local_to_host != iconv_t(-1))
-	{
-		if (local_to_host == local_to_utf_8)
-			local_to_utf_8 = iconv_t(-1);
-		iconv_close(local_to_host);
-		local_to_host = iconv_t(-1);
-	}
-	if (host_to_local != iconv_t(-1))
-	{
-		iconv_close(host_to_local);
-		host_to_local = iconv_t(-1);
-	}
-	if (local_to_utf_8 != iconv_t(-1))
-	{
-		iconv_close(local_to_utf_8);
-		local_to_utf_8 = iconv_t(-1);
-	}
-
-#endif
 }
-
-#ifdef HAVE_ICONV
-
-StdStrBuf C4Language::Iconv(const char *string, iconv_t cd)
-{
-	if (cd == iconv_t(-1))
-	{
-		return StdStrBuf(string, true);
-	}
-	StdStrBuf r;
-	size_t inlen = strlen(string);
-	size_t outlen = strlen(string);
-	r.SetLength(inlen);
-	const char *inbuf = string;
-	char *outbuf = r.getMData();
-	while (inlen > 0)
-	{
-		// Hope that iconv does not change the inbuf...
-		if (static_cast<size_t>(-1) == iconv(cd, const_cast<ICONV_CONST char * *>(&inbuf), &inlen, &outbuf, &outlen))
-		{
-			switch (errno)
-			{
-			// There is not sufficient room at *outbuf.
-			case E2BIG:
-			{
-				size_t done = outbuf - r.getMData();
-				r.Grow(inlen * 2);
-				outbuf = r.getMData() + done;
-				outlen += inlen * 2;
-				break;
-			}
-			// An invalid multibyte sequence has been encountered in the input.
-			case EILSEQ:
-				++inbuf;
-				--inlen;
-				break;
-			// An incomplete multibyte sequence has been encountered in the input.
-			case EINVAL:
-			default:
-				if (outlen) r.Shrink(outlen);
-				return r;
-			}
-		}
-	}
-	if (outlen) r.Shrink(outlen);
-	// StdStrBuf has taken care of the terminating zero
-	return r;
-}
-
-StdStrBuf C4Language::IconvSystem(const char *string)
-{
-	return Iconv(string, local_to_host);
-}
-
-StdStrBuf C4Language::IconvClonk(const char *string)
-{
-	return Iconv(string, host_to_local);
-}
-
-StdStrBuf C4Language::IconvUtf8(const char *string)
-{
-	return Iconv(string, local_to_utf_8);
-}
-
-#else
-
-StdStrBuf C4Language::IconvSystem(const char *string)
-{
-	// Just copy through
-	return StdStrBuf(string, true);
-}
-
-StdStrBuf C4Language::IconvClonk(const char *string)
-{
-	// Just copy through
-	return StdStrBuf(string, true);
-}
-
-StdStrBuf C4Language::IconvUtf8(const char *string)
-{
-	// Just copy through
-	return StdStrBuf(string, true);
-}
-
-#endif
 
 // Returns a set of groups at the specified relative path within all open language packs.
 
@@ -431,24 +312,8 @@ bool C4Language::LoadStringTable(C4Group &hGroup, const char *strCode)
 
 #ifdef _WIN32
 	Application.LogSystem.SetConsoleCharset(C4Config::GetCharsetCodePage(Config.General.LanguageCharset));
-#endif
-
-#ifdef HAVE_ICONV_AND_LANGINFO_H
-	const char *const to_set = nl_langinfo(CODESET);
-	if (local_to_host == iconv_t(-1))
-		local_to_host = iconv_open(to_set ? to_set : "ASCII",
-			C4Config::GetCharsetCodeName(Config.General.LanguageCharset));
-	if (host_to_local == iconv_t(-1))
-		host_to_local = iconv_open(C4Config::GetCharsetCodeName(Config.General.LanguageCharset),
-			to_set ? to_set : "ASCII");
-	if (local_to_utf_8 == iconv_t(-1))
-	{
-		if (SEqual(to_set, "UTF-8"))
-			local_to_utf_8 = local_to_host;
-		else
-			local_to_utf_8 = iconv_open("UTF-8",
-				C4Config::GetCharsetCodeName(Config.General.LanguageCharset));
-	}
+#else
+	TextEncodingConverter.CreateConverters(C4Config::GetCharsetCodeName(Config.General.LanguageCharset));
 #endif
 	// Success
 	return true;

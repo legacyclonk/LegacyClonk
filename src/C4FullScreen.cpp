@@ -29,6 +29,7 @@
 #include <C4GamePadCon.h>
 #include <C4Player.h>
 #include <C4GameOverDlg.h>
+#include "C4TextEncoding.h"
 
 #include <format>
 
@@ -459,8 +460,7 @@ void C4FullScreen::CharIn(const char *c)
 {
 	if (Game.pGUI)
 	{
-		StdStrBuf c2; c2.Take(Languages.IconvClonk(c));
-		Game.pGUI->CharIn(c2.getData());
+		Game.pGUI->CharIn(TextEncodingConverter.SystemToClonk(c).c_str());
 	}
 }
 #endif

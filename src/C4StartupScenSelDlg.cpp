@@ -36,6 +36,7 @@
 #include <C4GameDialogs.h>
 #include <C4Language.h>
 #include <C4FileSelDlg.h>
+#include "C4TextEncoding.h"
 
 #include <format>
 
@@ -470,7 +471,9 @@ bool C4ScenarioListLoader::Entry::Load(C4Group *pFromGrp, const StdStrBuf *psFil
 		char *szBuf = sName.GrabPointer();
 		RemoveExtension(szBuf);
 		sName.Take(szBuf);
-		sName.Take(C4Language::IconvClonk(sName.getData()));
+
+		std::string converted{TextEncodingConverter.SystemToClonk({sName.getData(), sName.getLength()})};
+		sName.Copy(converted.c_str(), converted.size());
 		// load entry specific stuff that's in the front of the group
 		if (!LoadCustomPre(Group))
 			return false;

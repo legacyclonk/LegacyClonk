@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "C4Application.h"
 #include <C4AudioSystem.h>
 #include <C4Config.h>
 #include "C4CurlSystem.h"

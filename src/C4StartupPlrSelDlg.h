@@ -197,7 +197,7 @@ private:
 	void OnSelChange(class C4GUI::Element *pEl) { UpdateSelection(); }
 	void OnSelDblClick(class C4GUI::Element *pEl) { C4GUI::GUISound("Click"); OnPropertyBtn(nullptr); }
 	void UpdateActivatedPlayers(); // update Config.General.Participants by currently activated players
-	void SelectItem(const StdStrBuf &Filename, bool fActivate); // find item by filename and select (and activate it, if desired)
+	void SelectItem(const std::string &filename, bool fActivate); // find item by filename and select (and activate it, if desired)
 
 	void SetPlayerMode(); // change view to listing players
 	void SetCrewMode(PlayerListItem *pForPlayer); // change view to listing crew of a player
@@ -207,7 +207,7 @@ private:
 
 protected:
 	void OnItemCheckChange(C4GUI::Element *pCheckBox);
-	static bool CheckPlayerName(const StdStrBuf &Playername, StdStrBuf &Filename, const StdStrBuf *pPrevFilename, bool fWarnEmpty);
+	static bool CheckPlayerName(const StdStrBuf &Playername, std::string &filename, const StdStrBuf *pPrevFilename, bool fWarnEmpty);
 	ListItem *GetSelection();
 	void SetSelection(ListItem *pNewItem);
 

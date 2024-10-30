@@ -13,6 +13,7 @@
  * for the above references.
  */
 
+#include "C4TextEncoding.h"
 #include "C4ToastLibNotify.h"
 
 #include "C4Language.h"
@@ -57,7 +58,7 @@ void C4ToastLibNotify::AddAction(std::string_view action)
 	notify_notification_add_action(
 		notification,
 		std::format("action-{}", index).c_str(),
-		C4Language::IconvUtf8(std::string{action}.c_str()).getData(),
+		TextEncodingConverter.ClonkToUtf8<char>(action).c_str(),
 		&C4ToastLibNotify::OnAction,
 		new UserData{this, index},
 		operator delete
@@ -82,13 +83,13 @@ void C4ToastLibNotify::SetTitle(std::string_view title)
 void C4ToastLibNotify::Show()
 {
 	signalClose = g_signal_connect(notification, "closed", G_CALLBACK(&C4ToastLibNotify::Dismissed), this);
-	notify_notification_update(notification, C4Language::IconvUtf8(title.c_str()).getData(), C4Language::IconvUtf8(text.c_str()).getData(), nullptr);
+	notify_notification_update(notification, TextEncodingConverter.ClonkToUtf8<char>(title).c_str(), TextEncodingConverter.ClonkToUtf8<char>(text).c_str(), nullptr);
 
 	if (GError *error{nullptr}; !notify_notification_show(notification, &error) && eventHandler)
 	{
 		if (error)
 		{
-			LogNTr(spdlog::level::err, "C4ToastLibNotify: Failed to show notification: {}", C4Language::IconvClonk(error->message).getData());
+			LogNTr(spdlog::level::err, "C4ToastLibNotify: Failed to show notification: {}", TextEncodingConverter.Utf8ToClonk(title).c_str());
 		}
 		eventHandler->Failed();
 	}

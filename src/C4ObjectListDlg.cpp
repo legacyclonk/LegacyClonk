@@ -660,7 +660,7 @@ static void name_cell_data_func(GtkTreeViewColumn *column, GtkCellRenderer *rend
 {
 	C4Object *object = c4_list_iter_get_C4Object(model, iter);
 
-	g_object_set(G_OBJECT(renderer), "text", C4Language::IconvUtf8(object->GetName()).getData(), (gpointer)nullptr);
+	g_object_set(G_OBJECT(renderer), "text", C4Console::ClonkToGtk(object->GetName()).c_str(), (gpointer)nullptr);
 }
 
 #define ICON_SIZE 24

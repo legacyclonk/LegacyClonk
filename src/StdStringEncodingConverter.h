@@ -19,6 +19,7 @@
 
 #include "C4Windows.h"
 
+#include <span>
 #include <string>
 #include <string_view>
 

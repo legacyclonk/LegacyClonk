@@ -142,7 +142,7 @@ bool C4PropertyDlg::Open()
 
 		gtk_widget_show_all(vbox);
 
-		C4DevmodeDlg::AddPage(vbox, GTK_WINDOW(Console.window), LoadResStrUtf8(C4ResStrTableKey::IDS_DLG_PROPERTIES).getData());
+		C4DevmodeDlg::AddPage(vbox, GTK_WINDOW(Console.window), LoadResStrGtk(C4ResStrTableKey::IDS_DLG_PROPERTIES).c_str());
 
 		g_signal_connect(G_OBJECT(entry), "activate", G_CALLBACK(OnScriptActivate), this);
 
@@ -263,7 +263,7 @@ bool C4PropertyDlg::Update()
 	UpdateWindow(GetDlgItem(hDialog, IDC_EDITOUTPUT));
 #elif defined(WITH_DEVELOPER_MODE)
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
-	gtk_text_buffer_set_text(buffer, C4Language::IconvUtf8(output.c_str()).getData(), -1);
+	gtk_text_buffer_set_text(buffer, C4Console::ClonkToGtk(output).c_str(), -1);
 #endif
 	return true;
 }
