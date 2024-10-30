@@ -13,62 +13,78 @@
  * for the above references.
  */
 
+#include "C4WinRT.h"
 #include "StdStringEncodingConverter.h"
 
-#include <format>
-#include <memory>
 #include <stdexcept>
 #include <string>
 
-namespace
-{
-	template<typename T>
-	struct ConversionFuncHelper;
-
-	template<typename Ret, typename... Args>
-	struct ConversionFuncHelper<Ret(__stdcall *)(Args...)>
-	{
-		using ReturnType = Ret;
-		using ArgumentTypes = std::tuple<Args...>;
-		using InputType = std::remove_const_t<std::remove_pointer_t<std::tuple_element_t<2, ArgumentTypes>>>;
-		using OutputType = std::remove_pointer_t<std::tuple_element_t<4, ArgumentTypes>>;
-	};
-
-	template<auto ConversionFunc, typename... Args>
-	auto Convert(const std::basic_string_view<typename ConversionFuncHelper<decltype(ConversionFunc)>::InputType> input, Args &&...args)
-	{
-		using ReturnType = std::basic_string<typename ConversionFuncHelper<decltype(ConversionFunc)>::OutputType>;
-
-		if (input.empty()) return ReturnType{};
-		if (std::cmp_greater(input.size(), std::numeric_limits<int>::max()))
-		{
-			throw std::out_of_range{"Input size out of range"};
-		}
-
-		const int convertedSize{ConversionFunc(CP_ACP, 0, input.data(), static_cast<int>(input.size()), nullptr, 0, std::forward<Args>(args)...)};
-		if (!convertedSize)
-		{
-			throw std::runtime_error{std::format("Querying output size failed: {:x}", GetLastError())};
-		}
-
-		const auto converted = std::make_unique_for_overwrite<typename ReturnType::value_type[]>(static_cast<std::size_t>(convertedSize));
-		const int result{ConversionFunc(CP_ACP, 0, input.data(), static_cast<int>(input.size()), converted.get(), convertedSize, std::forward<Args>(args)...)};
-
-		if (result != convertedSize)
-		{
-			throw std::runtime_error{std::format("Conversion returned {} when it was expected to return {}", result, convertedSize)};
-		}
-
-		return ReturnType{converted.get(), static_cast<std::size_t>(convertedSize)};
-	}
-}
-
 std::wstring StdStringEncodingConverter::WinAcpToUtf16(const std::string_view multiByte)
 {
-	return Convert<MultiByteToWideChar>(multiByte);
+	std::wstring result;
+	result.resize_and_overwrite(MultiByteToWideChar(CP_ACP, multiByte, {}), [&multiByte](wchar_t *const ptr, const std::size_t size)
+	{
+		return MultiByteToWideChar(CP_ACP, multiByte, {ptr, size});
+	});
+
+	return result;
 }
 
 std::string StdStringEncodingConverter::Utf16ToWinAcp(const std::wstring_view wide)
 {
-	return Convert<WideCharToMultiByte>(wide, nullptr, nullptr);
+	std::string result;
+	result.resize_and_overwrite(WideCharToMultiByte(CP_ACP, wide, {}), [&wide](char *const ptr, const std::size_t size)
+	{
+		return WideCharToMultiByte(CP_ACP, wide, {ptr, size});
+	});
+
+	return result;
+}
+
+std::size_t StdStringEncodingConverter::MultiByteToWideChar(const std::uint32_t codePage, const std::span<const char> input, const std::span<wchar_t> output)
+{
+	if (!std::in_range<int>(input.size()))
+	{
+		throw std::runtime_error{"Input size out of range"};
+	}
+
+	if (!std::in_range<int>(output.size()))
+	{
+		throw std::runtime_error{"Output size out of range"};
+	}
+
+	const int result{::MultiByteToWideChar(codePage, 0, input.data(), static_cast<int>(input.size()), output.data(), static_cast<int>(output.size()))};
+	if (!result)
+	{
+		if (const auto error = GetLastError())
+		{
+			MapHResultError([error] { winrt::throw_hresult(HRESULT_FROM_WIN32(error)); });
+		}
+	}
+
+	return static_cast<std::size_t>(result);
+}
+
+std::size_t StdStringEncodingConverter::WideCharToMultiByte(const std::uint32_t codePage, const std::span<const wchar_t> input, const std::span<char> output)
+{
+	if (!std::in_range<int>(input.size()))
+	{
+		throw std::runtime_error{"Input size out of range"};
+	}
+
+	if (!std::in_range<int>(output.size()))
+	{
+		throw std::runtime_error{"Output size out of range"};
+	}
+
+	const int result{::WideCharToMultiByte(codePage, 0, input.data(), static_cast<int>(input.size()), output.data(), static_cast<int>(output.size()), nullptr, nullptr)};
+	if (!result)
+	{
+		if (const auto error = GetLastError())
+		{
+			MapHResultError([error] { winrt::throw_hresult(HRESULT_FROM_WIN32(error)); });
+		}
+	}
+
+	return static_cast<std::size_t>(result);
 }

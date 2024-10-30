@@ -27,6 +27,9 @@ class StdStringEncodingConverter
 public:
 	static std::wstring WinAcpToUtf16(std::string_view multiByte);
 	static std::string Utf16ToWinAcp(std::wstring_view wide);
+
+	static std::size_t MultiByteToWideChar(std::uint32_t codePage, std::span<const char> input, std::span<wchar_t> output);
+	static std::size_t WideCharToMultiByte(std::uint32_t codePage, std::span<const wchar_t> input, std::span<char> output);
 };
 
 #endif
