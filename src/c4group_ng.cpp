@@ -39,6 +39,12 @@
 #include <C4Update.h>
 #include <C4Config.h>
 
+#include <format>
+#include <print>
+#include <string_view>
+
+#include <fmt/printf.h>
+
 #ifdef _WIN32
 #include "StdRegistry.h"
 
@@ -47,12 +53,6 @@
 
 #define getch _getch
 #else
-
-#include <format>
-#include <print>
-#include <string_view>
-
-#include <fmt/printf.h>
 
 // from http://cboard.cprogramming.com/archive/index.php/t-27714.html
 #include <stdio.h>
