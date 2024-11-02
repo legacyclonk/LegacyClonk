@@ -23,7 +23,6 @@
 #include <C4Application.h>
 #include <C4Log.h>
 #include <C4Network2.h>
-#include <C4Language.h>
 #include "C4ResStrTable.h"
 #include <C4UpperBoard.h>
 #endif

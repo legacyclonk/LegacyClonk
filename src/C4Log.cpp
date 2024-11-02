@@ -22,7 +22,6 @@
 #include <C4GameLobby.h>
 #include <C4LogBuf.h>
 #include "StdMarkup.h"
-#include <C4Language.h>
 
 #ifdef _WIN32
 #include <share.h>

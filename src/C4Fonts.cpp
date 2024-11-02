@@ -20,7 +20,6 @@
 #include <C4Include.h>
 #include <C4Fonts.h>
 
-#include <C4Language.h>
 #include <C4Config.h>
 #include <C4Components.h>
 #include <C4Log.h>

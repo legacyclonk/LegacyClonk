@@ -34,7 +34,6 @@
 
 #ifdef WITH_DEVELOPER_MODE
 #include <C4DevmodeDlg.h>
-#include <C4Language.h>
 
 #include <gtk/gtk.h>
 #endif

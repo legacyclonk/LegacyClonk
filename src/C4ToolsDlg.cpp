@@ -33,7 +33,6 @@
 
 #ifdef WITH_DEVELOPER_MODE
 
-#include <C4Language.h>
 #include <C4DevmodeDlg.h>
 
 #include <gtk/gtk.h>

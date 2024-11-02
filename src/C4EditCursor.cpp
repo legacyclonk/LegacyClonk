@@ -30,8 +30,6 @@
 #endif
 
 #ifdef WITH_DEVELOPER_MODE
-#include <C4Language.h>
-
 #include <gtk/gtk.h>
 #endif
 

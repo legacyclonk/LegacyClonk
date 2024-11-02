@@ -34,7 +34,6 @@
 #include <C4Log.h>
 #include <C4Game.h>
 #include <C4GameDialogs.h>
-#include <C4Language.h>
 #include <C4FileSelDlg.h>
 #include "C4TextEncoding.h"
 

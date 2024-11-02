@@ -22,7 +22,6 @@
 #include <C4Application.h>
 #include <C4UserMessages.h>
 #include <C4Viewport.h>
-#include <C4Language.h>
 #include <C4Gui.h>
 #include <C4Network2.h>
 #include <C4GameDialogs.h>

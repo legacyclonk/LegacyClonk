@@ -21,7 +21,6 @@
 #include <C4ObjectListDlg.h>
 #include <C4Console.h>
 #include <C4Object.h>
-#include <C4Language.h>
 
 #ifdef WITH_DEVELOPER_MODE
 #include <gtk/gtk.h>
