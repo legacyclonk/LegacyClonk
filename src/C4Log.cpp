@@ -21,6 +21,7 @@
 #include <C4Console.h>
 #include <C4GameLobby.h>
 #include <C4LogBuf.h>
+#include "C4TextEncoding.h"
 #include "StdMarkup.h"
 
 #ifdef _WIN32
@@ -236,6 +237,27 @@ void C4LogSystem::RingbufferSink::sink_it_(const spdlog::details::log_msg &msg)
 	ringbuffer.push_back(spdlog::details::log_msg_buffer{msg});
 }
 
+void C4LogSystem::ClonkToUtf8Sink::log(const spdlog::details::log_msg &msg)
+{
+	const std::string payloadAsUtf8{TextEncodingConverter.ClonkToUtf8<char>(msg.payload)};
+
+	spdlog::details::log_msg utf8Msg{msg};
+	utf8Msg.payload = payloadAsUtf8;
+
+	for (const auto &sink : sinks)
+	{
+		sink->log(utf8Msg);
+	}
+}
+
+void C4LogSystem::ClonkToUtf8Sink::flush()
+{
+	for (const auto &sink : sinks)
+	{
+		sink->flush();
+	}
+}
+
 C4LogSystem::C4LogSystem()
 {
 	spdlog::set_automatic_registration(false);
@@ -269,14 +291,19 @@ C4LogSystem::C4LogSystem()
 
 void C4LogSystem::OpenLog()
 {
+#ifdef _WIN32
+	SetConsoleOutputCP(CP_UTF8);
+#endif
+
 	stdoutSink = std::static_pointer_cast<spdlog::sinks::sink>(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
 	stdoutSink->set_level(spdlog::level::info);
 
-	clonkLogSink = std::make_shared<LogSink>();
+	auto clonkLogSink = std::make_shared<LogSink>();
 	clonkLogFD = clonkLogSink->GetFD();
 
-	loggerSilent->sinks().emplace_back(stdoutSink);
-	loggerSilent->sinks().emplace_back(clonkLogSink);
+	clonkToUtf8Sink = std::make_shared<ClonkToUtf8Sink>(std::initializer_list<spdlog::sink_ptr>{stdoutSink, std::static_pointer_cast<spdlog::sinks::sink>(clonkLogSink)});
+
+	loggerSilent->sinks().emplace_back(clonkToUtf8Sink);
 
 	logger = std::make_shared<spdlog::logger>("", loggerSilent->sinks().begin() + 1, loggerSilent->sinks().end());
 	logger->set_level(spdlog::level::trace);
@@ -286,8 +313,7 @@ void C4LogSystem::OpenLog()
 
 	logger->sinks().insert(logger->sinks().begin(), std::move(guiSink));
 
-	loggerDebug->sinks().emplace_back(stdoutSink);
-	loggerDebug->sinks().emplace_back(clonkLogSink);
+	loggerDebug->sinks().emplace_back(clonkToUtf8Sink);
 	loggerDebug->sinks().emplace_back(ringbufferSink);
 
 	loggerDebugGuiSink = std::make_shared<GuiSink>(spdlog::level::off, false);
@@ -313,8 +339,7 @@ std::shared_ptr<spdlog::logger> C4LogSystem::CreateLogger(std::string name, cons
 	newLogger->sinks().emplace_back(debugSink);
 #endif
 
-	newLogger->sinks().emplace_back(stdoutSink);
-	newLogger->sinks().emplace_back(clonkLogSink);
+	newLogger->sinks().emplace_back(clonkToUtf8Sink);
 
 	return newLogger;
 }
@@ -385,10 +410,9 @@ void C4LogSystem::ClearRingbuffer()
 
 #ifdef _WIN32
 
-void C4LogSystem::SetConsoleCharset(const std::int32_t charset)
+void C4LogSystem::SetConsoleInputCharset(const std::int32_t charset)
 {
 	SetConsoleCP(charset);
-	SetConsoleOutputCP(charset);
 }
 
 #endif

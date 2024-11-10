@@ -311,7 +311,7 @@ bool C4Language::LoadStringTable(C4Group &hGroup, const char *strCode)
 	SCopy(LoadResStr(C4ResStrTableKey::IDS_LANG_CHARSET), Config.General.LanguageCharset);
 
 #ifdef _WIN32
-	Application.LogSystem.SetConsoleCharset(C4Config::GetCharsetCodePage(Config.General.LanguageCharset));
+	Application.LogSystem.SetConsoleInputCharset(C4Config::GetCharsetCodePage(Config.General.LanguageCharset));
 #else
 	TextEncodingConverter.CreateConverters(C4Config::GetCharsetCodeName(Config.General.LanguageCharset));
 #endif

@@ -96,6 +96,21 @@ public:
 		spdlog::details::circular_q<spdlog::details::log_msg_buffer> ringbuffer;
 	};
 
+	class ClonkToUtf8Sink : public spdlog::sinks::sink // Not inheriting from base_sink as we don't need the extra formatter
+	{
+	public:
+		ClonkToUtf8Sink(std::initializer_list<spdlog::sink_ptr> sinks) : sinks{sinks} {}
+
+	protected:
+		void log(const spdlog::details::log_msg &msg) override;
+		void flush() override;
+		void set_pattern(const std::string &) override {}
+		void set_formatter(std::unique_ptr<spdlog::formatter>) override {}
+
+	private:
+		std::vector<spdlog::sink_ptr> sinks;
+	};
+
 public:
 	C4LogSystem();
 
@@ -127,7 +142,7 @@ public:
 	void SetVerbose(bool verbose);
 
 #ifdef _WIN32
-	void SetConsoleCharset(std::int32_t charset);
+	void SetConsoleInputCharset(std::int32_t charset);
 #endif
 
 private:
@@ -138,8 +153,8 @@ private:
 #ifdef _WIN32
 	spdlog::sink_ptr debugSink;
 #endif
+	std::shared_ptr<ClonkToUtf8Sink> clonkToUtf8Sink;
 	spdlog::sink_ptr stdoutSink;
-	std::shared_ptr<LogSink> clonkLogSink;
 	std::shared_ptr<GuiSink> loggerSilentGuiSink;
 
 	std::shared_ptr<GuiSink> loggerDebugGuiSink;
