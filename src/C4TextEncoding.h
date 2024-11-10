@@ -253,6 +253,11 @@ public:
 		static_assert(!std::is_same_v<InputCharType, wchar_t> && !std::is_same_v<OutputCharType, wchar_t>, "wchar_t is not supported on this platform");
 #endif
 
+		if (input.empty())
+		{
+			return OutputString{};
+		}
+
 		if constexpr (From == To)
 		{
 			return CopyThrough<OutputString>(input);
