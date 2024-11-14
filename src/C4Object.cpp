@@ -2531,7 +2531,7 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 	{
 		if (Action.Act > ActIdle)
 		{
-			const std::string message{std::format("{} ({})", Def->ActMap[Action.Act].Name, Action.Phase)};
+			const std::string message{std::format("{} ({})", +Def->ActMap[Action.Act].Name, Action.Phase)};
 			int32_t cmwdt, cmhgt;
 			Game.GraphicsResource.FontRegular.GetTextExtent(message.c_str(), cmwdt, cmhgt, true);
 			Application.DDraw->TextOut(message.c_str(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + cox - Shape.x, cgo.Y + coy - cmhgt, InLiquid ? 0xfa0000FF : CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
@@ -6121,7 +6121,7 @@ StdStrBuf C4Object::GetInfoString()
 		if (!vInfo) continue;
 		// debug: warn for wrong return types
 		if (vInfo.GetType() != C4V_String)
-			DebugLog(spdlog::level::warn, "Effect {}({}) on object {} (#{}) returned wrong info type {}.", pEff->Name, pEff->iNumber, Def->GetName(), Number, std::to_underlying(vInfo.GetType()));
+			DebugLog(spdlog::level::warn, "Effect {}({}) on object {} (#{}) returned wrong info type {}.", +pEff->Name, pEff->iNumber, Def->GetName(), Number, std::to_underlying(vInfo.GetType()));
 		// get string val
 		C4String *psInfo = vInfo.getStr(); const char *szEffInfo;
 		if (psInfo && (szEffInfo = psInfo->Data.getData()))

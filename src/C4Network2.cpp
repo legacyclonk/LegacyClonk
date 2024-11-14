@@ -646,8 +646,8 @@ bool C4Network2::RetrieveScenario(char *szScenario)
 		return false;
 
 	// unpack Material.c4g if materials need to be merged
-	const std::string materialScenario{std::format("{}" DirSep C4CFN_Material, szScenario)};
-	const std::string materialDynamic{std::format("{}" DirSep C4CFN_Material, szTempDynamic)};
+	const std::string materialScenario{std::format("{}" DirSep C4CFN_Material, +szScenario)};
+	const std::string materialDynamic{std::format("{}" DirSep C4CFN_Material, +szTempDynamic)};
 	if (FileExists(materialScenario.c_str()) && FileExists(materialDynamic.c_str()))
 		if (!C4Group_UnpackDirectory(materialScenario.c_str()) ||
 			!C4Group_UnpackDirectory(materialDynamic.c_str()))

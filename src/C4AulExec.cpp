@@ -1099,7 +1099,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 
 				if (C4AulScriptFunc *sfunc = pFunc->SFunc(); sfunc && sfunc->Access < sfunc->pOrgScript->GetAllowedAccess(pFunc, pCurCtx->Func->pOrgScript))
 				{
-					throw C4AulExecError(pCurCtx->Obj, std::format("Insufficient access level for function \"{}\"!", pFunc->Name));
+					throw C4AulExecError(pCurCtx->Obj, std::format("Insufficient access level for function \"{}\"!", +pFunc->Name));
 				}
 				C4Value *pPars = pCurVal - pFunc->GetParCount() + 1;
 				// Save current position
@@ -1283,7 +1283,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					C4AulScript *script = sfunc->pOrgScript;
 					if (sfunc->Access < script->GetAllowedAccess(pFunc, sfunc->pOrgScript))
 					{
-						throw C4AulExecError(pCurCtx->Obj, std::format("Insufficient access level for function \"{}\"!", pFunc->Name));
+						throw C4AulExecError(pCurCtx->Obj, std::format("Insufficient access level for function \"{}\"!", +pFunc->Name));
 					}
 				}
 
@@ -1376,7 +1376,7 @@ static bool CheckConvertFunctionParameters(C4Object *const ctxObject, C4AulFunc 
 		{
 			ErrorOrWarning(ctxObject,
 				std::format("call to \"{}\" parameter {}: got \"{}\", but expected \"{}\"!",
-					pFunc->Name, i + 1, pPars[i].GetTypeName(), GetC4VName(pTypes[i])
+					+pFunc->Name, i + 1, pPars[i].GetTypeName(), GetC4VName(pTypes[i])
 				), onlyWarn);
 			ok = false;
 		}
@@ -1409,7 +1409,7 @@ static bool TryCheckConvertFunctionParameters(C4Object *const ctxObject, C4AulFu
 			throw;
 		// Show
 		e.show();
-		DebugLog(" by: internal call to {}", pFunc->Name);
+		DebugLog(" by: internal call to {}", +pFunc->Name);
 		return false;
 	}
 }

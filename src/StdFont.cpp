@@ -440,7 +440,7 @@ void CStdFont::Init(CStdVectorFont &VectorFont, uint32_t dwHeight, uint32_t dwFo
 	fPrerenderedFont = false;
 	if (0) for (int i = 0; i < iNumFontSfcs; ++i)
 	{
-		const std::string pngFilename{std::format("{}{}{}_{}.png", szFontName, dwHeight, fDoShadow ? "_shadow" : "", i)};
+		const std::string pngFilename{std::format("{}{}{}_{}.png", +szFontName, dwHeight, fDoShadow ? "_shadow" : "", i)};
 		psfcFontData[i]->SavePNG(pngFilename.c_str(), true, false, false);
 	}
 }

@@ -1331,7 +1331,7 @@ bool C4Group::RewindFilePtr()
 #ifdef C4ENGINE
 	if (szCurrAccessedEntry && !iC4GroupRewindFilePtrNoWarn)
 	{
-		LogNTr(spdlog::level::debug, "C4Group::RewindFilePtr() for {} ({})", szCurrAccessedEntry ? szCurrAccessedEntry : "???", FileName);
+		LogNTr(spdlog::level::debug, "C4Group::RewindFilePtr() for {} ({})", szCurrAccessedEntry ? szCurrAccessedEntry : "???", +FileName);
 		szCurrAccessedEntry = nullptr;
 	}
 #endif
@@ -1697,7 +1697,7 @@ bool C4Group::Extract(const char *szFiles, const char *szExtractTo, const char *
 			// skip?
 			if (C4Group_IsExcluded(tentry->FileName, szExclude)) continue;
 			// Process data & output
-			if (StdOutput) std::println("{}", tentry->FileName);
+			if (StdOutput) std::println("{}", +tentry->FileName);
 			cbytes += tentry->Size;
 			if (fnProcessCallback)
 				fnProcessCallback(tentry->FileName, 100 * cbytes / (std::max)(tbytes, 1));
@@ -2572,16 +2572,16 @@ bool C4Group::OpenMother()
 void C4Group::PrintInternals(const char *szIndent)
 {
 	if (!szIndent) szIndent = "";
-	std::println("{}Head.id: '{}'", szIndent, Head.id);
+	std::println("{}Head.id: '{}'", szIndent, +Head.id);
 	std::println("{}Head.Ver1: {}", szIndent, Head.Ver1);
 	std::println("{}Head.Ver2: {}", szIndent, Head.Ver2);
 	std::println("{}Head.Entries: {}", szIndent, Head.Entries);
-	std::println("{}Head.Maker: '{}'", szIndent, Head.Maker);
+	std::println("{}Head.Maker: '{}'", szIndent, +Head.Maker);
 	std::println("{}Head.Creation: {}", szIndent, Head.Creation);
 	std::println("{}Head.Original: {}", szIndent, Head.Original);
 	for (C4GroupEntry *p = FirstEntry; p; p = p->Next)
 	{
-		std::println("{}Entry '{}':", szIndent, p->FileName);
+		std::println("{}Entry '{}':", szIndent, +p->FileName);
 		std::println("{}  Packed: {}", szIndent, p->Packed);
 		std::println("{}  ChildGroup: {}", szIndent, p->ChildGroup);
 		std::println("{}  Size: {}", szIndent, p->Size);

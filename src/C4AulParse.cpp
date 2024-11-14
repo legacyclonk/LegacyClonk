@@ -1734,7 +1734,7 @@ void C4AulParseState::Parse_FuncHead()
 	SCopy(Idtf, FuncIdtf);
 	Shift();
 	if (TokenType != ATT_COLON)
-		throw C4AulParseError(this, std::format("declaration expected, but found identifier '{}'", FuncIdtf));
+		throw C4AulParseError(this, std::format("declaration expected, but found identifier '{}'", +FuncIdtf));
 	// create script fn
 	if (Acc == AA_GLOBAL)
 	{
@@ -2847,7 +2847,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 					case C4V_Any:    AddBCC(AB_NIL); break;
 					default:
 					{
-						throw C4AulParseError(this, std::format("internal error: constant {} has undefined type {}", Idtf, std::to_underlying(val.GetType())));
+						throw C4AulParseError(this, std::format("internal error: constant {} has undefined type {}", +Idtf, std::to_underlying(val.GetType())));
 					}
 					}
 					Shift();
@@ -3177,7 +3177,7 @@ bool C4AulParseState::Parse_Expression3()
 					// search func
 					if (!(pFunc = pDef->Script.GetSFunc(Idtf)))
 					{
-						throw C4AulParseError(this, std::format("direct object call: function {}::{} not found", C4IdText(idNS), Idtf));
+						throw C4AulParseError(this, std::format("direct object call: function {}::{} not found", C4IdText(idNS), +Idtf));
 					}
 
 					if (pFunc->SFunc() && pFunc->SFunc()->Access < pDef->Script.GetAllowedAccess(pFunc, Fn->pOrgScript))
@@ -3219,7 +3219,7 @@ bool C4AulParseState::Parse_Expression3()
 					// not failsafe?
 					if (!failSafe && Type == PARSER)
 					{
-						throw C4AulParseError(this, std::format("direct object call: function {} not found", Idtf));
+						throw C4AulParseError(this, std::format("direct object call: function {} not found", +Idtf));
 					}
 					// otherwise: nothing to call - just execute parameters and discard them
 					Shift();

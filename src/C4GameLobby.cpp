@@ -516,7 +516,7 @@ C4GUI::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool f
 			if (SEqualNoCase(Command, "/joinplr"))
 			{
 				// compose path from given filename
-				const std::string plrPath{std::format("{}{}", Config.General.PlayerPath, szPar)};
+				const std::string plrPath{std::format("{}{}", +Config.General.PlayerPath, szPar)};
 				// player join - check filename
 				if (!ItemExists(plrPath.c_str()))
 				{

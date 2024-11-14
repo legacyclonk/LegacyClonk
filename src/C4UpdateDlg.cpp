@@ -279,7 +279,7 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	C4Network2VersionInfoClient VerChecker;
 	bool fSuccess = false, fAborted = false;
 	StdStrBuf strUpdateRedirect;
-	const std::string query{std::format("{}?action=version", Config.Network.UpdateServerAddress)};
+	const std::string query{std::format("{}?action=version", +Config.Network.UpdateServerAddress)};
 	if (VerChecker.Init() && VerChecker.SetServer(query) && VerChecker.QueryVersion())
 	{
 		Application.InteractiveThread.AddProc(&VerChecker);

@@ -142,7 +142,7 @@ bool C4Record::Start(bool fInitial)
 			Index++;
 
 	// compose record filename
-	sFilename.Copy(std::format("{}" DirSep "{:03}-{}.c4s", sDemoFolder.getData(), Index, sScenName).c_str());
+	sFilename.Copy(std::format("{}" DirSep "{:03}-{}.c4s", sDemoFolder.getData(), Index, +sScenName).c_str());
 
 	// log
 	std::string log{LoadResStr(C4ResStrTableKey::IDS_PRC_RECORDINGTO, sFilename.getData())};

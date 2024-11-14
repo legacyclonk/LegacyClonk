@@ -252,7 +252,7 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 			{
 				// reloading
 				rFont.Clear();
-				Log(C4ResStrTableKey::IDS_PRC_UPDATEFONT, FontFaceName, iIndent, 0);
+				Log(C4ResStrTableKey::IDS_PRC_UPDATEFONT, +FontFaceName, iIndent, 0);
 			}
 			C4Surface sfc;
 			if (!sfc.Load(*pGrp, FontFaceName))
@@ -301,7 +301,7 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 			{
 				// reloading
 				rFont.Clear();
-				Log(C4ResStrTableKey::IDS_PRC_UPDATEFONT, FontFaceName, iDefFontSize, dwDefWeight);
+				Log(C4ResStrTableKey::IDS_PRC_UPDATEFONT, +FontFaceName, iDefFontSize, dwDefWeight);
 			}
 			// init with given font name
 			try
@@ -324,13 +324,13 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 					{
 						AddVectorFont(pFont);
 						if (!InitFont(rFont, pFont, iDefFontSize, dwDefWeight, fDoShadow))
-							throw std::runtime_error(std::format("Error initializing font {}", FontFaceName));
+							throw std::runtime_error(std::format("Error initializing font {}", +FontFaceName));
 					}
 					else
 					{
 						delete pFont;
 						// no match for font face found
-						throw std::runtime_error(std::format("Font face {} undefined", FontFaceName));
+						throw std::runtime_error(std::format("Font face {} undefined", +FontFaceName));
 					}
 				}
 			}

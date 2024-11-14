@@ -32,11 +32,11 @@ void C4Effect::AssignCallbackFunctions()
 {
 	C4AulScript *pSrcScript = GetCallbackScript();
 	// compose function names and search them
-	pFnStart  = pSrcScript->GetFuncRecursive(std::format(PSF_FxStart, Name).c_str());
-	pFnStop   = pSrcScript->GetFuncRecursive(std::format(PSF_FxStop, Name).c_str());
-	pFnTimer  = pSrcScript->GetFuncRecursive(std::format(PSF_FxTimer, Name).c_str());
-	pFnEffect = pSrcScript->GetFuncRecursive(std::format(PSF_FxEffect, Name).c_str());
-	pFnDamage = pSrcScript->GetFuncRecursive(std::format(PSF_FxDamage, Name).c_str());
+	pFnStart  = pSrcScript->GetFuncRecursive(std::format(PSF_FxStart, +Name).c_str());
+	pFnStop   = pSrcScript->GetFuncRecursive(std::format(PSF_FxStop, +Name).c_str());
+	pFnTimer  = pSrcScript->GetFuncRecursive(std::format(PSF_FxTimer, +Name).c_str());
+	pFnEffect = pSrcScript->GetFuncRecursive(std::format(PSF_FxEffect, +Name).c_str());
+	pFnDamage = pSrcScript->GetFuncRecursive(std::format(PSF_FxDamage, +Name).c_str());
 }
 
 C4AulScript *C4Effect::GetCallbackScript()
@@ -451,7 +451,7 @@ C4Value C4Effect::DoCall(C4Object *pObj, const char *szFn, const C4Value &rVal1,
 	else
 		pSrcScript = &Game.ScriptEngine;
 	// call it
-	C4AulFunc *pFn = pSrcScript->GetFuncRecursive(std::format(PSF_FxCustom, Name, szFn).c_str());
+	C4AulFunc *pFn = pSrcScript->GetFuncRecursive(std::format(PSF_FxCustom, +Name, szFn).c_str());
 	if (!pFn) return C4Value();
 	return pFn->Exec(pCommandTarget, {C4VObj(pObj), C4VInt(iNumber), rVal1, rVal2, rVal3, rVal4, rVal5, rVal6, rVal7}, passErrors, true, convertNilToIntBool);
 }

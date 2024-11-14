@@ -797,7 +797,7 @@ CSurface8 *C4MapCreatorS2::Render(const char *szMapName)
 }
 
 C4MCParserErr::C4MCParserErr(C4MCParser *pParser, const std::string_view msg)
-	: Msg{std::format("{}: {} ({})", pParser->Filename, msg, pParser->Code ? SGetLine(pParser->Code, pParser->CPos) : 0)}
+	: Msg{std::format("{}: {} ({})", +pParser->Filename, msg, pParser->Code ? SGetLine(pParser->Code, pParser->CPos) : 0)}
 {
 }
 
@@ -1009,7 +1009,7 @@ void C4MCParser::ParseTo(C4MCNode *pToNode)
 				if (!pToNode->GlobalScope())
 					throw C4MCParserErr(this, C4MCErr_NoDirGlobal);
 				// no directives so far
-				throw C4MCParserErr(this, C4MCErr_UnknownDir, CurrTokenIdtf);
+				throw C4MCParserErr(this, C4MCErr_UnknownDir, +CurrTokenIdtf);
 				break;
 			case MCT_IDTF:
 				// identifier: check keywords
@@ -1106,11 +1106,11 @@ void C4MCParser::ParseTo(C4MCNode *pToNode)
 				// so it's a node copy
 				// local scope only
 				if (pToNode->GlobalScope())
-					throw C4MCParserErr(this, C4MCErr_ReinstNoGlobal, CurrTokenIdtf);
+					throw C4MCParserErr(this, C4MCErr_ReinstNoGlobal, +CurrTokenIdtf);
 				// get the node
 				pCpyNode = pToNode->GetNodeByName(CurrTokenIdtf);
 				if (!pCpyNode)
-					throw C4MCParserErr(this, C4MCErr_UnknownObj, CurrTokenIdtf);
+					throw C4MCParserErr(this, C4MCErr_UnknownObj, +CurrTokenIdtf);
 				// create the copy
 				switch (pCpyNode->Type())
 				{
@@ -1121,11 +1121,11 @@ void C4MCParser::ParseTo(C4MCNode *pToNode)
 				case MCN_Map:
 					// maps not allowed
 					if (pCpyNode->Type() == MCN_Map)
-						throw C4MCParserErr(this, C4MCErr_MapNoGlobal, CurrTokenIdtf);
+						throw C4MCParserErr(this, C4MCErr_MapNoGlobal, +CurrTokenIdtf);
 					break;
 				default:
 					// huh?
-					throw C4MCParserErr(this, C4MCErr_ReinstUnknown, CurrTokenIdtf);
+					throw C4MCParserErr(this, C4MCErr_ReinstUnknown, +CurrTokenIdtf);
 					break;
 				}
 				// check type for operators
@@ -1238,7 +1238,7 @@ void C4MCParser::ParseValue(C4MCNode *pToNode, const char *szFieldName)
 				Value += Random(CurrTokenVal - Value);
 			}
 			else
-				throw C4MCParserErr(this, C4MCErr_FieldConstExp, CurrTokenIdtf);
+				throw C4MCParserErr(this, C4MCErr_FieldConstExp, +CurrTokenIdtf);
 			Type = CurrToken;
 			if (!GetNextToken())
 				throw C4MCParserErr(this, C4MCErr_EOF);
@@ -1250,7 +1250,7 @@ void C4MCParser::ParseValue(C4MCNode *pToNode, const char *szFieldName)
 	}
 	default:
 	{
-		throw C4MCParserErr(this, C4MCErr_FieldConstExp, CurrTokenIdtf);
+		throw C4MCParserErr(this, C4MCErr_FieldConstExp, +CurrTokenIdtf);
 	}
 	}
 

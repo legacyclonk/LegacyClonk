@@ -468,7 +468,7 @@ void C4StartupPlrSelDlg::CrewListItem::SetSelectionInfo(C4GUI::TextWindow *pSele
 {
 	// write info text for player
 	pSelectionInfo->ClearText(false);
-	pSelectionInfo->AddTextLine(std::format("{} {}", Core.sRankName.getData(), Core.Name).c_str(), &C4Startup::Get()->Graphics.BookFontCapt, ClrPlayerItem, false, false);
+	pSelectionInfo->AddTextLine(std::format("{} {}", Core.sRankName.getData(), +Core.Name).c_str(), &C4Startup::Get()->Graphics.BookFontCapt, ClrPlayerItem, false, false);
 	std::string promo;
 	int32_t iNextRankExp; StdStrBuf sNextRankName;
 	if (Core.GetNextRankInfo(Game.Rank, &iNextRankExp, &sNextRankName))
@@ -693,7 +693,7 @@ void C4StartupPlrSelDlg::UpdatePlayerList()
 		SetTitle(LoadResStrNoAmp(C4ResStrTableKey::IDS_DLG_PLAYERSELECTION).c_str());
 		// player mode: insert all players
 		const char *szFn;
-		const std::string searchPath{std::format("{}{}", Config.General.ExePath, Config.General.PlayerPath)};
+		const std::string searchPath{std::format("{}{}", +Config.General.ExePath, +Config.General.PlayerPath)};
 		PlayerListItem *pFirstActivatedPlrItem = nullptr, *pFirstDeactivatedPlrItem = nullptr, *pPlrItem = nullptr;
 		for (DirectoryIterator i(searchPath.c_str()); szFn = *i; i++)
 		{
@@ -731,7 +731,7 @@ void C4StartupPlrSelDlg::UpdatePlayerList()
 
 	case PSDM_Crew:
 	{
-		SetTitle(std::format("{} {}", LoadResStrNoAmp(C4ResStrTableKey::IDS_CTL_CREW).c_str(), CurrPlayer.Core.PrefName).c_str());
+		SetTitle(std::format("{} {}", LoadResStrNoAmp(C4ResStrTableKey::IDS_CTL_CREW).c_str(), +CurrPlayer.Core.PrefName).c_str());
 		// crew mode: Insert complete crew of player (2do: sort)
 		bool fSucc; char szFn[_MAX_PATH + 1];
 		for (fSucc = CurrPlayer.Grp.FindEntry(C4CFN_ObjectInfoFiles, szFn); fSucc; fSucc = CurrPlayer.Grp.FindNextEntry(C4CFN_ObjectInfoFiles, szFn, nullptr, nullptr, true))
@@ -938,7 +938,7 @@ void C4StartupPlrSelDlg::SetCrewMode(PlayerListItem *pSel)
 	if (!CurrPlayer.Grp.Open(pSel->GetFilename().getData())) return;
 	if (!CurrPlayer.Grp.FindEntry(C4CFN_ObjectInfoFiles))
 	{
-		const std::string crew{std::format("{} {}", LoadResStrNoAmp(C4ResStrTableKey::IDS_CTL_CREW), CurrPlayer.Core.PrefName)};
+		const std::string crew{std::format("{} {}", LoadResStrNoAmp(C4ResStrTableKey::IDS_CTL_CREW), +CurrPlayer.Core.PrefName)};
 		// player has no crew!
 		GetScreen()->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_ERR_PLRNOCREW,
 			CurrPlayer.Core.PrefName).c_str(),

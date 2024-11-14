@@ -135,7 +135,7 @@ bool C4Game::OpenScenario()
 
 	// Scenario filename check & log
 	if (!ScenarioFilename[0]) { LogFatal(C4ResStrTableKey::IDS_PRC_NOC4S); return false; }
-	Log(C4ResStrTableKey::IDS_PRC_LOADC4S, ScenarioFilename);
+	Log(C4ResStrTableKey::IDS_PRC_LOADC4S, +ScenarioFilename);
 
 	// get parent folder, if it's c4f
 	pParentGroup = GroupSet.RegisterParentFolders(ScenarioFilename);
@@ -146,14 +146,14 @@ bool C4Game::OpenScenario()
 		// open from parent group
 		if (!ScenarioFile.OpenAsChild(pParentGroup, GetFilename(ScenarioFilename)))
 		{
-			LogNTr("{}: {}", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), ScenarioFilename); return false;
+			LogNTr("{}: {}", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), +ScenarioFilename); return false;
 		}
 	}
 	else
 		// open directly
 		if (!ScenarioFile.Open(ScenarioFilename))
 		{
-			LogNTr("{}: {}", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), ScenarioFilename); return false;
+			LogNTr("{}: {}", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), +ScenarioFilename); return false;
 		}
 
 	// add scenario to group
@@ -1673,7 +1673,7 @@ bool C4Game::EnumerateMaterials()
 		{
 			if (!C4S.Landscape.InEarth.IsClear() || !C4S.Animals.EarthNest.IsClear())
 			{
-				DebugLog(spdlog::level::warn, "Scenario.txt: Material={} specifies a texture, which breaks InEarth and Nest before [359]. Version=4,9,10,15,359 or higher enables the fixed behavior.", C4S.Landscape.Material);
+				DebugLog(spdlog::level::warn, "Scenario.txt: Material={} specifies a texture, which breaks InEarth and Nest before [359]. Version=4,9,10,15,359 or higher enables the fixed behavior.", +C4S.Landscape.Material);
 			}
 
 			MEarth = MNone;
@@ -3298,13 +3298,13 @@ bool C4Game::LoadScenarioComponents()
 		if (SLen(SctName) > C4MaxName || !*SctName)
 		{
 			DebugLog("invalid section name");
-			LogFatal(C4ResStrTableKey::IDS_ERR_SCENSECTION, fn); return false;
+			LogFatal(C4ResStrTableKey::IDS_ERR_SCENSECTION, +fn); return false;
 		}
 		// load this section into temp store
 		C4ScenarioSection *pSection = new C4ScenarioSection(SctName);
 		if (!pSection->ScenarioLoad(fn))
 		{
-			LogFatal(C4ResStrTableKey::IDS_ERR_SCENSECTION, fn); return false;
+			LogFatal(C4ResStrTableKey::IDS_ERR_SCENSECTION, +fn); return false;
 		}
 	}
 

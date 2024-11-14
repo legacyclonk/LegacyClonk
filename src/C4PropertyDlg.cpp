@@ -243,7 +243,7 @@ bool C4PropertyDlg::Update()
 			}
 			output += LineFeed;
 			// Effect name
-			output += std::format(" {}: Interval {}", pEffect->Name, pEffect->iIntervall);
+			output += std::format(" {}: Interval {}", +pEffect->Name, pEffect->iIntervall);
 		}
 		// Store selected def
 		idSelectedDef = cobj->id;

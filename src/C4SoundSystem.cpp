@@ -129,7 +129,7 @@ void C4SoundSystem::LoadEffects(C4Group &group)
 			}
 			catch (const std::runtime_error &e)
 			{
-				LogNTr(spdlog::level::err, "Could not load sound effect \"{}/{}\": {}", group.GetFullName().getData(), filename, e.what());
+				LogNTr(spdlog::level::err, "Could not load sound effect \"{}/{}\": {}", group.GetFullName().getData(), +filename, e.what());
 			}
 		}
 	}

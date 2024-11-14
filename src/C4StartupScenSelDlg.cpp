@@ -677,7 +677,7 @@ bool C4ScenarioListLoader::Entry::SetTitleInGroup(C4Group &rGrp, const char *szN
 		if (SEqual(szNewTitle, sNameByFile.getData())) return true;
 	}
 	// okay, make a title
-	StdStrBuf title{std::format("{:2}:{}", Config.General.Language, szNewTitle).c_str()};
+	StdStrBuf title{std::format("{:2}:{}", +Config.General.Language, szNewTitle).c_str()};
 	if (!rGrp.Add(C4CFN_WriteTitle, title, false, true))
 	{
 		const std::string msg{LoadResStr(C4ResStrTableKey::IDS_ERR_ERRORADDINGNEWTITLEFORFIL, sFilename.getData(), rGrp.GetError())};

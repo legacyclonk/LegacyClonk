@@ -1577,14 +1577,14 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 			if (iExtra & C4MN_Add_PassValue)
 			{
 				// with value
-				command = std::format("{}({},{},0,{})", szScriptCom, C4IdText(idItem), parameter, iValue);
-				command2 = std::format("{}({},{},1,{})", szScriptCom, C4IdText(idItem), parameter, iValue);
+				command = std::format("{}({},{},0,{})", szScriptCom, C4IdText(idItem), +parameter, iValue);
+				command2 = std::format("{}({},{},1,{})", szScriptCom, C4IdText(idItem), +parameter, iValue);
 			}
 			else
 			{
 				// without value
-				command = std::format("{}({},{})", szScriptCom, C4IdText(idItem), parameter);
-				command2 = std::format("{}({},{},1)", szScriptCom, C4IdText(idItem), parameter);
+				command = std::format("{}({},{})", szScriptCom, C4IdText(idItem), +parameter);
+				command2 = std::format("{}({},{},1)", szScriptCom, C4IdText(idItem), +parameter);
 			}
 		}
 		else
@@ -4554,16 +4554,16 @@ static bool FnLocateFunc(C4AulContext *cthr, C4String *funcname, C4Object *pObj,
 			C4AulScriptFunc *pSFunc = pFunc->SFunc();
 			if (!pSFunc)
 			{
-				LogNTr("{}{} (engine)", szPrefix, pFunc->Name);
+				LogNTr("{}{} (engine)", szPrefix, +pFunc->Name);
 			}
 			else if (!pSFunc->pOrgScript)
 			{
-				LogNTr("{}{} (no owner)", szPrefix, pSFunc->Name);
+				LogNTr("{}{} (no owner)", szPrefix, +pSFunc->Name);
 			}
 			else
 			{
 				int32_t iLine = SGetLine(pSFunc->pOrgScript->GetScript(), pSFunc->Script);
-				LogNTr("{}{} ({}:{})", szPrefix, pFunc->Name, pSFunc->pOrgScript->ScriptName.c_str(), static_cast<int>(iLine));
+				LogNTr("{}{} ({}:{})", szPrefix, +pFunc->Name, pSFunc->pOrgScript->ScriptName.c_str(), static_cast<int>(iLine));
 			}
 			// next func in overload chain
 			pFunc = pSFunc ? pSFunc->OwnerOverloaded : nullptr;

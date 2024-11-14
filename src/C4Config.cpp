@@ -715,7 +715,7 @@ bool C4ConfigGeneral::CreateSaveFolder(const char *strDirectory, const char *str
 	// Create title component if needed
 	char lang[3]; SCopy(Config.General.Language, lang, 2);
 	const std::string titleFile{std::format("{}" DirSep C4CFN_WriteTitle, strDirectory)};
-	const std::string titleData{std::format("{}:{}", lang, strLanguageTitle)};
+	const std::string titleData{std::format("{}:{}", +lang, strLanguageTitle)};
 	CStdFile hFile;
 	if (!FileExists(titleFile.c_str()))
 		if (!hFile.Create(titleFile.c_str()) || !hFile.WriteString(titleData.c_str()) || !hFile.Close())

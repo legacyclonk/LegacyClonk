@@ -434,7 +434,7 @@ bool C4GraphicsResource::LoadFile(C4FacetExID &fct, const char *szName, C4GroupS
 	// load
 	if (!fct.Load(*pGrp, FileName, iWdt, iHgt))
 	{
-		Log(C4ResStrTableKey::IDS_PRC_NOGFXFILE, FileName, LoadResStr(C4ResStrTableKey::IDS_ERR_NOFILE));
+		Log(C4ResStrTableKey::IDS_PRC_NOGFXFILE, +FileName, LoadResStr(C4ResStrTableKey::IDS_ERR_NOFILE));
 		return false;
 	}
 	fct.idSourceGroup = ID;
@@ -458,7 +458,7 @@ bool C4GraphicsResource::LoadFile(C4Surface &sfc, const char *szName, C4GroupSet
 	// load
 	if (!sfc.Load(*pGrp, FileName))
 	{
-		Log(C4ResStrTableKey::IDS_PRC_NOGFXFILE, FileName, LoadResStr(C4ResStrTableKey::IDS_ERR_NOFILE));
+		Log(C4ResStrTableKey::IDS_PRC_NOGFXFILE, +FileName, LoadResStr(C4ResStrTableKey::IDS_ERR_NOFILE));
 		return false;
 	}
 	ridCurrSfc = ID;

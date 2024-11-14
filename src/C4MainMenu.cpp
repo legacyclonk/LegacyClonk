@@ -92,7 +92,7 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 			// Close group
 			hGroup.Close();
 			// Add player item
-			command = std::format("JoinPlayer:{}", szFilename);
+			command = std::format("JoinPlayer:{}", +szFilename);
 			const std::string itemText{LoadResStr(C4ResStrTableKey::IDS_MENU_NEWPLAYER, C4P.PrefName)};
 			// No custom portrait: use default player image
 			if (!fctPortrait.Surface)
@@ -473,7 +473,7 @@ bool C4MainMenu::ActivateSavegame(int32_t iPlayer)
 	// New Style 2007:
 	// * scenarios are saved into ScenName.c4f/ScenName123.c4s to keep umlauts out of filenames
 	// * language titles are stored in folders as title component
-	const std::string filename{std::format("{}.c4f" DirSep "{}{{}}.c4s", ScenName, ScenName)};
+	const std::string filename{std::format("{}.c4f" DirSep "{}{{}}.c4s", +ScenName, +ScenName)};
 
 	// Create menu items
 	std::string filenameIndexed;

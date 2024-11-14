@@ -1204,7 +1204,7 @@ void C4StartupOptionsDlg::UpdateLanguage()
 	}
 	else
 	{
-		pLangCombo->SetText(std::format("unknown ({})", Config.General.Language).c_str());
+		pLangCombo->SetText(std::format("unknown ({})", +Config.General.Language).c_str());
 		pLangInfoLabel->SetText(LoadResStr(C4ResStrTableKey::IDS_CTL_NOLANGINFO));
 		return; // no need to mess with fallbacks
 	}

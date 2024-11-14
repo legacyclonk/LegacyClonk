@@ -765,7 +765,7 @@ void C4ControlJoinPlayer::Execute(const std::shared_ptr<spdlog::logger> &logger)
 	else if (Game.Control.isReplay())
 	{
 		// Expect player in scenario file
-		Game.JoinPlayer(std::format("{}" DirSep "{}-{}", Game.ScenarioFilename, ResCore.getID(), GetFilename(ResCore.getFileName())).c_str(), iAtClient, pClient ? pClient->getName() : "Unknown", pInfo);
+		Game.JoinPlayer(std::format("{}" DirSep "{}-{}", +Game.ScenarioFilename, ResCore.getID(), GetFilename(ResCore.getFileName())).c_str(), iAtClient, pClient ? pClient->getName() : "Unknown", pInfo);
 	}
 	else
 		// Shouldn't happen
