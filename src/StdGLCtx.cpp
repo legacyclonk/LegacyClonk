@@ -225,10 +225,7 @@ bool CStdGL::SaveDefaultGammaRampToMonitor(CStdWindow *pWindow)
 bool CStdGL::ApplyGammaRampToMonitor(CGammaControl &ramp, bool fForce)
 {
 	if (!MainCtx.hDC || (!Active && !fForce)) return false;
-	if (!SetDeviceGammaRamp(MainCtx.hDC, ramp.red))
-	{
-		logger->error("Error setting gamma ramp: {:02x}", ::GetLastError());
-	}
+	SetDeviceGammaRamp(MainCtx.hDC, ramp.red);
 	return true;
 }
 
