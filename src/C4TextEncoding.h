@@ -55,14 +55,13 @@ private:
 		IconvPtr() = default;
 		IconvPtr(iconv_t ptr) noexcept : ptr{ptr} {}
 
-		IconvPtr(const IconvPtr &ptr) = delete;
-
+		IconvPtr(const IconvPtr &) = delete;
 		IconvPtr &operator=(const IconvPtr &ptr) = delete;
-		IconvPtr(IconvPtr &&ptr) noexcept : ptr{std::exchange(ptr.ptr, Invalid())} {}
-		IconvPtr &operator=(IconvPtr &&ptr) noexcept
+		IconvPtr(IconvPtr &&other) noexcept : ptr{std::exchange(other.ptr, Invalid())} {}
+		IconvPtr &operator=(IconvPtr &&other) noexcept
 		{
 			reset();
-			ptr.ptr = std::exchange(ptr.ptr, Invalid());
+			ptr = std::exchange(other.ptr, Invalid());
 			return *this;
 		}
 
