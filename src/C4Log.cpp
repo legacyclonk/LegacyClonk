@@ -359,7 +359,10 @@ std::shared_ptr<spdlog::logger> C4LogSystem::GetOrCreate(std::string name, C4Log
 
 void C4LogSystem::EnableDebugLog(const bool enable)
 {
-	loggerDebugGuiSink->set_level(enable ? spdlog::level::debug : spdlog::level::off);
+	if (loggerDebugGuiSink)
+	{
+		loggerDebugGuiSink->set_level(enable ? spdlog::level::debug : spdlog::level::off);
+	}
 }
 
 void C4LogSystem::SetVerbose(const bool verbose)
