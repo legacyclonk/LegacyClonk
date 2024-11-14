@@ -84,6 +84,35 @@ C4CurlSystem::AddedEasyHandle::~AddedEasyHandle()
 	}
 }
 
+C4CurlSystem::MultiHandleWithCallbacks::MultiHandleWithCallbacks(
+		MultiHandle multiHandle,
+		C4CurlSystem &system,
+		SocketFunction *const socketFunction,
+		TimerFunction *const timerFunction)
+	: multiHandle{std::move(multiHandle)}
+{
+	if (this->multiHandle)
+	{
+		curl_multi_setopt(this->multiHandle.get(), CURLMOPT_SOCKETFUNCTION, socketFunction);
+		curl_multi_setopt(this->multiHandle.get(), CURLMOPT_SOCKETDATA, &system);
+
+		curl_multi_setopt(this->multiHandle.get(), CURLMOPT_TIMERFUNCTION, timerFunction);
+		curl_multi_setopt(this->multiHandle.get(), CURLMOPT_TIMERDATA, &system);
+	}
+}
+
+C4CurlSystem::MultiHandleWithCallbacks::~MultiHandleWithCallbacks()
+{
+	if (multiHandle)
+	{
+		curl_multi_setopt(multiHandle.get(), CURLMOPT_SOCKETFUNCTION, nullptr);
+		curl_multi_setopt(multiHandle.get(), CURLMOPT_SOCKETDATA, nullptr);
+
+		curl_multi_setopt(multiHandle.get(), CURLMOPT_TIMERFUNCTION, nullptr);
+		curl_multi_setopt(multiHandle.get(), CURLMOPT_TIMERDATA, nullptr);
+	}
+}
+
 C4CurlSystem::Awaiter::Awaiter(C4CurlSystem &system, EasyHandle &&easyHandle)
 	: system{system},
 	  easyHandle{std::move(easyHandle)},
@@ -145,7 +174,7 @@ void C4CurlSystem::Awaiter::Resume()
 }
 
 C4CurlSystem::C4CurlSystem()
-	: multiHandle{curl_multi_init()}
+	: multiHandle{MultiHandle{curl_multi_init()}, *this, &C4CurlSystem::SocketFunction, &C4CurlSystem::TimerFunction}
 {
 	if (!multiHandle)
 	{
@@ -153,12 +182,6 @@ C4CurlSystem::C4CurlSystem()
 		LogNTr(message);
 		throw CStdApp::StartupException{std::move(message)};
 	}
-
-	curl_multi_setopt(multiHandle.get(), CURLMOPT_SOCKETFUNCTION, &C4CurlSystem::SocketFunction);
-	curl_multi_setopt(multiHandle.get(), CURLMOPT_SOCKETDATA, this);
-
-	curl_multi_setopt(multiHandle.get(), CURLMOPT_TIMERFUNCTION, &C4CurlSystem::TimerFunction);
-	curl_multi_setopt(multiHandle.get(), CURLMOPT_TIMERDATA, this);
 
 	multiTask = Execute();
 }

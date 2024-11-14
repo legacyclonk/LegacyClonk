@@ -97,6 +97,24 @@ private:
 		~GlobalInit();
 	};
 
+	class MultiHandleWithCallbacks
+	{
+	public:
+		using SocketFunction = int(CURL *, curl_socket_t, int, void *) noexcept;
+		using TimerFunction = int(CURLM *, long, void *) noexcept;
+
+	public:
+		MultiHandleWithCallbacks(MultiHandle multiHandle, C4CurlSystem &system, SocketFunction *socketFunction, TimerFunction *timerFunction);
+		~MultiHandleWithCallbacks();
+
+	public:
+		auto get() const { return multiHandle.get(); }
+		explicit operator bool() const noexcept { return !!multiHandle; }
+
+	private:
+		MultiHandle multiHandle;
+	};
+
 	class Awaiter : public C4Task::CancellableAwaiter<Awaiter>
 	{
 	public:
@@ -171,7 +189,7 @@ private:
 	std::atomic_uint32_t timeout{StdSync::Infinite};
 	[[NO_UNIQUE_ADDRESS]] GlobalInit globalInit;
 
-	MultiHandle multiHandle;
+	MultiHandleWithCallbacks multiHandle;
 
 #ifdef _WIN32
 	CStdEvent event;
