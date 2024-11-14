@@ -381,10 +381,7 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 	{
 	case SDL_TEXTINPUT:
 	{
-		if (Game.pGUI)
-		{
-			Game.pGUI->CharIn(e.text.text);
-		}
+		CharIn(e.text.text);
 		break;
 	}
 	case SDL_KEYDOWN:
