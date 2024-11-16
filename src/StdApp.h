@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "C4Log.h"
 #include "C4Windows.h"
 #include "StdWindow.h"
 
@@ -353,6 +354,8 @@ protected:
 	unsigned int KeyMask{0};
 
 #ifdef WITH_GLIB
+	std::shared_ptr<spdlog::logger> glibLogger;
+	unsigned int glibLogHandlerId{};
 	_GMainLoop *loop{nullptr};
 #ifdef USE_X11
 	_GIOChannel *xChannel{nullptr};
