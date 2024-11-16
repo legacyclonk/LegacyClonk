@@ -19,6 +19,8 @@
 #include <Standard.h>
 #include <StdPNG.h>
 
+#include <C4Log.h>
+
 #include <png.h>
 
 #include <algorithm>
@@ -29,6 +31,8 @@
 
 struct CPNGFile::Impl
 {
+	std::shared_ptr<spdlog::logger> logger;
+
 	// true if this instance is used for writing a PNG file or false if it is used for reading
 	bool writeMode;
 	// Pointer to the output file if this instance is used for writing
@@ -46,6 +50,7 @@ struct CPNGFile::Impl
 
 	// Initializes attributes to zero
 	Impl() :
+		logger(CreateLogger("libpng", {.GuiLogLevel = spdlog::level::warn, .ShowLoggerNameInGui = true})),
 		outputFile(nullptr), inputFileContents(nullptr),
 		png_ptr(nullptr), info_ptr(nullptr) {}
 
@@ -275,13 +280,16 @@ struct CPNGFile::Impl
 	// Error callback for libpng
 	static void PNGAPI ErrorCallbackFn(const png_structp png_ptr, const png_const_charp msg)
 	{
+		const auto pngFile = static_cast<Impl *>(png_get_io_ptr(png_ptr));
+		pngFile->logger->error(msg);
 		throw std::runtime_error(std::string() + "libpng error: " + msg);
 	}
 
 	// Warning callback for libpng
 	static void PNGAPI WarningCallbackFn(const png_structp png_ptr, const png_const_charp msg)
 	{
-		std::cerr << "libpng warning: " << msg << '\n';
+		const auto pngFile = static_cast<Impl *>(png_get_io_ptr(png_ptr));
+		pngFile->logger->debug(msg);
 	}
 };
 
