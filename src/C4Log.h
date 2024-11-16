@@ -28,6 +28,7 @@
 
 #include <fmt/printf.h>
 #include <spdlog/spdlog.h>
+#include <spdlog/pattern_formatter.h>
 #include <spdlog/sinks/base_sink.h>
 
 
@@ -44,7 +45,7 @@ public:
 	class LogSink : public spdlog::sinks::base_sink<std::mutex>
 	{
 	public:
-		LogSink();
+		LogSink(std::unique_ptr<spdlog::formatter> formatter);
 		~LogSink();
 
 		LogSink(const LogSink &) = delete;
@@ -67,7 +68,7 @@ public:
 	class GuiSink : public spdlog::sinks::base_sink<spdlog::details::null_mutex>, public std::enable_shared_from_this<GuiSink>
 	{
 	public:
-		GuiSink() = default;
+		GuiSink(std::unique_ptr<spdlog::formatter> formatter) : base_sink{std::move(formatter)} {}
 		GuiSink(spdlog::level::level_enum level, bool showLoggerNameInGui);
 
 	protected:
@@ -81,7 +82,7 @@ public:
 	class RingbufferSink : public spdlog::sinks::base_sink<std::mutex>
 	{
 	public:
-		RingbufferSink(const std::size_t size) : size{size}, ringbuffer{size} {}
+		RingbufferSink(std::unique_ptr<spdlog::formatter> formatter, const std::size_t size) : base_sink{std::move(formatter)}, size{size}, ringbuffer{size} {}
 
 	public:
 		std::vector<std::string> TakeMessages();
@@ -146,6 +147,7 @@ public:
 #endif
 
 private:
+	std::unique_ptr<spdlog::pattern_formatter> defaultPatternFormatter;
 	std::shared_ptr<spdlog::logger> logger;
 	std::shared_ptr<spdlog::logger> loggerSilent;
 	std::shared_ptr<spdlog::logger> loggerDebug;

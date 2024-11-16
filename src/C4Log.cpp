@@ -102,7 +102,8 @@ public:
 
 }
 
-C4LogSystem::LogSink::LogSink()
+C4LogSystem::LogSink::LogSink(std::unique_ptr<spdlog::formatter> formatter)
+	: base_sink{std::move(formatter)}
 {
 	std::string logFileName{C4CFN_Log};
 	// open
@@ -262,10 +263,16 @@ C4LogSystem::C4LogSystem()
 {
 	spdlog::set_automatic_registration(false);
 
+	defaultPatternFormatter = std::make_unique<spdlog::pattern_formatter>();
+	defaultPatternFormatter->add_flag<LoggerNameIfExistsFormatterFlag>('~');
+	defaultPatternFormatter->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] %~%v");
+
 	loggerSilentGuiSink = std::make_shared<GuiSink>(spdlog::level::warn, true);
 
 #ifdef _WIN32
 	debugSink = std::make_shared<spdlog::sinks::msvc_sink_mt>();
+	debugSink->set_formatter(defaultPatternFormatter->clone());
+
 	loggerSilent = std::make_shared<spdlog::logger>("", std::initializer_list<spdlog::sink_ptr>{loggerSilentGuiSink, debugSink});
 #else
 	loggerSilent = std::make_shared<spdlog::logger>("", loggerSilentGuiSink);
@@ -285,7 +292,7 @@ C4LogSystem::C4LogSystem()
 #endif
 	loggerDebug->set_level(spdlog::level::trace);
 
-	ringbufferSink = std::make_shared<RingbufferSink>(100);
+	ringbufferSink = std::make_shared<RingbufferSink>(defaultPatternFormatter->clone(), 100);
 	logger->sinks().emplace_back(ringbufferSink);
 }
 
@@ -296,9 +303,10 @@ void C4LogSystem::OpenLog()
 #endif
 
 	stdoutSink = std::static_pointer_cast<spdlog::sinks::sink>(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+	stdoutSink->set_formatter(defaultPatternFormatter->clone());
 	stdoutSink->set_level(spdlog::level::info);
 
-	auto clonkLogSink = std::make_shared<LogSink>();
+	auto clonkLogSink = std::make_shared<LogSink>(defaultPatternFormatter->clone());
 	clonkLogFD = clonkLogSink->GetFD();
 
 	clonkToUtf8Sink = std::make_shared<ClonkToUtf8Sink>(std::initializer_list<spdlog::sink_ptr>{stdoutSink, std::static_pointer_cast<spdlog::sinks::sink>(clonkLogSink)});
@@ -308,8 +316,7 @@ void C4LogSystem::OpenLog()
 	logger = std::make_shared<spdlog::logger>("", loggerSilent->sinks().begin() + 1, loggerSilent->sinks().end());
 	logger->set_level(spdlog::level::trace);
 
-	auto guiSink = std::make_shared<GuiSink>();
-	guiSink->set_pattern("%v");
+	auto guiSink = std::make_shared<GuiSink>(std::make_unique<spdlog::pattern_formatter>("%v"));
 
 	logger->sinks().insert(logger->sinks().begin(), std::move(guiSink));
 
