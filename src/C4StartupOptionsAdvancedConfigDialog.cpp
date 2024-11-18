@@ -62,18 +62,25 @@ public:
 
 	NameGuard Name(const char *name) override
 	{
-		lastName = name;
-		if (++level == 1)
+		if (++level > 2)
 		{
-			dialog->ChangeSection(name);
+			ignore = true;
 		}
-		assert(level <= 2);
+		else
+		{
+			lastName = name;
+			if (level == 1)
+			{
+				dialog->ChangeSection(name);
+			}
+		}
 		return StdCompiler::Name(name);
 	}
 	void NameEnd(bool breaking = false) override
 	{
 		assert(level > 0);
 		--level;
+		ignore = false;
 		return StdCompiler::NameEnd(breaking);
 	}
 protected:
@@ -85,6 +92,8 @@ private:
 	template <typename T, typename... Args>
 	void HandleSettingInternal(T &setting, Args &&... args)
 	{
+		if (ignore) return;
+
 		try
 		{
 			self().HandleSetting(lastName, setting, std::forward<Args>(args)...);
@@ -97,6 +106,7 @@ private:
 
 	std::string lastName;
 	std::size_t level{0};
+	bool ignore{false};
 };
 
 class StdCompilerConfigGuiRead : public StdCompilerConfigGuiBase<StdCompilerConfigGuiRead>
