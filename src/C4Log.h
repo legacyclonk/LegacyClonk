@@ -18,6 +18,10 @@
 
 #pragma once
 
+#ifndef C4ENGINE
+#error C4Log.h must not be included in non-C4ENGINE builds
+#endif
+
 #include "C4ResStrTable.h"
 
 #include "StdAdaptors.h"
