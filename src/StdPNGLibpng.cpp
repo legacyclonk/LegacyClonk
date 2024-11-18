@@ -16,6 +16,7 @@
 
 // PNG encoding/decoding using libpng
 
+#include "C4Application.h"
 #include <Standard.h>
 #include <StdPNG.h>
 
@@ -49,7 +50,7 @@ struct CPNGFile::Impl
 
 	// Initializes attributes to zero
 	Impl() :
-		logger(CreateLogger("libpng", {.GuiLogLevel = spdlog::level::warn, .ShowLoggerNameInGui = true})),
+		logger(Application.LogSystem.CreateLogger(Config.Logging.PNGFile)),
 		outputFile(nullptr), inputFileContents(nullptr),
 		png_ptr(nullptr), info_ptr(nullptr) {}
 

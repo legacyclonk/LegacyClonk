@@ -43,7 +43,7 @@ C4GameControl::~C4GameControl()
 
 void C4GameControl::InitLogger()
 {
-	logger = CreateLogger("C4GameControl");
+	logger = Application.LogSystem.CreateLogger(Config.Logging.GameControl);
 }
 
 bool C4GameControl::InitLocal(C4Client *pLocal)
@@ -72,7 +72,7 @@ bool C4GameControl::InitNetwork(C4Client *pLocal)
 bool C4GameControl::InitReplay(C4Group &rGroup)
 {
 	// open replay
-	pPlayback = new C4Playback(logger->clone("C4Playback"));
+	pPlayback = new C4Playback(Application.LogSystem.CreateLogger(Config.Logging.Playback));
 	if (!pPlayback->Open(rGroup))
 	{
 		LogFatal(C4ResStrTableKey::IDS_ERR_REPLAYREAD);

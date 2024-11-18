@@ -13,8 +13,9 @@
  * for the above references.
  */
 
+#include "C4Application.h"
 #include "C4AudioSystemSdl.h"
-
+#include "C4Config.h"
 #include "C4Log.h"
 
 #include "StdHelpers.h"
@@ -144,7 +145,7 @@ C4AudioSystemSdl::C4AudioSystemSdl(const int maxChannels, const bool preferLinea
 	assert(!instance);
 	instance = this;
 
-	auto logger = CreateLogger("C4AudioSystemSdl");
+	auto logger = Application.LogSystem.CreateLoggerWithDifferentName(Config.Logging.AudioSystem, "C4AudioSystem");
 
 	// Check SDL_mixer version
 	SDL_version compile_version;

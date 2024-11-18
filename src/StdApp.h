@@ -354,6 +354,8 @@ protected:
 	unsigned int KeyMask{0};
 
 #ifdef WITH_GLIB
+	virtual std::shared_ptr<spdlog::logger> CreateGLibLogger() = 0;
+
 	std::shared_ptr<spdlog::logger> glibLogger;
 	unsigned int glibLogHandlerId{};
 	_GMainLoop *loop{nullptr};
@@ -398,3 +400,11 @@ protected:
 	friend class CStdWindow;
 	friend class CStdGtkWindow;
 };
+
+#ifdef WITH_GLIB
+template<>
+struct C4LoggerConfig::Name<_GMainLoop>
+{
+	static constexpr auto Value = "GLib";
+};
+#endif

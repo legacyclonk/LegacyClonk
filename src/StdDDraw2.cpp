@@ -1297,7 +1297,7 @@ void CStdDDraw::SetBlitMode(uint32_t dwBlitMode)
 	this->dwBlitMode = dwBlitMode & Config.Graphics.AllowedBlitModes;
 }
 
-CStdDDraw *DDrawInit(CStdApp *pApp, int Engine)
+CStdDDraw *DDrawInit(CStdApp *pApp, C4LogSystem &logSystem, int Engine)
 {
 	// create engine
 	switch (iGfxEngine = Engine)
@@ -1310,7 +1310,7 @@ CStdDDraw *DDrawInit(CStdApp *pApp, int Engine)
 	}
 	if (!lpDDraw) return nullptr;
 	// init it
-	if (!lpDDraw->Init(pApp))
+	if (!lpDDraw->Init(pApp, logSystem))
 	{
 		delete lpDDraw;
 		return nullptr;
@@ -1319,10 +1319,10 @@ CStdDDraw *DDrawInit(CStdApp *pApp, int Engine)
 	return lpDDraw;
 }
 
-bool CStdDDraw::Init(CStdApp *pApp)
+bool CStdDDraw::Init(CStdApp *pApp, C4LogSystem &logSystem)
 {
 	this->pApp = pApp;
-	logger = CreateLogger(std::string{GetEngineName()});
+	logger = logSystem.CreateLoggerWithDifferentName(Config.Logging.DDraw, std::string{GetEngineName()});
 
 	logger->debug("Init DDraw");
 	logger->debug("  Create DirectDraw...");

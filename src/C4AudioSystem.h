@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "C4Log.h"
 #include "Standard.h"
 
 #include <cstddef>
@@ -101,3 +102,5 @@ public:
 public:
 	static constexpr auto MaxChannels = 1024;
 };
+
+C4LOGGERCONFIG_NAME_TYPE(C4AudioSystem);

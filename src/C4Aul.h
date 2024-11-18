@@ -431,6 +431,15 @@ public:
 	static void StopProfiling();
 };
 
+C4LOGGERCONFIG_NAME_TYPE(C4AulProfiler);
+
+template<>
+struct C4LoggerConfig::Defaults<C4AulProfiler>
+{
+	static constexpr spdlog::level::level_enum GuiLogLevel{spdlog::level::info};
+	static constexpr bool ShowLoggerNameInGui{false};
+};
+
 // script class
 class C4AulScript
 {
@@ -586,4 +595,15 @@ public:
 
 	friend class C4AulFunc;
 	friend class C4AulParseState;
+};
+
+class C4AulExec;
+
+C4LOGGERCONFIG_NAME_TYPE(C4AulExec);
+
+template<>
+struct C4LoggerConfig::Defaults<C4AulExec>
+{
+	static constexpr auto GuiLogLevel = spdlog::level::info;
+	static constexpr bool ShowLoggerNameInGui{false};
 };

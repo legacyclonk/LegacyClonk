@@ -15,6 +15,7 @@
 
 #pragma once
 
+class C4AudioSystem;
 class C4AulFunc;
 class C4Def;
 class C4DefList;

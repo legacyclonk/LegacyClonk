@@ -3270,10 +3270,6 @@ void C4Game::ParseCommandLine(const char *szCmdLine)
 	if (SSearchNoCase(szCmdLine, "/console"))
 		Application.isFullScreen = false;
 
-	// verbose
-	if (SSearchNoCase(szCmdLine, "/verbose"))
-		Application.LogSystem.SetVerbose(true);
-
 	// startup dialog required?
 	Application.UseStartupDialog = Application.isFullScreen && !*DirectJoinAddress && !*ScenarioFilename && !RecordStream.getSize();
 }

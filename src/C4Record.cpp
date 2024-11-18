@@ -1065,7 +1065,7 @@ void C4Playback::DebugRecError(const std::string_view error)
 
 bool C4Playback::StreamToRecord(const char *szStream, StdStrBuf *pRecordFile)
 {
-	auto logger = CreateLogger("C4Playback");
+	auto logger = Application.LogSystem.CreateLogger(Config.Logging.Playback);
 	// Load data
 	StdBuf CompressedData;
 	logger->info("Reading stream...");

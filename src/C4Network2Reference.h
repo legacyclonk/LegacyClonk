@@ -20,6 +20,7 @@
 #include "C4Coroutine.h"
 #include "C4ForwardDeclarations.h"
 #include "C4HTTPClient.h"
+#include "C4Log.h"
 #include "C4Network2.h"
 #include "C4Network2Client.h"
 
@@ -165,6 +166,8 @@ protected:
 private:
 	std::unique_ptr<Impl> impl;
 };
+
+C4LOGGERCONFIG_NAME_TYPE(C4Network2HTTPClient);
 
 // Loads references (mini-HTTP-client)
 class C4Network2RefClient : public C4Network2HTTPClient

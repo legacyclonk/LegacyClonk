@@ -20,6 +20,7 @@
 
 #include "C4Control.h"
 #include "C4GameControlNetwork.h"
+#include "C4Log.h"
 #include "C4Network2Client.h"
 #include "C4Record.h"
 
@@ -148,3 +149,5 @@ protected:
 	C4ControlSyncCheck *GetSyncCheck(int32_t iTick);
 	void RemoveOldSyncChecks();
 };
+
+C4LOGGERCONFIG_NAME_TYPE(C4GameControl);

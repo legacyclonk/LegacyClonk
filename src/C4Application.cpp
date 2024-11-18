@@ -79,10 +79,19 @@ void C4Application::DoInit()
 	assert(AppState == C4AS_None);
 	// Config overwrite by parameter
 	StdStrBuf sConfigFilename;
+	bool verbose{false};
 	char szParameter[_MAX_PATH + 1];
 	for (int32_t iPar = 0; SGetParameter(GetCommandLine(), iPar, szParameter, _MAX_PATH); iPar++)
+	{
 		if (SEqual2NoCase(szParameter, "/config:"))
+		{
 			sConfigFilename.Copy(szParameter + 8);
+		}
+		else if (!verbose && SEqualNoCase(szParameter, "/verbose"))
+		{
+			verbose = true;
+		}
+	}
 	// Config check
 	Config.Init();
 	Config.Load(true, sConfigFilename.getData());
@@ -113,7 +122,7 @@ void C4Application::DoInit()
 	C4Group_SetSortList(C4CFN_FLS);
 
 	// Open log
-	LogSystem.OpenLog();
+	LogSystem.OpenLog(verbose);
 
 	// init system group
 	if (!SystemGroup.Open(C4CFN_System))
@@ -204,7 +213,7 @@ void C4Application::DoInit()
 	spdlog::info("Version: " C4VERSION " " C4_OS);
 
 	// Initialize OpenGL
-	DDraw = DDrawInit(this, Config.Graphics.Engine);
+	DDraw = DDrawInit(this, LogSystem, Config.Graphics.Engine);
 	if (!DDraw) { LogFatal(C4ResStrTableKey::IDS_ERR_DDRAW); Clear(); throw StartupException{LogSystem.GetFatalErrorString()}; }
 
 #if defined(_WIN32) && !defined(USE_CONSOLE)
@@ -648,3 +657,10 @@ void C4Application::SetNextMission(const char *szMissionFilename)
 	else
 		NextMission.Clear();
 }
+
+#ifdef WITH_GLIB
+std::shared_ptr<spdlog::logger> C4Application::CreateGLibLogger()
+{
+	return LogSystem.CreateLogger(Config.Logging.GLib);
+}
+#endif

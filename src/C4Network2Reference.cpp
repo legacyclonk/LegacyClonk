@@ -406,13 +406,17 @@ private:
 	static constexpr int C4Network2HTTPQueryTimeout{20}; // (s)
 };
 
+#define IMPL(type) static_cast<std::unique_ptr<C4Network2HTTPClient::Impl>>(std::make_unique<type>(Application.LogSystem.CreateLoggerWithDifferentName(Config.Logging.Network2HTTPClient, #type)))
+
 C4Network2HTTPClient::C4Network2HTTPClient()
 	: impl{Config.Network.UseCurl
-		   ? static_cast<std::unique_ptr<C4Network2HTTPClient::Impl>>(std::make_unique<C4Network2HTTPClientImplCurl>(CreateLogger("C4Network2HTTPClientImplCurl")))
-		   : static_cast<std::unique_ptr<C4Network2HTTPClient::Impl>>(std::make_unique<C4Network2HTTPClientImplNetIO>(CreateLogger("C4Network2HTTPClientImplNetIO")))
+		   ? IMPL(C4Network2HTTPClientImplCurl)
+		   : IMPL(C4Network2HTTPClientImplNetIO)
 	  }
 {
 }
+
+#undef IMPL
 
 C4Network2HTTPClient::~C4Network2HTTPClient()
 {

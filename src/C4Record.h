@@ -23,6 +23,7 @@ class C4Record;
 
 #include "C4Group.h"
 #include "C4Control.h"
+#include "C4Log.h"
 #include "CStdFile.h"
 #include "Fixed.h"
 
@@ -327,3 +328,5 @@ public:
 #endif
 	static bool StreamToRecord(const char *szStream, StdStrBuf *pRecord);
 };
+
+C4LOGGERCONFIG_NAME_TYPE(C4Playback);

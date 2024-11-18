@@ -205,7 +205,7 @@ void CStdApp::Init(const int argc, char **const argv)
 	DoInit();
 
 #ifdef WITH_GLIB
-	glibLogger = CreateLogger("GLib", {.GuiLogLevel = spdlog::level::warn, .ShowLoggerNameInGui = true});
+	glibLogger = CreateGLibLogger();
 
 	static constexpr auto allLevels = static_cast<GLogLevelFlags>(G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION);
 	glibLogHandlerId = g_log_set_handler(nullptr, allLevels, gtkLogFunction, &glibLogger);

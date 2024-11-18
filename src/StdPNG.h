@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include "C4Log.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -47,3 +49,5 @@ private:
 	struct Impl;
 	const std::unique_ptr<Impl> impl;
 };
+
+C4LOGGERCONFIG_NAME_TYPE(CPNGFile);

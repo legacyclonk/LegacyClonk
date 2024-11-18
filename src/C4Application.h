@@ -143,6 +143,10 @@ protected:
 
 	virtual void OnCommand(const char *szCmd) override;
 
+#ifdef WITH_GLIB
+	std::shared_ptr<spdlog::logger> CreateGLibLogger() override;
+#endif
+
 public:
 	virtual void Quit() override;
 	void QuitGame(); // quit game only, but restart application if in fullscreen startup menu mode

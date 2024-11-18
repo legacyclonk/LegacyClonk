@@ -224,7 +224,7 @@ bool C4Network2::InitHost(bool fLobby)
 	if (isEnabled()) Clear();
 	if (!Logger)
 	{
-		Logger = CreateLogger("Network");
+		Logger = Application.LogSystem.CreateLogger(Config.Logging.Network);
 	}
 	// initialize everything
 	Status.Set(fLobby ? GS_Lobby : GS_Go, Game.Control.ControlTick);
@@ -283,7 +283,7 @@ C4Network2::InitResult C4Network2::InitClient(const C4Network2Reference &Ref, bo
 	if (isEnabled()) Clear();
 	if (!Logger)
 	{
-		Logger = CreateLogger("Network");
+		Logger = Application.LogSystem.CreateLogger(Config.Logging.Network);
 	}
 	// Get host core
 	const C4ClientCore &HostCore = Ref.Parameters.Clients.getHost()->getCore();

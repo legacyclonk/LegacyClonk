@@ -469,6 +469,12 @@ public:
 	virtual void CompileFunc(StdCompiler *pComp) override;
 };
 
+template<>
+struct C4LoggerConfig::Name<C4Network2>
+{
+	static constexpr auto Value = "Network";
+};
+
 // shows ready check dialog or sends back information
 
 class C4PacketReadyCheck : public C4PacketBase

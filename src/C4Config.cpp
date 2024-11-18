@@ -21,8 +21,12 @@
 #include "C4Version.h"
 #ifdef C4ENGINE
 #include <C4Application.h>
+#include "C4GameControl.h"
 #include <C4Log.h>
 #include <C4Network2.h>
+#include "C4Network2Reference.h"
+#include "C4Network2UPnP.h"
+#include "C4Record.h"
 #include "C4ResStrTable.h"
 #include <C4UpperBoard.h>
 #endif
@@ -396,6 +400,26 @@ void C4ConfigCooldowns::CompileFunc(StdCompiler *comp)
 void C4ConfigToasts::CompileFunc(StdCompiler *comp)
 {
 	comp->Value(mkNamingAdapt(ReadyCheck, "ReadyCheck", true));
+}
+
+void C4ConfigLogging::CompileFunc(StdCompiler *const comp)
+{
+	comp->Value(mkNamingAdapt(LogLevelStdout, "LogLevelStdout", spdlog::level::info));
+
+	comp->Value(AudioSystem);
+	comp->Value(AulExec);
+	comp->Value(AulProfiler);
+	comp->Value(DDraw);
+	comp->Value(GameControl);
+	comp->Value(Network);
+	comp->Value(Network2HTTPClient);
+	comp->Value(Network2UPnP);
+	comp->Value(Playback);
+	comp->Value(PNGFile);
+
+#ifdef WITH_GLIB
+	comp->Value(GLib);
+#endif
 }
 #endif
 
@@ -849,6 +873,7 @@ void C4Config::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(Startup,   "Startup"));
 	pComp->Value(mkNamingAdapt(Cooldowns, "Cooldowns"));
 	pComp->Value(mkNamingAdapt(Toasts,    "Toasts"));
+	pComp->Value(mkNamingAdapt(Logging,   "Logging"));
 #endif
 }
 

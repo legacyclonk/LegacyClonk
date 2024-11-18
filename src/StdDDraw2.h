@@ -302,7 +302,7 @@ protected:
 
 public:
 	// General
-	bool Init(CStdApp *pApp);
+	bool Init(CStdApp *pApp, C4LogSystem &logSystem);
 	virtual void Clear();
 	virtual void Default();
 	virtual CStdGLCtx *CreateContext(CStdWindow *, CStdApp *) { return nullptr; }
@@ -426,4 +426,6 @@ protected:
 	friend class CPattern;
 };
 
-CStdDDraw *DDrawInit(CStdApp *pApp, int Engine);
+C4LOGGERCONFIG_NAME_TYPE(CStdDDraw);
+
+CStdDDraw *DDrawInit(CStdApp *pApp, C4LogSystem &logSystem, int Engine);
