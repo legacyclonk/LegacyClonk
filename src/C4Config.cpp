@@ -29,6 +29,7 @@
 #include "C4Record.h"
 #include "C4ResStrTable.h"
 #include <C4UpperBoard.h>
+#include "StdPNG.h"
 #endif
 
 #include <StdFile.h>

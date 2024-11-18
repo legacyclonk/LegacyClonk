@@ -39,7 +39,6 @@
 #include <unistd.h>
 #endif
 
-#include <StdPNG.h>
 #include <StdSha1.h>
 #include <fcntl.h>
 
