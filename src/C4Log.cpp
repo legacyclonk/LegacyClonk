@@ -100,6 +100,41 @@ public:
 	}
 };
 
+class StrippedTextFormatterFlag : public spdlog::custom_flag_formatter
+{
+public:
+	void format(const spdlog::details::log_msg &msg, const tm &, std::string &dest) override
+	{
+		if (msg.payload.empty())
+		{
+			return;
+		}
+
+		dest.resize_and_overwrite(dest.size() + msg.payload.size(), [&msg, oldSize{dest.size()}](char *const ptr, const std::size_t size)
+		{
+			std::fill_n(ptr + oldSize, size - oldSize, 0xAB);
+			auto oldSize2 = oldSize;
+			auto &payload = msg.payload;
+			auto copied = msg.payload.copy(ptr + oldSize, msg.payload.size());
+			ptr[oldSize + copied] = '\0';
+
+			CMarkup markup{false};
+			if (markup.StripMarkup(ptr + oldSize))
+			{
+				return std::strlen(ptr);
+			}
+			else
+			{
+				return size;
+			}
+		});
+	}
+
+	std::unique_ptr<custom_flag_formatter> clone() const override
+	{
+		return std::make_unique<StrippedTextFormatterFlag>();
+	}
+};
 }
 
 C4LogSystem::LogSink::LogSink(std::unique_ptr<spdlog::formatter> formatter)
@@ -156,6 +191,7 @@ C4LogSystem::GuiSink::GuiSink(const spdlog::level::level_enum level, const bool 
 
 	auto guiFormatter = std::make_unique<spdlog::pattern_formatter>();
 	guiFormatter->add_flag<LogLevelPrefixFormatterFlag>('*');
+	guiFormatter->add_flag<StrippedTextFormatterFlag>('v');
 
 	if (showLoggerNameInGui)
 	{
@@ -265,6 +301,7 @@ C4LogSystem::C4LogSystem()
 
 	defaultPatternFormatter = std::make_unique<spdlog::pattern_formatter>();
 	defaultPatternFormatter->add_flag<LoggerNameIfExistsFormatterFlag>('~');
+	defaultPatternFormatter->add_flag<StrippedTextFormatterFlag>('v');
 	defaultPatternFormatter->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] %~%v");
 
 	loggerSilentGuiSink = std::make_shared<GuiSink>(spdlog::level::warn, true);
