@@ -48,7 +48,7 @@ namespace C4LoggerConfig
 	template<typename T>
 	struct Name;
 
-#define C4LOGGERCONFIG_NAME_TYPE(type) template<> struct ::C4LoggerConfig::Name<type> { static constexpr auto Value = #type; }
+#define C4LOGGERCONFIG_NAME_TYPE(type) template<> struct C4LoggerConfig::Name<type> { static constexpr auto Value = #type; }
 
 	template<typename T>
 	concept HasName = requires { Name<T>::Value; };
