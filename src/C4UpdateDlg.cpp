@@ -184,7 +184,7 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 	// Look for update program at top level
 	if (!UpdateGroup.ExtractEntry(strUpdateProg.getData(), strUpdateProg.getData()))
 		// Not found: look for an engine update pack one level down
-		if (UpdateGroup.FindEntry(std::format("cr_*_%s.c4u", C4_OS).c_str(), strSubGroup))
+		if (UpdateGroup.FindEntry(std::format("cr_*_{}.c4u", C4_OS).c_str(), strSubGroup))
 			// Extract update program from sub group
 			if (SubGroup.OpenAsChild(&UpdateGroup, strSubGroup))
 			{
