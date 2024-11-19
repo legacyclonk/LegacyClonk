@@ -181,19 +181,19 @@ struct C4NullableBasicStringView
 
 using C4NullableStringView = C4NullableBasicStringView<char>;
 
-template<std::size_t N, typename...Args>
+template<std::size_t N, typename...Args> requires (!std::disjunction_v<std::is_array<std::remove_cvref_t<Args>>...>)
 void FormatWithNull(char(&buf)[N], const std::format_string<Args...> fmt, Args&&...args)
 {
 	*std::format_to_n(buf, N - 1, fmt, std::forward<Args>(args)...).out = '\0';
 }
 
-template<std::size_t N, typename...Args>
+template<std::size_t N, typename...Args> requires (!std::disjunction_v<std::is_array<std::remove_cvref_t<Args>>...>)
 void FormatWithNull(std::array<char, N> &buf, const std::format_string<Args...> fmt, Args&&...args)
 {
 	*std::format_to_n(buf.begin(), N - 1, fmt, std::forward<Args>(args)...).out = '\0';
 }
 
-template<std::size_t N, typename... Args>
+template<std::size_t N, typename... Args> requires (!std::disjunction_v<std::is_array<std::remove_cvref_t<Args>>...>)
 void FormatWithNull(const std::span<char, N> buf, const std::format_string<Args...> fmt, Args &&...args)
 {
 	*std::format_to_n(buf.begin(), buf.size() - 1, fmt, std::forward<Args>(args)...).out = '\0';

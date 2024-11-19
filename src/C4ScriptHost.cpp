@@ -194,10 +194,10 @@ void C4DefScriptHost::AfterLink()
 		for (int32_t cnt = 0; cnt < Def->ActNum; cnt++)
 		{
 			C4ActionDef *pad = &Def->ActMap[cnt];
-			FormatWithNull(WhereStr, "Action {}: StartCall", pad->Name); pad->StartCall = GetSFuncWarn(pad->SStartCall, CallAccess, WhereStr);
-			FormatWithNull(WhereStr, "Action {}: PhaseCall", pad->Name); pad->PhaseCall = GetSFuncWarn(pad->SPhaseCall, CallAccess, WhereStr);
-			FormatWithNull(WhereStr, "Action {}: EndCall",   pad->Name); pad->EndCall   = GetSFuncWarn(pad->SEndCall,   CallAccess, WhereStr);
-			FormatWithNull(WhereStr, "Action {}: AbortCall", pad->Name); pad->AbortCall = GetSFuncWarn(pad->SAbortCall, CallAccess, WhereStr);
+			FormatWithNull(WhereStr, "Action {}: StartCall", +pad->Name); pad->StartCall = GetSFuncWarn(pad->SStartCall, CallAccess, WhereStr);
+			FormatWithNull(WhereStr, "Action {}: PhaseCall", +pad->Name); pad->PhaseCall = GetSFuncWarn(pad->SPhaseCall, CallAccess, WhereStr);
+			FormatWithNull(WhereStr, "Action {}: EndCall",   +pad->Name); pad->EndCall   = GetSFuncWarn(pad->SEndCall,   CallAccess, WhereStr);
+			FormatWithNull(WhereStr, "Action {}: AbortCall", +pad->Name); pad->AbortCall = GetSFuncWarn(pad->SAbortCall, CallAccess, WhereStr);
 		}
 		Def->TimerCall = GetSFuncWarn(Def->STimerCall, CallAccess, "TimerCall");
 	}

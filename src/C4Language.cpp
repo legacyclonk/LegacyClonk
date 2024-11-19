@@ -58,7 +58,7 @@ bool C4Language::Init()
 	if (PackDirectory.Open(C4CFN_Languages))
 		while (PackDirectory.FindNextEntry("*.c4g", strEntry))
 		{
-			FormatWithNull(strPackFilename, "{}" DirSep "{}", C4CFN_Languages, strEntry);
+			FormatWithNull(strPackFilename, "{}" DirSep "{}", +C4CFN_Languages, +strEntry);
 			pPack = new C4Group();
 			if (pPack->Open(strPackFilename))
 			{

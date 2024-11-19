@@ -1610,7 +1610,7 @@ bool C4Group::DeleteEntry(const char *szFilename, bool fRecycle)
 	case GRPF_Folder:
 		StdFile.Close();
 		char szPath[_MAX_FNAME + 1];
-		FormatWithNull(szPath, "{}" DirSep "{}", FileName, szFilename);
+		FormatWithNull(szPath, "{}" DirSep "{}", +FileName, szFilename);
 
 		if (fRecycle)
 		{
@@ -1781,7 +1781,7 @@ bool C4Group::ExtractEntry(const char *szFilename, const char *szExtractTo)
 		break;
 	case GRPF_Folder: // Copy item from folder to target
 		char szPath[_MAX_FNAME + 1];
-		FormatWithNull(szPath, "{}" DirSep "{}", FileName, szFilename);
+		FormatWithNull(szPath, "{}" DirSep "{}", +FileName, szFilename);
 		if (!CopyItem(szPath, szTargetFName))
 			return Error("ExtractEntry: Cannot copy item");
 		break;
@@ -2194,7 +2194,7 @@ uint32_t C4Group::EntryTime(const char *szFilename)
 		break;
 	case GRPF_Folder:
 		char szPath[_MAX_FNAME + 1];
-		FormatWithNull(szPath, "{}" DirSep "{}", FileName, szFilename);
+		FormatWithNull(szPath, "{}" DirSep "{}", +FileName, szFilename);
 		iTime = FileTime(szPath);
 		break;
 	}
@@ -2390,7 +2390,7 @@ bool C4Group::EnsureChildFilePtr(C4Group *pChild)
 
 	// Open standard file is not the child file ...or StdFile ptr does not match pChild->FilePtr
 	char szChildPath[_MAX_PATH + 1];
-	FormatWithNull(szChildPath, "{}" DirSep "{}", FileName, GetFilename(pChild->FileName));
+	FormatWithNull(szChildPath, "{}" DirSep "{}", +FileName, GetFilename(pChild->FileName));
 	if (!ItemIdentical(StdFile.Name, szChildPath))
 	{
 		// Reopen correct child stdfile
