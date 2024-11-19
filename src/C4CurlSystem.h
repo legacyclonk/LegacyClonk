@@ -24,8 +24,16 @@
 #include <memory>
 #include <variant>
 
+#include <curl/curlver.h>
+
+#if CURL_AT_LEAST_VERSION(8, 11, 0)
+using CURLM = void;
+using CURL = void;
+#else
 using CURLM = struct Curl_multi;
 using CURL = struct Curl_easy;
+#endif
+
 using curl_socket_t = SOCKET;
 using CURLU = struct Curl_URL;
 

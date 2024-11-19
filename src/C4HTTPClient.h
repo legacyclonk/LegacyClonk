@@ -33,11 +33,11 @@
 #include <string>
 #include <unordered_map>
 
-using CURLM = struct Curl_multi;
-using CURL = struct Curl_easy;
-using curl_socket_t = SOCKET;
-using CURLU = struct Curl_URL;
+#if CURL_AT_LEAST_VERSION(8, 11, 0)
+using CURLS = void;
+#else
 using CURLS = struct Curl_share;
+#endif
 
 class C4HTTPClient
 {
