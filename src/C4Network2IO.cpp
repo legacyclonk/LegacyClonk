@@ -250,8 +250,9 @@ bool C4Network2IO::ConnectWithSocket(const C4NetIO::addr_t &addr, C4Network2IOPr
 	// connect
 	if (!pConn->Connect())
 	{
-		// show error
-		logger->error("could not connect to {} using {}: {}", addr.ToString(),
+		// log error as warning - it's not of the same severity as other Network2IO errors
+		// and may happen rather frequently with no impact to the player
+		logger->warn("could not connect to {} using {}: {}", addr.ToString(),
 			getNetIOName(pNetIO), pNetIO->GetError() ? pNetIO->GetError() : "");
 		pNetIO->ResetError();
 		// remove class
