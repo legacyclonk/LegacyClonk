@@ -600,12 +600,6 @@ void C4Network2IO::OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO)
 #endif
 }
 
-void C4Network2IO::OnError(const char *strError, C4NetIO *pNetIO)
-{
-	// let's log it
-	logger->error("{} error: {}", getNetIOName(pNetIO), strError);
-}
-
 bool C4Network2IO::Execute(int iTimeout)
 {
 	iLastExecute = timeGetTime();

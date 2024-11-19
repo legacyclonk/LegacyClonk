@@ -163,8 +163,6 @@ protected:
 	virtual bool OnConn(const C4NetIO::addr_t &addr, const C4NetIO::addr_t &AddrConnect, const C4NetIO::addr_t *pOwnAddr, C4NetIO *pNetIO) override;
 	virtual void OnDisconn(const C4NetIO::addr_t &addr, C4NetIO *pNetIO, const char *szReason) override;
 	virtual void OnPacket(const C4NetIOPacket &rPacket, C4NetIO *pNetIO) override;
-	// C4NetIOMan
-	virtual void OnError(const char *strError, C4NetIO *pNetIO);
 	// StdSchedulerProc
 	virtual bool Execute(int iTimeout) override;
 	virtual int GetTimeout() override;
