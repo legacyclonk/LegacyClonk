@@ -134,6 +134,8 @@ bool StdScheduler::Execute(int iTimeout)
 		const std::size_t oldSize{fds.size()};
 		proc->GetFDs(fds);
 
+		assert(fds.size() >= oldSize);
+
 		if (fds.size() != oldSize)
 		{
 			fdMap.emplace(std::piecewise_construct, std::forward_as_tuple(proc), std::forward_as_tuple(oldSize, fds.size() - oldSize));
