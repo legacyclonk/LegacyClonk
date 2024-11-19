@@ -326,7 +326,7 @@ std::vector<C4Network2HostAddress> C4NetIO::GetLocalAddresses(bool unsorted)
 		sa6.sin6_family = AF_INET6;
 		const auto a6 = sa6.sin6_addr.s6_addr;
 		std::uint8_t if_idx, plen, scope, flags;
-		char devname[20];
+		char devname[20 + 1];
 		while (std::fscanf(f.f,
 			"%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx "
 			"%02" SCNx8 " %02" SCNx8 " %02" SCNx8 " %02" SCNx8 " %20s\n",
