@@ -311,6 +311,7 @@ public:
 	C4LoggerConfig::Config<class CStdDDraw> DDraw;
 	C4LoggerConfig::Config<class C4GameControl> GameControl;
 	C4LoggerConfig::Config<class C4Network2> Network;
+	C4LoggerConfig::Config<class C4Network2IO> Network2IO;
 	C4LoggerConfig::Config<class C4Network2HTTPClient> Network2HTTPClient;
 	C4LoggerConfig::Config<class C4Network2UPnP> Network2UPnP;
 	C4LoggerConfig::Config<class C4Playback> Playback;

@@ -24,6 +24,7 @@
 #include "C4GameControl.h"
 #include <C4Log.h>
 #include <C4Network2.h>
+#include "C4Network2IO.h"
 #include "C4Network2Reference.h"
 #include "C4Network2UPnP.h"
 #include "C4Record.h"
@@ -413,6 +414,7 @@ void C4ConfigLogging::CompileFunc(StdCompiler *const comp)
 	comp->Value(DDraw);
 	comp->Value(GameControl);
 	comp->Value(Network);
+	comp->Value(Network2IO);
 	comp->Value(Network2HTTPClient);
 	comp->Value(Network2UPnP);
 	comp->Value(Playback);

@@ -108,7 +108,7 @@ public:
 	bool hasUDP() const { return !!pNetIO_UDP; }
 
 	// initialization
-	bool Init(std::shared_ptr<spdlog::logger> logger, std::uint16_t iPortTCP, std::uint16_t iPortUDP, std::uint16_t iPortDiscovery = 0, std::uint16_t iPortRefServer = 0); // by main thread
+	bool Init(std::uint16_t iPortTCP, std::uint16_t iPortUDP, std::uint16_t iPortDiscovery = 0, std::uint16_t iPortRefServer = 0); // by main thread
 	void Clear(); // by main thread
 	void SetLocalCCore(const C4ClientCore &CCore); // by main thread
 
@@ -196,6 +196,14 @@ protected:
 	void CheckTimeout();
 	void GenerateStatistics(int iInterval);
 	void SendConnPackets();
+};
+
+C4LOGGERCONFIG_NAME_TYPE(C4Network2IO);
+
+template<>
+struct C4LoggerConfig::Defaults<C4Network2IO>
+{
+	static constexpr spdlog::level::level_enum GuiLogLevel{spdlog::level::err};
 };
 
 enum C4Network2IOConnStatus

@@ -1249,7 +1249,7 @@ bool C4Network2::InitNetIO(bool fNoClientID, bool fHost)
 	const std::uint16_t iPortDiscovery = fHost ? Config.Network.PortDiscovery : 0;
 	const std::uint16_t iPortRefServer = fHost ? Config.Network.PortRefServer : 0;
 	// init subclass
-	if (!NetIO.Init(Logger, Config.Network.PortTCP, Config.Network.PortUDP, iPortDiscovery, iPortRefServer))
+	if (!NetIO.Init(Config.Network.PortTCP, Config.Network.PortUDP, iPortDiscovery, iPortRefServer))
 		return false;
 	// set core (unset ID if sepecified, has to be set later)
 	C4ClientCore Core = Game.Clients.getLocalCore();

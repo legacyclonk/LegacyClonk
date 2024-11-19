@@ -90,13 +90,13 @@ static T *CreateNetIO(const std::shared_ptr<spdlog::logger> &logger, const char 
 	}
 }
 
-bool C4Network2IO::Init(std::shared_ptr<spdlog::logger> logger, const std::uint16_t iPortTCP, const std::uint16_t iPortUDP, const std::uint16_t iPortDiscover, const std::uint16_t iPortRefServer) // by main thread
+bool C4Network2IO::Init(const std::uint16_t iPortTCP, const std::uint16_t iPortUDP, const std::uint16_t iPortDiscover, const std::uint16_t iPortRefServer) // by main thread
 {
 	// Already initialized? Clear first
 	if (pNetIO_TCP || pNetIO_UDP) Clear();
 
 	// init members
-	this->logger = std::move(logger);
+	logger = Application.LogSystem.CreateLogger(Config.Logging.Network2IO);
 	iLastPing = iLastStatistic = timeGetTime();
 	iTCPIRate = iTCPORate = iTCPBCRate = 0;
 	iUDPIRate = iUDPORate = iUDPBCRate = 0;
@@ -114,7 +114,7 @@ bool C4Network2IO::Init(std::shared_ptr<spdlog::logger> logger, const std::uint1
 	}
 
 	// initialize net i/o classes: TCP first
-	pNetIO_TCP = CreateNetIO(this->logger, "TCP I/O", new C4NetIOTCP{}, iPortTCP, Thread);
+	pNetIO_TCP = CreateNetIO(logger, "TCP I/O", new C4NetIOTCP{}, iPortTCP, Thread);
 	if (pNetIO_TCP)
 	{
 		pNetIO_TCP->SetCallback(this);
@@ -126,7 +126,7 @@ bool C4Network2IO::Init(std::shared_ptr<spdlog::logger> logger, const std::uint1
 	}
 
 	// then UDP
-	pNetIO_UDP = CreateNetIO(this->logger, "UDP I/O", new C4NetIOUDP{}, iPortUDP, Thread);
+	pNetIO_UDP = CreateNetIO(logger, "UDP I/O", new C4NetIOUDP{}, iPortUDP, Thread);
 	if (pNetIO_UDP)
 	{
 		pNetIO_UDP->SetCallback(this);
@@ -153,11 +153,11 @@ bool C4Network2IO::Init(std::shared_ptr<spdlog::logger> logger, const std::uint1
 		pNetIODiscover = new C4Network2IODiscover(iPortRefServer);
 		pNetIODiscover->SetDiscoverable(false);
 
-		pNetIODiscover = CreateNetIO(this->logger, "discovery", pNetIODiscover, iPortDiscover, Thread);
+		pNetIODiscover = CreateNetIO(logger, "discovery", pNetIODiscover, iPortDiscover, Thread);
 	}
 
 	// plus reference server
-	pRefServer = CreateNetIO(this->logger, "reference server", new C4Network2RefServer{}, iPortRefServer, Thread);
+	pRefServer = CreateNetIO(logger, "reference server", new C4Network2RefServer{}, iPortRefServer, Thread);
 
 	// own timer
 	iLastExecute = timeGetTime();
