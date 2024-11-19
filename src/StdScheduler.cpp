@@ -120,7 +120,14 @@ bool StdScheduler::Execute(int iTimeout)
 
 #else
 	fds.resize(1);
-	std::unordered_map<StdSchedulerProc *, std::span<pollfd>> fdMap;
+
+	struct FdRange
+	{
+		std::size_t Offset;
+		std::size_t Size;
+	};
+
+	std::unordered_map<StdSchedulerProc *, FdRange> fdMap;
 
 	for (auto *const proc : procs)
 	{
@@ -129,7 +136,7 @@ bool StdScheduler::Execute(int iTimeout)
 
 		if (fds.size() != oldSize)
 		{
-			fdMap.emplace(proc, std::span{fds}.subspan(oldSize));
+			fdMap.emplace(std::piecewise_construct, std::forward_as_tuple(proc), std::forward_as_tuple(oldSize, fds.size() - oldSize));
 		}
 	}
 
@@ -146,9 +153,11 @@ bool StdScheduler::Execute(int iTimeout)
 			unblocker.Reset();
 		}
 
-		for (const auto &[proc, span] : fdMap)
+		const std::span<pollfd> fdSpan{fds};
+
+		for (const auto &[proc, range] : fdMap)
 		{
-			if (std::ranges::any_of(span, std::identity{}, &pollfd::revents))
+			if (std::ranges::any_of(fdSpan.subspan(range.Offset, range.Size), std::identity{}, &pollfd::revents))
 			{
 				if (!proc->Execute(0))
 				{
