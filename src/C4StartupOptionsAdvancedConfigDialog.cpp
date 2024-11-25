@@ -65,6 +65,7 @@ public:
 		if (++level > 2)
 		{
 			ignore = true;
+			return {this, false};
 		}
 		else
 		{
