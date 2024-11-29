@@ -3563,7 +3563,7 @@ void C4NetIOUDP::DebugLogPkt(bool fOut, const C4NetIOPacket &Pkt)
 		}
 		}
 	}
-	output += " ({} bytes)\n", Pkt.getSize();
+	output += std::format(" ({} bytes)\n", Pkt.getSize());
 	write(hDebugLog, output.c_str(), output.size());
 }
 
