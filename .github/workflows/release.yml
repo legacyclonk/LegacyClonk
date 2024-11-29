@@ -126,7 +126,7 @@ jobs:
 
   pack-zips:
     name: Pack ZIP Archives
-    runs-on: windows-latest
+    runs-on: ${{ matrix.runner }}
     needs: [generate-ci-config, build-content, build-system-graphics-updates]
     strategy:
       fail-fast: false
@@ -174,14 +174,42 @@ jobs:
           Copy-Item -Path ../../c4group* -Destination .
           Move-Item -Path ../../*.c4? -Destination .
 
+      - name: "Linux: Pack Engine As Tarball"
+        if: ${{ matrix.os == 'Linux' }}
+        run: |
+          cd output/lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}
+          chmod +x ./clonk ./c4group
+          tar czf ../lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}.tar.gz *
+          Pop-Location
+
+      - name: "Linux: Pack Full As Tarball"
+        if: ${{ matrix.os == 'Linux' }}
+        run: |
+          cd output/lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}
+          chmod +x ./clonk ./c4group
+          tar czf ../lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}.tar.gz *
+
       - uses: actions/upload-artifact@v4
+        if: ${{ matrix.os != 'Linux' }}
         with:
           name: lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}.zip
           path: output/lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}
       - uses: actions/upload-artifact@v4
+        if: ${{ matrix.os != 'Linux' }}
         with:
           name: lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}.zip
           path: output/lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ matrix.os == 'Linux' }}
+        with:
+          name: lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}.tar.gz
+          path: output/lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}.tar.gz
+      - uses: actions/upload-artifact@v4
+        if: ${{ matrix.os == 'Linux' }}
+        with:
+          name: lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}.tar.gz
+          path: output/lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}.tar.gz
 
   build-combined-update-groups:
     name: Build Combined Update Groups
@@ -443,9 +471,21 @@ jobs:
           sparse-checkout: |
             autobuild
       - uses: actions/download-artifact@v4
+        if: ${{ matrix.os != 'Linux' }}
         with:
           name: lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}.zip
           path: lc_full
+      - uses: actions/download-artifact@v4
+        if: ${{ matrix.os == 'Linux' }}
+        with:
+          name: lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}.tar.gz
+
+      - name: "Linux: Uncompress Tarball"
+        if: ${{ matrix.os == 'Linux' }}
+        run: |
+          mkdir lc_full
+          cd lc_full
+          tar xzf ../lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}.tar.gz
 
       - name: Publish To Itch
         run: >
