@@ -287,7 +287,7 @@ bool C4GameSave::SaveDesc(C4Group &hToGroup)
 
 	// Save to file
 	StdStrBuf buf{desc.c_str(), desc.size()};
-	return !!hToGroup.Add(fmt::sprintf(C4CFN_ScenarioDesc, szLang).c_str(), buf, false, true);
+	return !!hToGroup.Add(std::vformat(C4CFN_ScenarioDesc, std::make_format_args(szLang)).c_str(), buf, false, true);
 }
 
 void C4GameSave::WriteDescLineFeed(std::string &desc)
@@ -479,7 +479,7 @@ bool C4GameSave::Save(C4Group &hToGroup, bool fKeepGroup)
 	{
 		pSaveGroup->Delete(C4CFN_ScenarioTitle);
 		pSaveGroup->Delete(C4CFN_ScenarioIcon);
-		pSaveGroup->Delete(fmt::sprintf(C4CFN_ScenarioDesc, "*").c_str());
+		pSaveGroup->Delete(std::vformat(C4CFN_ScenarioDesc, std::make_format_args("*")).c_str());
 		pSaveGroup->Delete(C4CFN_Titles);
 		pSaveGroup->Delete(C4CFN_Info);
 	}
