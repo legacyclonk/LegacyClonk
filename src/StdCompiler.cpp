@@ -769,9 +769,9 @@ std::string StdCompilerINIRead::getPosition() const
 		}
 	}
 	else if (iRealDepth)
-		return  std::format("missing value/section \"{}\" inside section \"{}\" (line {})", NotFoundName.getData(), pName->Name.getData(), SGetLine(Buf.getData(), pName->Pos));
+		return std::format("missing value/section \"{}\" inside section \"{}\" (line {})", NotFoundName.getData(), pName->Name.getData(), SGetLine(Buf.getData(), pName->Pos));
 	else
-		return  std::format("missing value/section \"{}\"", NotFoundName.getData());
+		return std::format("missing value/section \"{}\"", NotFoundName.getData());
 }
 
 void StdCompilerINIRead::Begin()
