@@ -316,6 +316,7 @@ C4LogSystem::C4LogSystem()
 #endif
 
 	loggerSilent->set_level(spdlog::level::trace);
+	loggerSilent->flush_on(spdlog::level::trace);
 
 	spdlog::set_default_logger(loggerSilent);
 	spdlog::flush_on(spdlog::level::debug);
@@ -328,6 +329,7 @@ C4LogSystem::C4LogSystem()
 	loggerDebug = std::make_shared<spdlog::logger>("DebugLog");
 #endif
 	loggerDebug->set_level(spdlog::level::trace);
+	loggerDebug->flush_on(spdlog::level::trace);
 
 	ringbufferSink = std::make_shared<RingbufferSink>(defaultPatternFormatter->clone(), 100);
 	logger->sinks().emplace_back(ringbufferSink);
@@ -365,6 +367,7 @@ void C4LogSystem::OpenLog(const bool verbose)
 
 	logger = std::make_shared<spdlog::logger>("", loggerSilent->sinks().begin() + 1, loggerSilent->sinks().end());
 	logger->set_level(spdlog::level::trace);
+	logger->flush_on(spdlog::level::trace);
 
 	auto guiSink = std::make_shared<GuiSink>(std::make_unique<spdlog::pattern_formatter>("%v"));
 
@@ -443,6 +446,7 @@ std::shared_ptr<spdlog::logger> C4LogSystem::CreateLogger(std::string name, cons
 {
 	auto newLogger = std::make_shared<spdlog::logger>(std::move(name));
 	newLogger->set_level(AdjustLevelIfVerbose(config.LogLevel));
+	newLogger->flush_on(spdlog::level::trace);
 
 	spdlog::level::level_enum guiLogLevel;
 	if (verbose)

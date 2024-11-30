@@ -57,7 +57,6 @@ namespace C4LoggerConfig
 	{
 		spdlog::level::level_enum LogLevel;
 		spdlog::level::level_enum GuiLogLevel;
-		spdlog::level::level_enum FlushOn;
 		bool ShowLoggerNameInGui;
 
 		constexpr bool operator==(const ConfigBase &other) const noexcept = default;
@@ -76,14 +75,13 @@ namespace C4LoggerConfig
 		{
 			static constexpr spdlog::level::level_enum LogLevel{spdlog::level::trace};
 			static constexpr spdlog::level::level_enum GuiLogLevel{spdlog::level::n_levels};
-			static constexpr spdlog::level::level_enum FlushOn{spdlog::level::warn};
 			static constexpr bool ShowLoggerNameInGui{true};
 		};
 
 	private:
 		Config() = default;
-		Config(const spdlog::level::level_enum logLevel, const spdlog::level::level_enum guiLogLevel, const spdlog::level::level_enum flushOn, const bool showLoggerNameInGui)
-			: ConfigBase{logLevel, guiLogLevel, flushOn, showLoggerNameInGui}
+		Config(const spdlog::level::level_enum logLevel, const spdlog::level::level_enum guiLogLevel, const bool showLoggerNameInGui)
+			: ConfigBase{logLevel, guiLogLevel, showLoggerNameInGui}
 		{
 		}
 
@@ -97,7 +95,6 @@ namespace C4LoggerConfig
 		{
 			comp->Value(mkNamingAdapt(LogLevel, "LogLevel", DefaultLogLevel()));
 			comp->Value(mkNamingAdapt(GuiLogLevel, "GuiLogLevel", DefaultGuiLogLevel()));
-			comp->Value(mkNamingAdapt(FlushOn, "FlushOn", DefaultFlushOn()));
 			comp->Value(mkNamingAdapt(ShowLoggerNameInGui, "ShowLoggerNameInGui", DefaultShowLoggerNameInGui()));
 		}
 
@@ -128,18 +125,6 @@ namespace C4LoggerConfig
 			}
 		}
 
-		static consteval spdlog::level::level_enum DefaultFlushOn() noexcept
-		{
-			if constexpr (requires { Defaults<T>::FlushOn; })
-			{
-				return Defaults<T>::FlushOn;
-			}
-			else
-			{
-				return ConfigDefaults::FlushOn;
-			}
-		}
-
 		static consteval bool DefaultShowLoggerNameInGui() noexcept
 		{
 			if constexpr (requires { Defaults<T>::ShowLoggerNameInGui; })
@@ -154,7 +139,7 @@ namespace C4LoggerConfig
 
 		static constexpr Config<T> Default() noexcept
 		{
-			return {DefaultLogLevel(), DefaultGuiLogLevel(), DefaultFlushOn(), DefaultShowLoggerNameInGui()};
+			return {DefaultLogLevel(), DefaultGuiLogLevel(), DefaultShowLoggerNameInGui()};
 		}
 
 		friend class ::C4ConfigLogging;
