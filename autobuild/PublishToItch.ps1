@@ -38,7 +38,7 @@ $archForButler = switch ($Arch) {
     }
 }
 
-Invoke-WebRequest -Uri "https://broth.itch.ovh/butler/$osForButler-$archForButler/LATEST/archive/default" -OutFile butler.zip
+Invoke-WebRequest -Uri "https://broth.itch.zone/butler/$osForButler-$archForButler/LATEST/archive/default" -OutFile butler.zip
 [System.IO.Compression.ZipFile]::ExtractToDirectory('butler.zip', 'butler')
 
 if (!$IsWindows) {
