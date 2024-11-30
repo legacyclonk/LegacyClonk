@@ -1007,6 +1007,8 @@ void C4Config::AdaptToCurrentVersion()
 		migrate(Network.UpdateServerAddress, "update.clonkspot.org/lc/update", C4CFG_UpdateServer);
 		migrate(Network.PuncherAddress, "clonk.de:11115", C4ConfigNetwork::DefaultPuncherServer);
 
+		// enable shaders
+		Graphics.Shader = true;
 		// reenable gamma
 		Graphics.DisableGamma = false;
 	}
