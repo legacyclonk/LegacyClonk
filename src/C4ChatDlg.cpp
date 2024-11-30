@@ -179,7 +179,14 @@ int32_t C4ChatControl::ChatSheet::NickItem::SortFunc(const C4GUI::Element *pEl1,
 /* C4ChatControl::ChatSheet */
 
 C4ChatControl::ChatSheet::ChatSheet(C4ChatControl *pChatControl, const char *szTitle, const char *szIdent, SheetType eType)
-	: C4GUI::Tabular::Sheet(szTitle, C4Rect(0, 0, 10, 10), C4GUI::Ico_None, true, false), iBackBufferIndex(-1), eType(eType), pNickList(nullptr), pInputLbl(nullptr), pChatControl(pChatControl), fHasUnread(false)
+	: C4GUI::Tabular::Sheet(szTitle, C4Rect(0, 0, 10, 10), C4GUI::Ico_None, true, false),
+	  iBackBufferIndex(-1),
+	  eType(eType),
+	  pNickList(nullptr),
+	  pInputLbl(nullptr),
+	  pChatControl(pChatControl),
+	  fHasUnread(false),
+	  sChatTitle{szIdent}
 {
 	if (szIdent) sIdent.Copy(szIdent);
 	// create elements - positioned later
@@ -883,7 +890,7 @@ void C4ChatControl::ClearChatSheets()
 {
 	pTabChats->ClearSheets();
 	// add server sheet
-	pTabChats->AddCustomSheet(new ChatSheet(this, LoadResStr(C4ResStrTableKey::IDS_CHAT_SERVER), nullptr, CS_Server));
+	pTabChats->AddCustomSheet(new ChatSheet(this, LoadResStr(C4ResStrTableKey::IDS_CHAT_SERVER), Config.IRC.Server, CS_Server));
 }
 
 bool C4ChatControl::ProcessInput(const char *szInput, ChatSheet *pChatSheet)
