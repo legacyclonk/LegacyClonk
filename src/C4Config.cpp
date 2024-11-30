@@ -1006,6 +1006,9 @@ void C4Config::AdaptToCurrentVersion()
 		migrate(Network.AlternateServerAddress, "league.clonkspot.org:80", C4CFG_FallbackServer);
 		migrate(Network.UpdateServerAddress, "update.clonkspot.org/lc/update", C4CFG_UpdateServer);
 		migrate(Network.PuncherAddress, "clonk.de:11115", C4ConfigNetwork::DefaultPuncherServer);
+
+		// reenable gamma
+		Graphics.DisableGamma = false;
 	}
 
 	General.Version = C4XVERBUILD;
