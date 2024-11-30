@@ -1325,7 +1325,7 @@ bool CStdDDraw::Init(CStdApp *pApp, C4LogSystem &logSystem)
 	logger = logSystem.CreateLoggerWithDifferentName(Config.Logging.DDraw, std::string{GetEngineName()});
 
 	logger->debug("Init DDraw");
-	logger->debug("  Create DirectDraw...");
+	logger->debug("Create DirectDraw...");
 
 	if (!CreateDirectDraw())
 	{
@@ -1333,7 +1333,7 @@ bool CStdDDraw::Init(CStdApp *pApp, C4LogSystem &logSystem)
 		return false;
 	}
 
-	logger->debug("  Create Device...");
+	logger->debug("Create Device...");
 
 	if (!CreatePrimarySurfaces())
 	{
@@ -1341,7 +1341,7 @@ bool CStdDDraw::Init(CStdApp *pApp, C4LogSystem &logSystem)
 		return false;
 	}
 
-	logger->debug("  Create Clipper");
+	logger->debug("Create Clipper");
 
 	if (!CreatePrimaryClipper())
 	{
