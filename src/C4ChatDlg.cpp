@@ -347,7 +347,7 @@ void C4ChatControl::ChatSheet::Update(bool fLock)
 			if (!pIRCChan->isUsersLocked()) UpdateUsers(pIRCChan->getUsers());
 			// update topic
 			const char *szTopic = pIRCChan->getTopic();
-			sChatTitle.Append(sIdent);
+			sChatTitle.Copy(sIdent);
 			if (szTopic)
 			{
 				sChatTitle.Append(": ");
