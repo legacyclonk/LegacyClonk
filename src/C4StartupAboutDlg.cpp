@@ -64,7 +64,7 @@ static struct DeveloperList : public PersonList
 
 		for (auto &p : developers)
 		{
-			textbox->AddTextLine(p.nick ? std::format("{} <c f7f76f>({})</c>", p.name, p.nick).c_str() : p.name, &font, C4GUI_MessageFontClr, false, true);
+			textbox->AddTextLine(p.nick ? (p.name ? std::format("{} <c f7f76f>({})</c>", p.name, p.nick).c_str() : std::format("<c f7f76f>{}</c>", p.nick).c_str()) : p.name, &font, C4GUI_MessageFontClr, false, true);
 		}
 	}
 
@@ -75,10 +75,17 @@ static struct DeveloperList : public PersonList
 		std::stringstream out;
 		for (auto &p : developers)
 		{
-			out << p.name;
-			if (p.nick)
+			if (p.name)
 			{
-				out << opening_tag << " (" << p.nick << ")" << closing_tag;
+				out << p.name;
+				if (p.nick)
+				{
+					out << opening_tag << " (" << p.nick << ")" << closing_tag;
+				}
+			}
+			else
+			{
+				out << opening_tag << p.nick << closing_tag;
 			}
 			out << (newline ? "\n" : ", ");
 		}
@@ -115,7 +122,8 @@ scripting =
 	{"Florian Gro\xdf", "flgr"},
 	{"Tobias Zwick", "Newton"},
 	{"Bernhard Bonigl", "boni"},
-	{"Viktor Yuschuk", "Viktor"}
+	{"Viktor Yuschuk", "Viktor"},
+	{nullptr, "Raven"}
 },
 additionalArt =
 {
@@ -125,6 +133,8 @@ additionalArt =
 	{"Christopher Reimann", "Benzol"},
 	{"Jonathan Veit", "AniProGuy"},
 	{"Arthur M\xf6ller", "Aqua"},
+	{"Tobias Zwick", "Newton"},
+	{nullptr, "Raven"}
 },
 music =
 {
@@ -282,7 +292,7 @@ C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg(LoadResStr(C4ResStrTableKe
 	DrawPersonList(page1, code, "Engine and Tools", caDevelopersCol1.GetAll());
 
 	C4GUI::ComponentAligner caDevelopersCol2(caDevelopers.GetFromLeft(caMain.GetWidth()*1/3), 0,0, false);
-	DrawPersonList(page1, scripting, "Scripting", caDevelopersCol2.GetFromTop(caDevelopersCol2.GetHeight()*2/3));
+	DrawPersonList(page1, scripting, "Scripting", caDevelopersCol2.GetFromTop(caDevelopersCol2.GetHeight()*1/2));
 	DrawPersonList(page1, additionalArt, "Additional Art", caDevelopersCol2.GetAll());
 
 	C4GUI::ComponentAligner caDevelopersCol3(caDevelopers.GetFromLeft(caMain.GetWidth()*1/3), 0,0, false);
