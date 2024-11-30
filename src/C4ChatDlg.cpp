@@ -856,11 +856,12 @@ C4ChatControl::ChatSheet *C4ChatControl::OpenQuery(const char *szForNick, bool f
 
 void C4ChatControl::UpdateTitle()
 {
-	std::string newTitle;
+	StdStrBuf sNewTitle;
 	if (pTabMain->GetActiveSheetIndex() == 0)
 	{
 		// login title
-		newTitle = LoadResStr(C4ResStrTableKey::IDS_CHAT_NOTCONNECTED);
+		const std::string notConnected{LoadResStr(C4ResStrTableKey::IDS_CHAT_NOTCONNECTED)};
+		sNewTitle.Copy(notConnected.c_str(), notConnected.size());
 	}
 	else
 	{
@@ -868,13 +869,15 @@ void C4ChatControl::UpdateTitle()
 		ChatSheet *pActiveSheet = GetActiveChatSheet();
 		if (pActiveSheet)
 		{
-			newTitle = pActiveSheet->GetChatTitle();
+			sNewTitle = pActiveSheet->GetChatTitle();
 		}
+		else
+			sNewTitle = "";
 	}
 	// call update proc only if title changed
-	if (sTitle.isNull() || newTitle.compare(sTitle.getData()))
+	if (sTitle != sNewTitle)
 	{
-		sTitle.Copy(newTitle.c_str());
+		sTitle.Take(sNewTitle);
 		if (pTitleChangeBC) pTitleChangeBC->OnOK(sTitle);
 	}
 }
@@ -1137,5 +1140,5 @@ void C4ChatDlg::UpdateSize()
 
 void C4ChatDlg::OnChatTitleChange(const StdStrBuf &sNewTitle)
 {
-	SetTitle(std::format("{} - {}", LoadResStr(C4ResStrTableKey::IDS_DLG_CHAT), sNewTitle.getData()).c_str());
+	SetTitle(std::format("{} - {}", LoadResStr(C4ResStrTableKey::IDS_DLG_CHAT), sNewTitle.isNull() ? "(null)" : sNewTitle.getData()).c_str());
 }
