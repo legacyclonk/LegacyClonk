@@ -1741,7 +1741,7 @@ bool C4Group::ExtractEntry(const char *szFilename, const char *szExtractTo)
 		C4GroupEntry *pEntry;
 		if (!(pEntry = GetEntry(szFilename))) return false;
 		// Create dummy file to reserve target file name
-		hDummy.Save(szTargetFName, reinterpret_cast<const unsigned char *>("Dummy"), 5);
+		hDummy.Save(szTargetFName, reinterpret_cast<const unsigned char *>("Dummy"), 5, false, pEntry->Executable, true);
 		// Make temp target file name
 		SCopy(szTargetFName, szTempFName, _MAX_FNAME);
 		MakeTempFilename(szTempFName);

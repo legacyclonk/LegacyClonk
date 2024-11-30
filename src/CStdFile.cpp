@@ -44,7 +44,7 @@ CStdFile::~CStdFile()
 	Close();
 }
 
-bool CStdFile::Create(const char *szFilename, bool fCompressed, bool fExecutable)
+bool CStdFile::Create(const char *szFilename, bool fCompressed, bool fExecutable, bool exclusive)
 {
 	SCopy(szFilename, Name, _MAX_PATH);
 	// Set modes
@@ -68,10 +68,10 @@ bool CStdFile::Create(const char *szFilename, bool fCompressed, bool fExecutable
 			// Create an executable file
 #ifdef _WIN32
 			int mode = _S_IREAD | _S_IWRITE;
-			int flags = _O_BINARY | _O_CREAT | _O_WRONLY | _O_TRUNC;
+			int flags = _O_BINARY | _O_CREAT | _O_WRONLY | _O_TRUNC | (exclusive ? _O_EXCL : 0);
 #else
 			mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH;
-			int flags = O_CREAT | O_WRONLY | O_TRUNC;
+			int flags = O_CREAT | O_WRONLY | O_TRUNC | (exclusive ? O_EXCL : 0);
 #endif
 			int fd = open(Name, flags, mode);
 			if (fd == -1) return false;
@@ -295,10 +295,10 @@ bool CStdFile::Advance(size_t iOffset)
 }
 
 bool CStdFile::Save(const char *szFilename, const uint8_t *bpBuf,
-	size_t iSize, bool fCompressed)
+					size_t iSize, bool fCompressed, bool executable, bool exclusive)
 {
 	if (!bpBuf || (iSize < 1)) return false;
-	if (!Create(szFilename, fCompressed)) return false;
+	if (!Create(szFilename, fCompressed, executable, exclusive)) return false;
 	if (!Write(bpBuf, iSize)) return false;
 	if (!Close()) return false;
 	return true;

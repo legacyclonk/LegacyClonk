@@ -43,7 +43,7 @@ protected:
 	bool ModeWrite;
 
 public:
-	bool Create(const char *szFileName, bool fCompressed = false, bool fExecutable = false);
+	bool Create(const char *szFileName, bool fCompressed = false, bool fExecutable = false, bool exclusive = false);
 	bool Open(const char *szFileName, bool fCompressed = false);
 	bool Append(const char *szFilename); // append (uncompressed only)
 	bool Close();
@@ -59,8 +59,10 @@ public:
 		size_t *ipSize = nullptr, int iAppendZeros = 0,
 		bool fCompressed = false);
 	bool Save(const char *szFileName, const uint8_t *bpBuf,
-		size_t iSize,
-		bool fCompressed = false);
+			  size_t iSize,
+			  bool fCompressed = false,
+			  bool executable = false,
+			  bool exclusive = false);
 	// flush contents to disk
 	inline bool Flush() { if (ModeWrite && BufferLoad) return SaveBuffer(); else return true; }
 	size_t AccessedEntrySize();
