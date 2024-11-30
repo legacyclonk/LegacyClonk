@@ -48,7 +48,7 @@ if (!$IsWindows) {
 $channelName = "$osLower-$Arch"
 
 if ($Tag -ne "v{$Env:VERSION}") {
-    $channelName = "${Tag}${channelName}"
+    $channelName = "${Tag}-${channelName}"
 }
 
 butler/butler login
