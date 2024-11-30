@@ -1,10 +1,30 @@
-Clonk game content is available under the following license:
+This file applies to graphics, audio data, scripting, and text found in the
+game release packages (usually packed inside c4f, c4g, and c4d group files).
+
+============================================================================
+
+Clonk game content, except for the files listed below, is available under the
+following license:
 
 Creative Commons Attribution-NonCommercial (CC BY-NC)
 http://creativecommons.org/licenses/by-nc/4.0/
 
-This applies to graphics, audio data, scripting, and text found in the
-game release packages (usually packed inside c4f, c4g, and c4d group files).
+You are free to:
+    Share — copy and redistribute the material in any medium or format
+    Adapt — remix, transform, and build upon the material
+
+Under the following terms:
+    Attribution — You must give appropriate credit, provide a link to the
+    license, and indicate if changes were made. You may do so in any reasonable
+    manner, but not in any way that suggests the licensor endorses you or your use.
+    NonCommercial — You may not use the material for commercial purposes.
+
+============================================================================
+
+Hazard.c4d and Hazard.c4f are available under the following license:
+
+Creative Commons Attribution-NonCommercial (CC BY-NC)
+http://creativecommons.org/licenses/by-nc/3.0/
 
 You are free to:
     Share — copy and redistribute the material in any medium or format
