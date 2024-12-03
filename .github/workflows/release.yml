@@ -162,16 +162,16 @@ jobs:
         run: |
           cd output
           New-Item -Path lc_${{ env.VERSION }}_${{ matrix.platform-suffix }} -ItemType Directory | Push-Location
-          Copy-Item -Path ../../clonk* -Destination .
-          Copy-Item -Path ../../c4group* -Destination .
+          Copy-Item -Path ../../clonk* -Destination . -Recurse
+          Copy-Item -Path ../../c4group* -Destination . -Recurse
           Copy-Item -Path ../../* -Include @('System.c4g', 'Graphics.c4g') -Destination .
 
       - name: Create Full Archive
         run: |
           cd output
           New-Item -Path lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }} -ItemType Directory | Push-Location
-          Copy-Item -Path ../../clonk* -Destination .
-          Copy-Item -Path ../../c4group* -Destination .
+          Copy-Item -Path ../../clonk* -Destination . -Recurse
+          Copy-Item -Path ../../c4group* -Destination . -Recurse
           Move-Item -Path ../../*.c4? -Destination .
 
       - name: "Linux: Pack Engine As Tarball"
