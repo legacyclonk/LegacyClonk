@@ -21,6 +21,11 @@
 
 std::wstring StdStringEncodingConverter::WinAcpToUtf16(const std::string_view multiByte)
 {
+	if (multiByte.empty())
+	{
+		return L"";
+	}
+
 	std::wstring result;
 	result.resize_and_overwrite(MultiByteToWideChar(CP_ACP, multiByte, {}), [&multiByte](wchar_t *const ptr, const std::size_t size)
 	{
@@ -32,6 +37,11 @@ std::wstring StdStringEncodingConverter::WinAcpToUtf16(const std::string_view mu
 
 std::string StdStringEncodingConverter::Utf16ToWinAcp(const std::wstring_view wide)
 {
+	if (wide.empty())
+	{
+		return "";
+	}
+
 	std::string result;
 	result.resize_and_overwrite(WideCharToMultiByte(CP_ACP, wide, {}), [&wide](char *const ptr, const std::size_t size)
 	{
