@@ -47,7 +47,7 @@ if (!$IsWindows) {
 
 $channelName = "$osLower-$Arch"
 
-if ($Tag -ne "v{$Env:VERSION}") {
+if ($Tag -ne "v${Env:VERSION}") {
     $channelName = "${Tag}-${channelName}"
 }
 
