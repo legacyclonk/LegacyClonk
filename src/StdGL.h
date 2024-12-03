@@ -332,6 +332,7 @@ protected:
 private:
 	bool ApplyGammaRampToMonitor(CGammaControl &ramp, bool force);
 	bool SaveDefaultGammaRampToMonitor(CStdWindow *window);
+	void BindGammaTextures();
 
 	friend class C4Surface;
 	friend class C4TexRef;
