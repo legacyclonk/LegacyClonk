@@ -19,6 +19,7 @@
 
 /* Functions mapped by C4Script */
 
+#include "C4FindObject.h"
 #include <C4Include.h>
 #include <C4Script.h>
 #include <C4Version.h>
@@ -40,6 +41,7 @@
 #include <C4ScriptHelpers.h>
 #include <C4SoundSystem.h>
 
+#include <memory>
 #include <numbers>
 #include <optional>
 #include <utility>
@@ -1779,87 +1781,65 @@ static C4Object *FnFindBase(C4ValueInt iOwner, C4ValueInt iIndex)
 	return Game.FindBase(iOwner, iIndex);
 }
 
-std::unique_ptr<C4FindObject> CreateCriterionsFromPars(const std::string_view forFunction, C4Object *const contextObj, const std::span<const C4Value> pPars, C4FindObject **pFOs, C4SortObject **pSOs)
+std::unique_ptr<C4FindObject> CreateCriterionsFromPars(const std::string_view forFunction, C4Object *const contextObj, const std::span<const C4Value> pPars, bool acceptSort = false)
 {
-	int i, iCnt = 0, iSortCnt = 0;
+	std::vector<std::unique_ptr<C4FindObject>> conds;
+	std::vector<std::unique_ptr<C4SortObject>> sorts;
+
 	// Read all parameters
-	for (i = 0; i < C4AUL_MAX_Par; i++)
+	for (int i = 0; i < C4AUL_MAX_Par; i++)
 	{
 		const C4Value &Data = pPars[i].GetRefVal();
 		// No data given?
 		if (!Data) break;
 		// Construct
-		C4SortObject *pSO = nullptr;
-		C4FindObject *pFO = C4FindObject::CreateByValue(Data, pSOs ? &pSO : nullptr);
-		// Add FindObject
-		if (pFO)
+		auto cond = C4FindObject::CreateByValue(Data, acceptSort ? &sorts : nullptr);
+		if (cond)
 		{
-			pFOs[iCnt++] = pFO;
-		}
-		// Add SortObject
-		if (pSO)
-		{
-			pSOs[iSortCnt++] = pSO;
+			conds.emplace_back(std::move(cond));
 		}
 	}
 	// No criterions?
-	if (!iCnt)
+	if (conds.empty())
 	{
-		for (i = 0; i < iSortCnt; ++i) delete pSOs[i];
 		throw C4AulExecError{contextObj, std::format("{}: No valid search criterions supplied!", forFunction)};
-	}
-	// create sort criterion
-	C4SortObject *pSO = nullptr;
-	if (iSortCnt)
-	{
-		if (iSortCnt == 1)
-			pSO = pSOs[0];
-		else
-			pSO = new C4SortObjectMultiple(iSortCnt, pSOs, false);
 	}
 	// Create search object
 	std::unique_ptr<C4FindObject> pFO;
-	if (iCnt == 1)
-		pFO.reset(pFOs[0]);
+	if (conds.size() == 1)
+		pFO = std::move(conds.front());
 	else
-		pFO = std::make_unique<C4FindObjectAnd>(iCnt, pFOs, false);
-	if (pSO) pFO->SetSort(pSO);
+		pFO = std::make_unique<C4FindObjectAnd>(std::move(conds));
+
+
+	// create sort criterion
+	if (acceptSort && !sorts.empty())
+	{
+		if (sorts.size() == 1)
+			pFO->SetSort(std::move(sorts.front()));
+		else
+			pFO->SetSort(std::make_unique<C4SortObjectMultiple>(std::move(sorts)));
+	}
+
 	return pFO;
 }
 
 static C4Value FnObjectCount2(C4AulContext *cthr, std::span<const C4Value> pPars)
 {
-	// Create FindObject-structure
-	C4FindObject *pFOs[C4AUL_MAX_Par];
-	const auto pFO = CreateCriterionsFromPars("ObjectCount", cthr->Obj, pPars, pFOs, nullptr);
-	// Search
-	int32_t iCnt = pFO->Count(Game.Objects, Game.Objects.Sectors);
-	// Return
-	return C4VInt(iCnt);
+	const auto pFO = CreateCriterionsFromPars("ObjectCount2", cthr->Obj, pPars);
+	return C4VInt(pFO->Count(Game.Objects, Game.Objects.Sectors));
 }
 
 static C4Value FnFindObject2(C4AulContext *cthr, std::span<const C4Value> pPars)
 {
-	// Create FindObject-structure
-	C4FindObject *pFOs[C4AUL_MAX_Par];
-	C4SortObject *pSOs[C4AUL_MAX_Par];
-	const auto pFO = CreateCriterionsFromPars("FindObject2", cthr->Obj, pPars, pFOs, pSOs);
-	// Search
-	C4Object *pObj = pFO->Find(Game.Objects, Game.Objects.Sectors);
-	// Return
-	return C4VObj(pObj);
+	const auto pFO = CreateCriterionsFromPars("FindObject2", cthr->Obj, pPars, true);
+	return C4VObj(pFO->Find(Game.Objects, Game.Objects.Sectors));
 }
 
 static C4Value FnFindObjects(C4AulContext *cthr, std::span<const C4Value> pPars)
 {
-	// Create FindObject-structure
-	C4FindObject *pFOs[C4AUL_MAX_Par];
-	C4SortObject *pSOs[C4AUL_MAX_Par];
-	const auto pFO = CreateCriterionsFromPars("FindObjects", cthr->Obj, pPars, pFOs, pSOs);
-	// Search
-	C4ValueArray *pResult = pFO->FindMany(Game.Objects, Game.Objects.Sectors);
-	// Return
-	return C4VArray(pResult);
+	const auto pFO = CreateCriterionsFromPars("FindObjects", cthr->Obj, pPars, true);
+	return C4VArray(pFO->FindMany(Game.Objects, Game.Objects.Sectors));
 }
 
 static C4ValueInt FnObjectCount(C4AulContext *cthr, C4ID id, C4ValueInt x, C4ValueInt y, C4ValueInt wdt, C4ValueInt hgt, C4ValueInt dwOCF, C4String *szAction, C4Object *pActionTarget, C4Value vContainer, C4ValueInt iOwner)
