@@ -147,8 +147,8 @@ endif ()
 
 # Adds the lines of file LIST_FILE to variable TARGET_LIST
 function(append_filelist TARGET_LIST LIST_FILE)
-	file(STRINGS "cmake/filelists/${LIST_FILE}" FILE_CONTENTS)
-	list(APPEND ${TARGET_LIST} ${FILE_CONTENTS})
+	include("cmake/filelists/${LIST_FILE}.cmake")
+	list(APPEND ${TARGET_LIST} ${FILE_LIST})
 	set(${TARGET_LIST} "${${TARGET_LIST}}" PARENT_SCOPE)
 endfunction()
 
@@ -174,7 +174,7 @@ endfunction()
 
 # Add engine target
 
-append_filelist(CLONK_SOURCES Engine.txt)
+append_filelist(CLONK_SOURCES Engine)
 
 set(LICENSES
 	"COPYING@LegacyClonk@ISC"
@@ -206,25 +206,25 @@ if (ENABLE_SOUND)
 endif ()
 
 if (WIN32)
-	append_filelist(CLONK_SOURCES EngineWin32.txt)
+	append_filelist(CLONK_SOURCES EngineWin32)
 else ()
 	if (APPLE)
-		append_filelist(CLONK_SOURCES EngineApple.txt)
+		append_filelist(CLONK_SOURCES EngineApple)
 	endif ()
 
 	list(APPEND CLONK_SOURCES src/StdAppUnix.cpp)
 endif ()
 
 if (USE_SDL_MAINLOOP OR USE_SDL_MIXER)
-	append_filelist(CLONK_SOURCES EngineSdl.txt)
+	append_filelist(CLONK_SOURCES EngineSdl)
 endif ()
 
 if (USE_SDL_MAINLOOP)
-	append_filelist(CLONK_SOURCES EngineSdlMainloop.txt)
+	append_filelist(CLONK_SOURCES EngineSdlMainloop)
 endif ()
 
 if (USE_X11)
-	append_filelist(CLONK_SOURCES EngineX.txt)
+	append_filelist(CLONK_SOURCES EngineX)
 endif ()
 
 if (USE_WIC)
@@ -236,11 +236,11 @@ else ()
 endif ()
 
 if (WITH_DEVELOPER_MODE)
-	append_filelist(CLONK_SOURCES EngineGtk.txt)
+	append_filelist(CLONK_SOURCES EngineGtk)
 endif ()
 
 if (USE_CONSOLE AND NOT WIN32)
-	append_filelist(CLONK_SOURCES EngineConsoleNonWin32.txt)
+	append_filelist(CLONK_SOURCES EngineConsoleNonWin32)
 endif ()
 
 if (USE_LIBNOTIFY)
@@ -287,7 +287,7 @@ target_sources(clonk PUBLIC ${RES_STR_TABLE_OUTPUT_CPP} ${RES_STR_TABLE_OUTPUT_H
 
 # Add c4group target
 
-append_filelist(C4GROUP_SOURCES C4Group.txt)
+append_filelist(C4GROUP_SOURCES C4Group)
 
 add_executable(c4group ${C4GROUP_SOURCES})
 target_link_libraries(c4group standard)
@@ -295,7 +295,7 @@ target_compile_definitions(c4group PRIVATE USE_CONSOLE)
 
 # Add libstandard target
 
-append_filelist(LIBSTANDARD_SOURCES Std.txt)
+append_filelist(LIBSTANDARD_SOURCES Std)
 
 if (WIN32)
 	list(APPEND LIBSTANDARD_SOURCES src/StdRegistry.cpp src/StdRegistry.h)
@@ -624,8 +624,8 @@ function(set_up_pch TARGET)
 		endforeach()
 	endforeach()
 	# Don't precompile certain headers
-	file(STRINGS "cmake/filelists/PchExclude.txt" PCH_EXCLUDE)
-	list(REMOVE_ITEM PCH_LIST ${PCH_EXCLUDE})
+	include("cmake/filelists/PchExclude.cmake")
+	list(REMOVE_ITEM PCH_LIST ${FILE_LIST})
 	# Include headers of external libraries
 	list(APPEND PCH_LIST ${PCH_EXTRA})
 	# Clean up PCH list

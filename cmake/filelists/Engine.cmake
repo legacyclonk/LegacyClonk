@@ -1,3 +1,4 @@
+set(FILE_LIST
 src/Bitmap256.cpp
 src/Bitmap256.h
 src/C4Action.cpp
@@ -362,3 +363,4 @@ src/StdSurface8.h
 src/StdSync.cpp
 src/StdSync.h
 src/StdWindow.h
+)

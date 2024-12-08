@@ -1,3 +1,4 @@
+set(FILE_LIST
 src/C4Config.cpp
 src/C4Group.cpp
 src/C4Group.h
@@ -7,3 +8,4 @@ src/C4Update.cpp
 src/C4Update.h
 src/C4Version.h
 src/c4group_ng.cpp
+)

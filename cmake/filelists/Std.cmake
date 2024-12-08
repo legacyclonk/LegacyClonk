@@ -1,3 +1,4 @@
+set(FILE_LIST
 src/C4Attributes.h
 src/C4Breakpoint.h
 src/C4Chrono.cpp
@@ -22,3 +23,4 @@ src/StdGzCompressedFile.cpp
 src/StdGzCompressedFile.h
 src/StdHelpers.h
 src/StdSha1.h
+)

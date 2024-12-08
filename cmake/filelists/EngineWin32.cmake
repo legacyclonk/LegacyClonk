@@ -1,3 +1,4 @@
+set(FILE_LIST
 src/C4Com.h
 src/C4CrashHandlerWin32.cpp
 src/C4FileClasses.cpp
@@ -10,3 +11,4 @@ src/StdAppWin32.cpp
 src/StdStringEncodingConverter.cpp
 src/StdStringEncodingConverter.h
 src/StdWindow.cpp
+)
