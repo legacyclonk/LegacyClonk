@@ -26,15 +26,11 @@
 #include <numeric>
 #include <ranges>
 #include <utility>
+#include <vector>
 
 // *** C4FindObject
 
-C4FindObject::~C4FindObject()
-{
-	delete pSort;
-}
-
-C4FindObject *C4FindObject::CreateByValue(const C4Value &DataVal, C4SortObject **ppSortObj)
+std::unique_ptr<C4FindObject> C4FindObject::CreateByValue(const C4Value &DataVal, std::vector<std::unique_ptr<C4SortObject>>* sorts)
 {
 	// Must be an array
 	C4ValueArray *pArray = C4Value(DataVal).getArray();
@@ -46,9 +42,13 @@ C4FindObject *C4FindObject::CreateByValue(const C4Value &DataVal, C4SortObject *
 	{
 		// this is not a FindObject but a sort condition!
 		// sort condition not desired here?
-		if (!ppSortObj) return nullptr;
-		// otherwise, create it!
-		*ppSortObj = C4SortObject::CreateByValue(iType, Data);
+		if (!sorts) return nullptr;
+
+		auto sort = C4SortObject::CreateByValue(iType, Data);
+		if (sort)
+		{
+			sorts->emplace_back(std::move(sort));
+		}
 		// done
 		return nullptr;
 	}
@@ -58,10 +58,10 @@ C4FindObject *C4FindObject::CreateByValue(const C4Value &DataVal, C4SortObject *
 	case C4FO_Not:
 	{
 		// Create child condition
-		C4FindObject *pCond = C4FindObject::CreateByValue(Data[1]);
-		if (!pCond) return nullptr;
+		auto cond = C4FindObject::CreateByValue(Data[1]);
+		if (!cond) return nullptr;
 		// wrap
-		return new C4FindObjectNot(pCond);
+		return std::make_unique<C4FindObjectNot>(std::move(cond));
 	}
 
 	case C4FO_And: case C4FO_Or:
@@ -69,56 +69,59 @@ C4FindObject *C4FindObject::CreateByValue(const C4Value &DataVal, C4SortObject *
 		// Trivial case (one condition)
 		if (Data.GetSize() == 2)
 			return C4FindObject::CreateByValue(Data[1]);
+
 		// Create all childs
-		C4FindObject **ppConds = new C4FindObject *[Data.GetSize() - 1];
+		std::vector<std::unique_ptr<C4FindObject>> conds;
+		conds.reserve(Data.GetSize() - 1);
 		for (int32_t i = 0; i < Data.GetSize() - 1; i++)
-			ppConds[i] = C4FindObject::CreateByValue(Data[i + 1]);
-		// Count real entries, move them to start of list
-		int32_t iSize = 0;
-		for (int32_t i = 0; i < Data.GetSize() - 1; i++)
-			if (ppConds[i])
-				if (iSize++ != i)
-					ppConds[iSize - 1] = ppConds[i];
+		{
+			auto cond = C4FindObject::CreateByValue(Data[i + 1]);
+			if (cond)
+			{
+				conds.emplace_back(std::move(cond));
+			}
+		}
+
 		// Create
 		if (iType == C4FO_And)
-			return new C4FindObjectAnd(iSize, ppConds);
+			return std::make_unique<C4FindObjectAnd>(std::move(conds));
 		else
-			return new C4FindObjectOr(iSize, ppConds);
+			return std::make_unique<C4FindObjectOr>(std::move(conds));
 	}
 
 	case C4FO_Exclude:
-		return new C4FindObjectExclude(Data[1].getObj());
+		return std::make_unique<C4FindObjectExclude>(Data[1].getObj());
 
 	case C4FO_ID:
-		return new C4FindObjectID(Data[1].getC4ID());
+		return std::make_unique<C4FindObjectID>(Data[1].getC4ID());
 
 	case C4FO_InRect:
-		return new C4FindObjectInRect(C4Rect(Data[1].getInt(), Data[2].getInt(), Data[3].getInt(), Data[4].getInt()));
+		return std::make_unique<C4FindObjectInRect>(C4Rect(Data[1].getInt(), Data[2].getInt(), Data[3].getInt(), Data[4].getInt()));
 
 	case C4FO_AtPoint:
-		return new C4FindObjectAtPoint(Data[1].getInt(), Data[2].getInt());
+		return std::make_unique<C4FindObjectAtPoint>(Data[1].getInt(), Data[2].getInt());
 
 	case C4FO_AtRect:
-		return new C4FindObjectAtRect(Data[1].getInt(), Data[2].getInt(), Data[3].getInt(), Data[4].getInt());
+		return std::make_unique<C4FindObjectAtRect>(Data[1].getInt(), Data[2].getInt(), Data[3].getInt(), Data[4].getInt());
 
 	case C4FO_OnLine:
-		return new C4FindObjectOnLine(Data[1].getInt(), Data[2].getInt(), Data[3].getInt(), Data[4].getInt());
+		return std::make_unique<C4FindObjectOnLine>(Data[1].getInt(), Data[2].getInt(), Data[3].getInt(), Data[4].getInt());
 
 	case C4FO_Distance:
-		return new C4FindObjectDistance(Data[1].getInt(), Data[2].getInt(), Data[3].getInt());
+		return std::make_unique<C4FindObjectDistance>(Data[1].getInt(), Data[2].getInt(), Data[3].getInt());
 
 	case C4FO_OCF:
-		return new C4FindObjectOCF(Data[1].getInt());
+		return std::make_unique<C4FindObjectOCF>(Data[1].getInt());
 
 	case C4FO_Category:
-		return new C4FindObjectCategory(Data[1].getInt());
+		return std::make_unique<C4FindObjectCategory>(Data[1].getInt());
 
 	case C4FO_Action:
 	{
 		C4String *pStr = Data[1].getStr();
 		if (!pStr) return nullptr;
 		// Don't copy, it should be safe
-		return new C4FindObjectAction(pStr->Data.getData());
+		return std::make_unique<C4FindObjectAction>(pStr->Data.getData());
 	}
 
 	case C4FO_Func:
@@ -127,7 +130,7 @@ C4FindObject *C4FindObject::CreateByValue(const C4Value &DataVal, C4SortObject *
 		C4String *pStr = Data[1].getStr();
 		if (!pStr) return nullptr;
 		// Construct
-		C4FindObjectFunc *pFO = new C4FindObjectFunc(pStr->Data.getData());
+		auto pFO = std::make_unique<C4FindObjectFunc>(pStr->Data.getData());
 		// Add parameters
 		for (int i = 2; i < Data.GetSize(); i++)
 			pFO->SetPar(i - 2, Data[i]);
@@ -140,23 +143,23 @@ C4FindObject *C4FindObject::CreateByValue(const C4Value &DataVal, C4SortObject *
 		int32_t index = 0;
 		if (Data.GetSize() >= 3)
 			index = static_cast<decltype(index)>(BoundBy<C4ValueInt>(Data[2].getInt(), 0, 1));
-		return new C4FindObjectActionTarget(Data[1].getObj(), index);
+		return std::make_unique<C4FindObjectActionTarget>(Data[1].getObj(), index);
 	}
 
 	case C4FO_Container:
-		return new C4FindObjectContainer(Data[1].getObj());
+		return std::make_unique<C4FindObjectContainer>(Data[1].getObj());
 
 	case C4FO_AnyContainer:
-		return new C4FindObjectAnyContainer();
+		return std::make_unique<C4FindObjectAnyContainer>();
 
 	case C4FO_Owner:
-		return new C4FindObjectOwner(Data[1].getInt());
+		return std::make_unique<C4FindObjectOwner>(Data[1].getInt());
 
 	case C4FO_Controller:
-		return new C4FindObjectController(Data[1].getInt());
+		return std::make_unique<C4FindObjectController>(Data[1].getInt());
 
 	case C4FO_Layer:
-		return new C4FindObjectLayer(Data[1].getObj());
+		return std::make_unique<C4FindObjectLayer>(Data[1].getObj());
 	}
 	return nullptr;
 }
@@ -374,49 +377,35 @@ void C4FindObject::CheckObjectStatusAfterSort(std::vector<C4Object *> &objects)
 	std::ranges::replace_if(objects, [](C4Object *const obj) { return !obj->Status; }, nullptr);
 }
 
-void C4FindObject::SetSort(C4SortObject *pToSort)
+void C4FindObject::SetSort(std::unique_ptr<C4SortObject> pToSort)
 {
-	delete pSort;
-	pSort = pToSort;
+	pSort = std::move(pToSort);
 }
 
 // *** C4FindObjectNot
 
-C4FindObjectNot::~C4FindObjectNot()
+bool C4FindObjectNot::Check(C4Object *obj)
 {
-	delete pCond;
-}
-
-bool C4FindObjectNot::Check(C4Object *pObj)
-{
-	return !pCond->Check(pObj);
+	return !cond->Check(obj);
 }
 
 // *** C4FindObjectAnd
 
-C4FindObjectAnd::C4FindObjectAnd(int32_t inCnt, C4FindObject **ppConds, bool fFreeArray)
-	: iCnt(inCnt), ppConds(ppConds), fHasBounds(false), fUseShapes(false), fFreeArray(fFreeArray)
+C4FindObjectAnd::C4FindObjectAnd(std::vector<std::unique_ptr<C4FindObject>> conds)
+	: conds(std::move(conds)), fHasBounds(false), fUseShapes(false)
 {
 	// Filter ensured entries
-	for (int32_t i = 0; i < iCnt;)
-		if (ppConds[i]->IsEnsured())
-		{
-			delete ppConds[i];
-			iCnt--;
-			for (int32_t j = i; j < iCnt; j++)
-				ppConds[j] = ppConds[j + 1];
-		}
-		else
-			i++;
+	std::erase_if(conds, [](const std::unique_ptr<C4FindObject> &cond) { return cond->IsEnsured(); });
+
 	// Intersect all child bounds
-	for (int32_t i = 0; i < iCnt; i++)
+	for (const auto &cond : conds)
 	{
-		C4Rect *pChildBounds = ppConds[i]->GetBounds();
+		C4Rect *pChildBounds = cond->GetBounds();
 		if (pChildBounds)
 		{
 			// some objects might be in an rect and at a point not in that rect
 			// so do not intersect an atpoint bound with an rect bound
-			fUseShapes = ppConds[i]->UseShapes();
+			fUseShapes = cond->UseShapes();
 			if (fUseShapes)
 			{
 				Bounds = *pChildBounds;
@@ -434,57 +423,41 @@ C4FindObjectAnd::C4FindObjectAnd(int32_t inCnt, C4FindObject **ppConds, bool fFr
 	}
 }
 
-C4FindObjectAnd::~C4FindObjectAnd()
+bool C4FindObjectAnd::Check(C4Object *obj)
 {
-	for (int32_t i = 0; i < iCnt; i++)
-		delete ppConds[i];
-	if (fFreeArray)
-		delete[] ppConds;
-}
-
-bool C4FindObjectAnd::Check(C4Object *pObj)
-{
-	for (int32_t i = 0; i < iCnt; i++)
-		if (!ppConds[i]->Check(pObj))
-			return false;
-	return true;
+	return std::ranges::all_of(conds, [obj](const std::unique_ptr<C4FindObject> &cond){ return cond->Check(obj); });
 }
 
 bool C4FindObjectAnd::IsImpossible()
 {
-	for (int32_t i = 0; i < iCnt; i++)
-		if (ppConds[i]->IsImpossible())
-			return true;
-	return false;
+	return std::ranges::any_of(conds, [](const std::unique_ptr<C4FindObject> &cond) { return cond->IsImpossible(); });
 }
 
 // *** C4FindObjectOr
 
-C4FindObjectOr::C4FindObjectOr(int32_t inCnt, C4FindObject **ppConds)
-	: iCnt(inCnt), ppConds(ppConds), fHasBounds(false)
+C4FindObjectOr::C4FindObjectOr(std::vector<std::unique_ptr<C4FindObject>> conds)
+	: conds(std::move(conds)), fHasBounds(false)
 {
 	// Filter impossible entries
-	for (int32_t i = 0; i < iCnt;)
-		if (ppConds[i]->IsImpossible())
-		{
-			delete ppConds[i];
-			iCnt--;
-			for (int32_t j = i; j < iCnt; j++)
-				ppConds[j] = ppConds[j + 1];
-		}
-		else
-			i++;
+	std::erase_if(conds, [](const std::unique_ptr<C4FindObject> &cond) { return cond->IsImpossible(); });
+
 	// Sum up all child bounds
-	for (int32_t i = 0; i < iCnt; i++)
+	for (const auto &cond : conds)
 	{
-		C4Rect *pChildBounds = ppConds[i]->GetBounds();
-		if (!pChildBounds) { fHasBounds = false; break; }
+		C4Rect *pChildBounds = cond->GetBounds();
+		if (!pChildBounds)
+		{
+			fHasBounds = false;
+			break;
+		}
+
 		// Do not optimize atpoint: It could lead to having to search multiple
 		// sectors. An object's shape can be in multiple sectors. We do not want
 		// to find the same object twice.
-		if (ppConds[i]->UseShapes())
+		if (cond->UseShapes())
 		{
-			fHasBounds = false; break;
+			fHasBounds = false;
+			break;
 		}
 		if (fHasBounds)
 			Bounds.Add(*pChildBounds);
@@ -496,27 +469,14 @@ C4FindObjectOr::C4FindObjectOr(int32_t inCnt, C4FindObject **ppConds)
 	}
 }
 
-C4FindObjectOr::~C4FindObjectOr()
+bool C4FindObjectOr::Check(C4Object *obj)
 {
-	for (int32_t i = 0; i < iCnt; i++)
-		delete ppConds[i];
-	delete[] ppConds;
-}
-
-bool C4FindObjectOr::Check(C4Object *pObj)
-{
-	for (int32_t i = 0; i < iCnt; i++)
-		if (ppConds[i]->Check(pObj))
-			return true;
-	return false;
+	return std::ranges::any_of(conds, [obj](const std::unique_ptr<C4FindObject> &cond){ return cond->Check(obj); });
 }
 
 bool C4FindObjectOr::IsEnsured()
 {
-	for (int32_t i = 0; i < iCnt; i++)
-		if (ppConds[i]->IsEnsured())
-			return true;
-	return false;
+	return std::ranges::any_of(conds, [](const std::unique_ptr<C4FindObject> &cond) { return cond->IsEnsured(); });
 }
 
 // *** C4FindObject* (primitive conditions)
@@ -680,7 +640,7 @@ bool C4FindObjectLayer::IsImpossible()
 
 // *** C4SortObject
 
-C4SortObject *C4SortObject::CreateByValue(const C4Value &DataVal)
+std::unique_ptr<C4SortObject> C4SortObject::CreateByValue(const C4Value &DataVal)
 {
 	// Must be an array
 	const C4ValueArray *pArray = C4Value(DataVal).getArray();
@@ -689,17 +649,17 @@ C4SortObject *C4SortObject::CreateByValue(const C4Value &DataVal)
 	return CreateByValue(Data[0].getInt(), Data);
 }
 
-C4SortObject *C4SortObject::CreateByValue(C4ValueInt iType, const C4ValueArray &Data)
+std::unique_ptr<C4SortObject> C4SortObject::CreateByValue(C4ValueInt iType, const C4ValueArray &Data)
 {
 	switch (iType)
 	{
 	case C4SO_Reverse:
 	{
 		// create child sort
-		C4SortObject *pChildSort = C4SortObject::CreateByValue(Data[1]);
-		if (!pChildSort) return nullptr;
+		auto childSort = C4SortObject::CreateByValue(Data[1]);
+		if (!childSort) return nullptr;
 		// wrap
-		return new C4SortObjectReverse(pChildSort);
+		return std::make_unique<C4SortObjectReverse>(std::move(childSort));
 	}
 
 	case C4SO_Multiple:
@@ -710,35 +670,34 @@ C4SortObject *C4SortObject::CreateByValue(C4ValueInt iType, const C4ValueArray &
 			return C4SortObject::CreateByValue(Data[1]);
 		}
 		// Create all children
-		C4SortObject **ppSorts = new C4SortObject *[Data.GetSize() - 1];
+		std::vector<std::unique_ptr<C4SortObject>> sorts;
+		sorts.reserve(Data.GetSize() - 1);
 		for (int32_t i = 0; i < Data.GetSize() - 1; i++)
 		{
-			ppSorts[i] = C4SortObject::CreateByValue(Data[i + 1]);
+			auto sort = C4SortObject::CreateByValue(Data[i + 1]);
+			if (sort)
+			{
+				sorts.emplace_back(std::move(sort));
+			}
 		}
-		// Count real entries, move them to start of list
-		int32_t iSize = 0;
-		for (int32_t i = 0; i < Data.GetSize() - 1; i++)
-			if (ppSorts[i])
-				if (iSize++ != i)
-					ppSorts[iSize - 1] = ppSorts[i];
 		// Create
-		return new C4SortObjectMultiple(iSize, ppSorts);
+		return std::make_unique<C4SortObjectMultiple>(std::move(sorts));
 	}
 
 	case C4SO_Distance:
-		return new C4SortObjectDistance(Data[1].getInt(), Data[2].getInt());
+		return std::make_unique<C4SortObjectDistance>(Data[1].getInt(), Data[2].getInt());
 
 	case C4SO_Random:
-		return new C4SortObjectRandom();
+		return std::make_unique<C4SortObjectRandom>();
 
 	case C4SO_Speed:
-		return new C4SortObjectSpeed();
+		return std::make_unique<C4SortObjectSpeed>();
 
 	case C4SO_Mass:
-		return new C4SortObjectMass();
+		return std::make_unique<C4SortObjectMass>();
 
 	case C4SO_Value:
-		return new C4SortObjectValue();
+		return std::make_unique<C4SortObjectValue>();
 
 	case C4SO_Func:
 	{
@@ -746,12 +705,12 @@ C4SortObject *C4SortObject::CreateByValue(C4ValueInt iType, const C4ValueArray &
 		C4String *pStr = Data[1].getStr();
 		if (!pStr) return nullptr;
 		// Construct
-		C4SortObjectFunc *pSO = new C4SortObjectFunc(pStr->Data.getData());
+		auto sort = std::make_unique<C4SortObjectFunc>(pStr->Data.getData());
 		// Add parameters
 		for (int i = 2; i < Data.GetSize(); i++)
-			pSO->SetPar(i - 2, Data[i]);
+			sort->SetPar(i - 2, Data[i]);
 		// Done
-		return pSO;
+		return sort;
 	}
 	}
 	return nullptr;
@@ -848,39 +807,32 @@ int32_t C4SortObjectByValue::CompareCache(int32_t iObj1, int32_t iObj2, C4Object
 	return values[iObj2] - values[iObj1];
 }
 
-C4SortObjectReverse::~C4SortObjectReverse()
-{
-	delete pSort;
-}
-
 int32_t C4SortObjectReverse::Compare(C4Object *pObj1, C4Object *pObj2)
 {
-	return pSort->Compare(pObj2, pObj1);
+	return sort->Compare(pObj2, pObj1);
 }
 
 bool C4SortObjectReverse::PrepareCache(std::vector<C4Object *> &objects)
 {
-	return pSort->PrepareCache(objects);
+	return sort->PrepareCache(objects);
 }
 
 int32_t C4SortObjectReverse::CompareCache(int32_t iObj1, int32_t iObj2, C4Object *pObj1, C4Object *pObj2)
 {
-	return pSort->CompareCache(iObj2, iObj1, pObj2, pObj1);
-}
-
-C4SortObjectMultiple::~C4SortObjectMultiple()
-{
-	for (int32_t i = 0; i < iCnt; ++i) delete ppSorts[i];
-	if (fFreeArray) delete[] ppSorts;
+	return sort->CompareCache(iObj2, iObj1, pObj2, pObj1);
 }
 
 int32_t C4SortObjectMultiple::Compare(C4Object *pObj1, C4Object *pObj2)
 {
 	// return first comparison that's nonzero
-	int32_t iCmp;
-	for (int32_t i = 0; i < iCnt; ++i)
-		if (iCmp = ppSorts[i]->Compare(pObj1, pObj2))
-			return iCmp;
+	for (const auto &sort : sorts)
+	{
+		const auto result = sort->Compare(pObj1, pObj2);
+		if (result != 0)
+		{
+			return result;
+		}
+	}
 	// all comparisons equal
 	return 0;
 }
@@ -888,8 +840,10 @@ int32_t C4SortObjectMultiple::Compare(C4Object *pObj1, C4Object *pObj2)
 bool C4SortObjectMultiple::PrepareCache(std::vector<C4Object *> &objects)
 {
 	bool fCaches = false;
-	for (int32_t i = 0; i < iCnt; ++i)
-		fCaches |= ppSorts[i]->PrepareCache(objects);
+	for (const auto &sort : sorts)
+	{
+		fCaches |= sort->PrepareCache(objects);
+	}
 	// return wether a sort citerion uses a cache
 	return fCaches;
 }
@@ -897,10 +851,14 @@ bool C4SortObjectMultiple::PrepareCache(std::vector<C4Object *> &objects)
 int32_t C4SortObjectMultiple::CompareCache(int32_t iObj1, int32_t iObj2, C4Object *pObj1, C4Object *pObj2)
 {
 	// return first comparison that's nonzero
-	int32_t iCmp;
-	for (int32_t i = 0; i < iCnt; ++i)
-		if (iCmp = ppSorts[i]->CompareCache(iObj1, iObj2, pObj1, pObj2))
-			return iCmp;
+	for (const auto &sort : sorts)
+	{
+		const auto result = sort->CompareCache(iObj1, iObj2, pObj1, pObj2);
+		if (result != 0)
+		{
+			return result;
+		}
+	}
 	// all comparisons equal
 	return 0;
 }
