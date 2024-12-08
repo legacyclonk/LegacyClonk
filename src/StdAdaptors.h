@@ -1036,7 +1036,7 @@ public:
 			uint8_t *pByte = reinterpret_cast<uint8_t *>(pData) + i;
 			if (!fCompiler)
 			{
-				*std::to_chars(szData, szData + 2, *pByte, 16).ptr = '\0';
+				FormatWithNull(szData, "{:02x}", *pByte);
 			}
 			pComp->String(szData, 2, StdCompiler::RCT_Idtf);
 			if (fCompiler)
