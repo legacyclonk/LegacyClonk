@@ -1,5 +1,3 @@
-major-update = true
-
 [groups.'System.c4g']
 parts = [
     'continuous-v335',
