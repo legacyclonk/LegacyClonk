@@ -1779,7 +1779,7 @@ static C4Object *FnFindBase(C4ValueInt iOwner, C4ValueInt iIndex)
 	return Game.FindBase(iOwner, iIndex);
 }
 
-C4FindObject *CreateCriterionsFromPars(const C4Value *pPars, C4FindObject **pFOs, C4SortObject **pSOs)
+C4FindObject *CreateCriterionsFromPars(std::span<const C4Value> pPars, C4FindObject **pFOs, C4SortObject **pSOs)
 {
 	int i, iCnt = 0, iSortCnt = 0;
 	// Read all parameters
@@ -1827,7 +1827,7 @@ C4FindObject *CreateCriterionsFromPars(const C4Value *pPars, C4FindObject **pFOs
 	return pFO;
 }
 
-static C4Value FnObjectCount2(C4AulContext *cthr, const C4Value *pPars)
+static C4Value FnObjectCount2(C4AulContext *cthr, std::span<const C4Value> pPars)
 {
 	// Create FindObject-structure
 	C4FindObject *pFOs[C4AUL_MAX_Par];
@@ -1843,7 +1843,7 @@ static C4Value FnObjectCount2(C4AulContext *cthr, const C4Value *pPars)
 	return C4VInt(iCnt);
 }
 
-static C4Value FnFindObject2(C4AulContext *cthr, const C4Value *pPars)
+static C4Value FnFindObject2(C4AulContext *cthr, std::span<const C4Value> pPars)
 {
 	// Create FindObject-structure
 	C4FindObject *pFOs[C4AUL_MAX_Par];
@@ -1860,7 +1860,7 @@ static C4Value FnFindObject2(C4AulContext *cthr, const C4Value *pPars)
 	return C4VObj(pObj);
 }
 
-static C4Value FnFindObjects(C4AulContext *cthr, const C4Value *pPars)
+static C4Value FnFindObjects(C4AulContext *cthr, std::span<const C4Value> pPars)
 {
 	// Create FindObject-structure
 	C4FindObject *pFOs[C4AUL_MAX_Par];

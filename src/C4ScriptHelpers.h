@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <span>
 #include <type_traits>
 
 #include <C4Game.h>
@@ -250,7 +251,7 @@ namespace C4ScriptHelpers {
 	template<std::size_t ParCount, C4V_Type RetType>
 	class C4AulEngineFuncParArray : public C4AulEngineFuncHelper<ParCount>
 	{
-		using Func = C4Value(&)(C4AulContext *context, const C4Value *pars);
+		using Func = C4Value(&)(C4AulContext *context, std::span<const C4Value> pars);
 		Func func;
 
 	public:
@@ -259,7 +260,7 @@ namespace C4ScriptHelpers {
 		C4V_Type GetRetType() noexcept override { return RetType; }
 		C4Value Exec(C4AulContext *context, const C4Value pars[], bool = false) override
 		{
-			return func(context, pars);
+			return func(context, std::span<const C4Value>{pars, ParCount});
 		}
 	};
 }
