@@ -1779,7 +1779,7 @@ static C4Object *FnFindBase(C4ValueInt iOwner, C4ValueInt iIndex)
 	return Game.FindBase(iOwner, iIndex);
 }
 
-C4FindObject *CreateCriterionsFromPars(std::span<const C4Value> pPars, C4FindObject **pFOs, C4SortObject **pSOs)
+std::unique_ptr<C4FindObject> CreateCriterionsFromPars(const std::string_view forFunction, C4Object *const contextObj, const std::span<const C4Value> pPars, C4FindObject **pFOs, C4SortObject **pSOs)
 {
 	int i, iCnt = 0, iSortCnt = 0;
 	// Read all parameters
@@ -1806,7 +1806,7 @@ C4FindObject *CreateCriterionsFromPars(std::span<const C4Value> pPars, C4FindObj
 	if (!iCnt)
 	{
 		for (i = 0; i < iSortCnt; ++i) delete pSOs[i];
-		return nullptr;
+		throw C4AulExecError{contextObj, std::format("{}: No valid search criterions supplied!", forFunction)};
 	}
 	// create sort criterion
 	C4SortObject *pSO = nullptr;
@@ -1818,11 +1818,11 @@ C4FindObject *CreateCriterionsFromPars(std::span<const C4Value> pPars, C4FindObj
 			pSO = new C4SortObjectMultiple(iSortCnt, pSOs, false);
 	}
 	// Create search object
-	C4FindObject *pFO;
+	std::unique_ptr<C4FindObject> pFO;
 	if (iCnt == 1)
-		pFO = pFOs[0];
+		pFO.reset(pFOs[0]);
 	else
-		pFO = new C4FindObjectAnd(iCnt, pFOs, false);
+		pFO = std::make_unique<C4FindObjectAnd>(iCnt, pFOs, false);
 	if (pSO) pFO->SetSort(pSO);
 	return pFO;
 }
@@ -1831,14 +1831,9 @@ static C4Value FnObjectCount2(C4AulContext *cthr, std::span<const C4Value> pPars
 {
 	// Create FindObject-structure
 	C4FindObject *pFOs[C4AUL_MAX_Par];
-	C4FindObject *pFO = CreateCriterionsFromPars(pPars, pFOs, nullptr);
-	// Error?
-	if (!pFO)
-		throw C4AulExecError(cthr->Obj, "ObjectCount: No valid search criterions supplied!");
+	const auto pFO = CreateCriterionsFromPars("ObjectCount", cthr->Obj, pPars, pFOs, nullptr);
 	// Search
 	int32_t iCnt = pFO->Count(Game.Objects, Game.Objects.Sectors);
-	// Free
-	delete pFO;
 	// Return
 	return C4VInt(iCnt);
 }
@@ -1848,14 +1843,9 @@ static C4Value FnFindObject2(C4AulContext *cthr, std::span<const C4Value> pPars)
 	// Create FindObject-structure
 	C4FindObject *pFOs[C4AUL_MAX_Par];
 	C4SortObject *pSOs[C4AUL_MAX_Par];
-	C4FindObject *pFO = CreateCriterionsFromPars(pPars, pFOs, pSOs);
-	// Error?
-	if (!pFO)
-		throw C4AulExecError(cthr->Obj, "FindObject: No valid search criterions supplied!");
+	const auto pFO = CreateCriterionsFromPars("FindObject2", cthr->Obj, pPars, pFOs, pSOs);
 	// Search
 	C4Object *pObj = pFO->Find(Game.Objects, Game.Objects.Sectors);
-	// Free
-	delete pFO;
 	// Return
 	return C4VObj(pObj);
 }
@@ -1865,14 +1855,9 @@ static C4Value FnFindObjects(C4AulContext *cthr, std::span<const C4Value> pPars)
 	// Create FindObject-structure
 	C4FindObject *pFOs[C4AUL_MAX_Par];
 	C4SortObject *pSOs[C4AUL_MAX_Par];
-	C4FindObject *pFO = CreateCriterionsFromPars(pPars, pFOs, pSOs);
-	// Error?
-	if (!pFO)
-		throw C4AulExecError(cthr->Obj, "FindObjects: No valid search criterions supplied!");
+	const auto pFO = CreateCriterionsFromPars("FindObjects", cthr->Obj, pPars, pFOs, pSOs);
 	// Search
 	C4ValueArray *pResult = pFO->FindMany(Game.Objects, Game.Objects.Sectors);
-	// Free
-	delete pFO;
 	// Return
 	return C4VArray(pResult);
 }
