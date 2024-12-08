@@ -94,6 +94,13 @@ jobs:
           cd build
           cp clonk c4group ../output
 
+      - name: "Linux: Publish Engine Binary For Debugging"
+        if: ${{ matrix.os == 'Linux' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: clonk-noappimage-${{ matrix.config-suffix }}
+          path: output/clonk
+
       - name: "Linux: Create AppImage"
         if: ${{ matrix.os == 'Linux' }}
         run: |
