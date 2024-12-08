@@ -463,7 +463,7 @@ void C4GamePadOpener::SetGamePad(int iGamepad)
 
 // Dedicated server and everything else with neither Win32 nor SDL.
 
-C4GamePadControl::C4GamePadControl() { LogNTr(spdlog::level::warn, "without Gamepad support"); }
+C4GamePadControl::C4GamePadControl() { LogNTr(spdlog::level::warn, "Engine without Gamepad support"); }
 C4GamePadControl::~C4GamePadControl() {}
 void C4GamePadControl::Execute() {}
 int C4GamePadControl::GetGamePadCount() { return 0; }
