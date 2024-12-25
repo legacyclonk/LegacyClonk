@@ -19,10 +19,10 @@
 
 #include "C4Log.h"
 #include "C4Windows.h"
+#include "StdSync.h"
 #include "StdWindow.h"
 
 #ifdef _WIN32
-#include "StdSync.h"
 
 const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
 #elif defined(USE_X11)
@@ -263,7 +263,7 @@ public:
 	virtual int32_t &ScreenWidth() = 0;
 	virtual int32_t &ScreenHeight() = 0;
 	virtual float GetScale() = 0;
-	C4AppHandleResult HandleMessage(unsigned int iTimeout = INFINITE, bool fCheckTimer = true);
+	C4AppHandleResult HandleMessage(unsigned int iTimeout = StdSync::Infinite, bool fCheckTimer = true);
 	void SetDisplayMode(DisplayMode mode) { pWindow->SetDisplayMode(mode); }
 	void ResetTimer(unsigned int uDelay);
 	CStdWindow *pWindow;

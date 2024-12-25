@@ -42,9 +42,6 @@ public:
 	C4NetIO();
 	virtual ~C4NetIO();
 
-	// *** constants / types
-	static const int TO_INF; // = -1;
-
 	using addr_t = C4Network2EndpointAddress;
 
 	static std::vector<C4Network2HostAddress> GetLocalAddresses(bool unsorted = false);
@@ -190,7 +187,7 @@ public:
 	virtual bool Close() override;
 	virtual bool CloseBroadcast();
 
-	virtual bool Execute(int iMaxTime = TO_INF) override;
+	virtual bool Execute(int iMaxTime = StdSync::Infinite) override;
 
 	// * multithreading safe
 	std::unique_ptr<Socket> Bind(const addr_t &addr);
@@ -208,7 +205,6 @@ public:
 #else
 	virtual void GetFDs(std::vector<pollfd> &fds) override;
 #endif
-	virtual int GetTimeout() override;
 
 	// statistics
 	virtual bool GetStatistic(int *pBroadcastRate) override;
@@ -360,7 +356,7 @@ public:
 	virtual bool Close() override;
 	virtual bool CloseBroadcast();
 
-	virtual bool Execute(int iMaxTime = TO_INF) override;
+	virtual bool Execute(int iMaxTime = StdSync::Infinite) override;
 
 	virtual bool Send(const C4NetIOPacket &rPacket) override;
 	virtual bool Broadcast(const C4NetIOPacket &rPacket) override;
@@ -371,7 +367,6 @@ public:
 #else
 	virtual void GetFDs(std::vector<pollfd> &fds) override;
 #endif
-	virtual int GetTimeout() override;
 
 	// not implemented
 	virtual bool Connect(const addr_t &addr) override { assert(false); return false; }
@@ -451,7 +446,7 @@ public:
 	virtual bool Close() override;
 	virtual bool CloseBroadcast() override;
 
-	virtual bool Execute(int iMaxTime = TO_INF) override;
+	virtual bool Execute(int iMaxTime = StdSync::Infinite) override;
 
 	virtual bool Connect(const addr_t &addr) override;
 	virtual bool Close(const addr_t &addr) override;

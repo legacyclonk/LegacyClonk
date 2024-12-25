@@ -72,9 +72,6 @@
 #include <functional>
 #include <utility>
 
-// constants definition
-const int C4NetIO::TO_INF = -1;
-
 // simulate packet loss (loss probability in percent)
 // #define C4NETIO_SIMULATE_PACKETLOSS 10
 
@@ -575,7 +572,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 
 #ifdef _WIN32
 	// wait for something to happen
-	if (WaitForSingleObject(Event, iMaxTime == C4NetIO::TO_INF ? INFINITE : iMaxTime) == WAIT_TIMEOUT)
+	if (WaitForSingleObject(Event, iMaxTime) == WAIT_TIMEOUT)
 		// timeout -> nothing happened
 		return true;
 	WSAResetEvent(Event);
@@ -1012,11 +1009,6 @@ void C4NetIOTCP::GetFDs(std::vector<pollfd> &fds)
 }
 
 #endif
-
-int C4NetIOTCP::GetTimeout() // (mt-safe)
-{
-	return TO_INF;
-}
 
 bool C4NetIOTCP::GetStatistic(int *pBroadcastRate) // (mt-safe)
 {
@@ -1821,7 +1813,7 @@ HANDLE C4NetIOSimpleUDP::GetEvent() // (mt-safe)
 enum C4NetIOSimpleUDP::WaitResult C4NetIOSimpleUDP::WaitForSocket(int iTimeout)
 {
 	// wait for anything to happen
-	DWORD ret = WaitForSingleObject(hEvent, iTimeout == TO_INF ? INFINITE : iTimeout);
+	DWORD ret = WaitForSingleObject(hEvent, iTimeout);
 	if (ret == WAIT_TIMEOUT)
 		return WR_Timeout;
 	if (ret == WAIT_FAILED)
@@ -1887,11 +1879,6 @@ enum C4NetIOSimpleUDP::WaitResult C4NetIOSimpleUDP::WaitForSocket(int iTimeout)
 }
 
 #endif
-
-int C4NetIOSimpleUDP::GetTimeout()
-{
-	return C4NetIO::TO_INF;
-}
 
 bool C4NetIOSimpleUDP::SetMCLoopback(int fLoopback)
 {
@@ -2303,7 +2290,7 @@ bool C4NetIOUDP::Execute(int iMaxTime) // (mt-safe)
 
 	// adjust maximum block time
 	int iMaxBlock = GetTimeout();
-	if (iMaxTime == TO_INF || iMaxTime > iMaxBlock) iMaxTime = iMaxBlock;
+	if (iMaxTime == StdSync::Infinite || iMaxTime > iMaxBlock) iMaxTime = iMaxBlock;
 
 	// execute subclass
 	if (!C4NetIOSimpleUDP::Execute(iMaxBlock))
@@ -3160,7 +3147,7 @@ bool C4NetIOUDP::Peer::SendDirect(C4NetIOPacket &&rPacket) // (mt-safe)
 void C4NetIOUDP::Peer::OnConn()
 {
 	// reset timeout
-	SetTimeout(TO_INF);
+	SetTimeout(StdSync::Infinite);
 	// set status
 	eStatus = CS_Works;
 	// do callback
@@ -3229,7 +3216,7 @@ void C4NetIOUDP::Peer::CheckCompleteIPackets()
 
 void C4NetIOUDP::Peer::SetTimeout(int iLength, int iRetryCnt) // (mt-safe)
 {
-	if (iLength != TO_INF)
+	if (iLength != StdSync::Infinite)
 		iTimeout = timeGetTime() + iLength;
 	else
 		iTimeout = 0;
@@ -3254,7 +3241,7 @@ void C4NetIOUDP::Peer::OnTimeout()
 		Close("connection timeout");
 	}
 	// reset timeout
-	SetTimeout(TO_INF);
+	SetTimeout(StdSync::Infinite);
 }
 
 // * C4NetIOUDP: implementation

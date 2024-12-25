@@ -23,8 +23,6 @@
 
 #ifndef _WIN32
 
-#define INFINITE 0xFFFFFFFF
-
 unsigned long timeGetTime(void);
 
 #endif

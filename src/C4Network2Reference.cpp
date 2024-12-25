@@ -235,7 +235,7 @@ public:
 	virtual void SetNotify(C4InteractiveThread *thread) = 0;
 
 	virtual bool Execute(int maxTime) = 0;
-	virtual int GetTimeout() = 0;
+	virtual int GetTimeout() { return StdSync::Infinite; }
 
 #ifdef _WIN32
 	virtual HANDLE GetEvent() = 0;
@@ -274,8 +274,7 @@ public:
 	bool SetServer(std::string_view serverAddress, std::uint16_t defaultPort) override;
 	void SetNotify(class C4InteractiveThread *thread) override { this->thread.store(thread, std::memory_order_release); }
 
-	bool Execute(int iMaxTime = C4NetIO::TO_INF) override { return true; }
-	int GetTimeout() override { return C4NetIO::TO_INF; }
+	bool Execute(int iMaxTime = StdSync::Infinite) override { return true; }
 
 #ifdef _WIN32
 	HANDLE GetEvent() override { return nullptr; }
@@ -385,7 +384,7 @@ public:
 	void SetNotify(class C4InteractiveThread *pnNotify) override { pNotify = pnNotify; }
 
 	// Overridden
-	bool Execute(int iMaxTime = TO_INF) override;
+	bool Execute(int iMaxTime = StdSync::Infinite) override;
 	int GetTimeout() override;
 
 #ifdef _WIN32

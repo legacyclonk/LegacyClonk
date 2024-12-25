@@ -298,7 +298,7 @@ void CStdApp::NextTick(bool)
 
 void CStdApp::Run()
 {
-	while (HandleMessage(INFINITE, true) != HR_Failure)
+	while (HandleMessage(StdSync::Infinite, true) != HR_Failure)
 	{
 	}
 }
@@ -327,7 +327,7 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 
 		// Check if the given timeout comes first
 		// (don't call Execute then, because it assumes it has been called because of a timer event!)
-		if (timeout != INFINITE && timeout * 1000 < tv.tv_usec)
+		if (timeout != StdSync::Infinite && timeout * 1000 < tv.tv_usec)
 		{
 			tv.tv_usec = timeout * 1000;
 			doExecute = false;
@@ -365,7 +365,7 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 
 	// Guarantee that we do not block until something interesting occurs
 	// when using a timeout
-	if (checkTimer || timeout != INFINITE)
+	if (checkTimer || timeout != StdSync::Infinite)
 	{
 		// The timeout handler sets timeout_elapsed to true when
 		// the timeout elapsed, this is required for a correct return
@@ -414,7 +414,7 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 	fds[2].fd = STDIN_FILENO;
 #endif
 
-	switch (StdSync::Poll(fds, (checkTimer || timeout != INFINITE) ? tv.tv_usec / 1000 : StdSync::Infinite))
+	switch (StdSync::Poll(fds, (checkTimer || timeout != StdSync::Infinite) ? tv.tv_usec / 1000 : StdSync::Infinite))
 	{
 	case -1:
 		LogNTr(spdlog::level::err, "poll error: {}", std::strerror(errno));

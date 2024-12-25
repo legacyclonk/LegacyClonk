@@ -73,7 +73,7 @@ bool StdScheduler::Execute(int iTimeout)
 	{
 		if (const int procTimeout{proc->GetTimeout()}; procTimeout >= 0)
 		{
-			if (iTimeout == -1 || iTimeout > procTimeout)
+			if (iTimeout == StdSync::Infinite || iTimeout > procTimeout)
 			{
 				iTimeout = procTimeout;
 			}

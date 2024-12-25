@@ -151,7 +151,7 @@ public:
 	bool SetServer(std::string_view serverAddress, std::uint16_t defaultPort = 0);
 	void SetNotify(class C4InteractiveThread *thread);
 
-	bool Execute(int iMaxTime = C4NetIO::TO_INF) override;
+	bool Execute(int iMaxTime = StdSync::Infinite) override;
 	int GetTimeout() override;
 
 #ifdef _WIN32
