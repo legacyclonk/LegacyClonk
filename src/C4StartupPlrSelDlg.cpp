@@ -41,7 +41,7 @@ static std::string TimeString(int iSeconds)
 {
 	int iHours = iSeconds / 3600; iSeconds -= 3600 * iHours;
 	int iMinutes = iSeconds / 60; iSeconds -= 60 * iMinutes;
-	return std::format("{:02}{:02}{:02}", iHours, iMinutes, iSeconds);
+	return std::format("{:02}:{:02}:{:02}", iHours, iMinutes, iSeconds);
 }
 
 static std::string DateString(int iTime)
