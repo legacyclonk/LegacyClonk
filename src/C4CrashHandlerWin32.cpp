@@ -21,10 +21,10 @@
 #include "C4Include.h"
 
 // Dump generation on crash
+#include "C4Config.h"
 #include "C4Log.h"
 #include "C4Version.h"
 #include "C4Windows.h"
-#include "StdStringEncodingConverter.h"
 
 #include <dbghelp.h>
 #include <tlhelp32.h>
@@ -47,77 +47,74 @@ namespace
 #endif
 
 	constexpr size_t DumpBufferSize = 2048;
-	constexpr size_t DumpBufferSizeInBytes = DumpBufferSize * sizeof(wchar_t);
-	wchar_t DumpBuffer[DumpBufferSize];
+	char DumpBuffer[DumpBufferSize];
 	char SymbolBuffer[DumpBufferSize];
-	wchar_t UserPathWide[_MAX_PATH] = {L'0'};
-
 	// Dump crash info in a human readable format. Uses a static buffer to avoid heap allocations
 	// from an exception handler. For the same reason, this also doesn't use Log/LogF etc.
-	void SafeTextDump(LPEXCEPTION_POINTERS exc, int fd, const wchar_t *dumpFilename)
+	void SafeTextDump(LPEXCEPTION_POINTERS exc, int fd, const char *dumpFilename)
 	{
 #if defined(_MSC_VER)
-#	define LOG_SNPRINTF _snwprintf
+#	define LOG_SNPRINTF _snprintf
 #else
-#	define LOG_SNPRINTF snwprintf
+#	define LOG_SNPRINTF snprintf
 #endif
-#define LOG_STATIC_TEXT(text) write(fd, text, sizeof(text) - sizeof(wchar_t))
-#define LOG_DYNAMIC_TEXT(...) write(fd, DumpBuffer, LOG_SNPRINTF(DumpBuffer, DumpBufferSize-sizeof(wchar_t), __VA_ARGS__))
+#define LOG_STATIC_TEXT(text) write(fd, text, sizeof(text) - 1)
+#define LOG_DYNAMIC_TEXT(...) write(fd, DumpBuffer, LOG_SNPRINTF(DumpBuffer, DumpBufferSize-1, __VA_ARGS__))
 
 		// Figure out which kind of format string will output a pointer in hex
 #if defined(PRIdPTR)
-#	define POINTER_FORMAT_SUFFIX _CRT_WIDE(PRIdPTR)
+#	define POINTER_FORMAT_SUFFIX PRIdPTR
 #elif defined(_MSC_VER)
-#	define POINTER_FORMAT_SUFFIX L"Ix"
+#	define POINTER_FORMAT_SUFFIX "Ix"
 #elif defined(__GNUC__)
-#	define POINTER_FORMAT_SUFFIX L"zx"
+#	define POINTER_FORMAT_SUFFIX "zx"
 #else
-#	define POINTER_FORMAT_SUFFIX L"p"
+#	define POINTER_FORMAT_SUFFIX "p"
 #endif
 #if LC_MACHINE == LC_MACHINE_X64
-#	define POINTER_FORMAT L"0x%016" POINTER_FORMAT_SUFFIX
+#	define POINTER_FORMAT "0x%016" POINTER_FORMAT_SUFFIX
 #elif LC_MACHINE == LC_MACHINE_X86
-#	define POINTER_FORMAT L"0x%08" POINTER_FORMAT_SUFFIX
+#	define POINTER_FORMAT "0x%08" POINTER_FORMAT_SUFFIX
 #else
-#	define POINTER_FORMAT L"0x%" POINTER_FORMAT_SUFFIX
+#	define POINTER_FORMAT "0x%" POINTER_FORMAT_SUFFIX
 #endif
 
 #ifndef STATUS_ASSERTION_FAILURE
 #	define STATUS_ASSERTION_FAILURE ((DWORD)0xC0000420L)
 #endif
 
-		LOG_STATIC_TEXT(L"**********************************************************************\n");
-		LOG_STATIC_TEXT(L"* UNHANDLED EXCEPTION\n");
+		LOG_STATIC_TEXT("**********************************************************************\n");
+		LOG_STATIC_TEXT("* UNHANDLED EXCEPTION\n");
 
-		if (exc->ExceptionRecord->ExceptionCode != STATUS_ASSERTION_FAILURE && dumpFilename && dumpFilename[0] != L'\0')
+		if (exc->ExceptionRecord->ExceptionCode != STATUS_ASSERTION_FAILURE && dumpFilename && dumpFilename[0] != '\0')
 		{
-			LOG_STATIC_TEXT(L"* A crash dump may have been written to ");
-			write(fd, dumpFilename, std::wcslen(dumpFilename));
-			LOG_STATIC_TEXT(L"\n");
-			LOG_STATIC_TEXT(L"* If this file exists, please send it to a developer for investigation.\n");
+			LOG_STATIC_TEXT("* A crash dump may have been written to ");
+			write(fd, dumpFilename, strlen(dumpFilename));
+			LOG_STATIC_TEXT("\n");
+			LOG_STATIC_TEXT("* If this file exists, please send it to a developer for investigation.\n");
 		}
 		LOG_STATIC_TEXT("**********************************************************************\n");
 		// Log exception type
 		switch (exc->ExceptionRecord->ExceptionCode)
 		{
-#define LOG_EXCEPTION(code, text) case code: LOG_STATIC_TEXT(_CRT_WIDE(#code) L": " text L"\n"); break
-			LOG_EXCEPTION(EXCEPTION_ACCESS_VIOLATION, L"The thread tried to read from or write to a virtual address for which it does not have the appropriate access.");
-			LOG_EXCEPTION(EXCEPTION_ILLEGAL_INSTRUCTION, L"The thread tried to execute an invalid instruction.");
-			LOG_EXCEPTION(EXCEPTION_IN_PAGE_ERROR, L"The thread tried to access a page that was not present, and the system was unable to load the page.");
-			LOG_EXCEPTION(EXCEPTION_NONCONTINUABLE_EXCEPTION, L"The thread tried to continue execution after a noncontinuable exception occurred.");
-			LOG_EXCEPTION(EXCEPTION_PRIV_INSTRUCTION, L"The thread tried to execute an instruction whose operation is not allowed in the current machine mode.");
-			LOG_EXCEPTION(EXCEPTION_STACK_OVERFLOW, L"The thread used up its stack.");
-			LOG_EXCEPTION(EXCEPTION_GUARD_PAGE, L"The thread accessed memory allocated with the PAGE_GUARD modifier.");
-			LOG_EXCEPTION(STATUS_ASSERTION_FAILURE, L"The thread specified a pre- or postcondition that did not hold.");
+#define LOG_EXCEPTION(code, text) case code: LOG_STATIC_TEXT(#code ": " text "\n"); break
+			LOG_EXCEPTION(EXCEPTION_ACCESS_VIOLATION, "The thread tried to read from or write to a virtual address for which it does not have the appropriate access.");
+			LOG_EXCEPTION(EXCEPTION_ILLEGAL_INSTRUCTION, "The thread tried to execute an invalid instruction.");
+			LOG_EXCEPTION(EXCEPTION_IN_PAGE_ERROR, "The thread tried to access a page that was not present, and the system was unable to load the page.");
+			LOG_EXCEPTION(EXCEPTION_NONCONTINUABLE_EXCEPTION, "The thread tried to continue execution after a noncontinuable exception occurred.");
+			LOG_EXCEPTION(EXCEPTION_PRIV_INSTRUCTION, "The thread tried to execute an instruction whose operation is not allowed in the current machine mode.");
+			LOG_EXCEPTION(EXCEPTION_STACK_OVERFLOW, "The thread used up its stack.");
+			LOG_EXCEPTION(EXCEPTION_GUARD_PAGE, "The thread accessed memory allocated with the PAGE_GUARD modifier.");
+			LOG_EXCEPTION(STATUS_ASSERTION_FAILURE, "The thread specified a pre- or postcondition that did not hold.");
 #undef LOG_EXCEPTION
 		default:
-			LOG_DYNAMIC_TEXT(L"%#08x: The thread raised an unknown exception.\n", static_cast<unsigned int>(exc->ExceptionRecord->ExceptionCode));
+			LOG_DYNAMIC_TEXT("%#08x: The thread raised an unknown exception.\n", static_cast<unsigned int>(exc->ExceptionRecord->ExceptionCode));
 			break;
 		}
 		if (exc->ExceptionRecord->ExceptionFlags == EXCEPTION_NONCONTINUABLE)
-			LOG_STATIC_TEXT(L"This is a non-continuable exception.\n");
+			LOG_STATIC_TEXT("This is a non-continuable exception.\n");
 		else
-			LOG_STATIC_TEXT(L"This is a continuable exception.\n");
+			LOG_STATIC_TEXT("This is a continuable exception.\n");
 
 		// For some exceptions, there is a defined meaning to the ExceptionInformation field
 		switch (exc->ExceptionRecord->ExceptionCode)
@@ -126,10 +123,10 @@ namespace
 		case EXCEPTION_IN_PAGE_ERROR:
 			if (exc->ExceptionRecord->NumberParameters < 2)
 			{
-				LOG_STATIC_TEXT(L"Additional information for the exception was not provided.\n");
+				LOG_STATIC_TEXT("Additional information for the exception was not provided.\n");
 				break;
 			}
-			LOG_STATIC_TEXT(L"Additional information for the exception: The thread ");
+			LOG_STATIC_TEXT("Additional information for the exception: The thread ");
 			switch (exc->ExceptionRecord->ExceptionInformation[0])
 			{
 #ifndef EXCEPTION_READ_FAULT
@@ -137,29 +134,29 @@ namespace
 #	define EXCEPTION_WRITE_FAULT 1
 #	define EXCEPTION_EXECUTE_FAULT 8
 #endif
-			case EXCEPTION_READ_FAULT: LOG_STATIC_TEXT(L"tried to read from memory"); break;
-			case EXCEPTION_WRITE_FAULT: LOG_STATIC_TEXT(L"tried to write to memory"); break;
-			case EXCEPTION_EXECUTE_FAULT: LOG_STATIC_TEXT(L"caused an user-mode DEP violation"); break;
-			default: LOG_DYNAMIC_TEXT(L"tried to access (%#x) memory", static_cast<unsigned int>(exc->ExceptionRecord->ExceptionInformation[0])); break;
+			case EXCEPTION_READ_FAULT: LOG_STATIC_TEXT("tried to read from memory"); break;
+			case EXCEPTION_WRITE_FAULT: LOG_STATIC_TEXT("tried to write to memory"); break;
+			case EXCEPTION_EXECUTE_FAULT: LOG_STATIC_TEXT("caused an user-mode DEP violation"); break;
+			default: LOG_DYNAMIC_TEXT("tried to access (%#x) memory", static_cast<unsigned int>(exc->ExceptionRecord->ExceptionInformation[0])); break;
 			}
-			LOG_DYNAMIC_TEXT(L" at address " POINTER_FORMAT ".\n", static_cast<size_t>(exc->ExceptionRecord->ExceptionInformation[1]));
+			LOG_DYNAMIC_TEXT(" at address " POINTER_FORMAT ".\n", static_cast<size_t>(exc->ExceptionRecord->ExceptionInformation[1]));
 			if (exc->ExceptionRecord->ExceptionCode == EXCEPTION_IN_PAGE_ERROR)
 			{
 				if (exc->ExceptionRecord->NumberParameters >= 3)
-					LOG_DYNAMIC_TEXT(L"The NTSTATUS code that resulted in this exception was " POINTER_FORMAT ".\n", static_cast<size_t>(exc->ExceptionRecord->ExceptionInformation[2]));
+					LOG_DYNAMIC_TEXT("The NTSTATUS code that resulted in this exception was " POINTER_FORMAT ".\n", static_cast<size_t>(exc->ExceptionRecord->ExceptionInformation[2]));
 				else
-					LOG_STATIC_TEXT(L"The NTSTATUS code that resulted in this exception was not provided.\n");
+					LOG_STATIC_TEXT("The NTSTATUS code that resulted in this exception was not provided.\n");
 			}
 			break;
 
 		case STATUS_ASSERTION_FAILURE:
 			if (exc->ExceptionRecord->NumberParameters < 3)
 			{
-				LOG_STATIC_TEXT(L"Additional information for the exception was not provided.\n");
+				LOG_STATIC_TEXT("Additional information for the exception was not provided.\n");
 				break;
 			}
 
-			LOG_DYNAMIC_TEXT(L"Additional information for the exception:\n    Assertion that failed: %s\n    File: %s\n    Line: %d\n",
+			LOG_DYNAMIC_TEXT("Additional information for the exception:\n    Assertion that failed: %ls\n    File: %ls\n    Line: %d\n",
 							 reinterpret_cast<wchar_t *>(exc->ExceptionRecord->ExceptionInformation[0]),
 							 reinterpret_cast<wchar_t *>(exc->ExceptionRecord->ExceptionInformation[1]),
 							 (int) exc->ExceptionRecord->ExceptionInformation[2]);
@@ -168,45 +165,45 @@ namespace
 
 		// Dump registers
 #if LC_MACHINE == LC_MACHINE_X64
-		LOG_STATIC_TEXT(L"\nProcessor registers (x86_64):\n");
-		LOG_DYNAMIC_TEXT(L"RAX: " POINTER_FORMAT L", RBX: " POINTER_FORMAT L", RCX: " POINTER_FORMAT L", RDX: " POINTER_FORMAT L"\n",
+		LOG_STATIC_TEXT("\nProcessor registers (x86_64):\n");
+		LOG_DYNAMIC_TEXT("RAX: " POINTER_FORMAT ", RBX: " POINTER_FORMAT ", RCX: " POINTER_FORMAT ", RDX: " POINTER_FORMAT "\n",
 						 static_cast<size_t>(exc->ContextRecord->Rax), static_cast<size_t>(exc->ContextRecord->Rbx),
 						 static_cast<size_t>(exc->ContextRecord->Rcx), static_cast<size_t>(exc->ContextRecord->Rdx));
-		LOG_DYNAMIC_TEXT(L"RBP: " POINTER_FORMAT L", RSI: " POINTER_FORMAT L", RDI: " POINTER_FORMAT L",  R8: " POINTER_FORMAT L"\n",
+		LOG_DYNAMIC_TEXT("RBP: " POINTER_FORMAT ", RSI: " POINTER_FORMAT ", RDI: " POINTER_FORMAT ",  R8: " POINTER_FORMAT "\n",
 						 static_cast<size_t>(exc->ContextRecord->Rbp), static_cast<size_t>(exc->ContextRecord->Rsi),
 						 static_cast<size_t>(exc->ContextRecord->Rdi), static_cast<size_t>(exc->ContextRecord->R8));
-		LOG_DYNAMIC_TEXT(L" R9: " POINTER_FORMAT L", R10: " POINTER_FORMAT L", R11: " POINTER_FORMAT L", R12: " POINTER_FORMAT L"\n",
+		LOG_DYNAMIC_TEXT(" R9: " POINTER_FORMAT ", R10: " POINTER_FORMAT ", R11: " POINTER_FORMAT ", R12: " POINTER_FORMAT "\n",
 						 static_cast<size_t>(exc->ContextRecord->R9), static_cast<size_t>(exc->ContextRecord->R10),
 						 static_cast<size_t>(exc->ContextRecord->R11), static_cast<size_t>(exc->ContextRecord->R12));
-		LOG_DYNAMIC_TEXT(L"R13: " POINTER_FORMAT L", R14: " POINTER_FORMAT L", R15: " POINTER_FORMAT L"\n",
+		LOG_DYNAMIC_TEXT("R13: " POINTER_FORMAT ", R14: " POINTER_FORMAT ", R15: " POINTER_FORMAT "\n",
 						 static_cast<size_t>(exc->ContextRecord->R13), static_cast<size_t>(exc->ContextRecord->R14),
 						 static_cast<size_t>(exc->ContextRecord->R15));
-		LOG_DYNAMIC_TEXT(L"RSP: " POINTER_FORMAT L", RIP: " POINTER_FORMAT L"\n",
+		LOG_DYNAMIC_TEXT("RSP: " POINTER_FORMAT ", RIP: " POINTER_FORMAT "\n",
 						 static_cast<size_t>(exc->ContextRecord->Rsp), static_cast<size_t>(exc->ContextRecord->Rip));
 #elif LC_MACHINE == LC_MACHINE_X86
-		LOG_STATIC_TEXT(L"\nProcessor registers (x86):\n");
-		LOG_DYNAMIC_TEXT(L"EAX: " POINTER_FORMAT L", EBX: " POINTER_FORMAT L", ECX: " POINTER_FORMAT L", EDX: " POINTER_FORMAT L"\n",
+		LOG_STATIC_TEXT("\nProcessor registers (x86):\n");
+		LOG_DYNAMIC_TEXT("EAX: " POINTER_FORMAT ", EBX: " POINTER_FORMAT ", ECX: " POINTER_FORMAT ", EDX: " POINTER_FORMAT "\n",
 						 static_cast<size_t>(exc->ContextRecord->Eax), static_cast<size_t>(exc->ContextRecord->Ebx),
 						 static_cast<size_t>(exc->ContextRecord->Ecx), static_cast<size_t>(exc->ContextRecord->Edx));
-		LOG_DYNAMIC_TEXT(L"ESI: " POINTER_FORMAT L", EDI: " POINTER_FORMAT L"\n",
+		LOG_DYNAMIC_TEXT("ESI: " POINTER_FORMAT ", EDI: " POINTER_FORMAT "\n",
 						 static_cast<size_t>(exc->ContextRecord->Esi), static_cast<size_t>(exc->ContextRecord->Edi));
-		LOG_DYNAMIC_TEXT(L"EBP: " POINTER_FORMAT L", ESP: " POINTER_FORMAT L", EIP: " POINTER_FORMAT L"\n",
+		LOG_DYNAMIC_TEXT("EBP: " POINTER_FORMAT ", ESP: " POINTER_FORMAT ", EIP: " POINTER_FORMAT "\n",
 						 static_cast<size_t>(exc->ContextRecord->Ebp), static_cast<size_t>(exc->ContextRecord->Esp),
 						 static_cast<size_t>(exc->ContextRecord->Eip));
 #endif
 #if LC_MACHINE == LC_MACHINE_X64 || LC_MACHINE == LC_MACHINE_X86
-		LOG_DYNAMIC_TEXT(L"EFLAGS: 0x%08x (%c%c%c%c%c%c%c)\n", static_cast<unsigned int>(exc->ContextRecord->EFlags),
-						 exc->ContextRecord->EFlags & 0x800 ? L'O' : L'.',	// overflow
-						 exc->ContextRecord->EFlags & 0x400 ? L'D' : L'.',	// direction
-						 exc->ContextRecord->EFlags & 0x80 ? L'S' : L'.',	// sign
-						 exc->ContextRecord->EFlags & 0x40 ? L'Z' : L'.',	// zero
-						 exc->ContextRecord->EFlags & 0x10 ? L'A' : L'.',	// auxiliary carry
-						 exc->ContextRecord->EFlags & 0x4 ? L'P' : L'.',	// parity
-						 exc->ContextRecord->EFlags & 0x1 ? L'C' : L'.');	// carry
+		LOG_DYNAMIC_TEXT("EFLAGS: 0x%08x (%c%c%c%c%c%c%c)\n", static_cast<unsigned int>(exc->ContextRecord->EFlags),
+						 exc->ContextRecord->EFlags & 0x800 ? 'O' : '.',	// overflow
+						 exc->ContextRecord->EFlags & 0x400 ? 'D' : '.',	// direction
+						 exc->ContextRecord->EFlags & 0x80 ? 'S' : '.',	// sign
+						 exc->ContextRecord->EFlags & 0x40 ? 'Z' : '.',	// zero
+						 exc->ContextRecord->EFlags & 0x10 ? 'A' : '.',	// auxiliary carry
+						 exc->ContextRecord->EFlags & 0x4 ? 'P' : '.',	// parity
+						 exc->ContextRecord->EFlags & 0x1 ? 'C' : '.');	// carry
 #endif
 
 		// Dump stack
-		LOG_STATIC_TEXT(L"\nStack contents:\n");
+		LOG_STATIC_TEXT("\nStack contents:\n");
 		MEMORY_BASIC_INFORMATION stackInfo;
 		intptr_t stackPointer =
 #if LC_MACHINE == LC_MACHINE_X64
@@ -223,44 +220,44 @@ namespace
 
 			for (intptr_t dumpRowBase = dumpMin & ~0xF; dumpRowBase < dumpMax; dumpRowBase += 0x10)
 			{
-				LOG_DYNAMIC_TEXT(POINTER_FORMAT L": ", dumpRowBase);
+				LOG_DYNAMIC_TEXT(POINTER_FORMAT ": ", dumpRowBase);
 				// Hex dump
 				for (intptr_t dumpRowCursor = dumpRowBase; dumpRowCursor < dumpRowBase + 16; ++dumpRowCursor)
 				{
 					if (dumpRowCursor < dumpMin || dumpRowCursor > dumpMax)
-						LOG_STATIC_TEXT(L"   ");
+						LOG_STATIC_TEXT("   ");
 					else
-						LOG_DYNAMIC_TEXT(L"%02x ", (unsigned int) *reinterpret_cast<unsigned char *>(dumpRowCursor)); // Safe, since it's inside the VM of our process
+						LOG_DYNAMIC_TEXT("%02x ", (unsigned int) *reinterpret_cast<unsigned char *>(dumpRowCursor)); // Safe, since it's inside the VM of our process
 				}
-				LOG_STATIC_TEXT(L"   ");
+				LOG_STATIC_TEXT("   ");
 				// Text dump
 				for (intptr_t dumpRowCursor = dumpRowBase; dumpRowCursor < dumpRowBase + 16; ++dumpRowCursor)
 				{
 					if (dumpRowCursor < dumpMin || dumpRowCursor > dumpMax)
-						LOG_STATIC_TEXT(L" ");
+						LOG_STATIC_TEXT(" ");
 					else
 					{
 						unsigned char c = *reinterpret_cast<unsigned char *>(dumpRowCursor); // Safe, since it's inside the VM of our process
 						if (c < 0x20 || (c > 0x7e && c < 0xa1))
-							LOG_STATIC_TEXT(L".");
+							LOG_STATIC_TEXT(".");
 						else
-							LOG_DYNAMIC_TEXT(L"%c", static_cast<char>(c));
+							LOG_DYNAMIC_TEXT("%c", static_cast<char>(c));
 					}
 				}
-				LOG_STATIC_TEXT(L"\n");
+				LOG_STATIC_TEXT("\n");
 			}
 		}
 		else
 		{
-			LOG_STATIC_TEXT(L"[Failed to access stack memory]\n");
+			LOG_STATIC_TEXT("[Failed to access stack memory]\n");
 		}
 
 		// Initialize DbgHelp.dll symbol functions
 		SymSetOptions(SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS | SYMOPT_LOAD_LINES);
 		HANDLE process = GetCurrentProcess();
-		if (SymInitializeW(process, nullptr, true))
+		if (SymInitialize(process, nullptr, true))
 		{
-			LOG_STATIC_TEXT(L"\nStack trace:\n");
+			LOG_STATIC_TEXT("\nStack trace:\n");
 			auto frame = STACKFRAME64();
 			DWORD imageType;
 			CONTEXT context = *exc->ContextRecord;
@@ -281,52 +278,52 @@ namespace
 			frame.AddrFrame.Offset = context.Ebp;
 #endif
 			// Dump stack trace
-			SYMBOL_INFOW *symbol = reinterpret_cast<SYMBOL_INFOW *>(SymbolBuffer);
-			static_assert(DumpBufferSizeInBytes >= sizeof(*symbol), "SYMBOL_INFO too large to fit into buffer");
-			IMAGEHLP_MODULEW64 *module = reinterpret_cast<IMAGEHLP_MODULEW64 *>(SymbolBuffer);
-			static_assert(DumpBufferSizeInBytes >= sizeof(*module), "IMAGEHLP_MODULE64 too large to fit into buffer");
-			IMAGEHLP_LINEW64 *line = reinterpret_cast<IMAGEHLP_LINEW64 *>(SymbolBuffer);
-			static_assert(DumpBufferSizeInBytes >= sizeof(*line), "IMAGEHLP_LINE64 too large to fit into buffer");
+			SYMBOL_INFO *symbol = reinterpret_cast<SYMBOL_INFO *>(SymbolBuffer);
+			static_assert(DumpBufferSize >= sizeof(*symbol), "SYMBOL_INFO too large to fit into buffer");
+			IMAGEHLP_MODULE64 *module = reinterpret_cast<IMAGEHLP_MODULE64 *>(SymbolBuffer);
+			static_assert(DumpBufferSize >= sizeof(*module), "IMAGEHLP_MODULE64 too large to fit into buffer");
+			IMAGEHLP_LINE64 *line = reinterpret_cast<IMAGEHLP_LINE64 *>(SymbolBuffer);
+			static_assert(DumpBufferSize >= sizeof(*line), "IMAGEHLP_LINE64 too large to fit into buffer");
 			int frameNumber = 0;
 			while (StackWalk64(imageType, process, GetCurrentThread(), &frame, &context, nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr))
 			{
-				LOG_DYNAMIC_TEXT(L"#%3d ", frameNumber);
+				LOG_DYNAMIC_TEXT("#%3d ", frameNumber);
 				module->SizeOfStruct = sizeof(*module);
 				DWORD64 imageBase = 0;
-				if (SymGetModuleInfoW64(process, frame.AddrPC.Offset, module))
+				if (SymGetModuleInfo64(process, frame.AddrPC.Offset, module))
 				{
-					LOG_DYNAMIC_TEXT(L"%s", module->ModuleName);
+					LOG_DYNAMIC_TEXT("%s", module->ModuleName);
 					imageBase = module->BaseOfImage;
 				}
 				DWORD64 disp64;
 				symbol->MaxNameLen = DumpBufferSize - sizeof(*symbol);
 				symbol->SizeOfStruct = sizeof(*symbol);
-				if (SymFromAddrW(process, frame.AddrPC.Offset, &disp64, symbol))
+				if (SymFromAddr(process, frame.AddrPC.Offset, &disp64, symbol))
 				{
-					LOG_DYNAMIC_TEXT(L"!%s+%#lx", symbol->Name, static_cast<long>(disp64));
+					LOG_DYNAMIC_TEXT("!%s+%#lx", symbol->Name, static_cast<long>(disp64));
 				}
 				else if (imageBase > 0)
 				{
-					LOG_DYNAMIC_TEXT(L"+%#lx", static_cast<long>(frame.AddrPC.Offset - imageBase));
+					LOG_DYNAMIC_TEXT("+%#lx", static_cast<long>(frame.AddrPC.Offset - imageBase));
 				}
 				else
 				{
-					LOG_DYNAMIC_TEXT(L"%#lx", static_cast<long>(frame.AddrPC.Offset));
+					LOG_DYNAMIC_TEXT("%#lx", static_cast<long>(frame.AddrPC.Offset));
 				}
 				DWORD disp;
 				line->SizeOfStruct = sizeof(*line);
-				if (SymGetLineFromAddrW64(process, frame.AddrPC.Offset, &disp, line))
+				if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &disp, line))
 				{
-					LOG_DYNAMIC_TEXT(L" [%s @ %u]", line->FileName, static_cast<unsigned int>(line->LineNumber));
+					LOG_DYNAMIC_TEXT(" [%s @ %u]", line->FileName, static_cast<unsigned int>(line->LineNumber));
 				}
-				LOG_STATIC_TEXT(L"\n");
+				LOG_STATIC_TEXT("\n");
 				++frameNumber;
 			}
 			SymCleanup(process);
 		}
 		else
 		{
-			LOG_STATIC_TEXT(L"[Stack trace not available: failed to initialize Debugging Help Library]\n");
+			LOG_STATIC_TEXT("[Stack trace not available: failed to initialize Debugging Help Library]\n");
 		}
 
 		// Dump loaded modules
@@ -341,13 +338,13 @@ namespace
 
 		if (snapshot != INVALID_HANDLE_VALUE)
 		{
-			LOG_STATIC_TEXT(L"\nLoaded modules:\n");
+			LOG_STATIC_TEXT("\nLoaded modules:\n");
 			MODULEENTRY32 *module = reinterpret_cast<MODULEENTRY32 *>(SymbolBuffer);
-			static_assert(DumpBufferSizeInBytes >= sizeof(*module), "MODULEENTRY32 too large to fit into buffer");
+			static_assert(DumpBufferSize >= sizeof(*module), "MODULEENTRY32 too large to fit into buffer");
 			module->dwSize = sizeof(*module);
 			for (BOOL success = Module32First(snapshot, module); success; success = Module32Next(snapshot, module))
 			{
-				LOG_DYNAMIC_TEXT(L"%32s loaded at " POINTER_FORMAT L" - " POINTER_FORMAT L" (%s)\n", module->szModule,
+				LOG_DYNAMIC_TEXT("%32hs loaded at " POINTER_FORMAT " - " POINTER_FORMAT " (%hs)\n", module->szModule,
 								 reinterpret_cast<size_t>(module->modBaseAddr), reinterpret_cast<size_t>(module->modBaseAddr + module->modBaseSize),
 								 module->szExePath);
 			}
@@ -373,47 +370,26 @@ LONG WINAPI GenerateDump(EXCEPTION_POINTERS *pExceptionPointers)
 	// Open dump file
 	// Work on the assumption that the config isn't corrupted
 
-	wchar_t filenameBuffer[_MAX_PATH + sizeof(L"\\\\?\\")] = {L'\0'}; // extra chars for GetFinalPathNameByHandleA, null byte space included
-	std::wmemcpy(filenameBuffer, UserPathWide, std::wcslen(UserPathWide));
+	char filenameBuffer[_MAX_PATH + sizeof("\\\\?\\")] = {'\0'}; // extra chars for GetFinalPathNameByHandleA, null byte space included
+	strncpy(filenameBuffer, Config.General.UserPath, strnlen(Config.General.UserPath, sizeof(Config.General.UserPath)));
 
-	auto *filename = reinterpret_cast<LPWSTR>(DumpBuffer);
+	auto *filename = reinterpret_cast<LPSTR>(DumpBuffer);
 
-	ExpandEnvironmentStrings(filenameBuffer, filename, _MAX_PATH);
+	ExpandEnvironmentStringsA(filenameBuffer, filename, _MAX_PATH);
 
-	static constexpr auto directoryExists = [](std::wstring_view filename) -> bool
-	{
-		// Ignore trailing slash or backslash
-		wchar_t bufFilename[_MAX_PATH + 1];
-		if (!filename.empty())
-		{
-			if (filename.ends_with(L'\\') || filename.ends_with(L'/'))
-			{
-				bufFilename[filename.copy(bufFilename, filename.size() - 1)] = L'\0';
-				filename = {bufFilename, filename.size() - 1};
-			}
-		}
-
-		WIN32_FIND_DATA fdt;
-		HANDLE handle;
-		if ((handle = FindFirstFile(filename.data(), &fdt)) == INVALID_HANDLE_VALUE) return false;
-		FindClose(handle);
-
-		return fdt.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
-	};
-
-	if (!directoryExists(filename))
+	if (!DirectoryExists(filename))
 	{
 		// Config corrupted or broken
-		filename[0] = L'\0';
+		filename[0] = '\0';
 	}
 
 	HANDLE file = INVALID_HANDLE_VALUE;
-	if (filename[0] != L'\0')
+	if (filename[0] != '\0')
 	{
 		// There is some path where we want to store our data
-		const wchar_t tmpl[] = _CRT_WIDE(C4ENGINENAME) L"-crash-YYYY-MM-DD-HH-MM-SS.dmp";
-		size_t pathLength = std::wcslen(filename);
-		if (pathLength + std::size(tmpl) > DumpBufferSize)
+		const char tmpl[] = C4ENGINENAME "-crash-YYYY-MM-DD-HH-MM-SS.dmp";
+		size_t pathLength = strlen(filename);
+		if (pathLength + sizeof(tmpl) / sizeof(*tmpl) > DumpBufferSize)
 		{
 			// Somehow the length of the required path is too long to fit in
 			// our buffer. Don't dump anything then.
@@ -422,54 +398,52 @@ LONG WINAPI GenerateDump(EXCEPTION_POINTERS *pExceptionPointers)
 		else
 		{
 			// Make sure the path ends in a backslash.
-			if (filename[pathLength - 1] != L'\\')
+			if (filename[pathLength - 1] != '\\')
 			{
-				filename[pathLength] = L'\\';
-				filename[++pathLength] = L'\0';
+				filename[pathLength] = '\\';
+				filename[++pathLength] = '\0';
 			}
 			SYSTEMTIME st;
 			GetSystemTime(&st);
 
 			auto *ptr = filename + pathLength;
-			// For some reason, using just %s ends up reading the argument as an ANSI string,
-			//even though swprintf should read it as a wide string.
-			swprintf_s(ptr, _MAX_PATH - pathLength, L"%ls-crash-%04d-%02d-%02d-%02d-%02d-%02d.dmp",
-					_CRT_WIDE(C4ENGINENAME), st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+			sprintf_s(ptr, _MAX_PATH - pathLength, "%s-crash-%04d-%02d-%02d-%02d-%02d-%02d.dmp",
+					C4ENGINENAME, st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
 		}
 	}
 
-	if (filename[0] != L'\0')
+	if (filename[0] != '\0')
 	{
-		file = CreateFile(filename, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_DELETE, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
+		file = CreateFileA(filename, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_DELETE, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
 		// If we can't create a *new* file to dump into, don't dump at all.
 		if (file == INVALID_HANDLE_VALUE)
 		{
-			filename[0] = L'\0';
+			filename[0] = '\0';
 		}
 	}
 
-	wchar_t buffer[DumpBufferSize] = {L'\0'};
-	std::wcscat(buffer, L"LegacyClonk crashed. Please report this crash ");
+	char buffer[DumpBufferSize] = {'\0'};
+	strcat(buffer, "LegacyClonk crashed. Please report this crash ");
 
-	if (GetLogFD() != -1 || filename[0] != L'\0')
+	if (GetLogFD() != -1 || filename[0] != '\0')
 	{
-		std::wcscat(buffer, L"together with the following information to the developers:\n");
+		strcat(buffer, "together with the following information to the developers:\n");
 
 		if (GetLogFD() != -1)
 		{
-			std::wcscat(buffer, L"\nYou can find detailed information in ");
-			GetFinalPathNameByHandle(reinterpret_cast<HANDLE>(_get_osfhandle(GetLogFD())), filenameBuffer, std::size(filenameBuffer), 0);
-			std::wcscat(std::wcscat(buffer, filenameBuffer), L".");
+			strcat(buffer, "\nYou can find detailed information in ");
+			GetFinalPathNameByHandleA(reinterpret_cast<HANDLE>(_get_osfhandle(GetLogFD())), filenameBuffer, sizeof(filenameBuffer), 0);
+			strcat(strcat(buffer, filenameBuffer), ".");
 		}
 
-		if (filename[0] != L'\0')
+		if (filename[0] != '\0')
 		{
-			std::wcscat(std::wcscat(std::wcscat(buffer, L"\nA crash dump has been generated at "), filename), L".");
+			strcat(strcat(strcat(buffer, "\nA crash dump has been generated at "), filename), ".");
 		}
 	}
 	else
 	{
-		std::wcscat(buffer, L"to the developers.");
+		strcat(buffer, "to the developers.");
 	}
 
 	// Write dump (human readable format)
@@ -489,7 +463,7 @@ LONG WINAPI GenerateDump(EXCEPTION_POINTERS *pExceptionPointers)
 		CloseHandle(file);
 	}
 
-	MessageBox(nullptr, buffer, L"LegacyClonk crashed", MB_ICONERROR);
+	MessageBoxA(nullptr, buffer, "LegacyClonk crashed", MB_ICONERROR);
 
 	// Call native exception handler
 	return EXCEPTION_CONTINUE_SEARCH;
@@ -675,13 +649,4 @@ void InstallCrashHandler()
 	if (!IsDebuggerPresent())
 		HookAssert(&assertionHandler);
 #endif
-}
-
-namespace C4CrashHandlerWin32
-{
-	void SetUserPath(const std::string_view userPath)
-	{
-		const std::wstring wide{StdStringEncodingConverter::WinAcpToUtf16(userPath)};
-		UserPathWide[wide.copy(UserPathWide, sizeof(UserPathWide) - 1)] = L'\0';
-	}
 }
