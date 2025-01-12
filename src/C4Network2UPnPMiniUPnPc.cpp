@@ -158,7 +158,13 @@ private:
 			co_return;
 		}
 
+#if MINIUPNPC_API_VERSION >= 18
+		std::array<char, 64> wanAddress;
+		if (const int status{UPNP_GetValidIGD(deviceList.get(), &urls, &igdData, lanAddress.data(), lanAddress.size(), wanAddress.data(), wanAddress.size())}; !status)
+#else
 		if (const int status{UPNP_GetValidIGD(deviceList.get(), &urls, &igdData, lanAddress.data(), lanAddress.size())}; !status)
+#endif
+
 		{
 			logger->error("Could not find valid IGD");
 		}
