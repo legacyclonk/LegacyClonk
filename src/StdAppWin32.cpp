@@ -83,7 +83,7 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 	const std::array<HANDLE, 2> events{NetworkEvent.GetEvent(), TimerEvent.GetEvent()};
 
 	// Wait for something to happen
-	switch (MsgWaitForMultipleObjects(fCheckTimer ? 2 : 1, events.data(), false, iTimeout, QS_ALLEVENTS))
+	switch (MsgWaitForMultipleObjects(fCheckTimer ? 2 : 1, events.data(), false, iTimeout, QS_ALLINPUT))
 	{
 	case WAIT_OBJECT_0: // network event
 		// call network class to handle it
