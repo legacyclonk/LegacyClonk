@@ -411,6 +411,7 @@ void C4ConfigLogging::CompileFunc(StdCompiler *const comp)
 	comp->Value(AudioSystem);
 	comp->Value(AulExec);
 	comp->Value(AulProfiler);
+	comp->Value(AulScript);
 	comp->Value(DDraw);
 	comp->Value(GameControl);
 	comp->Value(Network);

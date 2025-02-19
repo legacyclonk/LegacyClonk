@@ -308,6 +308,7 @@ public:
 	C4LoggerConfig::Config<class C4AudioSystem> AudioSystem;
 	C4LoggerConfig::Config<class C4AulExec> AulExec;
 	C4LoggerConfig::Config<class C4AulProfiler> AulProfiler;
+	C4LoggerConfig::Config<class C4AulScript> AulScript;
 	C4LoggerConfig::Config<class CStdDDraw> DDraw;
 	C4LoggerConfig::Config<class C4GameControl> GameControl;
 	C4LoggerConfig::Config<class C4Network2> Network;

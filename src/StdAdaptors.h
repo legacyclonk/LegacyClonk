@@ -615,7 +615,7 @@ struct StdSTLContainerAdapt
 			}
 			auto first = true;
 			// Write all entries
-			for (auto it : rStruct)
+			for (auto &it : rStruct)
 			{
 				if (!first)
 				{
@@ -660,7 +660,7 @@ struct StdSTLContainerAdapt
 					{
 						pComp->Value(val);
 					}
-					rStruct.emplace_back(val);
+					rStruct.emplace_back(std::move(val));
 				}
 				catch (const StdCompiler::NotFoundException &)
 				{

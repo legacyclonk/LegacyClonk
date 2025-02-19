@@ -27,6 +27,806 @@
 
 #include <format>
 
+namespace C4AulAST
+{
+Statement::~Statement() {}
+Expression::~Expression() {}
+NoRef::~NoRef() {}
+BinaryExpression::~BinaryExpression() {}
+NilTestExpression::~NilTestExpression() {}
+
+std::string Statement::ToTree() const
+{
+	return ToTreeInternal() | std::views::join_with('\n') | std::ranges::to<std::string>();
+}
+
+void Script::CompileFunc(StdCompiler *const comp)
+{
+	Statement::CompileFunc(comp);
+
+	comp->Value(mkNamingAdapt(mkSTLContainerAdapt(statements), "Statements"));
+}
+
+template<std::ranges::range Range>
+static auto IndentElementsOf(Range &&range)
+{
+	return std::forward<Range>(range) | std::views::transform([](std::string str)
+	{
+		return std::string{"\t"} + std::move(str);
+	});
+}
+
+std::generator<std::string> Script::ToTreeInternal() const
+{
+	co_yield "(script";
+
+	for (const auto &statement : statements)
+	{
+		co_yield std::ranges::elements_of(IndentElementsOf(statement->ToTreeInternal()));
+	}
+
+	co_yield ")";
+}
+
+void Expression::CompileFunc(StdCompiler *const comp)
+{
+	Statement::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(mkCastIntAdapt(type), "Type"));
+}
+
+void NoRef::CompileFunc(StdCompiler *const comp)
+{
+	comp->Value(mkNamingAdapt(noRef, "NoRef"));
+}
+
+void Nil::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+}
+
+std::string Nil::GetLiteralString() const
+{
+	return "(nil)";
+}
+
+void IntLiteral::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(value, "Value"));
+}
+
+std::string IntLiteral::GetLiteralString() const
+{
+	return std::format("(int.const {})", value);
+}
+
+void BoolLiteral::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(value, "Value"));
+}
+
+std::string BoolLiteral::GetLiteralString() const
+{
+	return std::format("(bool.const {})", value);
+}
+
+void C4IDLiteral::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(mkC4IDAdapt(value), "Value"));
+}
+
+std::string C4IDLiteral::GetLiteralString() const
+{
+	return std::format("(id.const {})", value);
+}
+
+void StringLiteral::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(value, "Value"));
+}
+
+std::string StringLiteral::GetLiteralString() const
+{
+	return std::format("(string.const {:?})", value);
+}
+
+void ArrayLiteral::CompileFunc(StdCompiler *comp)
+{
+	Expression::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(mkSTLContainerAdapt(expressions), "Expressions"));
+}
+
+std::generator<std::string> ArrayLiteral::ToTreeInternal() const
+{
+	co_yield "(array.const";
+
+	for (const auto &expression : expressions)
+	{
+		co_yield std::ranges::elements_of(IndentElementsOf(expression->ToTreeInternal()));
+	}
+
+	co_yield ")";
+}
+
+void MapLiteral::KeyValuePair::CompileFunc(StdCompiler *const comp)
+{
+	comp->Value(mkNamingAdapt(Key, "Key"));
+	comp->Value(mkNamingAdapt(Value, "Value"));
+}
+
+std::generator<std::string> MapLiteral::KeyValuePair::ToTreeInternal() const
+{
+	co_yield "(key";
+	co_yield std::ranges::elements_of(IndentElementsOf(Key->ToTreeInternal()));
+	co_yield ")";
+	co_yield "(value";
+	co_yield std::ranges::elements_of(IndentElementsOf(Value->ToTreeInternal()));
+	co_yield ")";
+}
+
+void MapLiteral::CompileFunc(StdCompiler *comp)
+{
+	Expression::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(mkSTLContainerAdapt(expressions), "Expressions"));
+}
+
+std::generator<std::string> MapLiteral::ToTreeInternal() const
+{
+	co_yield "map.const (";
+
+	for (const auto &expression : expressions)
+	{
+		co_yield std::ranges::elements_of(IndentElementsOf(expression.ToTreeInternal()));
+	}
+
+	co_yield ")";
+}
+
+void GlobalConstant::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(identifier, "Identifier"));
+	comp->Value(mkNamingAdapt(value, "Value"));
+}
+
+std::generator<std::string> GlobalConstant::ToTreeInternal() const
+{
+	if (auto *const constantLiteral = dynamic_cast<ConstantLiteral *>(value.get()))
+	{
+		co_yield std::format("(global.const.get {:?} {})", identifier, constantLiteral->GetLiteralString());;
+	}
+	else
+	{
+		co_yield std::format("(global.const.get {:?}", identifier);
+		co_yield std::ranges::elements_of(IndentElementsOf(value->ToTreeInternal()));
+		co_yield ")";
+	}
+}
+
+void ParN::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+	NoRef::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(n, "N"));
+}
+
+std::generator<std::string> ParN::ToTreeInternal() const
+{
+	co_yield std::format("(par.get{} {})", IsNoRef() ? "" : ".ref", n);
+}
+
+void VarN::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+	NoRef::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(identifier, "Identifier"));
+}
+
+std::generator<std::string> VarN::ToTreeInternal() const
+{
+	co_yield std::format("(var.get{} {:?})", IsNoRef() ? "" : ".ref", identifier);
+}
+
+void Par::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+	NoRef::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(expression, "Expression"));
+}
+
+std::generator<std::string> Par::ToTreeInternal() const
+{
+	co_yield std::format("(par.get.expr{}", IsNoRef() ? "" : ".ref");
+	co_yield std::ranges::elements_of(IndentElementsOf(expression->ToTreeInternal()));
+	co_yield ")";
+}
+
+void Var::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+	NoRef::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(expression, "Expression"));
+}
+
+std::generator<std::string> Var::ToTreeInternal() const
+{
+	co_yield std::format("(var.get.expr{}", IsNoRef() ? "" : ".ref");
+	co_yield std::ranges::elements_of(IndentElementsOf(expression->ToTreeInternal()));
+	co_yield ")";
+}
+
+void LocalN::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+	NoRef::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(identifier, "Identifier"));
+}
+
+std::generator<std::string> LocalN::ToTreeInternal() const
+{
+	co_yield std::format("(local.get{} {:?})", IsNoRef() ? "" : ".ref", identifier);
+}
+
+void GlobalN::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+	NoRef::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(identifier, "Identifier"));
+}
+
+std::generator<std::string> GlobalN::ToTreeInternal() const
+{
+	co_yield std::format("(global.get{} {:?})", IsNoRef() ? "" : ".ref", identifier);
+}
+
+void Declaration::CompileFunc(StdCompiler *const comp)
+{
+	Statement::CompileFunc(comp);
+
+	comp->Value(mkNamingAdapt(type, "Type"));
+	comp->Value(mkNamingAdapt(identifier, "Identifier"));
+	comp->Value(mkNamingAdapt(StdPtrAdapt{value, true}, "Value"));
+}
+
+std::generator<std::string> Declaration::ToTreeInternal() const
+{
+	const std::string typeName{[](const Type type)
+	{
+		switch (type)
+		{
+		case Type::Local:
+			return "local";
+
+		case Type::Static:
+			return "global";
+
+		case Type::StaticConst:
+			return "global.const";
+
+		case Type::Var:
+			return "var";
+		}
+	}(type)};
+
+	if (value)
+	{
+		if (auto *const constantLiteral = dynamic_cast<ConstantLiteral *>(value.get()))
+		{
+			co_yield std::format("({} {:?} {})", typeName, identifier, constantLiteral->GetLiteralString());;
+		}
+		else
+		{
+			co_yield std::format("({} {:?}", typeName, identifier);
+			co_yield std::ranges::elements_of(IndentElementsOf(value->ToTreeInternal()));
+			co_yield ")";
+		}
+	}
+	else
+	{
+		co_yield std::format("({} {:?})", typeName, identifier);
+	}
+}
+
+void Declarations::CompileFunc(StdCompiler *const comp)
+{
+	Statement::CompileFunc(comp);
+
+	comp->Value(mkNamingAdapt(mkSTLContainerAdapt(declarations), "Declarations"));
+}
+
+std::generator<std::string> Declarations::ToTreeInternal() const
+{
+	co_yield "(declare";
+
+	for (const auto &declaration : declarations)
+	{
+		co_yield std::ranges::elements_of(IndentElementsOf(declaration->ToTreeInternal()));
+	}
+
+	co_yield ")";
+}
+
+static auto mkOperatorAdapt(std::size_t &opID)
+{
+	struct Adaptor
+	{
+		std::size_t &OpID;
+
+		void CompileFunc(StdCompiler *comp)
+		{
+			if (comp->isCompiler())
+			{
+				std::string identifier;
+				comp->Value(identifier);
+
+				for (std::size_t i{0}; C4ScriptOpMap[i].Identifier; ++i)
+				{
+					if (C4ScriptOpMap[i].Identifier == identifier)
+					{
+						OpID = i;
+						return;
+					}
+				}
+
+				comp->excCorrupt("Invalid operator ID");
+			}
+			else
+			{
+				std::string identifier{C4ScriptOpMap[OpID].Identifier};
+				comp->Value(identifier);
+			}
+		}
+	};
+
+	return Adaptor{.OpID = opID};
+}
+
+void UnaryOperator::CompileFunc(StdCompiler *comp)
+{
+	Expression::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(mkOperatorAdapt(opID), "Operator"));
+	comp->Value(mkNamingAdapt(side, "Expression"));
+}
+
+std::generator<std::string> UnaryOperator::ToTreeInternal() const
+{
+	co_yield std::format("(op.unary {:?}", C4ScriptOpMap[opID].Identifier);
+	co_yield std::ranges::elements_of(IndentElementsOf(side->ToTreeInternal()));
+	co_yield ")";
+}
+
+void BinaryOperator::CompileFunc(StdCompiler *comp)
+{
+	Expression::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(mkOperatorAdapt(opID), "Operator"));
+	comp->Value(mkNamingAdapt(lhs, "LHS"));
+	comp->Value(mkNamingAdapt(rhs, "RHS"));
+}
+
+std::generator<std::string> BinaryOperator::ToTreeInternal() const
+{
+	co_yield std::format("(op.binary {:?}", C4ScriptOpMap[opID].Identifier);
+	co_yield std::ranges::elements_of(IndentElementsOf(lhs->ToTreeInternal()));
+	co_yield std::ranges::elements_of(IndentElementsOf(rhs->ToTreeInternal()));
+	co_yield ")";
+}
+
+void Prototype::Parameter::CompileFunc(StdCompiler *const comp)
+{
+	comp->Value(mkNamingAdapt(mkCastIntAdapt(Type), "Type"));
+	comp->Value(mkNamingAdapt(Name, "Name")),
+	comp->Value(mkNamingAdapt(IsRef, "IsRef"));
+}
+
+void Prototype::CompileFunc(StdCompiler *const comp)
+{
+	Statement::CompileFunc(comp);
+
+	comp->Value(mkNamingAdapt(mkCastIntAdapt(returnType), "ReturnType"));
+	comp->Value(mkNamingAdapt(returnRef,  "ReturnRef"));
+	comp->Value(mkNamingAdapt(mkCastIntAdapt(access),     "Access"));
+	comp->Value(mkNamingAdapt(name,       "Name"));
+	comp->Value(mkNamingAdapt(mkSTLContainerAdapt(parameters), "Parameters"));
+}
+
+std::generator<std::string> Prototype::ToTreeInternal() const
+{
+	co_return;
+}
+
+void Function::CompileFunc(StdCompiler *const comp)
+{
+	Statement::CompileFunc(comp);
+
+	comp->Value(mkNamingAdapt(description, "Description"));
+	comp->Value(mkNamingAdapt(prototype, "Prototype"));
+	comp->Value(mkNamingAdapt(body, "Body"));
+}
+
+std::generator<std::string> Function::ToTreeInternal() const
+{
+	co_return;
+}
+
+void Block::CompileFunc(StdCompiler *const comp)
+{
+	Statement::CompileFunc(comp);
+
+	comp->Value(mkNamingAdapt(mkSTLContainerAdapt(statements), "Statements"));
+}
+
+std::generator<std::string> Block::ToTreeInternal() const
+{
+	co_yield "(block";
+	for (const auto &statement : statements)
+	{
+		co_yield std::ranges::elements_of(IndentElementsOf(statement->ToTreeInternal()));
+	}
+	co_yield ")";
+}
+
+void Include::CompileFunc(StdCompiler *const comp)
+{
+	Statement::CompileFunc(comp);
+
+	comp->Value(mkNamingAdapt(mkC4IDAdapt(id), "ID"));
+	comp->Value(mkNamingAdapt(nowarn, "NoWarn"));
+}
+
+std::generator<std::string> Include::ToTreeInternal() const
+{
+	co_yield std::format("(include {}{})", C4IdText(id), nowarn ? " nowarn" : "");
+}
+
+void Append::CompileFunc(StdCompiler *const comp)
+{
+	Statement::CompileFunc(comp);
+
+	comp->Value(mkNamingAdapt(mkC4IDAdapt(id), "ID"));
+	comp->Value(mkNamingAdapt(nowarn, "NoWarn"));
+}
+
+std::generator<std::string> Append::ToTreeInternal() const
+{
+	co_yield std::format("(appendto {}{})", id == -1 ? "*" : C4IdText(id), nowarn ? " nowarn" : "");
+}
+
+void Strict::CompileFunc(StdCompiler *const comp)
+{
+	Statement::CompileFunc(comp);
+
+	comp->Value(mkNamingAdapt(strict, "Strict"));
+}
+
+std::generator<std::string> Strict::ToTreeInternal() const
+{
+	co_yield std::format("(strict {})", std::to_underlying(strict));
+}
+
+void Return::CompileFunc(StdCompiler *const comp)
+{
+	Statement::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(expression, "Expression"));
+}
+
+std::generator<std::string> Return::ToTreeInternal() const
+{
+	co_yield std::format("(return");
+	co_yield std::ranges::elements_of(IndentElementsOf(expression->ToTreeInternal()));
+	co_yield ")";
+}
+
+void ReturnAsParam::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(expression, "Expression"));
+}
+
+std::generator<std::string> ReturnAsParam::ToTreeInternal() const
+{
+	co_yield std::format("(returnparam");
+	co_yield std::ranges::elements_of(IndentElementsOf(expression->ToTreeInternal()));
+	co_yield ")";
+}
+
+void FunctionCall::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(identifier, "Identifier"));
+	comp->Value(mkNamingAdapt(mkSTLContainerAdapt(arguments), "Arguments"));
+}
+
+std::generator<std::string> FunctionCall::ToTreeInternal() const
+{
+	co_yield std::format("(call {:?}", identifier);
+	for (const auto &argument : arguments)
+	{
+		co_yield std::ranges::elements_of(IndentElementsOf(argument->ToTreeInternal()));
+	}
+	co_yield ")";
+}
+
+void ArrayAccess::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+	NilTestExpression::CompileFunc(comp);
+	NoRef::CompileFunc(comp);
+
+	comp->Value(mkNamingAdapt(lhs, "LHS"));
+	comp->Value(mkNamingAdapt(rhs, "RHS"));
+}
+
+std::generator<std::string> ArrayAccess::ToTreeInternal() const
+{
+	co_yield std::format("(array.access{}", IsNoRef() ? "" : ".ref");
+	co_yield std::ranges::elements_of(IndentElementsOf(lhs->ToTreeInternal()));
+	co_yield std::ranges::elements_of(IndentElementsOf(rhs->ToTreeInternal()));
+	co_yield ")";
+}
+
+void ArrayAccess::OnSetNoRef()
+{
+	lhs = C4AulAST::NoRef::SetNoRef(std::move(lhs));
+}
+
+void ArrayAppend::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+	NilTestExpression::CompileFunc(comp);
+
+	comp->Value(mkNamingAdapt(array, "Array"));
+}
+
+std::generator<std::string> ArrayAppend::ToTreeInternal() const
+{
+	co_yield std::format("(array.append");
+	co_yield std::ranges::elements_of(IndentElementsOf(array->ToTreeInternal()));
+	co_yield ")";
+}
+
+void PropertyAccess::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+	NilTestExpression::CompileFunc(comp);
+	NoRef::CompileFunc(comp);
+
+	comp->Value(mkNamingAdapt(object, "Object"));
+	comp->Value(mkNamingAdapt(property, "Property"));
+}
+
+std::generator<std::string> PropertyAccess::ToTreeInternal() const
+{
+	co_yield std::format("(property.access{} {:?}", IsNoRef() ? "" : ".ref", property);
+	co_yield std::ranges::elements_of(IndentElementsOf(object->ToTreeInternal()));
+	co_yield ")";
+}
+
+void IndirectCall::CompileFunc(StdCompiler *const comp)
+{
+	Expression::CompileFunc(comp);
+	NilTestExpression::CompileFunc(comp);
+
+	comp->Value(mkNamingAdapt(globalCall, "GlobalCall"));
+
+	if (!globalCall)
+	{
+		comp->Value(mkNamingAdapt(callee, "Callee"));
+	}
+	comp->Value(mkNamingAdapt(failSafe, "FailSafe"));
+	comp->Value(mkNamingAdapt(mkC4IDAdapt(namespaceId), "NamespaceId"));
+	comp->Value(mkNamingAdapt(identifier, "Identifier"));
+	comp->Value(mkNamingAdapt(mkSTLContainerAdapt(arguments), "Arguments"));
+}
+
+std::generator<std::string> IndirectCall::ToTreeInternal() const
+{
+	std::string header{std::format("(icall {:?}", identifier)};
+	if (namespaceId)
+	{
+		header += std::format(" {}", C4IdText(namespaceId));
+	}
+
+	if (globalCall)
+	{
+		header += " global";
+	}
+
+	if (failSafe)
+	{
+		header += " failsafe" ;
+	}
+
+	co_yield std::move(header);
+
+	if (!globalCall)
+	{
+		co_yield std::ranges::elements_of(IndentElementsOf(callee->ToTreeInternal()));
+	}
+
+	for (const auto &argument : arguments)
+	{
+		co_yield std::ranges::elements_of(IndentElementsOf(argument->ToTreeInternal()));
+	}
+
+	co_yield ")";
+}
+
+void If::CompileFunc(StdCompiler *const comp)
+{
+	Statement::CompileFunc(comp);
+
+	comp->Value(mkNamingAdapt(condition, "Condition"));
+	comp->Value(mkNamingAdapt(then, "Then"));
+	comp->Value(mkNamingAdapt(StdPtrAdapt{other, true}, "Else"));
+}
+
+template<std::derived_from<Statement> T>
+static std::generator<std::string> StatementWithName(const std::string_view name, const std::unique_ptr<T> &statement)
+{
+	co_yield std::format("({}", name);
+	co_yield std::ranges::elements_of(IndentElementsOf(statement->ToTreeInternal()));
+	co_yield ")";
+}
+
+template<std::derived_from<Statement> T>
+static std::generator<std::string> StatementIfPresent(const std::string_view name, const std::unique_ptr<T> &statement)
+{
+	if (statement)
+	{
+		co_yield std::format("({}", name);
+		co_yield std::ranges::elements_of(IndentElementsOf(statement->ToTreeInternal()));
+		co_yield ")";
+	}
+}
+
+std::generator<std::string> If::ToTreeInternal() const
+{
+	co_yield "(if";
+	co_yield std::ranges::elements_of(IndentElementsOf([this]() -> std::generator<std::string>
+	{
+		co_yield std::ranges::elements_of(StatementIfPresent("condition", condition));
+		co_yield std::ranges::elements_of(StatementIfPresent("then", then));
+		co_yield std::ranges::elements_of(StatementIfPresent("else", other));
+	}()));
+	co_yield ")";
+}
+
+void ExprIf::CompileFunc(StdCompiler *comp)
+{
+	Expression::CompileFunc(comp);
+
+	comp->Value(mkNamingAdapt(condition, "Condition"));
+	comp->Value(mkNamingAdapt(StdPtrAdapt{then, true}, "Then"));
+	comp->Value(mkNamingAdapt(StdPtrAdapt{other, true}, "Else"));
+}
+
+std::generator<std::string> ExprIf::ToTreeInternal() const
+{
+	co_yield "(if";
+	co_yield std::ranges::elements_of(IndentElementsOf([this]() -> std::generator<std::string>
+	{
+		co_yield std::ranges::elements_of(StatementIfPresent("condition", condition));
+		co_yield std::ranges::elements_of(StatementIfPresent("then", then));
+		co_yield std::ranges::elements_of(StatementIfPresent("else", other));
+	}()));
+	co_yield ")";
+}
+
+void While::CompileFunc(StdCompiler *const comp)
+{
+	Statement::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(condition, "Condition"));
+	comp->Value(mkNamingAdapt(StdPtrAdapt{body, true}, "Body"));
+}
+
+std::generator<std::string> While::ToTreeInternal() const
+{
+	co_yield "(while";
+	co_yield std::ranges::elements_of(IndentElementsOf([this]() -> std::generator<std::string>
+	{
+		co_yield std::ranges::elements_of(StatementWithName("condition", condition));
+		co_yield std::ranges::elements_of(StatementIfPresent("body", body));
+	}()));
+	co_yield ")";
+}
+
+void For::CompileFunc(StdCompiler *const comp)
+{
+	Statement::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(StdPtrAdapt{init, true}, "Init"));
+	comp->Value(mkNamingAdapt(StdPtrAdapt{condition, true}, "Condition"));
+	comp->Value(mkNamingAdapt(StdPtrAdapt{after, true}, "After"));
+	comp->Value(mkNamingAdapt(StdPtrAdapt{body, true}, "Body"));
+}
+
+std::generator<std::string> For::ToTreeInternal() const
+{
+	co_yield "(for";
+	co_yield std::ranges::elements_of(IndentElementsOf([this]() -> std::generator<std::string>
+	{
+		co_yield std::ranges::elements_of(StatementIfPresent("init", init));
+		co_yield std::ranges::elements_of(StatementIfPresent("condition", condition));
+		co_yield std::ranges::elements_of(StatementIfPresent("after", after));
+		co_yield std::ranges::elements_of(StatementIfPresent("body", body));
+	}()));
+	co_yield ")";
+}
+
+void ForEach::CompileFunc(StdCompiler *const comp)
+{
+	Statement::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(init, "Init"));
+	comp->Value(mkNamingAdapt(iterable, "Iterable"));
+	comp->Value(mkNamingAdapt(StdPtrAdapt{body, true}, "Body"));
+}
+
+std::generator<std::string> ForEach::ToTreeInternal() const
+{
+	co_yield "(foreach";
+	co_yield std::ranges::elements_of(IndentElementsOf([this]() -> std::generator<std::string>
+	{
+		co_yield std::ranges::elements_of(StatementWithName("init", init));
+		co_yield std::ranges::elements_of(StatementWithName("iterable", iterable));
+		co_yield std::ranges::elements_of(StatementIfPresent("body", body));
+	}()));
+	co_yield ")";
+}
+
+void Inherited::CompileFunc(StdCompiler *const comp)
+{
+	FunctionCall::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(failSafe, "FailSafe"));
+
+	if (failSafe)
+	{
+		comp->Value(mkNamingAdapt(found, "Found"));
+	}
+}
+
+std::generator<std::string> Inherited::ToTreeInternal() const
+{
+	std::string header{std::format("(inherited {:?}", identifier)};
+	if (failSafe)
+	{
+		header += " failsafe";
+		header += found ? " found" : " notfound";
+	}
+
+	co_yield std::move(header);
+
+	for (const auto &argument : arguments)
+	{
+		co_yield std::ranges::elements_of(IndentElementsOf(argument->ToTreeInternal()));
+	}
+
+	co_yield ")";
+}
+
+std::generator<std::string> Break::ToTreeInternal() const
+{
+	co_yield "(break)";
+}
+
+std::generator<std::string> Continue::ToTreeInternal() const
+{
+	co_yield "(continue)";
+}
+
+std::generator<std::string> This::ToTreeInternal() const
+{
+	co_yield "(this)";
+}
+
+std::generator<std::string> Nop::ToTreeInternal() const
+{
+	co_yield "(nop)";
+}
+
+}
+
 C4AulError::C4AulError() {}
 
 void C4AulError::show() const
