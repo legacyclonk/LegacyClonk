@@ -156,7 +156,7 @@ public:
 	std::unique_ptr<C4AulAST::Block> Parse_Function();
 	std::unique_ptr<C4AulAST::Statement> Parse_Statement();
 	std::unique_ptr<C4AulAST::Block> Parse_Block();
-	std::vector<std::unique_ptr<C4AulAST::Expression>> Parse_Params(std::size_t maxParameters = C4AUL_MAX_Par, const char *sWarn = nullptr, C4AulFunc *pFunc = nullptr);
+	std::vector<std::unique_ptr<C4AulAST::Expression>> Parse_Params(std::size_t maxParameters = C4AUL_MAX_Par, const char *sWarn = nullptr, C4AulFunc *pFunc = nullptr, bool addNilNodes = false);
 	std::unique_ptr<C4AulAST::ArrayLiteral> Parse_Array();
 	std::unique_ptr<C4AulAST::MapLiteral> Parse_Map();
 	std::unique_ptr<C4AulAST::While> Parse_While();
@@ -934,7 +934,6 @@ const char *C4Aul::GetTTName(C4AulBCCType e)
 
 void C4AulScript::AddBCC(C4AulBCCType eType, std::intptr_t X, const char *SPos)
 {
-	if (eType == AB_Inc1_Postfix) DebugBreak();
 	// range check
 	if (CodeSize >= CodeBufSize)
 	{
@@ -1434,10 +1433,12 @@ void C4AulScript::ParseFn(C4AulScriptFunc *Fn, bool fExprOnly)
 		Fn->Body = state.Parse_Function();
 	else
 	{
-		auto expression = state.Parse_Expression();
+		auto expression = C4AulAST::NoRef::SetNoRef(state.Parse_Expression());
 		state.SetNoRef();
+		std::vector<std::unique_ptr<C4AulAST::Expression>> expressions;
+		expressions.emplace_back(std::move(expression));
 		std::vector<std::unique_ptr<C4AulAST::Statement>> statements;
-		statements.emplace_back(std::make_unique<C4AulAST::Return>(state.GetOffset(), std::move(expression)));
+		statements.emplace_back(std::make_unique<C4AulAST::Return>(state.GetOffset(), std::move(expressions), false));
 		Fn->Body = std::make_unique<C4AulAST::Block>(state.GetOffset(), std::move(statements));
 		AddBCC(AB_RETURN, 0, state.SPos);
 	}
@@ -1862,7 +1863,6 @@ std::unique_ptr<C4AulAST::Function> C4AulParseState::Parse_FuncHead()
 	}
 end:
 	return std::make_unique<C4AulAST::Function>(GetOffset(), std::move(prototype), Fn->Desc ? Fn->Desc.getData() : "", std::make_unique<C4AulAST::Block>(GetOffset(), std::move(statements)));
-
 }
 
 void C4AulParseState::Parse_Desc()
@@ -1918,7 +1918,7 @@ std::unique_ptr<C4AulAST::Block> C4AulParseState::Parse_Function()
 			{
 				AddBCC(AB_NIL);
 				AddBCC(AB_RETURN);
-				statements.emplace_back(std::make_unique<C4AulAST::Return>(GetOffset(), std::make_unique<C4AulAST::Nil>(GetOffset())));
+				statements.emplace_back(std::make_unique<C4AulAST::Return>(GetOffset(), std::vector<std::unique_ptr<C4AulAST::Expression>>{}, false));
 			}
 			// and break
 			Done = true;
@@ -2124,36 +2124,43 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 		{
 			bool multi_params_hack = false;
 			Shift();
-			std::unique_ptr<C4AulAST::Expression> expression;
+			std::vector<std::unique_ptr<C4AulAST::Expression>> expressions;
 			const auto offset = GetOffset();
+			bool preferStack{false};
 			if (TokenType == ATT_BOPEN && Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2)
 			{
+				preferStack = true;
 				// parse return(retvals) - return(retval, unused, parameters, ...) allowed for backwards compatibility
 				if (auto params = Parse_Params(1, nullptr); params.size() == 1)
 				{
 					// return (1 + 1) * 3 returns 6, not 2
 					auto param = std::move(params.front());
-					expression = Parse_Expression2(std::move(param));
+					expressions.emplace_back(Parse_Expression2(std::move(param)));
 				}
 				else
+				{
+					expressions = std::move(params);
 					multi_params_hack = true;
+				}
 			}
 			else if (TokenType == ATT_SCOLON)
 			{
 				// allow return; without return value (implies nil)
 				AddBCC(AB_NIL);
-				expression = std::make_unique<C4AulAST::Nil>(GetOffset());
 			}
 			else
 			{
-				expression = Parse_Expression();
+				expressions.emplace_back(Parse_Expression());
 			}
 			if (!Fn->bReturnRef)
 			{
-				expression = C4AulAST::NoRef::SetNoRef(std::move(expression));
+				if (!expressions.empty())
+				{
+					expressions[0] = C4AulAST::NoRef::SetNoRef(std::move(expressions[0]));
+				}
 				SetNoRef();
 			}
-			statement = std::make_unique<C4AulAST::Return>(offset, std::move(expression));
+			statement = std::make_unique<C4AulAST::Return>(offset, std::move(expressions), preferStack);
 			AddBCC(AB_RETURN);
 			if (multi_params_hack && TokenType != ATT_SCOLON)
 			{
@@ -2327,7 +2334,9 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 
 			if (gotohack)
 			{
-				statement = std::make_unique<C4AulAST::Return>(GetOffset(), std::move(expression));
+				std::vector<std::unique_ptr<C4AulAST::Expression>> expressions;
+				expressions.emplace_back(std::move(expression));
+				statement = std::make_unique<C4AulAST::Return>(GetOffset(), std::move(expressions), false);
 			}
 			else
 			{
@@ -2348,7 +2357,7 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 	return statement;
 }
 
-std::vector<std::unique_ptr<C4AulAST::Expression>> C4AulParseState::Parse_Params(const std::size_t maxParameters, const char *sWarn, C4AulFunc *pFunc)
+std::vector<std::unique_ptr<C4AulAST::Expression>> C4AulParseState::Parse_Params(const std::size_t maxParameters, const char *sWarn, C4AulFunc *pFunc, const bool addNilNodes)
 {
 	// so it's a regular function; force "("
 	Match(ATT_BOPEN);
@@ -2386,7 +2395,7 @@ std::vector<std::unique_ptr<C4AulAST::Expression>> C4AulParseState::Parse_Params
 			while (result.size() < maxParameters && i < C4AUL_MAX_Par)
 			{
 				AddBCC(AB_PARN_R, i);
-				result.emplace_back(std::make_unique<C4AulAST::ParN>(GetOffset(), C4V_Any, result.size()));
+				result.emplace_back(std::make_unique<C4AulAST::ParN>(GetOffset(), C4V_Any, i));
 				++i;
 			}
 			// Do not allow more parameters even if there is place left
@@ -2435,10 +2444,13 @@ std::vector<std::unique_ptr<C4AulAST::Expression>> C4AulParseState::Parse_Params
 	{
 		AddBCC(AB_STACK, maxParameters - result.size());
 
-		/*while (result.size() < maxParameters)
+		if (addNilNodes)
 		{
-			result.emplace_back(std::make_unique<C4AulAST::Nil>(GetOffset()));
-		}*/
+			while (result.size() < maxParameters)
+			{
+				result.emplace_back(std::make_unique<C4AulAST::Nil>(GetOffset(), true));
+			}
+		}
 	}
 	return result;
 }
@@ -2588,7 +2600,7 @@ std::unique_ptr<C4AulAST::While> C4AulParseState::Parse_While()
 		Match(ATT_BCLOSE);
 	}
 	else
-		condition = C4AulAST::NoRef::SetNoRef(std::move(Parse_Params(1, C4AUL_While).front()));
+		condition = C4AulAST::NoRef::SetNoRef(std::move(Parse_Params(1, C4AUL_While, nullptr, true).front()));
 	SetNoRef();
 	// Check condition
 	const auto iCond = a->GetCodePos();
@@ -2627,7 +2639,7 @@ std::unique_ptr<C4AulAST::If> C4AulParseState::Parse_If()
 	}
 	else
 	{
-		condition = C4AulAST::NoRef::SetNoRef(std::move(Parse_Params(1, C4AUL_If).front()));
+		condition = C4AulAST::NoRef::SetNoRef(std::move(Parse_Params(1, C4AUL_If, nullptr, true).front()));
 	}
 	SetNoRef();
 	// create bytecode, remember position
@@ -2644,10 +2656,25 @@ std::unique_ptr<C4AulAST::If> C4AulParseState::Parse_If()
 		// set condition jump target
 		SetJumpHere(iCond);
 		Shift();
+		const auto codePos = a->GetCodePos();
 		// expect a command now
 		other = Parse_Statement();
-		// set jump target
-		SetJumpHere(iJump);
+
+		if (Type == PARSER)
+		{
+			if (codePos == a->GetCodePos())
+			{
+				// No else block? Avoid a redundant AB_JUMP 1
+				--a->GetCodeByPos(iCond)->bccX;
+				--a->CPos;
+				--a->CodeSize;
+			}
+			else
+			{
+				// set jump target
+				SetJumpHere(iJump);
+			}
+		}
 	}
 	else
 		// set condition jump target
@@ -2914,7 +2941,7 @@ std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression(int iPar
 			// return: treat as regular function with special byte code
 			Strict2Error("return used as a parameter");
 			Shift();
-			lhs = std::make_unique<C4AulAST::ReturnAsParam>(GetOffset(), std::move(Parse_Params(1, nullptr).front()));
+			lhs = std::make_unique<C4AulAST::ReturnAsParam>(GetOffset(), std::move(Parse_Params(1, nullptr, nullptr, true).front()), true);
 			AddBCC(AB_RETURN);
 			AddBCC(AB_STACK, +1);
 		}
@@ -2922,14 +2949,14 @@ std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression(int iPar
 		{
 			// and for Par
 			Shift();
-			lhs = std::make_unique<C4AulAST::Par>(GetOffset(), C4V_Any, std::move(Parse_Params(1, C4AUL_Par).front()));
+			lhs = std::make_unique<C4AulAST::Par>(GetOffset(), C4V_Any, std::move(Parse_Params(1, C4AUL_Par, nullptr, true).front()));
 			AddBCC(AB_PAR_R);
 		}
 		else if (SEqual(Idtf, C4AUL_Var))
 		{
 			// same for Var
 			Shift();
-			lhs = std::make_unique<C4AulAST::Var>(GetOffset(), C4V_Any, std::move(Parse_Params(1, C4AUL_Var).front()));
+			lhs = std::make_unique<C4AulAST::Var>(GetOffset(), C4V_Any, std::move(Parse_Params(1, C4AUL_Var, nullptr, true).front()));
 			AddBCC(AB_VAR_R);
 		}
 		else if (SEqual(Idtf, C4AUL_Inherited) || SEqual(Idtf, C4AUL_SafeInherited))
@@ -2990,10 +3017,13 @@ std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression(int iPar
 					lhs = std::make_unique<C4AulAST::FunctionCall>(GetOffset(), std::move(name), Parse_Params(FoundFn->GetParCount(), FoundFn->Name, FoundFn));
 				else
 				{
-					AddBCC(AB_STACK, FoundFn->GetParCount());
 					std::vector<std::unique_ptr<C4AulAST::Expression>> pars;
-					pars.reserve(FoundFn->GetParCount());
-					std::ranges::generate_n(std::back_inserter(pars), FoundFn->GetParCount(), [this] { return std::make_unique<C4AulAST::Nil>(GetOffset()); });
+					if (FoundFn->GetParCount())
+					{
+						AddBCC(AB_STACK, FoundFn->GetParCount());
+						pars.reserve(FoundFn->GetParCount());
+						std::ranges::generate_n(std::back_inserter(pars), FoundFn->GetParCount(), [this] { return std::make_unique<C4AulAST::Nil>(GetOffset()); });
+					}
 					lhs = std::make_unique<C4AulAST::FunctionCall>(GetOffset(), std::move(name), std::move(pars));
 				}
 				AddBCC(AB_FUNC, reinterpret_cast<std::intptr_t>(FoundFn));
@@ -3052,7 +3082,7 @@ std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression(int iPar
 	}
 	case ATT_INT: // constant in cInt
 	{
-		AddBCC(AB_INT, cInt);
+		AddBCC(AB_INT, static_cast<C4ValueInt>(cInt));
 		lhs = std::make_unique<C4AulAST::IntLiteral>(GetOffset(), static_cast<C4ValueInt>(cInt));
 		Shift();
 		break;
@@ -3097,10 +3127,27 @@ std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression(int iPar
 		if (Type == PARSER && SEqual(C4ScriptOpMap[OpID].Identifier, "-"))
 			if ((a->CPos - 1)->bccType == AB_INT)
 			{
-				auto *const constant = dynamic_cast<C4AulAST::IntLiteral *>(lhs.get());
-				assert(constant);
 				(a->CPos - 1)->bccX = -(a->CPos - 1)->bccX;
-				constant->Negate();
+
+				if (auto *const constant = dynamic_cast<C4AulAST::IntLiteral *>(lhs.get()))
+				{
+					constant->Negate();
+				}
+				else if (auto *const globalConstant = dynamic_cast<C4AulAST::GlobalConstant *>(lhs.get()))
+				{
+					if (auto *const constant = dynamic_cast<C4AulAST::IntLiteral *>(globalConstant->GetValue().get()))
+					{
+						constant->Negate();
+					}
+					else
+					{
+						assert(false);
+					}
+				}
+				else
+				{
+					assert(false);
+				}
 				break;
 			}
 
@@ -3409,9 +3456,6 @@ std::tuple<std::unique_ptr<C4AulAST::Expression>, bool> C4AulParseState::Parse_E
 					{
 						throw C4AulParseError(this, "insufficient access level", Idtf);
 					}
-
-					// write namespace chunk to byte code
-					AddBCC(AB_CALLNS, static_cast<std::intptr_t>(idNS));
 				}
 			}
 			else
@@ -3930,6 +3974,15 @@ bool C4AulScript::Parse()
 					if (oldCode[i].bccType != code[i].bccType || oldCode[i].bccX != code[i].bccX)
 					{
 						logger->error("Mismatch at offset {}: oldCode = {} {}, newCode = {} {}", i, C4Aul::GetTTName(oldCode[i].bccType), oldCode[i].bccX, C4Aul::GetTTName(code[i].bccType), code[i].bccX);
+						if (oldCode[i].bccType == AB_CALL && code[i].bccType == AB_CALL)
+						{
+							auto *const oldFunc = reinterpret_cast<C4AulScriptFunc *>(oldCode[i].bccX);
+							auto *const newFunc = reinterpret_cast<C4AulScriptFunc *>(code[i].bccX);
+							logger->info("old: {} ({}) new: {} ({})", oldFunc->Name, dynamic_cast<C4DefScriptHost *>(oldFunc->Owner)->GetFilePath(), newFunc->Name, dynamic_cast<C4DefScriptHost *>(newFunc->Owner)->GetFilePath());
+						}
+
+						++Game.ScriptEngine.errCnt;
+						break;
 					}
 
 					/*if (oldCode[i].SPos != code[i].SPos)

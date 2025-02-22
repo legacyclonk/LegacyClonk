@@ -307,7 +307,8 @@ enum class NodeType : std::uint16_t
 	Continue,
 	Inherited,
 	This,
-	Nop
+	Nop,
+	Error
 };
 
 inline void CompileFunc(NodeType &nodeType, StdCompiler *const comp)
@@ -388,6 +389,7 @@ public:
 				NODE(Inherited),
 				NODE(This),
 				NODE(Nop),
+				NODE(Error),
 #undef NODE
 				};
 
@@ -515,8 +517,8 @@ public:
 class Nil : public ConstantLiteral
 {
 public:
-	Nil(const std::intptr_t position)
-		: ConstantLiteral{position, C4V_Any} {}
+	Nil(const std::intptr_t position, const bool preferStack = false)
+		: ConstantLiteral{position, C4V_Any}, preferStack{preferStack} {}
 
 protected:
 	explicit Nil() : ConstantLiteral{} {}
@@ -529,9 +531,13 @@ public:
 protected:
 	NodeType GetNodeType() const override { return NodeType::Nil; }
 
+protected:
+	bool preferStack{false};
+
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
+
 };
 
 class IntLiteral : public ConstantLiteral
@@ -588,7 +594,7 @@ protected:
 class C4IDLiteral : public ConstantLiteral
 {
 public:
-	C4IDLiteral(const std::intptr_t position, const bool value) : ConstantLiteral{position, C4V_C4ID}, value{value} {}
+	C4IDLiteral(const std::intptr_t position, const C4ID value) : ConstantLiteral{position, C4V_C4ID}, value{value} {}
 
 protected:
 	explicit C4IDLiteral() : ConstantLiteral{} {}
@@ -710,6 +716,8 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+
+	const std::unique_ptr<C4AulAST::Literal> &GetValue() const noexcept { return value; }
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::GlobalConstant; }
@@ -1201,14 +1209,13 @@ protected:
 class Return : public Statement
 {
 public:
-	Return(const std::intptr_t position, std::unique_ptr<Expression> expression)
-		: Statement{position}, expression{std::move(expression)} {}
+	Return(const std::intptr_t position, std::vector<std::unique_ptr<Expression>> expressions, const bool preferStack)
+		: Statement{position}, expressions{std::move(expressions)}, preferStack{preferStack} {}
 
 private:
-	explicit Return() : Return{{}, {}} {}
+	explicit Return() : Return{{}, {}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
@@ -1217,7 +1224,8 @@ protected:
 	NodeType GetNodeType() const override { return NodeType::Return; }
 
 protected:
-	std::unique_ptr<Expression> expression;
+	std::vector<std::unique_ptr<Expression>> expressions;
+	bool preferStack;
 
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
@@ -1227,11 +1235,11 @@ protected:
 class ReturnAsParam : public Expression
 {
 public:
-	ReturnAsParam(const std::intptr_t position, std::unique_ptr<Expression> expression)
-		: Expression{position, expression->GetType()}, expression{std::move(expression)} {}
+	ReturnAsParam(const std::intptr_t position, std::unique_ptr<Expression> expression, const bool preferStack)
+		: Expression{position, expression->GetType()}, expression{std::move(expression)}, preferStack{preferStack} {}
 
 private:
-	explicit ReturnAsParam() : ReturnAsParam{{}, {}} {}
+	explicit ReturnAsParam() : ReturnAsParam{{}, {}, {}} {}
 
 public:
 
@@ -1244,6 +1252,7 @@ protected:
 
 protected:
 	std::unique_ptr<Expression> expression;
+	bool preferStack;
 
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
@@ -1370,6 +1379,8 @@ public:
 	std::generator<std::string> ToTreeInternal() const override;
 
 protected:
+	void OnSetNoRef() override;
+
 	NodeType GetNodeType() const override { return NodeType::PropertyAccess; }
 
 protected:
@@ -1666,6 +1677,25 @@ protected:
 	friend class ::C4AulBCCGenerator;
 };
 
+class Error : public Expression
+{
+public:
+	Error(const std::intptr_t position) : Expression{position, C4V_Any} {}
+
+private:
+	explicit Error() : Expression{{}, {}} {}
+
+public:
+	void EmitInternal(C4AulBCCGenerator &generator) const override;
+	std::generator<std::string> ToTreeInternal() const override;
+
+protected:
+	NodeType GetNodeType() const override { return NodeType::Error; }
+
+	template<std::derived_from<Statement> T>
+	friend void CompileNewFunc(T *&, StdCompiler *);
+};
+
 template<std::derived_from<Statement> T>
 inline void CompileNewFunc(T *&obj, StdCompiler *const comp)
 {
@@ -1718,6 +1748,7 @@ inline void CompileNewFunc(T *&obj, StdCompiler *const comp)
 		NODE(Inherited),
 		NODE(This),
 		NODE(Nop),
+		NODE(Error),
 #undef NODE
 	};
 
@@ -1769,6 +1800,7 @@ inline void CompileNewFunc(T *&obj, StdCompiler *const comp)
 		NODE(Inherited);
 		NODE(This);
 		NODE(Nop);
+		NODE(Error);
 
 #undef NODE
 
@@ -2204,6 +2236,9 @@ public:
 
 	std::size_t GetStackSize() const noexcept { return stack; }
 
+	void AddError(std::size_t position);
+	void RemoveBCC() { code.pop_back(); }
+
 public:
 	C4AulScript &Script;
 	C4AulScriptFunc *Function{nullptr};
@@ -2211,6 +2246,7 @@ public:
 private:
 	bool done{false};
 	bool jump{false};
+	bool error{false};
 	std::vector<C4AulBCC> code;
 	std::intptr_t stack{0};
 	std::stack<Loop> loopStack;

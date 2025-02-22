@@ -82,6 +82,7 @@ void NoRef::CompileFunc(StdCompiler *const comp)
 void Nil::CompileFunc(StdCompiler *const comp)
 {
 	Expression::CompileFunc(comp);
+	comp->Value(mkNamingAdapt(preferStack, "PreferStack"));
 }
 
 std::string Nil::GetLiteralString() const
@@ -509,26 +510,60 @@ std::generator<std::string> Strict::ToTreeInternal() const
 void Return::CompileFunc(StdCompiler *const comp)
 {
 	Statement::CompileFunc(comp);
-	comp->Value(mkNamingAdapt(expression, "Expression"));
+	comp->Value(mkNamingAdapt(mkSTLContainerAdapt(expressions), "Expression"));
+	comp->Value(mkNamingAdapt(preferStack, "PreferStack"));
 }
 
 std::generator<std::string> Return::ToTreeInternal() const
 {
-	co_yield std::format("(return");
-	co_yield std::ranges::elements_of(IndentElementsOf(expression->ToTreeInternal()));
+	std::string header{"(return"};
+	if (preferStack)
+	{
+		header += " preferstack";
+	}
+
+	co_yield std::move(header);
+
+	if (expressions.empty())
+	{
+		co_yield "\t(nil)";
+	}
+	else
+	{
+		for (const auto &expression : expressions)
+		{
+			co_yield std::ranges::elements_of(IndentElementsOf(expression->ToTreeInternal()));
+		}
+	}
+
 	co_yield ")";
 }
 
 void ReturnAsParam::CompileFunc(StdCompiler *const comp)
 {
 	Expression::CompileFunc(comp);
-	comp->Value(mkNamingAdapt(expression, "Expression"));
+	comp->Value(mkNamingAdapt(StdPtrAdapt{expression, true}, "Expression"));
+	comp->Value(mkNamingAdapt(preferStack, "PreferStack"));
 }
 
 std::generator<std::string> ReturnAsParam::ToTreeInternal() const
 {
-	co_yield std::format("(returnparam");
-	co_yield std::ranges::elements_of(IndentElementsOf(expression->ToTreeInternal()));
+	std::string header{"(returnparam"};
+	if (preferStack)
+	{
+		header += " preferstack";
+	}
+
+	co_yield std::move(header);
+
+	if (expression)
+	{
+		co_yield std::ranges::elements_of(IndentElementsOf(expression->ToTreeInternal()));
+	}
+	else
+	{
+		co_yield "\t(nil)";
+	}
 	co_yield ")";
 }
 
@@ -585,6 +620,11 @@ std::generator<std::string> ArrayAppend::ToTreeInternal() const
 	co_yield std::format("(array.append");
 	co_yield std::ranges::elements_of(IndentElementsOf(array->ToTreeInternal()));
 	co_yield ")";
+}
+
+void PropertyAccess::OnSetNoRef()
+{
+	object = NoRef::SetNoRef(std::move(object));
 }
 
 void PropertyAccess::CompileFunc(StdCompiler *const comp)
@@ -659,7 +699,7 @@ void If::CompileFunc(StdCompiler *const comp)
 	Statement::CompileFunc(comp);
 
 	comp->Value(mkNamingAdapt(condition, "Condition"));
-	comp->Value(mkNamingAdapt(then, "Then"));
+	comp->Value(mkNamingAdapt(StdPtrAdapt{then, true}, "Then"));
 	comp->Value(mkNamingAdapt(StdPtrAdapt{other, true}, "Else"));
 }
 
@@ -823,6 +863,11 @@ std::generator<std::string> This::ToTreeInternal() const
 std::generator<std::string> Nop::ToTreeInternal() const
 {
 	co_yield "(nop)";
+}
+
+std::generator<std::string> Error::ToTreeInternal() const
+{
+	co_yield "(error)";
 }
 
 }
