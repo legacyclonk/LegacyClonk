@@ -103,6 +103,8 @@ CMAKE_DEPENDENT_OPTION(USE_LIBNOTIFY "Use libnotify for desktop notifications" O
 option(USE_MINIUPNPC "Use miniupnpc for UPnP support" ON)
 # USE_WINDOWS_RUNTIME
 CMAKE_DEPENDENT_OPTION(USE_WINDOWS_RUNTIME "Use Windows Runtime features" ON "WIN32" OFF)
+# USE_SYSTEM_SPDLOG
+option(USE_SYSTEM_SPDLOG "Use system spdlog instead of local checkout" OFF)
 
 if (USE_LTO)
 	include(CheckIPOSupported)
@@ -416,20 +418,25 @@ if (USE_SDL_MIXER)
 endif ()
 
 # Link spdlog
-FetchContent_Declare(
-	spdlog
-	GIT_REPOSITORY https://github.com/gabime/spdlog.git
-	GIT_TAG v1.14.1
-)
+if (USE_SYSTEM_SPDLOG)
+	find_package(spdlog REQUIRED)
+else ()
+	FetchContent_Declare(
+		spdlog
+		GIT_REPOSITORY https://github.com/gabime/spdlog.git
+		GIT_TAG v1.14.1
+	)
 
-set(SPDLOG_BUILD_EXAMPLE OFF)
-set(SPDLOG_DISABLE_DEFAULT_LOGGER ON)
-set(SPDLOG_ENABLE_PCH ${USE_PCH})
-set(SPDLOG_USE_STD_FORMAT ON)
+	set(SPDLOG_BUILD_EXAMPLE OFF)
+	set(SPDLOG_DISABLE_DEFAULT_LOGGER ON)
+	set(SPDLOG_ENABLE_PCH ${USE_PCH})
+	set(SPDLOG_USE_STD_FORMAT ON)
 
-FetchContent_MakeAvailable(spdlog)
+	FetchContent_MakeAvailable(spdlog)
 
-target_compile_definitions(spdlog PUBLIC SPDLOG_EOL=\"\\x0A\")
+	target_compile_definitions(spdlog PUBLIC SPDLOG_EOL=\"\\x0A\")
+endif ()
+
 target_link_libraries(standard spdlog::spdlog)
 
 # Link Windows Imaging Component
