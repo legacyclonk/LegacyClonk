@@ -131,7 +131,7 @@ void StringLiteral::CompileFunc(StdCompiler *const comp)
 
 std::string StringLiteral::GetLiteralString() const
 {
-	return std::format("(string.const {:?})", value);
+	return std::format("(string.const \"{}\")", value);
 }
 
 void ArrayLiteral::CompileFunc(StdCompiler *comp)
@@ -197,11 +197,11 @@ std::generator<std::string> GlobalConstant::ToTreeInternal() const
 {
 	if (auto *const constantLiteral = dynamic_cast<ConstantLiteral *>(value.get()))
 	{
-		co_yield std::format("(global.const.get {:?} {})", identifier, constantLiteral->GetLiteralString());;
+		co_yield std::format("(global.const.get \"{}\" {})", identifier, constantLiteral->GetLiteralString());;
 	}
 	else
 	{
-		co_yield std::format("(global.const.get {:?}", identifier);
+		co_yield std::format("(global.const.get \"{}\"", identifier);
 		co_yield std::ranges::elements_of(IndentElementsOf(value->ToTreeInternal()));
 		co_yield ")";
 	}
@@ -228,7 +228,7 @@ void VarN::CompileFunc(StdCompiler *const comp)
 
 std::generator<std::string> VarN::ToTreeInternal() const
 {
-	co_yield std::format("(var.get{} {:?})", IsNoRef() ? "" : ".ref", identifier);
+	co_yield std::format("(var.get{} \"{}\")", IsNoRef() ? "" : ".ref", identifier);
 }
 
 void Par::CompileFunc(StdCompiler *const comp)
@@ -268,7 +268,7 @@ void LocalN::CompileFunc(StdCompiler *const comp)
 
 std::generator<std::string> LocalN::ToTreeInternal() const
 {
-	co_yield std::format("(local.get{} {:?})", IsNoRef() ? "" : ".ref", identifier);
+	co_yield std::format("(local.get{} \"{}\")", IsNoRef() ? "" : ".ref", identifier);
 }
 
 void GlobalN::CompileFunc(StdCompiler *const comp)
@@ -280,7 +280,7 @@ void GlobalN::CompileFunc(StdCompiler *const comp)
 
 std::generator<std::string> GlobalN::ToTreeInternal() const
 {
-	co_yield std::format("(global.get{} {:?})", IsNoRef() ? "" : ".ref", identifier);
+	co_yield std::format("(global.get{} \"{}\")", IsNoRef() ? "" : ".ref", identifier);
 }
 
 void Declaration::CompileFunc(StdCompiler *const comp)
@@ -316,18 +316,18 @@ std::generator<std::string> Declaration::ToTreeInternal() const
 	{
 		if (auto *const constantLiteral = dynamic_cast<ConstantLiteral *>(value.get()))
 		{
-			co_yield std::format("({} {:?} {})", typeName, identifier, constantLiteral->GetLiteralString());;
+			co_yield std::format("({} \"{}\" {})", typeName, identifier, constantLiteral->GetLiteralString());;
 		}
 		else
 		{
-			co_yield std::format("({} {:?}", typeName, identifier);
+			co_yield std::format("({} \"{}\"", typeName, identifier);
 			co_yield std::ranges::elements_of(IndentElementsOf(value->ToTreeInternal()));
 			co_yield ")";
 		}
 	}
 	else
 	{
-		co_yield std::format("({} {:?})", typeName, identifier);
+		co_yield std::format("({} \"{}\")", typeName, identifier);
 	}
 }
 
@@ -394,7 +394,7 @@ void UnaryOperator::CompileFunc(StdCompiler *comp)
 
 std::generator<std::string> UnaryOperator::ToTreeInternal() const
 {
-	co_yield std::format("(op.unary {:?}", C4ScriptOpMap[opID].Identifier);
+	co_yield std::format("(op.unary \"{}\"", C4ScriptOpMap[opID].Identifier);
 	co_yield std::ranges::elements_of(IndentElementsOf(side->ToTreeInternal()));
 	co_yield ")";
 }
@@ -409,7 +409,7 @@ void BinaryOperator::CompileFunc(StdCompiler *comp)
 
 std::generator<std::string> BinaryOperator::ToTreeInternal() const
 {
-	co_yield std::format("(op.binary {:?}", C4ScriptOpMap[opID].Identifier);
+	co_yield std::format("(op.binary \"{}\"", C4ScriptOpMap[opID].Identifier);
 	co_yield std::ranges::elements_of(IndentElementsOf(lhs->ToTreeInternal()));
 	co_yield std::ranges::elements_of(IndentElementsOf(rhs->ToTreeInternal()));
 	co_yield ")";
@@ -576,7 +576,7 @@ void FunctionCall::CompileFunc(StdCompiler *const comp)
 
 std::generator<std::string> FunctionCall::ToTreeInternal() const
 {
-	co_yield std::format("(call {:?}", identifier);
+	co_yield std::format("(call \"{}\"", identifier);
 	for (const auto &argument : arguments)
 	{
 		co_yield std::ranges::elements_of(IndentElementsOf(argument->ToTreeInternal()));
@@ -639,7 +639,7 @@ void PropertyAccess::CompileFunc(StdCompiler *const comp)
 
 std::generator<std::string> PropertyAccess::ToTreeInternal() const
 {
-	co_yield std::format("(property.access{} {:?}", IsNoRef() ? "" : ".ref", property);
+	co_yield std::format("(property.access{} \"{}\"", IsNoRef() ? "" : ".ref", property);
 	co_yield std::ranges::elements_of(IndentElementsOf(object->ToTreeInternal()));
 	co_yield ")";
 }
@@ -663,7 +663,7 @@ void IndirectCall::CompileFunc(StdCompiler *const comp)
 
 std::generator<std::string> IndirectCall::ToTreeInternal() const
 {
-	std::string header{std::format("(icall {:?}", identifier)};
+	std::string header{std::format("(icall \"{}\"", identifier)};
 	if (namespaceId)
 	{
 		header += std::format(" {}", C4IdText(namespaceId));
@@ -828,7 +828,7 @@ void Inherited::CompileFunc(StdCompiler *const comp)
 
 std::generator<std::string> Inherited::ToTreeInternal() const
 {
-	std::string header{std::format("(inherited {:?}", identifier)};
+	std::string header{std::format("(inherited \"{}\"", identifier)};
 	if (failSafe)
 	{
 		header += " failsafe";
