@@ -123,8 +123,22 @@ enum C4AulTokenType
 	ATT_EOF       // end of file
 };
 
+struct ParseExpression3Result
+{
+	std::unique_ptr<C4AulAST::Expression> Expression;
+	bool Success;
+
+	ParseExpression3Result(std::unique_ptr<C4AulAST::Expression> expression, const bool success) : Expression{std::move(expression)}, Success{success} {}
+	ParseExpression3Result(std::unique_ptr<C4AulAST::Error> error) : Expression{std::move(error)}, Success{false} {}
+};
+
 class C4AulParseState
 {
+public:
+	struct ParseError
+	{
+		std::string Message;
+	};
 public:
 	typedef enum { PARSER, PREPARSER } TypeType;
 	C4AulParseState(C4AulScriptFunc *Fn, C4AulScript *a, TypeType Type) :
@@ -151,47 +165,56 @@ public:
 	bool Done; // done parsing?
 	TypeType Type; // emitting bytecode?
 	std::unique_ptr<C4AulAST::Script> Parse_Script();
-	std::unique_ptr<C4AulAST::Function> Parse_FuncHead();
-	void Parse_Desc();
-	std::unique_ptr<C4AulAST::Block> Parse_Function();
-	std::unique_ptr<C4AulAST::Statement> Parse_Statement();
-	std::unique_ptr<C4AulAST::Block> Parse_Block();
-	std::vector<std::unique_ptr<C4AulAST::Expression>> Parse_Params(std::size_t maxParameters = C4AUL_MAX_Par, const char *sWarn = nullptr, C4AulFunc *pFunc = nullptr, bool addNilNodes = false);
-	std::unique_ptr<C4AulAST::ArrayLiteral> Parse_Array();
-	std::unique_ptr<C4AulAST::MapLiteral> Parse_Map();
-	std::unique_ptr<C4AulAST::While> Parse_While();
-	std::unique_ptr<C4AulAST::If> Parse_If();
-	std::unique_ptr<C4AulAST::For> Parse_For();
-	std::unique_ptr<C4AulAST::ForEach> Parse_ForEach();
-	std::unique_ptr<C4AulAST::Expression> Parse_Expression(int iParentPrio = -1); // includes Parse_Expression2
-	std::unique_ptr<C4AulAST::Expression> Parse_Expression2(std::unique_ptr<C4AulAST::Expression> lhs, int iParentPrio = -1); // parses operators + Parse_Expression3
-	std::tuple<std::unique_ptr<C4AulAST::Expression>, bool> Parse_Expression3(std::unique_ptr<C4AulAST::Expression> lhs); // navigation: ->, [], . and ?
-	std::unique_ptr<C4AulAST::Declarations> Parse_Var();
-	std::unique_ptr<C4AulAST::Declarations> Parse_Local();
-	std::unique_ptr<C4AulAST::Declarations> Parse_Static();
-	std::unique_ptr<C4AulAST::Declarations> Parse_Const();
+	C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> Parse_TopLevelStatement(const char *&sPos0, bool &done);
+	C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> Parse_FuncHead();
+	std::expected<void, C4AulParseError> Parse_Desc();
+	C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> Parse_Function();
+	C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> Parse_Statement();
+	C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> Parse_Block();
+	C4AulParseResult<std::vector<std::unique_ptr<C4AulAST::Expression>>> Parse_Params(std::size_t maxParameters = C4AUL_MAX_Par, const char *sWarn = nullptr, C4AulFunc *pFunc = nullptr, bool addNilNodes = false);
+	C4AulParseResult<std::unique_ptr<C4AulAST::Expression>> Parse_Array();
+	C4AulParseResult<std::unique_ptr<C4AulAST::Expression>> Parse_Map();
+	C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> Parse_While();
+	C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> Parse_If();
+	C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> Parse_For();
+	C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> Parse_ForEach();
+	C4AulParseResult<std::unique_ptr<C4AulAST::Expression>> Parse_Expression(int iParentPrio = -1); // includes Parse_Expression2
+	C4AulParseResult<std::unique_ptr<C4AulAST::Expression>> Parse_Expression2(std::unique_ptr<C4AulAST::Expression> lhs, int iParentPrio = -1); // parses operators + Parse_Expression3
+	C4AulParseResult<ParseExpression3Result> Parse_Expression3(std::unique_ptr<C4AulAST::Expression> lhs); // navigation: ->, [], . and ?
+	C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> Parse_Var();
+	C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> Parse_Local();
+	C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> Parse_Static();
+	C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> Parse_Const();
 
-	bool IsMapLiteral();
+	std::expected<bool, C4AulParseError> IsMapLiteral();
 
 	template<C4AulTokenType closingAtt>
-	void SkipBlock();
+	std::expected<void, C4AulParseError> SkipBlock();
 
 	bool AdvanceSpaces(); // skip whitespaces; return whether script ended
 	int GetOperator(const char *pScript);
 	enum HoldStringsPolicy { Discard, Hold, Ref };
-	C4AulTokenType GetNextToken(char *pToken, std::intptr_t *pInt, HoldStringsPolicy HoldStrings, bool bOperator); // get next token of SPos
+	[[nodiscard]] std::expected<C4AulTokenType, C4AulParseError> GetNextToken(char *pToken, std::intptr_t *pInt, HoldStringsPolicy HoldStrings, bool bOperator); // get next token of SPos
 
-	void Shift(HoldStringsPolicy HoldStrings = Hold, bool bOperator = true);
-	void Match(C4AulTokenType TokenType, const char *Message = nullptr);
-	[[noreturn]] void UnexpectedToken(const char *Expected);
+	[[nodiscard]] std::expected<void, C4AulParseError> Shift(HoldStringsPolicy HoldStrings = Hold, bool bOperator = true);
+	[[nodiscard]] std::expected<void, C4AulParseError> Match(C4AulTokenType TokenType, const char *Message = nullptr);
+	[[nodiscard]] C4AulParseError UnexpectedToken(const char *Expected);
 	const char *GetTokenName(C4AulTokenType TokenType);
 
-	void Warn(std::string_view msg, const char *pIdtf = nullptr);
-	void StrictError(std::string_view message, C4AulScriptStrict errorSince, const char *identifier = nullptr);
-	void Strict2Error(std::string_view message, const char *identifier = nullptr);
+	void Warn(std::string_view msg, std::string_view identifier = {});
+	[[nodiscard]] std::expected<void, C4AulParseError> StrictError(std::string_view message, C4AulScriptStrict errorSince, std::string_view identifier = {});
+	[[nodiscard]] std::expected<void, C4AulParseError> Strict2Error(std::string_view message, std::string_view identifier = {});
 
 	void SetNoRef(); // Switches the bytecode to generate a value instead of a reference
 	std::intptr_t GetOffset() const { return SPos - OriginalPos; }
+
+	std::unique_ptr<C4AulAST::Error> ErrorNode(std::vector<std::unique_ptr<C4AulAST::Statement>> statements = {}) const { return std::make_unique<C4AulAST::Error>(GetOffset(), std::move(statements)); }
+	std::unique_ptr<C4AulAST::Error> ErrorNode(std::unique_ptr<C4AulAST::Statement> statement) const
+	{
+		std::vector<std::unique_ptr<C4AulAST::Statement>> statements;
+		statements.emplace_back(std::move(statement));
+		return std::make_unique<C4AulAST::Error>(GetOffset(), std::move(statements));
+	}
 
 private:
 	bool fJump;
@@ -224,18 +247,108 @@ private:
 	void AddLoopControl(bool fBreak);
 };
 
-void C4AulScript::Warn(const std::string_view msg, const char *pIdtf)
+#define RETURN_EXPECTED_ON_ERROR(expr) \
+do \
+{ \
+if (auto error = (expr); !error) \
+{ \
+	return std::unexpected{std::move(error).error()}; \
+} \
+} \
+while (false)
+
+#define RETURN_ON_ERROR(expr) \
+do \
+{ \
+if (auto error = (expr); !error) \
+{ \
+	return {ErrorNode(), std::move(error).error()}; \
+} \
+} \
+while (false)
+
+#define RETURN_NODE_ON_ERROR(expr) \
+do \
+{ \
+if (auto error = (expr); !error) \
+{ \
+	return {ErrorNode(node()), std::move(error).error()}; \
+} \
+} \
+while (false)
+
+#define RETURN_NODE_ON_RESULT_ERROR(expr) \
+do \
+{ \
+auto &ref = (expr); \
+if (ref.Error) \
+{ \
+	return {node(), std::move(ref.Error)}; \
+} \
+} \
+while (false)
+
+#define RETURN_NODE_ON_RESULT_ERROR_EXPR3(expr) \
+do \
+{ \
+auto &ref = (expr); \
+if (ref.Error) \
+{ \
+	return {{node(), false}, std::move(ref.Error)}; \
+} \
+} \
+while (false)
+
+#define ASSIGN_RESULT(var, expr) \
+do \
+{ \
+auto result = (expr); \
+var = std::move(result.Result); \
+RETURN_NODE_ON_RESULT_ERROR(result); \
+} \
+while (false)
+
+#define ASSIGN_RESULT_EXPR3(var, expr) \
+do \
+{ \
+auto result = (expr); \
+var = std::move(result.Result); \
+RETURN_NODE_ON_RESULT_ERROR_EXPR3(result); \
+} \
+while (false)
+
+#define ASSIGN_RESULT_NOREF(var, expr) \
+do \
+{ \
+auto result = C4AulAST::NoRef::SetNoRef(expr); \
+SetNoRef(); \
+var = std::move(result.Result); \
+RETURN_NODE_ON_RESULT_ERROR(result); \
+} \
+while (false)
+
+#define ASSIGN_RESULT_NOREF_EXPR3(var, expr) \
+do \
+{ \
+	auto result = C4AulAST::NoRef::SetNoRef(expr); \
+	SetNoRef(); \
+	var = std::move(result.Result); \
+	RETURN_NODE_ON_RESULT_ERROR_EXPR3(result); \
+} \
+while (false)
+
+void C4AulScript::Warn(const std::string_view msg, const std::string_view identifier)
 {
-	C4AulParseError{this, msg, pIdtf, true}.show();
+	C4AulParseError{this, msg, identifier, true}.show();
 	++Game.ScriptEngine.warnCnt;
 }
 
-void C4AulParseState::Warn(const std::string_view msg, const char *pIdtf)
+void C4AulParseState::Warn(const std::string_view msg, const std::string_view identifier)
 {
 	// do not show errors for System.c4g scripts that appear to be pure #appendto scripts
 	if (Fn && !Fn->Owner->Def && !Fn->Owner->Appends.empty()) return;
 
-	C4AulParseError{this, msg, pIdtf, true}.show();
+	C4AulParseError::ShowWarning(*this, msg, identifier);
 	if (Fn && Fn->pOrgScript != a)
 	{
 		DebugLog("  (as #appendto/#include to {})", Fn->Owner->ScriptName);
@@ -243,23 +356,28 @@ void C4AulParseState::Warn(const std::string_view msg, const char *pIdtf)
 	++Game.ScriptEngine.warnCnt;
 }
 
-void C4AulParseState::StrictError(const std::string_view message, C4AulScriptStrict errorSince, const char *identifier)
+std::expected<void, C4AulParseError> C4AulParseState::StrictError(const std::string_view message, C4AulScriptStrict errorSince, const std::string_view identifier)
 {
 	const auto strictness = Fn ? Fn->pOrgScript->Strict : a->Strict;
 	if (strictness < errorSince)
+	{
 		Warn(message, identifier);
+		return {};
+	}
 	else
-		throw C4AulParseError(this, message, identifier);
+	{
+		return std::unexpected{C4AulParseError::FormatErrorMessage(*this, message, identifier)};
+	}
 }
 
-void C4AulParseState::Strict2Error(const std::string_view message, const char *identifier)
+std::expected<void, C4AulParseError> C4AulParseState::Strict2Error(const std::string_view message, const std::string_view identifier)
 {
 	return StrictError(message, C4AulScriptStrict::STRICT2, identifier);
 }
 
-C4AulParseError::C4AulParseError(const std::string_view message, const char *identifier, bool warn)
+C4AulParseError::C4AulParseError(const std::string_view message, const std::string_view identifier, bool warn)
 {
-	if (identifier)
+	if (!identifier.empty())
 	{
 		this->message = std::format("{}{}", message, identifier);
 	}
@@ -271,8 +389,8 @@ C4AulParseError::C4AulParseError(const std::string_view message, const char *ide
 	isWarning = warn;
 }
 
-C4AulParseError::C4AulParseError(C4AulParseState *state, const std::string_view msg, const char *pIdtf, bool Warn)
-	: C4AulParseError{msg, pIdtf, Warn}
+C4AulParseError::C4AulParseError(C4AulParseState *state, const std::string_view msg, const std::string_view identifier, bool Warn)
+	: C4AulParseError{msg, identifier, Warn}
 {
 	if (state->Prototype && state->Prototype->GetName().empty())
 	{
@@ -305,8 +423,18 @@ C4AulParseError::C4AulParseError(C4AulParseState *state, const std::string_view 
 	}
 }
 
-C4AulParseError::C4AulParseError(C4AulScript *pScript, const std::string_view msg, const char *pIdtf, bool Warn)
-	: C4AulParseError{msg, pIdtf, Warn}
+void C4AulParseError::ShowWarning(C4AulParseState &state, std::string_view msg, std::string_view identifier)
+{
+	DebugLog(spdlog::level::warn, FormatErrorMessage(state, msg, identifier).message);
+}
+
+C4AulParseError C4AulParseError::FormatErrorMessage(C4AulParseState &state, std::string_view msg, std::string_view identifier)
+{
+	return C4AulParseError{&state, msg, identifier};
+}
+
+C4AulParseError::C4AulParseError(C4AulScript *pScript, const std::string_view msg, const std::string_view identifier, bool Warn)
+	: C4AulParseError{msg, identifier, Warn}
 {
 	if (pScript)
 	{
@@ -527,7 +655,7 @@ int C4AulParseState::GetOperator(const char *pScript)
 	return -1;
 }
 
-C4AulTokenType C4AulParseState::GetNextToken(char *pToken, std::intptr_t *pInt, HoldStringsPolicy HoldStrings, bool bOperator)
+std::expected<C4AulTokenType, C4AulParseError> C4AulParseState::GetNextToken(char *pToken, std::intptr_t *pInt, HoldStringsPolicy HoldStrings, bool bOperator)
 {
 	// move to start of token
 	if (!AdvanceSpaces()) return ATT_EOF;
@@ -669,9 +797,9 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, std::intptr_t *pInt, 
 				// unrecognized char
 				// show appropriate error message
 				if (C >= '!' && C <= '~')
-					throw C4AulParseError(this, std::format("unexpected character '{}' found", C));
+					return std::unexpected{C4AulParseError::FormatErrorMessage(*this, std::format("unexpected character '{}' found", C))};
 				else
-					throw C4AulParseError(this, std::format("unexpected character {:#x} found", C));
+					return std::unexpected{C4AulParseError::FormatErrorMessage(*this, std::format("unexpected character {:#x} found", C))};
 			}
 			break;
 		}
@@ -695,7 +823,13 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, std::intptr_t *pInt, 
 				else
 				{
 					// warn if using C4ID as func label
-					if (fllid) Strict2Error("stupid func label: ", pToken);
+					if (fllid)
+					{
+						if (auto error = Strict2Error("stupid func label: ", pToken); !error)
+						{
+							return std::unexpected{std::move(error).error()};
+						}
+					}
 					// directive?
 					if (State == TGS_Dir) return ATT_DIR;
 					// check reserved names
@@ -747,8 +881,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, std::intptr_t *pInt, 
 				// or is it a func label?
 				if ((C == '(') || (C == ':'))
 				{
-					Strict2Error("stupid func label: ", pToken);
-					return ATT_IDTF;
+					return Strict2Error("stupid func label: ", pToken).transform([] { return ATT_IDTF; });
 				}
 				// it's not, so return the int
 				sscanf(pToken, szScanCode, pInt);
@@ -767,11 +900,13 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, std::intptr_t *pInt, 
 				// another stupid label identifier?
 				if ((C == '(') || (C == ':' && *(SPos + 1) != ':'))
 				{
-					Strict2Error("stupid func label: ", pToken);
-					return ATT_IDTF;
+					return Strict2Error("stupid func label: ", pToken).transform([] { return ATT_IDTF; });
 				}
 				// check if valid
-				if (!LooksLikeID(pToken)) throw C4AulParseError(this, "erroneous Ident: ", pToken);
+				if (!LooksLikeID(pToken))
+				{
+					return std::unexpected{C4AulParseError::FormatErrorMessage(*this, "erroneous Ident: ", pToken)};
+				}
 				// get id of it
 				*pInt = static_cast<intptr_t>(C4Id(pToken));
 				return ATT_C4ID;
@@ -797,7 +932,9 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, std::intptr_t *pInt, 
 			}
 			// check: enough buffer space?
 			if (pStrPos - StrBuff >= C4AUL_MAX_String)
-				StrictError("string too long", C4AulScriptStrict::STRICT3);
+			{
+				RETURN_EXPECTED_ON_ERROR(StrictError("string too long", C4AulScriptStrict::STRICT3));
+			}
 			else
 			{
 				if (C == '\\') // escape
@@ -815,7 +952,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, std::intptr_t *pInt, 
 					}
 					}
 				else if (C == 0 || C == 10 || C == 13) // line break / feed
-					throw C4AulParseError(this, "string not closed");
+					return std::unexpected{C4AulParseError::FormatErrorMessage(*this, "string not closed")};
 				else
 					// copy character
 					*(pStrPos++) = C;
@@ -1393,26 +1530,27 @@ const char *C4AulParseState::GetTokenName(C4AulTokenType TokenType)
 	return "unrecognized token";
 }
 
-void C4AulParseState::Shift(HoldStringsPolicy HoldStrings, bool bOperator)
+std::expected<void, C4AulParseError> C4AulParseState::Shift(HoldStringsPolicy HoldStrings, bool bOperator)
 {
-	TokenType = GetNextToken(Idtf, &cInt, HoldStrings, bOperator);
+	return GetNextToken(Idtf, &cInt, HoldStrings, bOperator).transform([this](const C4AulTokenType token) { TokenType = token; });
 }
 
-void C4AulParseState::Match(C4AulTokenType RefTokenType, const char *Message)
+std::expected<void, C4AulParseError> C4AulParseState::Match(C4AulTokenType RefTokenType, const char *Message)
 {
 	if (TokenType != RefTokenType)
-		// error
-		throw C4AulParseError(this, Message ? Message :
-			std::format("{} expected, but found {}", GetTokenName(RefTokenType), GetTokenName(TokenType)));
-	Shift();
+	{
+		return std::unexpected{C4AulParseError::FormatErrorMessage(*this, Message ? Message : std::format("{} expected, but found {}", GetTokenName(RefTokenType), GetTokenName(TokenType)))};
+	}
+
+	return Shift();
 }
 
-void C4AulParseState::UnexpectedToken(const char *Expected)
+C4AulParseError C4AulParseState::UnexpectedToken(const char *Expected)
 {
-	throw C4AulParseError(this, std::format("{} expected, but found {}", Expected, GetTokenName(TokenType)));
+	return C4AulParseError::FormatErrorMessage(*this, std::format("{} expected, but found {}", Expected, GetTokenName(TokenType)));
 }
 
-void C4AulScript::ParseFn(C4AulScriptFunc *Fn, bool fExprOnly)
+std::expected<void, C4AulParseError> C4AulScript::ParseFn(C4AulScriptFunc *Fn, bool fExprOnly)
 {
 	// check if fn overloads other fn (all func tables are built now)
 	// *MUST* check Fn->Owner-list, because it may be the engine (due to linked globals)
@@ -1428,186 +1566,221 @@ void C4AulScript::ParseFn(C4AulScriptFunc *Fn, bool fExprOnly)
 	// parse
 	C4AulParseState state(Fn, this, C4AulParseState::PARSER);
 	// get first token
-	state.Shift();
+	RETURN_EXPECTED_ON_ERROR(state.Shift());
 	if (!fExprOnly)
-		Fn->Body = state.Parse_Function();
+	{
+		auto result = state.Parse_Function();
+		Fn->Body = std::move(result.Result);
+		if (result.Error)
+		{
+			return std::unexpected{std::move(*result.Error)};
+		}
+	}
 	else
 	{
 		auto expression = C4AulAST::NoRef::SetNoRef(state.Parse_Expression());
 		state.SetNoRef();
+
+		if (expression.Error)
+		{
+			return std::unexpected{std::move(*expression.Error)};
+		}
+
 		std::vector<std::unique_ptr<C4AulAST::Expression>> expressions;
-		expressions.emplace_back(std::move(expression));
+		expressions.emplace_back(std::move(expression.Result));
 		std::vector<std::unique_ptr<C4AulAST::Statement>> statements;
 		statements.emplace_back(std::make_unique<C4AulAST::Return>(state.GetOffset(), std::move(expressions), false));
 		Fn->Body = std::make_unique<C4AulAST::Block>(state.GetOffset(), std::move(statements));
+
 		AddBCC(AB_RETURN, 0, state.SPos);
+
 	}
 	// done
-	return;
+	return {};
 }
 
 std::unique_ptr<C4AulAST::Script> C4AulParseState::Parse_Script()
 {
 	bool fDone = false;
 	const char *SPos0 = SPos;
-	bool all_ok = true;
+	bool allOk{true};
 	std::vector<std::unique_ptr<C4AulAST::Statement>> statements;
-	while (!fDone) try
+	while (!fDone)
 	{
-		// Go to the next token if the current token could not be processed or no token has yet been parsed
-		if (SPos == SPos0)
+		auto result = Parse_TopLevelStatement(SPos0, fDone);
+		if (result.Result)
 		{
-			Shift();
+			statements.emplace_back(std::move(result.Result));
 		}
-		SPos0 = SPos;
-		switch (TokenType)
+
+		if (result.Error)
 		{
-		case ATT_DIR:
+			// damn! something went wrong, print it out
+			// but only one error per function
+			if (!std::exchange(allOk, true))
+			{
+				result.Error->show();
+			}
+		}
+		else
 		{
-			// check for include statement
-			if (SEqual(Idtf, C4AUL_Include))
-			{
-				Shift();
-				// get id of script to include
-				if (TokenType != ATT_C4ID)
-					UnexpectedToken("id constant");
-				C4ID Id = static_cast<C4ID>(cInt);
-				Shift();
-				// add to include list
-				a->Includes.push_front(Id);
-				statements.emplace_back(std::make_unique<C4AulAST::Include>(GetOffset(), Id, false));
-			}
-			else if (SEqual(Idtf, C4AUL_Append))
-			{
-				// for #appendto * '*' needs to be ATT_STAR, not an operator.
-				Shift(Hold, false);
-				// get id of script to include/append
-				bool nowarn = false;
-				C4ID Id;
-				switch (TokenType)
-				{
-				case ATT_C4ID:
-					Id = static_cast<C4ID>(cInt);
-					Shift();
-					if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_NoWarn))
-					{
-						nowarn = true;
-						Shift();
-					}
-					break;
-				case ATT_STAR: // "*"
-					Id = ~0;
-					Shift();
-					break;
-				default:
-					// -> ID expected
-					UnexpectedToken("id constant");
-				}
-				// add to append list
-				a->Appends.push_back({Id, nowarn});
-				statements.emplace_back(std::make_unique<C4AulAST::Include>(GetOffset(), Id, nowarn));
-			}
-			else if (SEqual(Idtf, C4AUL_Strict))
-			{
-				// declare it as strict
-				a->Strict = C4AulScriptStrict::STRICT1;
-				Shift();
-				if (TokenType == ATT_INT)
-				{
-					if (cInt == 2)
-						a->Strict = C4AulScriptStrict::STRICT2;
-					else if (cInt == 3)
-						a->Strict = C4AulScriptStrict::STRICT3;
-					else
-						throw C4AulParseError(this, "unknown strict level");
-					Shift();
-				}
-				statements.emplace_back(std::make_unique<C4AulAST::Strict>(GetOffset(), a->Strict));
-			}
-			else
-				// -> unknown directive
-				throw C4AulParseError(this, "unknown directive: ", Idtf);
-			break;
+			allOk = false;
 		}
-		case ATT_IDTF:
-		{
-			if (SEqual(Idtf, C4AUL_For))
-			{
-				throw C4AulParseError(this, "unexpected for outside function");
-			}
-			// check for variable definition (var)
-			else if (SEqual(Idtf, C4AUL_VarNamed))
-			{
-				throw C4AulParseError(this, "unexpected variable definition outside function");
-			}
-			// check for object-local variable definition (local)
-			else if (SEqual(Idtf, C4AUL_LocalNamed))
-			{
-				Shift();
-				statements.emplace_back(Parse_Local());
-				Match(ATT_SCOLON);
-				break;
-			}
-			// check for variable definition (static)
-			else if (SEqual(Idtf, C4AUL_GlobalNamed))
-			{
-				Shift();
-				// constant?
-				if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_Const))
-				{
-					Shift();
-					statements.emplace_back(Parse_Const());
-				}
-				else
-					statements.emplace_back(Parse_Static());
-				Match(ATT_SCOLON);
-				break;
-			}
-			else
-				statements.emplace_back(Parse_FuncHead());
-			break;
-		}
-		case ATT_EOF:
-			fDone = true;
-			break;
-		default:
-			UnexpectedToken("declaration");
-		}
-		all_ok = true;
-	}
-	catch (const C4AulError &err)
-	{
-		// damn! something went wrong, print it out
-		// but only one error per function
-		if (all_ok)
-			err.show();
-		all_ok = false;
 	}
 
 	return std::make_unique<C4AulAST::Script>(std::move(statements));
 }
 
-std::unique_ptr<C4AulAST::Function> C4AulParseState::Parse_FuncHead()
+C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_TopLevelStatement(const char *&sPos0, bool &done)
+{
+	// Go to the next token if the current token could not be processed or no token has yet been parsed
+	if (SPos == sPos0)
+	{
+		RETURN_ON_ERROR(Shift());
+	}
+	sPos0 = SPos;
+
+	std::unique_ptr<C4AulAST::Statement> statement;
+	const auto node = [&statement]() { return std::move(statement); };
+
+	switch (TokenType)
+	{
+	case ATT_DIR:
+	{
+		// check for include statement
+		if (SEqual(Idtf, C4AUL_Include))
+		{
+			RETURN_ON_ERROR(Shift());
+			// get id of script to include
+			if (TokenType != ATT_C4ID)
+				return {ErrorNode(), UnexpectedToken("id constant")};
+			C4ID Id = static_cast<C4ID>(cInt);
+			RETURN_ON_ERROR(Shift());
+			// add to include list
+			a->Includes.push_front(Id);
+			statement = std::make_unique<C4AulAST::Include>(GetOffset(), Id, false);
+		}
+		else if (SEqual(Idtf, C4AUL_Append))
+		{
+			// for #appendto * '*' needs to be ATT_STAR, not an operator.
+			RETURN_ON_ERROR(Shift(Hold, false));
+			// get id of script to include/append
+			bool nowarn = false;
+			C4ID Id;
+			switch (TokenType)
+			{
+			case ATT_C4ID:
+				Id = static_cast<C4ID>(cInt);
+				RETURN_ON_ERROR(Shift());
+				if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_NoWarn))
+				{
+					nowarn = true;
+					RETURN_ON_ERROR(Shift());
+				}
+				break;
+			case ATT_STAR: // "*"
+				Id = ~0;
+				RETURN_ON_ERROR(Shift());
+				break;
+			default:
+				// -> ID expected
+				return {ErrorNode(), UnexpectedToken("id constant")};
+			}
+			// add to append list
+			a->Appends.push_back({Id, nowarn});
+			statement = std::make_unique<C4AulAST::Include>(GetOffset(), Id, nowarn);
+		}
+		else if (SEqual(Idtf, C4AUL_Strict))
+		{
+			// declare it as strict
+			a->Strict = C4AulScriptStrict::STRICT1;
+			RETURN_ON_ERROR(Shift());
+			if (TokenType == ATT_INT)
+			{
+				if (cInt == 2)
+					a->Strict = C4AulScriptStrict::STRICT2;
+				else if (cInt == 3)
+					a->Strict = C4AulScriptStrict::STRICT3;
+				else
+					return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "unknown strict level")};
+				RETURN_ON_ERROR(Shift());
+			}
+			statement = std::make_unique<C4AulAST::Strict>(GetOffset(), a->Strict);
+		}
+		else
+			// -> unknown directive
+			return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "unknown directive: ", Idtf)};
+		break;
+	}
+	case ATT_IDTF:
+	{
+		if (SEqual(Idtf, C4AUL_For))
+		{
+			return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "unexpected for outside function")};
+		}
+		// check for variable definition (var)
+		else if (SEqual(Idtf, C4AUL_VarNamed))
+		{
+			return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "unexpected variable definition outside function")};
+		}
+		// check for object-local variable definition (local)
+		else if (SEqual(Idtf, C4AUL_LocalNamed))
+		{
+			RETURN_ON_ERROR(Shift());
+			ASSIGN_RESULT(statement, Parse_Local());
+			RETURN_NODE_ON_ERROR(Match(ATT_SCOLON));
+			break;
+		}
+		// check for variable definition (static)
+		else if (SEqual(Idtf, C4AUL_GlobalNamed))
+		{
+			RETURN_ON_ERROR(Shift());
+			// constant?
+			if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_Const))
+			{
+				RETURN_ON_ERROR(Shift());
+				ASSIGN_RESULT(statement, Parse_Const());
+			}
+			else
+				ASSIGN_RESULT(statement, Parse_Static());
+			RETURN_ON_ERROR(Match(ATT_SCOLON));
+			break;
+		}
+		else
+			ASSIGN_RESULT(statement, Parse_FuncHead());
+		break;
+	}
+	case ATT_EOF:
+		done = true;
+		break;
+	default:
+		return {ErrorNode(), UnexpectedToken("declaration")};
+	}
+
+	return {node()};
+}
+
+C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_FuncHead()
 {
 	C4AulAccess Acc = AA_PUBLIC;
 	// Access?
-	if      (SEqual(Idtf, C4AUL_Private))   { Acc = AA_PRIVATE;   Shift(); }
-	else if (SEqual(Idtf, C4AUL_Protected)) { Acc = AA_PROTECTED; Shift(); }
-	else if (SEqual(Idtf, C4AUL_Public))    { Acc = AA_PUBLIC;    Shift(); }
-	else if (SEqual(Idtf, C4AUL_Global))    { Acc = AA_GLOBAL;    Shift(); }
+	if	  (SEqual(Idtf, C4AUL_Private))   { Acc = AA_PRIVATE;   RETURN_ON_ERROR(Shift()); }
+	else if (SEqual(Idtf, C4AUL_Protected)) { Acc = AA_PROTECTED; RETURN_ON_ERROR(Shift()); }
+	else if (SEqual(Idtf, C4AUL_Public))	{ Acc = AA_PUBLIC;	RETURN_ON_ERROR(Shift()); }
+	else if (SEqual(Idtf, C4AUL_Global))	{ Acc = AA_GLOBAL;	RETURN_ON_ERROR(Shift()); }
 	// check for func declaration
 	if (SEqual(Idtf, C4AUL_Func))
 	{
-		Shift(Discard, false);
+		RETURN_ON_ERROR(Shift(Discard, false));
 		bool bReturnRef = false;
 		// get next token, must be func name or "&"
 		if (TokenType == ATT_AMP)
 		{
 			bReturnRef = true;
-			Shift(Discard, false);
+			RETURN_ON_ERROR(Shift(Discard, false));
 		}
 		if (TokenType != ATT_IDTF)
-			UnexpectedToken("function name");
+			return {ErrorNode(), UnexpectedToken("function name")};
 
 		std::string name{Idtf};
 		// check: symbol already in use?
@@ -1617,15 +1790,15 @@ std::unique_ptr<C4AulAST::Function> C4AulParseState::Parse_FuncHead()
 		case AA_PROTECTED:
 		case AA_PUBLIC:
 			if (a->LocalNamed.GetItemNr(Idtf) != -1)
-				throw C4AulParseError(this, "function definition: name already in use (local variable)");
+				return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "function definition: name already in use (local variable)")};
 			if (a->Def)
 				break;
 			// func in global context: fallthru
 		case AA_GLOBAL:
 			if (a->Engine->GlobalNamedNames.GetItemNr(Idtf) != -1)
-				throw C4AulParseError(this, "function definition: name already in use (global variable)");
+				return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "function definition: name already in use (global variable)")};
 			if (a->Engine->GlobalConstNames.GetItemNr(Idtf) != -1)
-				Strict2Error("function definition: name already in use (global variable)");
+				RETURN_ON_ERROR(Strict2Error("function definition: name already in use (global variable)"));
 		}
 		// create script fn
 		if (Acc == AA_GLOBAL)
@@ -1645,40 +1818,43 @@ std::unique_ptr<C4AulAST::Function> C4AulParseState::Parse_FuncHead()
 		Fn->Script = SPos; // temporary
 		Fn->Access = Acc; Fn->pOrgScript = a;
 		Fn->bNewFormat = true; Fn->bReturnRef = bReturnRef;
-		Shift(Discard, false);
+		RETURN_ON_ERROR(Shift(Discard, false));
 		// expect an opening bracket now
 		if (TokenType != ATT_BOPEN)
-			UnexpectedToken("'('");
-		Shift(Discard, false);
+			return {ErrorNode(), UnexpectedToken("'('")};
+		RETURN_ON_ERROR(Shift(Discard, false));
 		// get pars
 		Fn->ParNamed.Reset(); // safety :)
 		int cpar = 0;
 		std::vector<C4AulAST::Prototype::Parameter> parameters;
+
 		while (1)
 		{
 			// closing bracket?
 			if (TokenType == ATT_BCLOSE)
 			{
 				Fn->Script = SPos;
-				Shift();
+				RETURN_ON_ERROR(Shift());
 				// end of params
 				break;
 			}
 			// too many parameters?
 			if (cpar >= C4AUL_MAX_Par)
-				throw C4AulParseError(this, "'func' parameter list: too many parameters (max 10)");
+			{
+				return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "'func' parameter list: too many parameters (max 10)")};
+			}
 
 			if (TokenType == ATT_LDOTS)
 			{
 				Fn->Script = SPos;
-				Shift();
-				Match(ATT_BCLOSE);
+				RETURN_ON_ERROR(Shift());
+				RETURN_ON_ERROR(Match(ATT_BCLOSE));
 				break;
 			}
 			// must be a name or type now
 			if (TokenType != ATT_IDTF && TokenType != ATT_AMP)
 			{
-				UnexpectedToken("parameter or closing bracket");
+				return {ErrorNode(), UnexpectedToken("parameter or closing bracket")};
 			}
 			char TypeIdtf[C4AUL_MAX_Identifier] = ""; // current identifier
 			if (TokenType == ATT_IDTF)
@@ -1688,22 +1864,22 @@ std::unique_ptr<C4AulAST::Function> C4AulParseState::Parse_FuncHead()
 
 			C4AulAST::Prototype::Parameter parameter{.Type = C4V_Any};
 			// type identifier?
-			if (SEqual(Idtf, C4AUL_TypeInt)) { Fn->ParType[cpar] = parameter.Type = C4V_Int; Shift(Discard, false); }
-			else if (SEqual(Idtf, C4AUL_TypeBool)) { Fn->ParType[cpar] = parameter.Type = C4V_Bool; Shift(Discard, false); }
-			else if (SEqual(Idtf, C4AUL_TypeC4ID)) { Fn->ParType[cpar] = parameter.Type = C4V_C4ID; Shift(Discard, false); }
-			else if (SEqual(Idtf, C4AUL_TypeC4Object)) { Fn->ParType[cpar] = parameter.Type = C4V_C4Object; Shift(Discard, false); }
-			else if (SEqual(Idtf, C4AUL_TypeString)) { Fn->ParType[cpar] = parameter.Type = C4V_String; Shift(Discard, false); }
-			else if (SEqual(Idtf, C4AUL_TypeArray)) { Fn->ParType[cpar] = parameter.Type = C4V_Array; Shift(Discard, false); }
-			else if (SEqual(Idtf, C4AUL_TypeMap)) { Fn->ParType[cpar] = parameter.Type = C4V_Map; Shift(Discard, false); }
-			else if (SEqual(Idtf, C4AUL_TypeAny)) { Fn->ParType[cpar] = parameter.Type = C4V_Any; Shift(Discard, false); }
+			if (SEqual(Idtf, C4AUL_TypeInt)) { Fn->ParType[cpar] = parameter.Type = C4V_Int; RETURN_ON_ERROR(Shift(Discard, false)); }
+			else if (SEqual(Idtf, C4AUL_TypeBool)) { Fn->ParType[cpar] = parameter.Type = C4V_Bool; RETURN_ON_ERROR(Shift(Discard, false)); }
+			else if (SEqual(Idtf, C4AUL_TypeC4ID)) { Fn->ParType[cpar] = parameter.Type = C4V_C4ID; RETURN_ON_ERROR(Shift(Discard, false)); }
+			else if (SEqual(Idtf, C4AUL_TypeC4Object)) { Fn->ParType[cpar] = parameter.Type = C4V_C4Object; RETURN_ON_ERROR(Shift(Discard, false)); }
+			else if (SEqual(Idtf, C4AUL_TypeString)) { Fn->ParType[cpar] = parameter.Type = C4V_String; RETURN_ON_ERROR(Shift(Discard, false)); }
+			else if (SEqual(Idtf, C4AUL_TypeArray)) { Fn->ParType[cpar] = parameter.Type = C4V_Array; RETURN_ON_ERROR(Shift(Discard, false)); }
+			else if (SEqual(Idtf, C4AUL_TypeMap)) { Fn->ParType[cpar] = parameter.Type = C4V_Map; RETURN_ON_ERROR(Shift(Discard, false)); }
+			else if (SEqual(Idtf, C4AUL_TypeAny)) { Fn->ParType[cpar] = parameter.Type = C4V_Any; RETURN_ON_ERROR(Shift(Discard, false)); }
 			// ampersand?
-			if (TokenType == ATT_AMP) { Fn->ParType[cpar] = C4V_pC4Value; parameter.IsRef = true; Shift(Discard, false); }
+			if (TokenType == ATT_AMP) { Fn->ParType[cpar] = C4V_pC4Value; parameter.IsRef = true; RETURN_ON_ERROR(Shift(Discard, false)); }
 			if (TokenType != ATT_IDTF)
 			{
 				if (SEqual(TypeIdtf, ""))
-					UnexpectedToken("parameter or closing bracket");
+					return {ErrorNode(), UnexpectedToken("parameter or closing bracket")};
 				// A parameter with the same name as a type
-				Strict2Error("parameter has the same name as type ", TypeIdtf);
+				RETURN_ON_ERROR(Strict2Error("parameter has the same name as type ", TypeIdtf));
 				Fn->ParType[cpar] = C4V_Any;
 				Fn->ParNamed.AddName(TypeIdtf);
 				parameter.Type = C4V_Any;
@@ -1713,46 +1889,50 @@ std::unique_ptr<C4AulAST::Function> C4AulParseState::Parse_FuncHead()
 			{
 				Fn->ParNamed.AddName(Idtf);
 				parameter.Name = Idtf;
-				Shift();
+				RETURN_ON_ERROR(Shift());
 			}
 			parameters.emplace_back(parameter);
 			// end of params?
 			if (TokenType == ATT_BCLOSE)
 			{
 				Fn->Script = SPos;
-				Shift();
+				RETURN_ON_ERROR(Shift());
 				break;
 			}
 			// must be a comma now
 			if (TokenType != ATT_COMMA)
-				UnexpectedToken("comma or closing bracket");
-			Shift(Discard, false);
+				return {ErrorNode(), UnexpectedToken("comma or closing bracket")};
+			RETURN_ON_ERROR(Shift(Discard, false));
 			cpar++;
 		}
 		// ok, expect opening block
 		if (TokenType != ATT_BLOPEN)
 		{
 			// warn
-			Strict2Error("'func': expecting opening block ('{') after func declaration");
+			RETURN_ON_ERROR(Strict2Error("'func': expecting opening block ('{') after func declaration"));
 			// not really new syntax (a sort of legacy mode)
 			Fn->bNewFormat = false;
 		}
 		else
 		{
 			Fn->Script = SPos;
-			Shift();
+			RETURN_ON_ERROR(Shift());
 		}
-		Parse_Desc();
+		RETURN_ON_ERROR(Parse_Desc());
 		auto prototype = std::make_unique<C4AulAST::Prototype>(GetOffset(), C4V_Any, bReturnRef, Acc, std::move(name), std::move(parameters));
 		Prototype = prototype.get();
-		auto body = Parse_Function();
-		Match(ATT_BLCLOSE);
 
-		return std::make_unique<C4AulAST::Function>(GetOffset(), std::move(prototype), "", std::move(body));
+		std::unique_ptr<C4AulAST::Statement> body;
+		const auto node = [&prototype, &body, offset{GetOffset()}] { return std::make_unique<C4AulAST::Function>(offset, std::move(prototype), "", std::move(body)); };
+
+		ASSIGN_RESULT(body, Parse_Function());
+		RETURN_NODE_ON_ERROR(Match(ATT_BLCLOSE));
+
+		return {node()};
 	}
 	// Must be old-style function declaration now
 	if (a->Strict >= C4AulScriptStrict::STRICT2)
-		throw C4AulParseError(this, "Declaration expected, but found identifier ", Idtf);
+		return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "Declaration expected, but found identifier ", Idtf)};
 	// check: symbol already in use?
 	switch (Acc)
 	{
@@ -1760,19 +1940,19 @@ std::unique_ptr<C4AulAST::Function> C4AulParseState::Parse_FuncHead()
 	case AA_PROTECTED:
 	case AA_PUBLIC:
 		if (a->LocalNamed.GetItemNr(Idtf) != -1)
-			throw C4AulParseError(this, "function definition: name already in use (local variable)");
+			return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "function definition: name already in use (local variable)")};
 		if (a->Def)
 			break;
 		// func in global context: fallthru
 	case AA_GLOBAL:
 		if (a->Engine->GlobalNamedNames.GetItemNr(Idtf) != -1)
-			throw C4AulParseError(this, "function definition: name already in use (global variable)");
+			return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "function definition: name already in use (global variable)")};
 	}
 	char FuncIdtf[C4AUL_MAX_Identifier] = ""; // current identifier
 	SCopy(Idtf, FuncIdtf);
-	Shift();
+	RETURN_ON_ERROR(Shift());
 	if (TokenType != ATT_COLON)
-		throw C4AulParseError(this, std::format("declaration expected, but found identifier '{}'", +FuncIdtf));
+		return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, std::format("declaration expected, but found identifier '{}'", +FuncIdtf))};
 	// create script fn
 	if (Acc == AA_GLOBAL)
 	{
@@ -1795,8 +1975,20 @@ std::unique_ptr<C4AulAST::Function> C4AulParseState::Parse_FuncHead()
 	std::vector<C4AulAST::Prototype::Parameter> parameters;
 	parameters.resize(C4AUL_MAX_Par, {C4V_Any, ""});
 	auto prototype = std::make_unique<C4AulAST::Prototype>(GetOffset(), C4V_Any, false, Acc, FuncIdtf, std::move(parameters));
-	Shift();
 	std::vector<std::unique_ptr<C4AulAST::Statement>> statements;
+	std::unique_ptr<C4AulAST::Statement> statement;
+
+	const auto node = [&prototype, &statements, &statement, offset{GetOffset()}, this]()
+	{
+		if (statement)
+		{
+			statements.emplace_back(std::move(statement));
+		}
+
+		return std::make_unique<C4AulAST::Function>(offset, std::move(prototype), Fn->Desc ? Fn->Desc.getData() : "", std::make_unique<C4AulAST::Block>(offset, std::move(statements)));
+	};
+
+	RETURN_NODE_ON_ERROR(Shift());
 	const char *SPos0 = SPos;
 	while (1) switch (TokenType)
 	{
@@ -1813,36 +2005,39 @@ std::unique_ptr<C4AulAST::Function> C4AulParseState::Parse_FuncHead()
 		// check for variable definition (var)
 		else if (SEqual(Idtf, C4AUL_VarNamed))
 		{
-			Shift();
-			statements.emplace_back(Parse_Var());
+			RETURN_NODE_ON_ERROR(Shift());
+			ASSIGN_RESULT(statement, Parse_Var());
+			statements.emplace_back(std::move(statement));
 		}
 		// check for variable definition (local)
 		else if (SEqual(Idtf, C4AUL_LocalNamed))
 		{
 			if (a->Def)
 			{
-				Shift();
-				statements.emplace_back(Parse_Local());
+				RETURN_NODE_ON_ERROR(Shift());
+				ASSIGN_RESULT(statement, Parse_Local());
+				statements.emplace_back(std::move(statement));
 			}
 			else
-				throw C4AulParseError(this, "'local' variable declaration in global script");
+				return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, "'local' variable declaration in global script")};
 		}
 		// check for variable definition (static)
 		else if (SEqual(Idtf, C4AUL_GlobalNamed))
 		{
-			Shift();
-			statements.emplace_back(Parse_Static());
+			RETURN_NODE_ON_ERROR(Shift());
+			ASSIGN_RESULT(statement, Parse_Static());
+			statements.emplace_back(std::move(statement));
 		}
 		// might be old style declaration
 		else
 		{
 			const char *SPos0_ = SPos;
-			Shift();
+			RETURN_NODE_ON_ERROR(Shift());
 			if (TokenType == ATT_COLON)
 			{
 				// Reset source position to the point before the label
 				SPos = SPos0;
-				Shift();
+				RETURN_NODE_ON_ERROR(Shift());
 				goto end;
 			}
 			else
@@ -1857,15 +2052,15 @@ std::unique_ptr<C4AulAST::Function> C4AulParseState::Parse_FuncHead()
 	default:
 	{
 		SPos0 = SPos;
-		Shift();
+		RETURN_NODE_ON_ERROR(Shift());
 		break;
 	}
 	}
 end:
-	return std::make_unique<C4AulAST::Function>(GetOffset(), std::move(prototype), Fn->Desc ? Fn->Desc.getData() : "", std::make_unique<C4AulAST::Block>(GetOffset(), std::move(statements)));
+	return {node()};
 }
 
-void C4AulParseState::Parse_Desc()
+std::expected<void, C4AulParseError> C4AulParseState::Parse_Desc()
 {
 	// check for function desc
 	if (TokenType == ATT_BOPEN2)
@@ -1885,7 +2080,7 @@ void C4AulParseState::Parse_Desc()
 			// check for eof
 			if (!*SPos)
 				// -> function desc not closed
-				throw C4AulParseError(this, "function desc not closed");
+				return std::unexpected{C4AulParseError::FormatErrorMessage(*this, "function desc not closed")};
 			// next char
 			SPos++; Len++;
 		}
@@ -1893,17 +2088,20 @@ void C4AulParseState::Parse_Desc()
 		// extract desc
 		Fn->Desc.Copy(SPos0, Len);
 		Fn->Script = SPos;
-		Shift();
+		RETURN_EXPECTED_ON_ERROR(Shift());
 	}
 	else
 		Fn->Desc.Clear();
+
+	return {};
 }
 
-std::unique_ptr<C4AulAST::Block> C4AulParseState::Parse_Function()
+C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_Function()
 {
 	iStack = 0;
 	Done = false;
 	std::vector<std::unique_ptr<C4AulAST::Statement>> statements;
+	const auto node = [&statements, offset{GetOffset()}] { return std::make_unique<C4AulAST::Block>(offset, std::move(statements)); };
 	while (!Done) switch (TokenType)
 	{
 	// a block end?
@@ -1926,7 +2124,7 @@ std::unique_ptr<C4AulAST::Block> C4AulParseState::Parse_Function()
 			Fn = nullptr;
 			break;
 		}
-		throw C4AulParseError(this, "no '{' found for '}'");
+		return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, "no '{' found for '}'")};
 	}
 	case ATT_EOF:
 	{
@@ -1935,32 +2133,42 @@ std::unique_ptr<C4AulAST::Block> C4AulParseState::Parse_Function()
 	}
 	default:
 	{
-		auto statement = Parse_Statement();
-		if (statement)
+		auto result = Parse_Statement();
+		if (result.Error)
 		{
-			statements.emplace_back(std::move(statement));
+			statements.emplace_back(std::move(result.Result));
+			return {node(), std::move(result.Error)};
+		}
+
+		else if (result.Result)
+		{
+			statements.emplace_back(std::move(result.Result));
 		}
 		assert(!iStack);
 		break;
 	}
 	}
 
-	return std::make_unique<C4AulAST::Block>(GetOffset(), std::move(statements));
+	return {node()};
 }
 
-std::unique_ptr<C4AulAST::Block> C4AulParseState::Parse_Block()
+C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_Block()
 {
-	Match(ATT_BLOPEN);
+	RETURN_ON_ERROR(Match(ATT_BLOPEN));
 	std::vector<std::unique_ptr<C4AulAST::Statement>> statements;
+
+	const auto node = [&statements, offset{GetOffset()}]() { return std::make_unique<C4AulAST::Block>(offset, std::move(statements)); };
+
 	// insert block in byte code
 	while (1) switch (TokenType)
 	{
 	case ATT_BLCLOSE:
-		Shift();
-		return std::make_unique<C4AulAST::Block>(GetOffset(), std::move(statements));
+		RETURN_NODE_ON_ERROR(Shift());
+		return {node()};
 	default:
 	{
-		auto statement = Parse_Statement();
+		std::unique_ptr<C4AulAST::Statement> statement;
+		ASSIGN_RESULT(statement, Parse_Statement());
 		if (statement)
 		{
 			statements.emplace_back(std::move(statement));
@@ -1970,9 +2178,11 @@ std::unique_ptr<C4AulAST::Block> C4AulParseState::Parse_Block()
 	}
 }
 
-std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
+C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_Statement()
 {
 	std::unique_ptr<C4AulAST::Statement> statement;
+	const auto node = [&statement]() { return std::move(statement); };
+
 	switch (TokenType)
 	{
 	// do we have a block start?
@@ -1997,16 +2207,15 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 	case ATT_C4ID: // converted ID in cInt
 	case ATT_GLOBALCALL:
 	{
-		auto expression = C4AulAST::NoRef::SetNoRef(Parse_Expression());
-		SetNoRef();
+		ASSIGN_RESULT_NOREF(statement, Parse_Expression());
 		AddBCC(AB_STACK, -1);
-		Match(ATT_SCOLON);
-		return expression;
+		RETURN_NODE_ON_ERROR(Match(ATT_SCOLON));
+		return {node()};
 	}
 	// additional function separator
 	case ATT_SCOLON:
 	{
-		Shift();
+		RETURN_ON_ERROR(Shift());
 		break;
 	}
 	case ATT_IDTF:
@@ -2014,33 +2223,31 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 		// check for variable definition (var)
 		if (SEqual(Idtf, C4AUL_VarNamed))
 		{
-			Shift();
-			statement = Parse_Var();
+			RETURN_ON_ERROR(Shift());
+			ASSIGN_RESULT(statement, Parse_Var());
 		}
 		// check for variable definition (local)
 		else if (SEqual(Idtf, C4AUL_LocalNamed))
 		{
-			Shift();
-			statement = Parse_Local();
+			RETURN_ON_ERROR(Shift());
+			ASSIGN_RESULT(statement, Parse_Local());
 		}
 		// check for variable definition (static)
 		else if (SEqual(Idtf, C4AUL_GlobalNamed))
 		{
-			Shift();
-			statement = Parse_Static();
+			RETURN_ON_ERROR(Shift());
+			ASSIGN_RESULT(statement, Parse_Static());
 		}
 		// check for parameter
 		else if (Fn->ParNamed.GetItemNr(Idtf) != -1)
 		{
-			statement = C4AulAST::NoRef::SetNoRef(Parse_Expression());
-			SetNoRef();
+			ASSIGN_RESULT_NOREF(statement, Parse_Expression());
 			AddBCC(AB_STACK, -1);
 		}
 		// check for variable (var)
 		else if (Fn->VarNamed.GetItemNr(Idtf) != -1)
 		{
-			statement = C4AulAST::NoRef::SetNoRef(Parse_Expression());
-			SetNoRef();
+			ASSIGN_RESULT_NOREF(statement, Parse_Expression());
 			AddBCC(AB_STACK, -1);
 		}
 		// check for objectlocal variable (local)
@@ -2048,15 +2255,15 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 		{
 			// global func?
 			if (Fn->Owner == &Game.ScriptEngine)
-				throw C4AulParseError(this, "using local variable in global function!");
+				return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "using local variable in global function!")};
 			// insert variable by id
-			statement = Parse_Expression();
+			ASSIGN_RESULT(statement, Parse_Expression());
 			AddBCC(AB_STACK, -1);
 		}
 		// check for global variable (static)
 		else if (a->Engine->GlobalNamedNames.GetItemNr(Idtf) != -1)
 		{
-			statement = Parse_Expression();
+			ASSIGN_RESULT(statement, Parse_Expression());
 			AddBCC(AB_STACK, -1);
 		}
 		// check new-form func begin
@@ -2069,77 +2276,94 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 		// get function by identifier: first check special functions
 		else if (SEqual(Idtf, C4AUL_If)) // if
 		{
-			Shift();
-			statement = Parse_If();
+			RETURN_ON_ERROR(Shift());
+			ASSIGN_RESULT(statement, Parse_If());
 			break;
 		}
 		else if (SEqual(Idtf, C4AUL_Else)) // else
 		{
-			throw C4AulParseError(this, "misplaced 'else'");
+			return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "misplaced 'else'")};
 		}
 		else if (SEqual(Idtf, C4AUL_While)) // while
 		{
-			Shift();
-			statement = Parse_While();
+			RETURN_ON_ERROR(Shift());
+			ASSIGN_RESULT(statement, Parse_While());
 			break;
 		}
 		else if (SEqual(Idtf, C4AUL_For)) // for
 		{
-			Shift();
+			RETURN_ON_ERROR(Shift());
 			// Look if it's the "for ([var] foo in array) or for ([var] k, v in map)"-form
 			const char *SPos0 = SPos;
 			// must be followed by a bracket
-			Match(ATT_BOPEN);
+			RETURN_ON_ERROR(Match(ATT_BOPEN));
 			// optional var
 			if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_VarNamed))
-				Shift();
+				RETURN_ON_ERROR(Shift());
 
 			bool isForEach = false;
 			// variable and "in"
-			if (TokenType == ATT_IDTF
-				&& GetNextToken(Idtf, &cInt, Discard, true) == ATT_IDTF
-				&& SEqual(Idtf, C4AUL_In)) isForEach = true;
+			if (TokenType == ATT_IDTF)
+			{
+				auto result = GetNextToken(Idtf, &cInt, Discard, true).transform([this](const auto token) { return token == ATT_IDTF && SEqual(Idtf, C4AUL_In); });
+				RETURN_ON_ERROR(result);
+				if (*result)
+				{
+					isForEach = true;
+				}
+			}
 
 			SPos = SPos0;
-			Shift();
+			RETURN_ON_ERROR(Shift());
 			if (!isForEach)
 			{
 				if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_VarNamed))
-					Shift();
-				if (TokenType == ATT_IDTF
-				&& GetNextToken(Idtf, &cInt, Discard, true) == ATT_COMMA
-				&& GetNextToken(Idtf, &cInt, Discard, true) == ATT_IDTF
-				&& GetNextToken(Idtf, &cInt, Discard, true) == ATT_IDTF
-				&& SEqual(Idtf, C4AUL_In)) isForEach = true;
+					RETURN_ON_ERROR(Shift());
+				if (TokenType == ATT_IDTF)
+				{
+					auto result = GetNextToken(Idtf, &cInt, Discard, true)
+					        .transform([this](const auto token) { return token == ATT_COMMA; })
+					        .and_then([this](auto) { return GetNextToken(Idtf, &cInt, Discard, true); })
+					        .transform([this](const auto token) { return token == ATT_IDTF; })
+					        .and_then([this](auto) { return GetNextToken(Idtf, &cInt, Discard, true); })
+					        .transform([this](const auto token) { return token == ATT_IDTF && SEqual(Idtf, C4AUL_In); });
+
+					RETURN_ON_ERROR(result);
+
+					if (*result)
+					{
+						isForEach = true;
+					}
+				}
 
 				SPos = SPos0;
-				Shift();
+				RETURN_ON_ERROR(Shift());
 			}
 
-			if (isForEach) statement = Parse_ForEach();
-			else statement = Parse_For();
+			if (isForEach) ASSIGN_RESULT(statement, Parse_ForEach());
+			else ASSIGN_RESULT(statement, Parse_For());
 			break;
 		}
 		else if (SEqual(Idtf, C4AUL_Return)) // return
 		{
 			bool multi_params_hack = false;
-			Shift();
+			RETURN_ON_ERROR(Shift());
 			std::vector<std::unique_ptr<C4AulAST::Expression>> expressions;
 			const auto offset = GetOffset();
 			bool preferStack{false};
+			const auto node = [&expressions, &preferStack, offset]() { return std::make_unique<C4AulAST::Return>(offset, std::move(expressions), preferStack); };
 			if (TokenType == ATT_BOPEN && Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2)
 			{
 				preferStack = true;
 				// parse return(retvals) - return(retval, unused, parameters, ...) allowed for backwards compatibility
-				if (auto params = Parse_Params(1, nullptr); params.size() == 1)
+				ASSIGN_RESULT(expressions, Parse_Params(1, nullptr));
+				if (expressions.size() == 1)
 				{
 					// return (1 + 1) * 3 returns 6, not 2
-					auto param = std::move(params.front());
-					expressions.emplace_back(Parse_Expression2(std::move(param)));
+					ASSIGN_RESULT(expressions.front(), Parse_Expression2(std::move(expressions.front())));
 				}
 				else
 				{
-					expressions = std::move(params);
 					multi_params_hack = true;
 				}
 			}
@@ -2150,7 +2374,8 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 			}
 			else
 			{
-				expressions.emplace_back(Parse_Expression());
+				expressions.resize(1);
+				ASSIGN_RESULT(expressions.front(), Parse_Expression());
 			}
 			if (!Fn->bReturnRef)
 			{
@@ -2160,7 +2385,7 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 				}
 				SetNoRef();
 			}
-			statement = std::make_unique<C4AulAST::Return>(offset, std::move(expressions), preferStack);
+			statement = node();
 			AddBCC(AB_RETURN);
 			if (multi_params_hack && TokenType != ATT_SCOLON)
 			{
@@ -2168,26 +2393,26 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 				// but warn about it, the * 3 won't get executed and a stray ',' could lead to unexpected results
 				Warn("';' expected, but found ", GetTokenName(TokenType));
 				AddBCC(AB_STACK, +1);
-				Parse_Expression2(std::make_unique<C4AulAST::Nil>(GetOffset()));
+				auto result = Parse_Expression2(std::make_unique<C4AulAST::Nil>(GetOffset()));
+				RETURN_NODE_ON_RESULT_ERROR(result);
 				AddBCC(AB_STACK, -1);
 			}
 		}
 		else if (SEqual(Idtf, C4AUL_this)) // this on top level
 		{
-			statement = C4AulAST::NoRef::SetNoRef(Parse_Expression());
-			SetNoRef();
+			ASSIGN_RESULT_NOREF(statement, Parse_Expression());
 			AddBCC(AB_STACK, -1);
 		}
 		else if (SEqual(Idtf, C4AUL_Break)) // break
 		{
-			Shift();
+			RETURN_ON_ERROR(Shift());
 			statement = std::make_unique<C4AulAST::Break>(GetOffset());
 			if (Type == PARSER)
 			{
 				// Must be inside a loop
 				if (!pLoopStack)
 				{
-					Strict2Error("'break' is only allowed inside loops");
+					RETURN_ON_ERROR(Strict2Error("'break' is only allowed inside loops"));
 				}
 				else
 				{
@@ -2201,14 +2426,14 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 		}
 		else if (SEqual(Idtf, C4AUL_Continue)) // continue
 		{
-			Shift();
+			RETURN_ON_ERROR(Shift());
 			statement = std::make_unique<C4AulAST::Continue>(GetOffset());
 			if (Type == PARSER)
 			{
 				// Must be inside a loop
 				if (!pLoopStack)
 				{
-					Strict2Error("'continue' is only allowed inside loops");
+					RETURN_ON_ERROR(Strict2Error("'continue' is only allowed inside loops"));
 				}
 				else
 				{
@@ -2222,20 +2447,17 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 		}
 		else if (SEqual(Idtf, C4AUL_Var)) // Var
 		{
-			statement = C4AulAST::NoRef::SetNoRef(Parse_Expression());
-			SetNoRef();
+			ASSIGN_RESULT_NOREF(statement, C4AulAST::NoRef::SetNoRef(Parse_Expression()));
 			AddBCC(AB_STACK, -1);
 		}
 		else if (SEqual(Idtf, C4AUL_Par)) // Par
 		{
-			statement = C4AulAST::NoRef::SetNoRef(Parse_Expression());
-			SetNoRef();
+			ASSIGN_RESULT_NOREF(statement, C4AulAST::NoRef::SetNoRef(Parse_Expression()));
 			AddBCC(AB_STACK, -1);
 		}
 		else if (SEqual(Idtf, C4AUL_Inherited) || SEqual(Idtf, C4AUL_SafeInherited))
 		{
-			statement = C4AulAST::NoRef::SetNoRef(Parse_Expression());
-			SetNoRef();
+			ASSIGN_RESULT_NOREF(statement, C4AulAST::NoRef::SetNoRef(Parse_Expression()));
 			AddBCC(AB_STACK, -1);
 		}
 		// now this may be the end of the function: first of all check for access directives
@@ -2244,7 +2466,7 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 			SEqual(Idtf, C4AUL_Public) ||
 			SEqual(Idtf, C4AUL_Global))
 		{
-			Shift();
+			RETURN_ON_ERROR(Shift());
 			// check if it's followed by a function declaration
 			// 'func' idtf?
 			if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_Func))
@@ -2255,8 +2477,8 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 			else
 			{
 				// expect function name and colon
-				Match(ATT_IDTF);
-				Match(ATT_COLON);
+				RETURN_ON_ERROR(Match(ATT_IDTF));
+				RETURN_ON_ERROR(Match(ATT_COLON));
 				// break here
 				Done = true;
 			}
@@ -2286,7 +2508,7 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 
 			if (FoundFn && FoundFn->SFunc() && FoundFn->SFunc()->Access < Fn->pOrgScript->GetAllowedAccess(FoundFn, Fn->pOrgScript))
 			{
-				throw C4AulParseError(this, "insufficient access level", Idtf);
+				return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "insufficient access level", Idtf)};
 			}
 
 			// ignore func-not-found errors in the preparser, because the function tables are not built yet
@@ -2296,7 +2518,9 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 				// this *could* be because it's a label to the next function, which, however, is not visible in the current
 				// context (e.g., global functions) [Soeren]
 				// parsing would have to be aborted anyway, so have a short look at the next token
-				if (GetNextToken(Idtf, &cInt, Discard, true) == ATT_COLON)
+				auto token = GetNextToken(Idtf, &cInt, Discard, true);
+				RETURN_ON_ERROR(token);
+				if (*token == ATT_COLON)
 				{
 					// OK, next function found. abort
 					Done = true;
@@ -2304,24 +2528,27 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 					break;
 				}
 				// -> func not found
-				throw C4AulParseError(this, "unknown identifier: ", Idtf);
+				return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "unknown identifier: ", Idtf)};
 			}
-			Shift();
+			RETURN_ON_ERROR(Shift());
 			// check if it's a label - labels like OCF_Living are OK (ugh...)
 			if (TokenType == ATT_COLON)
 			{
 				// break here
 				Done = true;
-				return std::make_unique<C4AulAST::Nop>(GetOffset());;
+				return {std::make_unique<C4AulAST::Nop>(GetOffset())};
 			}
 
-			std::unique_ptr<C4AulAST::FunctionCall> call;
+			std::unique_ptr<C4AulAST::Expression> call;
 			// The preparser assumes the syntax is correct
 			if (TokenType == ATT_BOPEN /*|| Type == PARSER*/)
 			{
 				auto params = Parse_Params(FoundFn ? FoundFn->GetParCount() : 10, FoundFn ? FoundFn->Name : Idtf, FoundFn);
-				call = std::make_unique<C4AulAST::FunctionCall>(GetOffset(), std::move(name), std::move(params));
-
+				call = std::make_unique<C4AulAST::FunctionCall>(GetOffset(), std::move(name), std::move(params.Result));
+				if (params.Error)
+				{
+					return {std::move(call), std::move(params.Error)};
+				}
 			}
 			AddBCC(AB_FUNC, reinterpret_cast<std::intptr_t>(FoundFn));
 			if (gotohack)
@@ -2330,51 +2557,77 @@ std::unique_ptr<C4AulAST::Statement> C4AulParseState::Parse_Statement()
 				AddBCC(AB_STACK, +1);
 			}
 
-			auto expression = C4AulAST::NoRef::SetNoRef(Parse_Expression2(std::move(call)));
+			auto result = C4AulAST::NoRef::SetNoRef(Parse_Expression2(std::move(call)));
+			SetNoRef();
+			call = std::move(result.Result);
+
+			if (result.Error)
+			{
+				return {std::move(call), std::move(result.Error)};
+			}
 
 			if (gotohack)
 			{
 				std::vector<std::unique_ptr<C4AulAST::Expression>> expressions;
-				expressions.emplace_back(std::move(expression));
+				expressions.emplace_back(std::move(call));
 				statement = std::make_unique<C4AulAST::Return>(GetOffset(), std::move(expressions), false);
 			}
 			else
 			{
-				statement = std::move(expression);
+				statement = std::move(call);
 			}
-			SetNoRef();
 			AddBCC(AB_STACK, -1);
 		}
-		Match(ATT_SCOLON);
+		RETURN_NODE_ON_ERROR(Match(ATT_SCOLON));
 		break;
 	}
 	default:
 	{
 		// -> unexpected token
-		UnexpectedToken("statement");
+		return {ErrorNode(), UnexpectedToken("statement")};
 	}
 	}
-	return statement;
+	return {node()};
 }
 
-std::vector<std::unique_ptr<C4AulAST::Expression>> C4AulParseState::Parse_Params(const std::size_t maxParameters, const char *sWarn, C4AulFunc *pFunc, const bool addNilNodes)
+#define RETURN_VECTOR_ON_ERROR(expr) \
+do \
+{ \
+	if (auto error = (expr); !expr) \
+{ \
+	nodes.emplace_back(ErrorNode()); \
+	return {std::move(nodes), std::move(error).error()}; \
+	} \
+	} \
+while (false); \
+
+#define RETURN_VECTOR_WITH_PARSE_ERROR(expr) \
+do \
+{ \
+	nodes.emplace_back(ErrorNode()); \
+	return {std::move(nodes), expr}; \
+	} \
+while (false); \
+
+C4AulParseResult<std::vector<std::unique_ptr<C4AulAST::Expression>>> C4AulParseState::Parse_Params(const std::size_t maxParameters, const char *sWarn, C4AulFunc *pFunc, const bool addNilNodes)
 {
+	std::vector<std::unique_ptr<C4AulAST::Expression>> nodes;
+
 	// so it's a regular function; force "("
-	Match(ATT_BOPEN);
-	std::vector<std::unique_ptr<C4AulAST::Expression>> result;
-	result.reserve(maxParameters);
+	RETURN_VECTOR_ON_ERROR(Match(ATT_BOPEN));
+	nodes.reserve(maxParameters);
 	bool fDone = false;
 	do
 		switch (TokenType)
 		{
 		case ATT_BCLOSE:
 		{
-			Shift();
+			RETURN_VECTOR_ON_ERROR(Shift());
 			// () -> size 0, (*,) -> size 2, (*,*,) -> size 3
-			if (!result.empty())
+			if (!nodes.empty())
 			{
 				AddBCC(AB_NIL);
-				result.emplace_back(std::make_unique<C4AulAST::Nil>(GetOffset()));
+				nodes.emplace_back(std::make_unique<C4AulAST::Nil>(GetOffset()));
 			}
 			fDone = true;
 			break;
@@ -2383,24 +2636,24 @@ std::vector<std::unique_ptr<C4AulAST::Expression>> C4AulParseState::Parse_Params
 		{
 			// got no parameter before a ","? then push a 0-constant
 			AddBCC(AB_NIL);
-			result.emplace_back(std::make_unique<C4AulAST::Nil>(GetOffset()));
-			Shift();
+			nodes.emplace_back(std::make_unique<C4AulAST::Nil>(GetOffset()));
+			RETURN_VECTOR_ON_ERROR(Shift());
 			break;
 		}
 		case ATT_LDOTS:
 		{
-			Shift();
+			RETURN_VECTOR_ON_ERROR(Shift());
 			// Push all unnamed parameters of the current function as parameters
 			int i = Fn->ParNamed.iSize;
-			while (result.size() < maxParameters && i < C4AUL_MAX_Par)
+			while (nodes.size() < maxParameters && i < C4AUL_MAX_Par)
 			{
 				AddBCC(AB_PARN_R, i);
-				result.emplace_back(std::make_unique<C4AulAST::ParN>(GetOffset(), C4V_Any, i));
+				nodes.emplace_back(std::make_unique<C4AulAST::ParN>(GetOffset(), C4V_Any, i));
 				++i;
 			}
 			// Do not allow more parameters even if there is place left
 			fDone = true;
-			Match(ATT_BCLOSE);
+			RETURN_VECTOR_ON_ERROR(Match(ATT_BCLOSE));
 			break;
 		}
 		default:
@@ -2409,12 +2662,12 @@ std::vector<std::unique_ptr<C4AulAST::Expression>> C4AulParseState::Parse_Params
 			auto expression = Parse_Expression();
 			if (pFunc)
 			{
-				bool anyfunctakesref = pFunc->GetParCount() > result.size() && (pFunc->GetParType()[result.size()] == C4V_pC4Value);
+				bool anyfunctakesref = pFunc->GetParCount() > nodes.size() && (pFunc->GetParType()[nodes.size()] == C4V_pC4Value);
 				// pFunc either was the return value from a GetFuncFast-Call or
 				// pFunc is the only function that could be called, so this loop is superflous
 				C4AulFunc *pFunc2 = pFunc;
 				while (pFunc2 = a->Engine->GetNextSNFunc(pFunc2))
-					if (pFunc2->GetParCount() > result.size() && pFunc2->GetParType()[result.size()] == C4V_pC4Value) anyfunctakesref = true;
+					if (pFunc2->GetParCount() > nodes.size() && pFunc2->GetParType()[nodes.size()] == C4V_pC4Value) anyfunctakesref = true;
 				// Change the bytecode to the equivalent that does not produce a reference.
 				if (!anyfunctakesref)
 				{
@@ -2422,44 +2675,52 @@ std::vector<std::unique_ptr<C4AulAST::Expression>> C4AulParseState::Parse_Params
 					SetNoRef();
 				}
 			}
-			result.emplace_back(std::move(expression));
+			nodes.emplace_back(std::move(expression.Result));
+			if (expression.Error)
+			{
+				return {std::move(nodes), std::move(expression.Error)};
+			}
+
 			// end of parameter list?
 			if (TokenType == ATT_COMMA)
-				Shift();
+			{
+				RETURN_VECTOR_ON_ERROR(Shift());
+			}
 			else if (TokenType == ATT_BCLOSE)
 			{
-				Shift();
+				RETURN_VECTOR_ON_ERROR(Shift());
 				fDone = true;
 			}
-			else UnexpectedToken("',' or ')'");
+			else RETURN_VECTOR_WITH_PARSE_ERROR(UnexpectedToken("',' or ')'"));
 			break;
 		}
 		}
 	while (!fDone);
 	// too many parameters?
-	if (sWarn && result.size() > maxParameters && Type == PARSER)
-		Warn(std::format("{}: passing {} parameters, but only {} are used", sWarn, result.size(), maxParameters), nullptr);
+	if (sWarn && nodes.size() > maxParameters && Type == PARSER)
+		Warn(std::format("{}: passing {} parameters, but only {} are used", sWarn, nodes.size(), maxParameters));
 	// Balance stack
-	if (result.size() != maxParameters)
+	if (nodes.size() != maxParameters)
 	{
-		AddBCC(AB_STACK, maxParameters - result.size());
+		AddBCC(AB_STACK, maxParameters - nodes.size());
 
 		if (addNilNodes)
 		{
-			while (result.size() < maxParameters)
+			while (nodes.size() < maxParameters)
 			{
-				result.emplace_back(std::make_unique<C4AulAST::Nil>(GetOffset(), true));
+				nodes.emplace_back(std::make_unique<C4AulAST::Nil>(GetOffset(), true));
 			}
 		}
 	}
-	return result;
+	return {std::move(nodes)};
 }
 
-std::unique_ptr<C4AulAST::ArrayLiteral> C4AulParseState::Parse_Array()
+C4AulParseResult<std::unique_ptr<C4AulAST::Expression>> C4AulParseState::Parse_Array()
 {
 	// force "["
-	Match(ATT_BOPEN2);
+	RETURN_ON_ERROR(Match(ATT_BOPEN2));
 	std::vector<std::unique_ptr<C4AulAST::Expression>> values;
+	const auto node = [&values, offset{GetOffset()}]() { return std::make_unique<C4AulAST::ArrayLiteral>(offset, std::move(values)); };
 	// Create an array
 	bool fDone = false;
 	do
@@ -2467,7 +2728,7 @@ std::unique_ptr<C4AulAST::ArrayLiteral> C4AulParseState::Parse_Array()
 		{
 		case ATT_BCLOSE2:
 		{
-			Shift();
+			RETURN_NODE_ON_ERROR(Shift());
 			// [] -> size 0, [*,] -> size 2, [*,*,] -> size 3
 			if (!values.empty())
 			{
@@ -2481,134 +2742,166 @@ std::unique_ptr<C4AulAST::ArrayLiteral> C4AulParseState::Parse_Array()
 		{
 			// got no parameter before a ","? then push a 0-constant
 			AddBCC(AB_NIL);
-			Shift();
+			RETURN_NODE_ON_ERROR(Shift());
 			values.emplace_back(std::make_unique<C4AulAST::Nil>(GetOffset()));
 			break;
 		}
 		default:
 		{
-			values.emplace_back(C4AulAST::NoRef::SetNoRef(Parse_Expression()));
+			auto expression = C4AulAST::NoRef::SetNoRef(Parse_Expression());
 			SetNoRef();
+			values.emplace_back(std::move(expression.Result));
+			if (expression.Error)
+			{
+				return {node(), std::move(expression.Error)};
+			}
 			if (TokenType == ATT_COMMA)
-				Shift();
+				RETURN_NODE_ON_ERROR(Shift());
 			else if (TokenType == ATT_BCLOSE2)
 			{
-				Shift();
+				RETURN_NODE_ON_ERROR(Shift());
 				fDone = true;
 				break;
 			}
 			else
-				UnexpectedToken("',' or ']'");
+				return {ErrorNode(node()), UnexpectedToken("',' or ']'")};
 		}
 		}
 	while (!fDone);
 	// add terminator
 	AddBCC(AB_ARRAY, values.size());
-	return std::make_unique<C4AulAST::ArrayLiteral>(GetOffset(), std::move(values));
+	return {node()};
 }
 
-std::unique_ptr<C4AulAST::MapLiteral>  C4AulParseState::Parse_Map()
+C4AulParseResult<std::unique_ptr<C4AulAST::Expression>> C4AulParseState::Parse_Map()
 {
 	// force "{"
-	Match(ATT_BLOPEN);
+	RETURN_ON_ERROR(Match(ATT_BLOPEN));
 	// Create a map
 	std::vector<C4AulAST::MapLiteral::KeyValuePair> keyValuePairs;
+	std::unique_ptr<C4AulAST::Expression> key;
+
+	const auto node = [&key, &keyValuePairs, offset{GetOffset()}, this]()
+	{
+		// Key without a corresponding value?
+		if (key)
+		{
+			keyValuePairs.emplace_back(std::move(key), ErrorNode());
+		}
+
+		return C4AulAST::NoRef::SetNoRef(std::make_unique<C4AulAST::MapLiteral>(offset, std::move(keyValuePairs)));
+	};
+
 	bool fDone = false;
 	do
 		switch (TokenType)
 		{
 		case ATT_BLCLOSE:
 		{
-			Shift();
+			RETURN_NODE_ON_ERROR(Shift());
 			fDone = true;
 			break;
 		}
 		case ATT_COMMA:
 		{
 			// got no parameter before a ","? this is an error in a map
-			throw C4AulParseError(this, "',' found in a map without preceding key-value assignment ");
+			return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, "',' found in a map without preceding key-value assignment ")};
 			break;
 		}
 		default:
 		{
-			std::unique_ptr<C4AulAST::Expression> key;
 			switch (TokenType)
 			{
-				case ATT_IDTF:
-				{
-					C4String *string;
-					if (!(string = a->Engine->Strings.FindString(Idtf)))
-						string = a->Engine->Strings.RegString(Idtf);
-					if (Type == PARSER) string->Hold = true;
-					AddBCC(AB_STRING, reinterpret_cast<std::intptr_t>(string));
-					key = std::make_unique<C4AulAST::StringLiteral>(GetOffset(), Idtf);
-					Shift();
-					break;
-				}
-				case ATT_STRING:
-					AddBCC(AB_STRING, cInt);
-					key = std::make_unique<C4AulAST::StringLiteral>(GetOffset(), reinterpret_cast<C4String *>(cInt)->Data.getData());
-					Shift();
-					break;
-				case ATT_BOPEN2:
-					Shift();
-					key = C4AulAST::NoRef::SetNoRef(Parse_Expression());
-					SetNoRef();
-					Match(ATT_BCLOSE2);
-					break;
-				default:
-					UnexpectedToken("string or identifier");
+			case ATT_IDTF:
+			{
+				C4String *string;
+				if (!(string = a->Engine->Strings.FindString(Idtf)))
+					string = a->Engine->Strings.RegString(Idtf);
+				if (Type == PARSER) string->Hold = true;
+				AddBCC(AB_STRING, reinterpret_cast<std::intptr_t>(string));
+				key = std::make_unique<C4AulAST::StringLiteral>(GetOffset(), Idtf);
+				RETURN_NODE_ON_ERROR(Shift());
+				break;
+			}
+			case ATT_STRING:
+				AddBCC(AB_STRING, cInt);
+				key = std::make_unique<C4AulAST::StringLiteral>(GetOffset(), reinterpret_cast<C4String *>(cInt)->Data.getData());
+				RETURN_NODE_ON_ERROR(Shift());
+				break;
+			case ATT_BOPEN2:
+			{
+				RETURN_NODE_ON_ERROR(Shift());
+				ASSIGN_RESULT_NOREF(key, Parse_Expression());
+				RETURN_NODE_ON_ERROR(Match(ATT_BCLOSE2));
+				break;
+			}
+			default:
+				return {ErrorNode(node()), UnexpectedToken("string or identifier")};
 			}
 
 			if (TokenType != ATT_OPERATOR || !SEqual(C4ScriptOpMap[cInt].Identifier, "="))
 			{
-				UnexpectedToken("'='");
+				return {ErrorNode(node()), UnexpectedToken("'='")};
 			}
-			Shift();
+
+			RETURN_NODE_ON_ERROR(Shift());
 
 			auto value = Parse_Expression();
-			keyValuePairs.emplace_back(C4AulAST::MapLiteral::KeyValuePair{std::move(key), std::move(value)});
 			SetNoRef();
+			keyValuePairs.emplace_back(C4AulAST::MapLiteral::KeyValuePair{std::move(key), std::move(value.Result)});
+			RETURN_NODE_ON_RESULT_ERROR(value);
+
 			if (TokenType == ATT_COMMA)
-				Shift();
+				RETURN_NODE_ON_ERROR(Shift());
 			else if (TokenType == ATT_BLCLOSE)
 			{
-				Shift();
+				RETURN_NODE_ON_ERROR(Shift());
 				fDone = true;
 				break;
 			}
 			else
-				UnexpectedToken("',' or '}'");
+				return {ErrorNode(node()), UnexpectedToken("',' or '}'")};
 		}
 		}
 	while (!fDone);
 	// add terminator
 	AddBCC(AB_MAP, keyValuePairs.size());
-	return C4AulAST::NoRef::SetNoRef(std::make_unique<C4AulAST::MapLiteral>(GetOffset(), std::move(keyValuePairs)));
+	return {node()};
 }
 
-std::unique_ptr<C4AulAST::While> C4AulParseState::Parse_While()
+C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_While()
 {
+	std::unique_ptr<C4AulAST::Expression> condition;
+	std::unique_ptr<C4AulAST::Statement> body;
+
+	const auto node = [&condition, &body, offset{GetOffset()}, this]
+	{
+		return std::make_unique<C4AulAST::While>(offset, condition ? std::move(condition) : ErrorNode(), body ? std::move(body) : ErrorNode());
+	};
+
 	// Save position for later jump back
 	const auto iStart = JumpHere();
-	std::unique_ptr<C4AulAST::Expression> condition;
 	// Execute condition
 	if (Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2)
 	{
-		Match(ATT_BOPEN);
-		condition = C4AulAST::NoRef::SetNoRef(Parse_Expression());
-		Match(ATT_BCLOSE);
+		RETURN_ON_ERROR(Match(ATT_BOPEN));
+		ASSIGN_RESULT_NOREF(condition, Parse_Expression());
+		RETURN_ON_ERROR(Match(ATT_BCLOSE));
 	}
 	else
-		condition = C4AulAST::NoRef::SetNoRef(std::move(Parse_Params(1, C4AUL_While, nullptr, true).front()));
-	SetNoRef();
+	{
+		auto params = Parse_Params(1, C4AUL_While, nullptr, true);
+		condition = C4AulAST::NoRef::SetNoRef(std::move(params.Result.front()));
+		SetNoRef();
+		RETURN_NODE_ON_RESULT_ERROR(params);
+	}
 	// Check condition
 	const auto iCond = a->GetCodePos();
 	AddBCC(AB_CONDN);
 	// We got a loop
 	PushLoop();
 	// Execute body
-	auto body = Parse_Statement();
+	ASSIGN_RESULT(body, Parse_Statement());
 
 	if (Type == PARSER)
 	{
@@ -2625,29 +2918,38 @@ std::unique_ptr<C4AulAST::While> C4AulParseState::Parse_While()
 		PopLoop();
 	}
 
-	return std::make_unique<C4AulAST::While>(GetOffset(), std::move(condition), std::move(body));
+	return {node()};
 }
 
-std::unique_ptr<C4AulAST::If> C4AulParseState::Parse_If()
+C4AulParseResult<std::unique_ptr<C4AulAST::Statement> > C4AulParseState::Parse_If()
 {
 	std::unique_ptr<C4AulAST::Expression> condition;
+	std::unique_ptr<C4AulAST::Statement> then;
+	std::unique_ptr<C4AulAST::Statement> other;
+
+	const auto node = [&condition, &then, &other, offset{GetOffset()}]
+	{
+		return std::make_unique<C4AulAST::If>(offset, std::move(condition), std::move(then), std::move(other));
+	};
+
 	if (Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2)
 	{
-		Match(ATT_BOPEN);
-		condition = C4AulAST::NoRef::SetNoRef(Parse_Expression());
-		Match(ATT_BCLOSE);
+		RETURN_ON_ERROR(Match(ATT_BOPEN));
+		ASSIGN_RESULT_NOREF(condition, Parse_Expression());
+		RETURN_ON_ERROR(Match(ATT_BCLOSE));
 	}
 	else
 	{
-		condition = C4AulAST::NoRef::SetNoRef(std::move(Parse_Params(1, C4AUL_If, nullptr, true).front()));
+		auto params = Parse_Params(1, C4AUL_If, nullptr, true);
+		condition = C4AulAST::NoRef::SetNoRef(std::move(params.Result.front()));
+		SetNoRef();
+		RETURN_NODE_ON_RESULT_ERROR(params);
 	}
-	SetNoRef();
 	// create bytecode, remember position
 	const auto iCond = a->GetCodePos();
 	AddBCC(AB_CONDN);
 	// parse controlled statement
-	auto then = Parse_Statement();
-	std::unique_ptr<C4AulAST::Statement> other;
+	ASSIGN_RESULT(then, Parse_Statement());
 	if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_Else))
 	{
 		// add jump
@@ -2655,10 +2957,10 @@ std::unique_ptr<C4AulAST::If> C4AulParseState::Parse_If()
 		AddBCC(AB_JUMP);
 		// set condition jump target
 		SetJumpHere(iCond);
-		Shift();
+		RETURN_NODE_ON_ERROR(Shift());
 		const auto codePos = a->GetCodePos();
 		// expect a command now
-		other = Parse_Statement();
+		ASSIGN_RESULT(other, Parse_Statement());
 
 		if (Type == PARSER)
 		{
@@ -2680,44 +2982,49 @@ std::unique_ptr<C4AulAST::If> C4AulParseState::Parse_If()
 		// set condition jump target
 		SetJumpHere(iCond);
 
-	return std::make_unique<C4AulAST::If>(GetOffset(), std::move(condition), std::move(then), std::move(other));
+	return {node()};
 }
 
-std::unique_ptr<C4AulAST::For> C4AulParseState::Parse_For()
+C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_For()
 {
 	// Initialization
 	std::unique_ptr<C4AulAST::Statement> init;
+	std::unique_ptr<C4AulAST::Expression> condition;
+	std::unique_ptr<C4AulAST::Expression> incrementor;
+	std::unique_ptr<C4AulAST::Statement> body;
+
+	const auto node = [&init, &condition, &incrementor, &body, offset{GetOffset()}]
+	{
+		return std::make_unique<C4AulAST::For>(offset, std::move(init), std::move(condition), std::move(incrementor), std::move(body));
+	};
+
 	if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_VarNamed))
 	{
-		Shift();
-		init = Parse_Var();
+		RETURN_ON_ERROR(Shift());
+		ASSIGN_RESULT(init, Parse_Var());
 	}
 	else if (TokenType != ATT_SCOLON)
 	{
-		init = C4AulAST::NoRef::SetNoRef(Parse_Expression());
-		SetNoRef();
+		ASSIGN_RESULT_NOREF(init, Parse_Expression());
 		AddBCC(AB_STACK, -1);
 	}
 	// Consume first semicolon
-	Match(ATT_SCOLON);
+	RETURN_NODE_ON_ERROR(Match(ATT_SCOLON));
 	// Condition
 	size_t iCondition = SizeMax, iJumpBody = SizeMax, iJumpOut = SizeMax;
-	std::unique_ptr<C4AulAST::Expression> condition;
 	if (TokenType != ATT_SCOLON)
 	{
 		// Add condition code
 		iCondition = JumpHere();
-		condition = C4AulAST::NoRef::SetNoRef(Parse_Expression());
-		SetNoRef();
+		ASSIGN_RESULT_NOREF(condition, Parse_Expression());
 		// Jump out
 		iJumpOut = a->GetCodePos();
 		AddBCC(AB_CONDN);
 	}
 	// Consume second semicolon
-	Match(ATT_SCOLON);
+	RETURN_NODE_ON_ERROR(Match(ATT_SCOLON));
 	// Incrementor
 	size_t iIncrementor = SizeMax;
-	std::unique_ptr<C4AulAST::Expression> incrementor;
 	if (TokenType != ATT_BCLOSE)
 	{
 		// Must jump over incrementor
@@ -2725,15 +3032,14 @@ std::unique_ptr<C4AulAST::For> C4AulParseState::Parse_For()
 		AddBCC(AB_JUMP);
 		// Add incrementor code
 		iIncrementor = JumpHere();
-		incrementor = C4AulAST::NoRef::SetNoRef(Parse_Expression());
-		SetNoRef();
+		ASSIGN_RESULT_NOREF(incrementor, Parse_Expression());
 		AddBCC(AB_STACK, -1);
 		// Jump to condition
 		if (iCondition != SizeMax)
 			AddJump(AB_JUMP, iCondition);
 	}
 	// Consume closing bracket
-	Match(ATT_BCLOSE);
+	RETURN_NODE_ON_ERROR(Match(ATT_BCLOSE));
 	// Body
 	std::int32_t iBody;
 	if (Type == PARSER)
@@ -2746,7 +3052,7 @@ std::unique_ptr<C4AulAST::For> C4AulParseState::Parse_For()
 			SetJumpHere(iJumpBody);
 	}
 
-	auto statement = Parse_Statement();
+	ASSIGN_RESULT(body, Parse_Statement());
 
 	if (Type == PARSER)
 	{
@@ -2772,22 +3078,31 @@ std::unique_ptr<C4AulAST::For> C4AulParseState::Parse_For()
 		PopLoop();
 	}
 
-	return std::make_unique<C4AulAST::For>(GetOffset(), std::move(init), std::move(condition), std::move(incrementor), std::move(statement));
+	return {node()};
 }
 
-std::unique_ptr<C4AulAST::ForEach> C4AulParseState::Parse_ForEach()
+C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_ForEach()
 {
+
+	std::unique_ptr<C4AulAST::Statement> init;
+	std::unique_ptr<C4AulAST::Expression> expression;
+	std::unique_ptr<C4AulAST::Statement> body;
+
+	const auto node = [&init, &expression, &body, offset{GetOffset()}, this]()
+	{
+		return std::make_unique<C4AulAST::ForEach>(offset, init ? std::move(init) : ErrorNode(), expression ? std::move(expression) : ErrorNode(), std::move(body));
+	};
+
 	bool forMap = false;
 
 	if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_VarNamed))
 	{
-		Shift();
+		RETURN_NODE_ON_ERROR(Shift());
 	}
 	// get variable name
 	if (TokenType != ATT_IDTF)
-		UnexpectedToken("variable name");
+		return {ErrorNode(node()), UnexpectedToken("variable name")};
 
-	std::unique_ptr<C4AulAST::Statement> init;
 	auto decl1 = std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::Type::Var, Idtf, nullptr);
 
 	if (Type == PREPARSER)
@@ -2798,13 +3113,15 @@ std::unique_ptr<C4AulAST::ForEach> C4AulParseState::Parse_ForEach()
 	// search variable (fail if not found)
 	int iVarID = Fn->VarNamed.GetItemNr(Idtf);
 	if (iVarID < 0)
-		throw C4AulParseError(this, "internal error: var definition: var not found in variable table");
-	Shift();
+	{
+		return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, "internal error: var definition: var not found in variable table")};
+	}
+	RETURN_NODE_ON_ERROR(Shift());
 
 	int iVarIDForMapValue = 0;
 	if (TokenType == ATT_COMMA)
 	{
-		Shift();
+		RETURN_NODE_ON_ERROR(Shift());
 		if (TokenType == ATT_IDTF && !SEqual(Idtf, C4AUL_In))
 		{
 			forMap = true;
@@ -2823,8 +3140,8 @@ std::unique_ptr<C4AulAST::ForEach> C4AulParseState::Parse_ForEach()
 			// search variable (fail if not found)
 			iVarIDForMapValue = Fn->VarNamed.GetItemNr(Idtf);
 			if (iVarIDForMapValue < 0)
-				throw C4AulParseError(this, "internal error: var definition: var not found in variable table");
-			Shift();
+				return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, "internal error: var definition: var not found in variable table")};
+			RETURN_NODE_ON_ERROR(Shift());
 		}
 	}
 
@@ -2834,11 +3151,11 @@ std::unique_ptr<C4AulAST::ForEach> C4AulParseState::Parse_ForEach()
 	}
 
 	if (TokenType != ATT_IDTF || !SEqual(Idtf, C4AUL_In))
-		UnexpectedToken("'in'");
-	Shift();
+		return {ErrorNode(node()), UnexpectedToken("'in'")};
+	RETURN_NODE_ON_ERROR(Shift());
 	// get expression for array or map
-	auto expression = Parse_Expression();
-	Match(ATT_BCLOSE);
+	ASSIGN_RESULT(expression, Parse_Expression());
+	RETURN_NODE_ON_ERROR(Match(ATT_BCLOSE));
 	// push second var id for the map iteration
 	if (forMap) AddBCC(AB_INT, iVarIDForMapValue);
 	// push initial position (0)
@@ -2859,7 +3176,7 @@ std::unique_ptr<C4AulAST::ForEach> C4AulParseState::Parse_ForEach()
 	}
 
 	// loop body
-	auto statement = Parse_Statement();
+	ASSIGN_RESULT(body, Parse_Statement());
 	if (Type == PARSER)
 	{
 		// jump back
@@ -2877,12 +3194,13 @@ std::unique_ptr<C4AulAST::ForEach> C4AulParseState::Parse_ForEach()
 		AddBCC(AB_STACK, forMap ? -3 : -2);
 	}
 
-	return std::make_unique<C4AulAST::ForEach>(GetOffset(), std::move(init), std::move(expression), std::move(statement));
+	return {node()};
 }
 
-std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression(int iParentPrio)
+C4AulParseResult<std::unique_ptr<C4AulAST::Expression>> C4AulParseState::Parse_Expression(int iParentPrio)
 {
 	std::unique_ptr<C4AulAST::Expression> lhs;
+	const auto node = [&lhs]() { return std::move(lhs); };
 	switch (TokenType)
 	{
 	case ATT_IDTF:
@@ -2894,7 +3212,7 @@ std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression(int iPar
 			AddBCC(AB_PARN_R, Fn->ParNamed.GetItemNr(Idtf));
 
 			lhs = std::make_unique<C4AulAST::ParN>(GetOffset(), C4V_Any, Fn->ParNamed.GetItemNr(Idtf));
-			Shift();
+			RETURN_NODE_ON_ERROR(Shift());
 		}
 		// check for variable (var)
 		else if (Fn->VarNamed.GetItemNr(Idtf) != -1)
@@ -2902,18 +3220,18 @@ std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression(int iPar
 			// insert variable by id
 			AddBCC(AB_VARN_R, Fn->VarNamed.GetItemNr(Idtf));
 			lhs = std::make_unique<C4AulAST::VarN>(GetOffset(), C4V_Any, Idtf);
-			Shift();
+			RETURN_NODE_ON_ERROR(Shift());
 		}
 		// check for variable (local)
 		else if (a->LocalNamed.GetItemNr(Idtf) != -1)
 		{
 			// global func?
 			if (Fn->Owner == &Game.ScriptEngine)
-				throw C4AulParseError(this, "using local variable in global function!");
+				return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "using local variable in global function!")};
 			// insert variable by id
 			AddBCC(AB_LOCALN_R, a->LocalNamed.GetItemNr(Idtf));
 			lhs = std::make_unique<C4AulAST::LocalN>(GetOffset(), C4V_Any, Idtf);
-			Shift();
+			RETURN_NODE_ON_ERROR(Shift());
 		}
 		// check for global variable (static)
 		else if (a->Engine->GlobalNamedNames.GetItemNr(Idtf) != -1)
@@ -2921,64 +3239,77 @@ std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression(int iPar
 			// insert variable by id
 			AddBCC(AB_GLOBALN_R, a->Engine->GlobalNamedNames.GetItemNr(Idtf));
 			lhs = std::make_unique<C4AulAST::GlobalN>(GetOffset(), C4V_Any, Idtf);
-			Shift();
+			RETURN_NODE_ON_ERROR(Shift());
 		}
 		// function identifier: check special functions
 		else if (SEqual(Idtf, C4AUL_If))
 			// -> if is not a valid parameter
-			throw C4AulParseError(this, "'if' may not be used as a parameter");
+			return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "'if' may not be used as a parameter")};
 		else if (SEqual(Idtf, C4AUL_While))
 			// -> while is not a valid parameter
-			throw C4AulParseError(this, "'while' may not be used as a parameter");
+			return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "'while' may not be used as a parameter")};
 		else if (SEqual(Idtf, C4AUL_Else))
 			// -> else is not a valid parameter
-			throw C4AulParseError(this, "misplaced 'else'");
+			return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "misplaced 'else'")};
 		else if (SEqual(Idtf, C4AUL_For))
 			// -> for is not a valid parameter
-			throw C4AulParseError(this, "'for' may not be used as a parameter");
+			return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "'for' may not be used as a parameter")};
 		else if (SEqual(Idtf, C4AUL_Return))
 		{
 			// return: treat as regular function with special byte code
-			Strict2Error("return used as a parameter");
-			Shift();
-			lhs = std::make_unique<C4AulAST::ReturnAsParam>(GetOffset(), std::move(Parse_Params(1, nullptr, nullptr, true).front()), true);
+			RETURN_ON_ERROR(Strict2Error("return used as a parameter"));
+			RETURN_ON_ERROR(Shift());
+			auto params = Parse_Params(1, nullptr, nullptr, true);
+			RETURN_NODE_ON_RESULT_ERROR(params);
+			lhs = std::make_unique<C4AulAST::ReturnAsParam>(GetOffset(), std::move(params.Result.front()), true);
 			AddBCC(AB_RETURN);
 			AddBCC(AB_STACK, +1);
 		}
 		else if (SEqual(Idtf, C4AUL_Par))
 		{
 			// and for Par
-			Shift();
-			lhs = std::make_unique<C4AulAST::Par>(GetOffset(), C4V_Any, std::move(Parse_Params(1, C4AUL_Par, nullptr, true).front()));
+			RETURN_ON_ERROR(Shift());
+			auto params = Parse_Params(1, C4AUL_Par, nullptr, true);
+			RETURN_NODE_ON_RESULT_ERROR(params);
+			lhs = std::make_unique<C4AulAST::Par>(GetOffset(), C4V_Any, std::move(params.Result.front()));
 			AddBCC(AB_PAR_R);
 		}
 		else if (SEqual(Idtf, C4AUL_Var))
 		{
 			// same for Var
-			Shift();
-			lhs = std::make_unique<C4AulAST::Var>(GetOffset(), C4V_Any, std::move(Parse_Params(1, C4AUL_Var, nullptr, true).front()));
+			RETURN_ON_ERROR(Shift());
+			auto params = Parse_Params(1, C4AUL_Var, nullptr, true);
+			RETURN_NODE_ON_RESULT_ERROR(params);
+			lhs = std::make_unique<C4AulAST::Var>(GetOffset(), C4V_Any, std::move(params.Result.front()));
 			AddBCC(AB_VAR_R);
 		}
 		else if (SEqual(Idtf, C4AUL_Inherited) || SEqual(Idtf, C4AUL_SafeInherited))
 		{
-			Shift();
+			RETURN_ON_ERROR(Shift());
 			// inherited keyword: check strict syntax
-			if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT) throw C4AulParseError(this, "inherited disabled; use #strict syntax!");
+			if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT)
+			{
+				return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "inherited disabled; use #strict syntax!")};
+			}
 			// get function
 			if (Fn->OwnerOverloaded)
 			{
+				auto params = Parse_Params(Fn->OwnerOverloaded->GetParCount(), nullptr, Fn->OwnerOverloaded);
+				RETURN_NODE_ON_RESULT_ERROR(params);
 				// add direct call to byte code
-				lhs = std::make_unique<C4AulAST::Inherited>(GetOffset(), Parse_Params(Fn->OwnerOverloaded->GetParCount(), nullptr, Fn->OwnerOverloaded), SEqual(Idtf, C4AUL_SafeInherited), true);
+				lhs = std::make_unique<C4AulAST::Inherited>(GetOffset(), std::move(params.Result), SEqual(Idtf, C4AUL_SafeInherited), true);
 				AddBCC(AB_FUNC, reinterpret_cast<std::intptr_t>(Fn->OwnerOverloaded));
 			}
 			else
 				// not found? raise an error, if it's not a safe call
 				if (SEqual(Idtf, C4AUL_Inherited) && Type == PARSER)
-					throw C4AulParseError(this, "inherited function not found, use _inherited to call failsafe");
+					return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "inherited function not found, use _inherited to call failsafe")};
 				else
 				{
 					// otherwise, parse parameters, but discard them
-					lhs = std::make_unique<C4AulAST::Inherited>(GetOffset(), Parse_Params(0, nullptr), true, false);
+					auto params = Parse_Params(0, nullptr);
+					RETURN_NODE_ON_RESULT_ERROR(params);
+					lhs = std::make_unique<C4AulAST::Inherited>(GetOffset(), std::move(params.Result), true, false);
 					// Push a null as return value
 					AddBCC(AB_STACK, 1);
 				}
@@ -2986,8 +3317,10 @@ std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression(int iPar
 		else if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT && Fn->OwnerOverloaded && SEqual(Idtf, Fn->Name))
 		{
 			// old syntax: do not allow recursive calls in overloaded functions
-			Shift();
-			lhs = std::make_unique<C4AulAST::FunctionCall>(GetOffset(), Fn->Name, Parse_Params(Fn->OwnerOverloaded->GetParCount(), Fn->Name, Fn));
+			RETURN_ON_ERROR(Shift());
+			auto params = Parse_Params(Fn->OwnerOverloaded->GetParCount(), Fn->Name, Fn);
+			RETURN_NODE_ON_RESULT_ERROR(params);
+			lhs = std::make_unique<C4AulAST::FunctionCall>(GetOffset(), Fn->Name, std::move(params.Result));
 			AddBCC(AB_FUNC, reinterpret_cast<std::intptr_t>(Fn->OwnerOverloaded));
 		}
 		else
@@ -3001,20 +3334,28 @@ std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression(int iPar
 			std::string name{Idtf};
 			if (Type == PREPARSER)
 			{
-				Shift();
+				RETURN_ON_ERROR(Shift());
 				// The preparser just assumes that the syntax is correct: if no '(' follows, it must be a constant
 				// FIXME: AST
 				if (TokenType == ATT_BOPEN)
-					lhs = std::make_unique<C4AulAST::FunctionCall>(GetOffset(), std::move(name), Parse_Params(FoundFn ? FoundFn->GetParCount() : C4AUL_MAX_Par, Idtf, FoundFn));
+				{
+					auto params = Parse_Params(FoundFn ? FoundFn->GetParCount() : C4AUL_MAX_Par, Idtf, FoundFn);
+					RETURN_NODE_ON_RESULT_ERROR(params);
+					lhs = std::make_unique<C4AulAST::FunctionCall>(GetOffset(), std::move(name), std::move(params.Result));
+				}
 				else
 					lhs = std::make_unique<C4AulAST::GlobalConstant>(GetOffset(), std::move(name), std::make_unique<C4AulAST::Nil>(GetOffset()));
 			}
 			else if (FoundFn)
 			{
-				Shift();
+				RETURN_ON_ERROR(Shift());
 				// Function parameters for all functions except "this", which can be used without
 				if (!SEqual(FoundFn->Name, C4AUL_this) || TokenType == ATT_BOPEN)
-					lhs = std::make_unique<C4AulAST::FunctionCall>(GetOffset(), std::move(name), Parse_Params(FoundFn->GetParCount(), FoundFn->Name, FoundFn));
+				{
+					auto params = Parse_Params(FoundFn->GetParCount(), FoundFn->Name, FoundFn);
+					RETURN_NODE_ON_RESULT_ERROR(params);
+					lhs = std::make_unique<C4AulAST::FunctionCall>(GetOffset(), std::move(name), std::move(params.Result));
+				}
 				else
 				{
 					std::vector<std::unique_ptr<C4AulAST::Expression>> pars;
@@ -3041,33 +3382,33 @@ std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression(int iPar
 					// store as direct constant
 					switch (val.GetType())
 					{
-					case C4V_Int:    AddBCC(AB_INT, val._getInt()); literal = std::make_unique<C4AulAST::IntLiteral>(GetOffset(), val._getInt()); break;
+					case C4V_Int:	AddBCC(AB_INT, val._getInt()); literal = std::make_unique<C4AulAST::IntLiteral>(GetOffset(), val._getInt()); break;
 					case C4V_Bool:   AddBCC(AB_BOOL, val._getBool()); literal = std::make_unique<C4AulAST::BoolLiteral>(GetOffset(), val._getBool()); break;
 					case C4V_String: AddBCC(AB_STRING, reinterpret_cast<std::intptr_t>(val.GetData().Str)); literal = std::make_unique<C4AulAST::StringLiteral>(GetOffset(), val.GetData().Str->Data.getData()); break;
 					case C4V_C4ID:   AddBCC(AB_C4ID, val._getC4ID()); literal = std::make_unique<C4AulAST::C4IDLiteral>(GetOffset(), val._getC4ID()); break;
-					case C4V_Any:    AddBCC(AB_NIL); lhs = std::make_unique<C4AulAST::Nil>(GetOffset()); break;
+					case C4V_Any:	AddBCC(AB_NIL); lhs = std::make_unique<C4AulAST::Nil>(GetOffset()); break;
 					default:
 					{
-						throw C4AulParseError(this, std::format("internal error: constant {} has undefined type {}", +Idtf, std::to_underlying(val.GetType())));
+						return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, std::format("internal error: constant {} has undefined type {}", +Idtf, std::to_underlying(val.GetType())))};
 					}
 					}
 
 					lhs = std::make_unique<C4AulAST::GlobalConstant>(GetOffset(), Idtf, std::move(literal));
 
-					Shift();
+					RETURN_NODE_ON_ERROR(Shift());
 					// now let's check whether it used old- or new-style
 					if (TokenType == ATT_BOPEN && Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2)
 					{
 						// old-style usage: ignore function call
 						// must not use parameters here (although generating the byte code for that would be possible)
-						Shift();
-						Match(ATT_BCLOSE, "parameters not allowed in functional usage of constants");
+						RETURN_NODE_ON_ERROR(Shift());
+						RETURN_NODE_ON_ERROR(Match(ATT_BCLOSE, "parameters not allowed in functional usage of constants"));
 					}
 				}
 				else
 				{
 					// identifier could not be resolved
-					throw C4AulParseError(this, "unknown identifier: ", Idtf);
+					return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "unknown identifier: ", Idtf)};
 				}
 			}
 		}
@@ -3077,35 +3418,35 @@ std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression(int iPar
 	{
 		AddBCC(AB_NIL);
 		lhs = std::make_unique<C4AulAST::Nil>(GetOffset());
-		Shift();
+		RETURN_NODE_ON_ERROR(Shift());
 		break;
 	}
 	case ATT_INT: // constant in cInt
 	{
 		AddBCC(AB_INT, static_cast<C4ValueInt>(cInt));
 		lhs = std::make_unique<C4AulAST::IntLiteral>(GetOffset(), static_cast<C4ValueInt>(cInt));
-		Shift();
+		RETURN_NODE_ON_ERROR(Shift());
 		break;
 	}
 	case ATT_BOOL: // constant in cInt
 	{
 		AddBCC(AB_BOOL, cInt);
 		lhs = std::make_unique<C4AulAST::BoolLiteral>(GetOffset(), static_cast<bool>(cInt));
-		Shift();
+		RETURN_NODE_ON_ERROR(Shift());
 		break;
 	}
 	case ATT_STRING: // reference in cInt
 	{
 		AddBCC(AB_STRING, cInt);
 		lhs = std::make_unique<C4AulAST::StringLiteral>(GetOffset(), reinterpret_cast<C4String *>(cInt)->Data.getData());
-		Shift();
+		RETURN_NODE_ON_ERROR(Shift());
 		break;
 	}
 	case ATT_C4ID: // converted ID in cInt
 	{
 		AddBCC(AB_C4ID, cInt);
 		lhs = std::make_unique<C4AulAST::C4IDLiteral>(GetOffset(), static_cast<C4ID>(cInt));
-		Shift();
+		RETURN_NODE_ON_ERROR(Shift());
 		break;
 	}
 	case ATT_OPERATOR:
@@ -3116,10 +3457,10 @@ std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression(int iPar
 		// postfix?
 		if (C4ScriptOpMap[OpID].Postfix)
 			// oops. that's wrong
-			throw C4AulParseError(this, "postfix operator without first expression");
-		Shift();
+			return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "postfix operator without first expression")};
+		RETURN_NODE_ON_ERROR(Shift());
 		// generate code for the following expression
-		lhs = Parse_Expression(C4ScriptOpMap[OpID].Priority);
+		ASSIGN_RESULT(lhs, Parse_Expression(C4ScriptOpMap[OpID].Priority));
 		// ignore?
 		if (SEqual(C4ScriptOpMap[OpID].Identifier, "+"))
 			break;
@@ -3165,25 +3506,25 @@ std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression(int iPar
 	case ATT_BOPEN:
 	{
 		// parse it like a function...
-		Shift();
-		lhs = Parse_Expression();
-		Match(ATT_BCLOSE);
+		RETURN_ON_ERROR(Shift());
+		ASSIGN_RESULT(lhs, Parse_Expression());
+		RETURN_NODE_ON_ERROR(Match(ATT_BCLOSE));
 		break;
 	}
 	case ATT_BOPEN2:
 	{
 		// Arrays are not tested in non-strict mode at all
 		if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT)
-			throw C4AulParseError(this, "unexpected '['");
-		lhs = Parse_Array();
+			return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "unexpected '['")};
+		ASSIGN_RESULT(lhs, Parse_Array());
 		break;
 	}
 	case ATT_BLOPEN:
 	{
 		// Maps are not tested below strict 3 mode at all
 		if (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
-			throw C4AulParseError(this, "unexpected '{'");
-		lhs = Parse_Map();
+			return {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "unexpected '{'")};
+		ASSIGN_RESULT(lhs, Parse_Map());
 		break;
 	}
 	case ATT_GLOBALCALL:
@@ -3191,107 +3532,117 @@ std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression(int iPar
 	default:
 	{
 		// -> unexpected token
-		UnexpectedToken("expression");
+		return {ErrorNode(), UnexpectedToken("expression")};
 	}
 	}
-	auto e = Parse_Expression2(std::move(lhs), iParentPrio);
-	assert(e);
-	return e;
+	return Parse_Expression2(std::move(lhs), iParentPrio);
 }
 
-std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression2(std::unique_ptr<C4AulAST::Expression> lhs, int iParentPrio)
+C4AulParseResult<std::unique_ptr<C4AulAST::Expression>> C4AulParseState::Parse_Expression2(std::unique_ptr<C4AulAST::Expression> lhs, int iParentPrio)
 {
 	while (1) switch (TokenType)
 	{
 	case ATT_OPERATOR:
 	{
+		std::unique_ptr<C4AulAST::Expression> rhs;
+		auto opID = static_cast<std::size_t>(cInt);
+		const auto node = [&lhs, &rhs, &opID, offset{GetOffset()}, this]() -> std::unique_ptr<C4AulAST::Expression>
+		{
+			if (C4ScriptOpMap[opID].NoSecondStatement)
+			{
+				return std::make_unique<C4AulAST::UnaryOperator>(offset, opID, std::move(lhs));
+			}
+			else
+			{
+				return std::make_unique<C4AulAST::BinaryOperator>(offset, opID, std::move(lhs), rhs ? std::move(rhs) : ErrorNode());
+			}
+		};
+
 		// expect postfix operator
-		auto OpID = cInt;
-		if (!C4ScriptOpMap[OpID].Postfix)
+		if (!C4ScriptOpMap[opID].Postfix)
 		{
 			// does an operator with the same name exist?
 			// when it's a postfix-operator, it can be used instead.
-			auto nOpID = OpID + 1;
+			auto nOpID = opID + 1;
 			for (; C4ScriptOpMap[nOpID].Identifier; nOpID++)
-				if (SEqual(C4ScriptOpMap[OpID].Identifier, C4ScriptOpMap[nOpID].Identifier))
+				if (SEqual(C4ScriptOpMap[opID].Identifier, C4ScriptOpMap[nOpID].Identifier))
 					if (C4ScriptOpMap[nOpID].Postfix)
 						break;
 			// not found?
 			if (!C4ScriptOpMap[nOpID].Identifier)
 			{
-				throw C4AulParseError(this, "unexpected prefix operator: ", C4ScriptOpMap[OpID].Identifier);
+				return {ErrorNode(std::move(lhs)), C4AulParseError::FormatErrorMessage(*this, "unexpected prefix operator: ", C4ScriptOpMap[opID].Identifier)};
 			}
 			// otherwise use the new-found correct postfix operator
-			OpID = nOpID;
+			opID = nOpID;
 		}
 		// lower priority?
-		if (C4ScriptOpMap[OpID].RightAssociative ?
-			C4ScriptOpMap[OpID].Priority < iParentPrio :
-			C4ScriptOpMap[OpID].Priority <= iParentPrio)
-			return lhs;
+		if (C4ScriptOpMap[opID].RightAssociative ?
+			C4ScriptOpMap[opID].Priority < iParentPrio :
+			C4ScriptOpMap[opID].Priority <= iParentPrio)
+			return {std::move(lhs)};
 		// If the operator does not modify the first argument, no reference is necessary
-		if (C4ScriptOpMap[OpID].Type1 != C4V_pC4Value)
+		if (C4ScriptOpMap[opID].Type1 != C4V_pC4Value)
 		{
 			lhs = C4AulAST::NoRef::SetNoRef(std::move(lhs));
 			SetNoRef();
 		}
-		Shift();
+		RETURN_NODE_ON_ERROR(Shift());
 
-		if (((C4ScriptOpMap[OpID].Code == AB_And || C4ScriptOpMap[OpID].Code == AB_Or) && Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2) || C4ScriptOpMap[OpID].Code == AB_NilCoalescing || C4ScriptOpMap[OpID].Code == AB_NilCoalescingIt)
+		if (((C4ScriptOpMap[opID].Code == AB_And || C4ScriptOpMap[opID].Code == AB_Or) && Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2) || C4ScriptOpMap[opID].Code == AB_NilCoalescing || C4ScriptOpMap[opID].Code == AB_NilCoalescingIt)
 		{
 			// create bytecode, remember position
 			const auto iCond = a->GetCodePos();
 
-			if (C4ScriptOpMap[OpID].Code == AB_NilCoalescingIt)
+			if (C4ScriptOpMap[opID].Code == AB_NilCoalescingIt)
 			{
 				AddBCC(AB_NilCoalescingIt);
 			}
 			else
 			{
 				// Jump or discard first parameter
-				AddBCC(C4ScriptOpMap[OpID].Code == AB_And ? AB_JUMPAND : C4ScriptOpMap[OpID].Code == AB_Or ? AB_JUMPOR : AB_JUMPNOTNIL);
+				AddBCC(C4ScriptOpMap[opID].Code == AB_And ? AB_JUMPAND : C4ScriptOpMap[opID].Code == AB_Or ? AB_JUMPOR : AB_JUMPNOTNIL);
 			}
 
 			// parse second expression
-			auto rhs = C4AulAST::NoRef::SetNoRef(Parse_Expression(C4ScriptOpMap[OpID].Priority));
-			SetNoRef();
+			ASSIGN_RESULT_NOREF(rhs, Parse_Expression(C4ScriptOpMap[opID].Priority));
 
-			if (C4ScriptOpMap[OpID].Code == AB_NilCoalescingIt)
+			if (C4ScriptOpMap[opID].Code == AB_NilCoalescingIt)
 			{
-				AddBCC(AB_Set, OpID);
+				AddBCC(AB_Set, opID);
 			}
 
 			// set condition jump target
 			SetJumpHere(iCond);
 
-			lhs = std::make_unique<C4AulAST::BinaryOperator>(GetOffset(), OpID, std::move(lhs), std::move(rhs));
+			lhs = std::make_unique<C4AulAST::BinaryOperator>(GetOffset(), opID, std::move(lhs), std::move(rhs));
 			break;
 		}
 		else
 		{
 			// expect second parameter for operator
-			if (!C4ScriptOpMap[OpID].NoSecondStatement)
+			if (!C4ScriptOpMap[opID].NoSecondStatement)
 			{
 				switch (TokenType)
 				{
 				case ATT_IDTF: case ATT_NIL: case ATT_INT: case ATT_BOOL: case ATT_STRING: case ATT_C4ID:
 				case ATT_OPERATOR: case ATT_BOPEN: case ATT_BOPEN2: case ATT_BLOPEN: case ATT_GLOBALCALL:
 				{
-					auto expression = Parse_Expression(C4ScriptOpMap[OpID].Priority);
+					ASSIGN_RESULT(rhs, Parse_Expression(C4ScriptOpMap[opID].Priority));
 					// If the operator does not modify the second argument, no reference is necessary
-					if (C4ScriptOpMap[OpID].Type2 != C4V_pC4Value)
+					if (C4ScriptOpMap[opID].Type2 != C4V_pC4Value)
 					{
-						expression = C4AulAST::NoRef::SetNoRef(std::move(expression));
+						rhs = C4AulAST::NoRef::SetNoRef(std::move(rhs));
 						SetNoRef();
 					}
-					lhs = std::make_unique<C4AulAST::BinaryOperator>(GetOffset(), OpID, std::move(lhs), std::move(expression));
+					lhs = std::make_unique<C4AulAST::BinaryOperator>(GetOffset(), opID, std::move(lhs), std::move(rhs));
 					break;
 				}
 				default:
 					// Stuff like foo(42+,1) used to silently work
-					Strict2Error(std::format("Operator {}: Second expression expected, but {} found",
-						C4ScriptOpMap[OpID].Identifier, GetTokenName(TokenType)));
-					lhs = std::make_unique<C4AulAST::BinaryOperator>(GetOffset(), OpID, std::move(lhs), std::make_unique<C4AulAST::IntLiteral>(GetOffset(), 0));
+					RETURN_NODE_ON_ERROR(Strict2Error(std::format("Operator {}: Second expression expected, but {} found",
+						C4ScriptOpMap[opID].Identifier, GetTokenName(TokenType))));
+					lhs = std::make_unique<C4AulAST::BinaryOperator>(GetOffset(), opID, std::move(lhs), std::make_unique<C4AulAST::IntLiteral>(GetOffset(), 0));
 					// If the operator does not modify the second argument, no reference is necessary
 					AddBCC(AB_INT, 0);
 					break;
@@ -3299,71 +3650,92 @@ std::unique_ptr<C4AulAST::Expression> C4AulParseState::Parse_Expression2(std::un
 			}
 			else
 			{
-				lhs = std::make_unique<C4AulAST::UnaryOperator>(GetOffset(), OpID, std::move(lhs));
+				lhs = std::make_unique<C4AulAST::UnaryOperator>(GetOffset(), opID, std::move(lhs));
 			}
 			// write byte code, with a few backward compat changes
-			if (C4ScriptOpMap[OpID].Code == AB_Equal && Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2)
-				AddBCC(AB_EqualIdent, OpID);
-			else if (C4ScriptOpMap[OpID].Code == AB_NotEqual && Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2)
-				AddBCC(AB_NotEqualIdent, OpID);
+			if (C4ScriptOpMap[opID].Code == AB_Equal && Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2)
+				AddBCC(AB_EqualIdent, opID);
+			else if (C4ScriptOpMap[opID].Code == AB_NotEqual && Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2)
+				AddBCC(AB_NotEqualIdent, opID);
 			else
-				AddBCC(C4ScriptOpMap[OpID].Code, OpID);
+				AddBCC(C4ScriptOpMap[opID].Code, opID);
 		}
 		break;
 	}
 	default:
 	{
-		bool success;
-		if (std::tie(lhs, success) = Parse_Expression3(std::move(lhs)); !success)
+		const auto node = [&lhs]() { return std::move(lhs); };
+
+		C4AulParseResult<ParseExpression3Result> parseExpression3Result{Parse_Expression3(std::move(lhs))};
+		if (parseExpression3Result.Error)
 		{
-			return lhs;
+			return {std::move(parseExpression3Result.Result.Expression), std::move(parseExpression3Result.Error)};
+		}
+
+		lhs = std::move(parseExpression3Result.Result.Expression);
+
+		if (!parseExpression3Result.Result.Success)
+		{
+			return {node()};
 		}
 	}
 	}
 }
 
-std::tuple<std::unique_ptr<C4AulAST::Expression>, bool> C4AulParseState::Parse_Expression3(std::unique_ptr<C4AulAST::Expression> lhs)
+C4AulParseResult<ParseExpression3Result> C4AulParseState::Parse_Expression3(std::unique_ptr<C4AulAST::Expression> lhs)
 {
+	const auto node = [&lhs]() { return std::move(lhs); };
 	switch (TokenType)
 	{
 		case ATT_BOPEN2:
 		{
 			// Arrays are not tested in non-strict mode at all
 			if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT)
-				throw C4AulParseError(this, "unexpected '['");
+			{
+				return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, "unexpected '['")};
+			}
 			// Access the array
 			const char *SPos0 = SPos;
-			Shift();
+			RETURN_NODE_ON_ERROR(Shift());
 			if (TokenType == ATT_BCLOSE2)
 			{
-				Shift();
+				RETURN_NODE_ON_ERROR(Shift());
 				AddBCC(AB_ARRAY_APPEND);
-				return {std::make_unique<C4AulAST::ArrayAppend>(GetOffset(), std::move(lhs)), true};
+				return {{std::make_unique<C4AulAST::ArrayAppend>(GetOffset(), std::move(lhs)), true}};
 			}
 
 			// optimize map["foo"] to map.foo (because map.foo execution is less complicated)
-			if (TokenType == ATT_STRING && GetNextToken(Idtf, &cInt, Discard, true) == ATT_BCLOSE2)
+			if (TokenType == ATT_STRING)
 			{
-				AddBCC(AB_MAPA_R, cInt);
-				auto result = std::make_unique<C4AulAST::PropertyAccess>(GetOffset(), std::move(lhs), reinterpret_cast<C4String *>(cInt)->Data.getData());
-				Shift();
-				return {std::move(result), true};
+				if (auto result = GetNextToken(Idtf, &cInt, Discard, true); result && *result == ATT_BCLOSE2)
+				{
+					AddBCC(AB_MAPA_R, cInt);
+					lhs = std::make_unique<C4AulAST::PropertyAccess>(GetOffset(), std::move(lhs), reinterpret_cast<C4String *>(cInt)->Data.getData());
+					RETURN_NODE_ON_ERROR(Shift());
+					return {{std::move(lhs), true}};
+				}
+				else
+				{
+					RETURN_ON_ERROR(std::move(result));
+				}
 			}
 
 			SPos = SPos0;
-			Shift();
+			RETURN_NODE_ON_ERROR(Shift());
 
-			auto result = std::make_unique<C4AulAST::ArrayAccess>(GetOffset(), std::move(lhs), C4AulAST::NoRef::SetNoRef(Parse_Expression()));
-			SetNoRef();
-			Match(ATT_BCLOSE2);
+			std::unique_ptr<C4AulAST::Expression> expression;
+			ASSIGN_RESULT_NOREF_EXPR3(expression, Parse_Expression());
+
+			lhs = std::make_unique<C4AulAST::ArrayAccess>(GetOffset(), std::move(lhs), std::move(expression));
+			RETURN_NODE_ON_ERROR(Match(ATT_BCLOSE2));
 			AddBCC(AB_ARRAYA_R);
-			return {std::move(result), true};
+			return {{std::move(lhs), true}};
 			break;
 		}
 		case ATT_QMARK:
 		{
 			if (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
-				throw C4AulParseError(this, "unexpected '?'");
+				return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, "unexpected '?'")};
 
 			lhs = C4AulAST::NoRef::SetNoRef(std::move(lhs));
 			SetNoRef();
@@ -3371,34 +3743,43 @@ std::tuple<std::unique_ptr<C4AulAST::Expression>, bool> C4AulParseState::Parse_E
 			const auto here = a->GetCodePos();
 			AddBCC(AB_JUMPNIL);
 
-			Shift();
+			RETURN_NODE_ON_ERROR(Shift());
 			if (TokenType == ATT_QMARK)
-				UnexpectedToken("navigation operator (->, [], .)");
+				return {ErrorNode(node()), UnexpectedToken("navigation operator (->, [], .)")};
 
-			auto [result, success] = Parse_Expression3(std::move(lhs));
+			C4AulParseResult<ParseExpression3Result> result{Parse_Expression3(std::move(lhs))};
+			lhs = std::move(result.Result.Expression);
+			RETURN_NODE_ON_RESULT_ERROR_EXPR3(result);
 
-			if (!success)
-				UnexpectedToken("navigation operator (->, [], .)");
+			if (!result.Result.Success)
+				return {ErrorNode(node()), UnexpectedToken("navigation operator (->, [], .)")};
 
-			result = C4AulAST::NoRef::SetNoRef(std::move(result));
+			lhs = C4AulAST::NoRef::SetNoRef(std::move(lhs));
 			SetNoRef();
 
-			while (std::get<1>(std::tie(result, success) = Parse_Expression3(std::move(result))))
+			for (;;)
 			{
-				result = C4AulAST::NoRef::SetNoRef(std::move(result));
+				C4AulParseResult<ParseExpression3Result> result{Parse_Expression3(std::move(lhs))};
+				lhs = C4AulAST::NoRef::SetNoRef(std::move(result.Result.Expression));
 				SetNoRef();
+				RETURN_NODE_ON_RESULT_ERROR_EXPR3(result);
+
+				if (!result.Result.Success)
+				{
+					break;
+				}
 			}
 
 			// safe navigation mustn't return a reference because it doesn't make any sense if it is expected to return non-ref nil occasionally
 			AddBCC(AB_DEREF);
 			SetJumpHere(here);
-			return {std::move(result), true};
+			return {{node(), true}};
 		}
 		case ATT_DOT:
 		{
 			if (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
-				throw C4AulParseError(this, "unexpected '.'");
-			Shift();
+				return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, "unexpected '.'")};
+			RETURN_NODE_ON_ERROR(Shift());
 			if (TokenType == ATT_IDTF)
 			{
 				C4String *string;
@@ -3406,13 +3787,13 @@ std::tuple<std::unique_ptr<C4AulAST::Expression>, bool> C4AulParseState::Parse_E
 					string = a->Engine->Strings.RegString(Idtf);
 				if (Type == PARSER) string->Hold = true;
 				AddBCC(AB_MAPA_R, reinterpret_cast<std::intptr_t>(string));
-				auto result = std::make_unique<C4AulAST::PropertyAccess>(GetOffset(), std::move(lhs), Idtf);
-				Shift();
-				return {std::move(result), true};
+				lhs = std::make_unique<C4AulAST::PropertyAccess>(GetOffset(), std::move(lhs), Idtf);
+				RETURN_NODE_ON_ERROR(Shift());
+				return {{std::move(lhs), true}};
 			}
 			else
 			{
-				UnexpectedToken("identifier");
+				return {ErrorNode(node()), UnexpectedToken("identifier")};
 			}
 			break;
 		}
@@ -3421,7 +3802,7 @@ std::tuple<std::unique_ptr<C4AulAST::Expression>, bool> C4AulParseState::Parse_E
 		{
 			C4AulBCCType eCallType = (TokenType == ATT_GLOBALCALL ? AB_CALLGLOBAL : AB_CALL);
 			// Here, a '~' is not an operator, but a token
-			Shift(Discard, false);
+			RETURN_NODE_ON_ERROR(Shift(Discard, false));
 			// C4ID -> namespace given
 			C4AulFunc *pFunc = nullptr;
 			C4ID idNS = 0;
@@ -3432,11 +3813,11 @@ std::tuple<std::unique_ptr<C4AulAST::Expression>, bool> C4AulParseState::Parse_E
 			{
 				// from now on, stupid func names must stay outside ;P
 				idNS = static_cast<C4ID>(cInt);
-				Shift();
+				RETURN_NODE_ON_ERROR(Shift());
 				// expect namespace-operator now
-				Match(ATT_DCOLON);
+				RETURN_NODE_ON_ERROR(Match(ATT_DCOLON));
 				// next, we need a function name
-				if (TokenType != ATT_IDTF) UnexpectedToken("function name");
+				if (TokenType != ATT_IDTF) return {ErrorNode(node()), UnexpectedToken("function name")};
 				name = Idtf;
 				if (Type == PARSER)
 				{
@@ -3444,17 +3825,17 @@ std::tuple<std::unique_ptr<C4AulAST::Expression>, bool> C4AulParseState::Parse_E
 					C4Def *pDef = C4Id2Def(idNS);
 					if (!pDef)
 					{
-						throw C4AulParseError(this, "direct object call: def not found: ", C4IdText(idNS));
+						return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, "direct object call: def not found: ", C4IdText(idNS))};
 					}
 					// search func
 					if (!(pFunc = pDef->Script.GetSFunc(Idtf)))
 					{
-						throw C4AulParseError(this, std::format("direct object call: function {}::{} not found", C4IdText(idNS), +Idtf));
+						return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, std::format("direct object call: function {}::{} not found", C4IdText(idNS), +Idtf))};
 					}
 
 					if (pFunc->SFunc() && pFunc->SFunc()->Access < pDef->Script.GetAllowedAccess(pFunc, Fn->pOrgScript))
 					{
-						throw C4AulParseError(this, "insufficient access level", Idtf);
+						return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, "insufficient access level", Idtf)};
 					}
 				}
 			}
@@ -3466,11 +3847,11 @@ std::tuple<std::unique_ptr<C4AulAST::Expression>, bool> C4AulParseState::Parse_E
 					// store this and get the next token
 					if (eCallType != AB_CALLGLOBAL)
 						eCallType = AB_CALLFS;
-					Shift();
+					RETURN_NODE_ON_ERROR(Shift());
 					failSafe = true;
 				}
 				// expect identifier of called function now
-				if (TokenType != ATT_IDTF) throw C4AulParseError(this, "expecting func name after '->'");
+				if (TokenType != ATT_IDTF) return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, "expecting func name after '->'")};
 				name = Idtf;
 				// search a function with the given name
 				if (eCallType == AB_CALLGLOBAL)
@@ -3488,18 +3869,21 @@ std::tuple<std::unique_ptr<C4AulAST::Expression>, bool> C4AulParseState::Parse_E
 					// not failsafe?
 					if (!failSafe && Type == PARSER)
 					{
-						throw C4AulParseError(this, std::format("direct object call: function {} not found", +Idtf));
+						return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, std::format("direct object call: function {} not found", +Idtf))};
 					}
 					// otherwise: nothing to call - just execute parameters and discard them
 					std::string name{Idtf};
-					Shift();
+					RETURN_NODE_ON_ERROR(Shift());
+
+					auto params = Parse_Params(0, nullptr);
+					RETURN_NODE_ON_RESULT_ERROR_EXPR3(params);
 
 					lhs = std::make_unique<C4AulAST::IndirectCall>(
 						GetOffset(),
 						std::move(lhs),
 						idNS,
 						std::move(name),
-						Parse_Params(0, nullptr),
+						std::move(params.Result),
 						failSafe,
 						eCallType == AB_CALLGLOBAL
 						);
@@ -3512,12 +3896,12 @@ std::tuple<std::unique_ptr<C4AulAST::Expression>, bool> C4AulParseState::Parse_E
 				}
 				else if (pFunc->SFunc() && pFunc->SFunc()->Access < Fn->pOrgScript->GetAllowedAccess(pFunc, Fn->pOrgScript))
 				{
-					throw C4AulParseError(this, "insufficient access level", Idtf);
+					return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, "insufficient access level", Idtf)};
 				}
 			}
 			// add call chunk
-			Shift();
-			arguments = Parse_Params(C4AUL_MAX_Par, pFunc ? pFunc->Name : nullptr, pFunc);
+			RETURN_NODE_ON_ERROR(Shift());
+			ASSIGN_RESULT_EXPR3(arguments, Parse_Params(C4AUL_MAX_Par, pFunc ? pFunc->Name : nullptr, pFunc));
 			if (idNS != 0)
 				AddBCC(AB_CALLNS, static_cast<std::intptr_t>(idNS));
 			AddBCC(eCallType, reinterpret_cast<std::intptr_t>(pFunc));
@@ -3534,19 +3918,23 @@ std::tuple<std::unique_ptr<C4AulAST::Expression>, bool> C4AulParseState::Parse_E
 			break;
 		}
 		default:
-			return {std::move(lhs), false};
+			return {{std::move(lhs), false}};
 	}
-	return {std::move(lhs), true};
+	return {{std::move(lhs), true}};
 }
 
-std::unique_ptr<C4AulAST::Declarations> C4AulParseState::Parse_Var()
+C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_Var()
 {
 	std::vector<std::unique_ptr<C4AulAST::Declaration>> declarations;
+	const auto node = [&declarations, offset{GetOffset()}] { return std::make_unique<C4AulAST::Declarations>(offset, std::move(declarations)); };
+
 	while (1)
 	{
 		// get desired variable name
 		if (TokenType != ATT_IDTF)
-			UnexpectedToken("variable name");
+		{
+			return {ErrorNode(node()), UnexpectedToken("variable name")};
+		}
 		std::string name{Idtf};
 		if (Type == PREPARSER)
 		{
@@ -3556,9 +3944,10 @@ std::unique_ptr<C4AulAST::Declarations> C4AulParseState::Parse_Var()
 		// search variable (fail if not found)
 		int iVarID = Fn->VarNamed.GetItemNr(Idtf);
 		if (iVarID < 0)
-			throw C4AulParseError(this, "internal error: var definition: var not found in variable table");
-		Shift();
-		std::unique_ptr<C4AulAST::Expression> expression;
+			return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, "internal error: var definition: var not found in variable table")};
+		RETURN_NODE_ON_ERROR(Shift());
+
+		C4AulParseResult<std::unique_ptr<C4AulAST::Expression>> expression;
 		if (TokenType == ATT_OPERATOR)
 		{
 			// only accept "="
@@ -3566,144 +3955,163 @@ std::unique_ptr<C4AulAST::Declarations> C4AulParseState::Parse_Var()
 			if (SEqual(C4ScriptOpMap[iOpID].Identifier, "="))
 			{
 				// insert initialization in byte code
-				Shift();
-				expression = C4AulAST::NoRef::SetNoRef(Parse_Expression());
-				SetNoRef();
-				AddBCC(AB_IVARN, iVarID);
+				if (auto result = Shift(); result)
+				{
+					expression = C4AulAST::NoRef::SetNoRef(Parse_Expression());
+					if (!expression.Error)
+					{
+						SetNoRef();
+						AddBCC(AB_IVARN, iVarID);
+					}
+				}
+				else
+				{
+					expression = {ErrorNode(), std::move(result).error()};
+				}
 			}
 			else
-				throw C4AulParseError(this, "unexpected operator");
+			{
+				expression = {ErrorNode(), C4AulParseError::FormatErrorMessage(*this, "unexpected operator")};
+			}
 		}
 
-		declarations.emplace_back(std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::Type::Var, std::move(name), std::move(expression)));
+		declarations.emplace_back(std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::Type::Var, std::move(name), std::move(expression.Result)));
+		if (expression.Error)
+		{
+			return {node(), std::move(expression.Error)};
+		}
 
 		switch (TokenType)
 		{
 		case ATT_COMMA:
 		{
-			Shift();
+			RETURN_NODE_ON_ERROR(Shift());
 			break;
 		}
 		case ATT_SCOLON:
 		{
-			return std::make_unique<C4AulAST::Declarations>(GetOffset(), std::move(declarations));
+			return {node()};
 		}
 		default:
 		{
-			UnexpectedToken("',' or ';'");
+			return {ErrorNode(node()), UnexpectedToken("',' or ';'")};
 		}
 		}
 	}
 }
 
-std::unique_ptr<C4AulAST::Declarations> C4AulParseState::Parse_Local()
+C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_Local()
 {
 	std::vector<std::unique_ptr<C4AulAST::Declaration>> declarations;
+	const auto node = [&declarations, offset{GetOffset()}] { return std::make_unique<C4AulAST::Declarations>(offset, std::move(declarations)); };
+
 	while (1)
 	{
 		if (Type == PREPARSER)
 		{
 			// get desired variable name
 			if (TokenType != ATT_IDTF)
-				UnexpectedToken("variable name");
+				return {ErrorNode(node()), UnexpectedToken("variable name")};
 			// check: symbol already in use?
 			if (a->GetFunc(Idtf))
-				throw C4AulParseError(this, "variable definition: name already in use");
+				return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, "variable definition: name already in use")};
 			// insert variable
 			a->LocalNamed.AddName(Idtf);
 		}
 		std::string name{Idtf};
-		Match(ATT_IDTF);
+		RETURN_NODE_ON_ERROR(Match(ATT_IDTF));
 		declarations.emplace_back(std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::Type::Local, std::move(name), nullptr));
 		switch (TokenType)
 		{
 		case ATT_COMMA:
 		{
-			Shift();
+			RETURN_NODE_ON_ERROR(Shift());
 			break;
 		}
 		case ATT_SCOLON:
 		{
-			return std::make_unique<C4AulAST::Declarations>(GetOffset(), std::move(declarations));
+			return {node()};
 		}
 		default:
 		{
-			UnexpectedToken("',' or ';'");
+			return {ErrorNode(node()), UnexpectedToken("',' or ';'")};
 		}
 		}
 	}
 }
 
-std::unique_ptr<C4AulAST::Declarations> C4AulParseState::Parse_Static()
+C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_Static()
 {
 	std::vector<std::unique_ptr<C4AulAST::Declaration>> declarations;
+	const auto node = [&declarations, offset{GetOffset()}] { return std::make_unique<C4AulAST::Declarations>(offset, std::move(declarations)); };
 	while (1)
 	{
 		if (Type == PREPARSER)
 		{
 			// get desired variable name
 			if (TokenType != ATT_IDTF)
-				UnexpectedToken("variable name");
+				return {ErrorNode(node()), UnexpectedToken("variable name")};
 			// global variable definition
 			// check: symbol already in use?
-			if (a->Engine->GetFuncRecursive(Idtf)) throw C4AulParseError(this, "variable definition: name already in use");
-			if (a->Engine->GetGlobalConstant(Idtf, nullptr)) Strict2Error("constant and variable with name ", Idtf);
+			if (a->Engine->GetFuncRecursive(Idtf)) return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, "variable definition: name already in use")};
+			if (a->Engine->GetGlobalConstant(Idtf, nullptr)) RETURN_NODE_ON_ERROR(Strict2Error("constant and variable with name ", Idtf));
 			// insert variable if not defined already
 			if (a->Engine->GlobalNamedNames.GetItemNr(Idtf) == -1)
 				a->Engine->GlobalNamedNames.AddName(Idtf);
 		}
 
 		std::string name{Idtf};
-		Match(ATT_IDTF);
+		RETURN_NODE_ON_ERROR(Match(ATT_IDTF));
 		declarations.emplace_back(std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::Type::Static, std::move(name), nullptr));
 		switch (TokenType)
 		{
 		case ATT_COMMA:
 		{
-			Shift();
+			RETURN_NODE_ON_ERROR(Shift());
 			break;
 		}
 		case ATT_SCOLON:
 		{
-			return std::make_unique<C4AulAST::Declarations>(GetOffset(), std::move(declarations));
+			return {node()};
 		}
 		default:
 		{
-			UnexpectedToken("',' or ';'");
+			return {node(), UnexpectedToken("',' or ';'")};
 		}
 		}
 	}
 }
 
-std::unique_ptr<C4AulAST::Declarations> C4AulParseState::Parse_Const()
+C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_Const()
 {
 	std::vector<std::unique_ptr<C4AulAST::Declaration>> declarations;
+	const auto node = [&declarations, offset{GetOffset()}] { return std::make_unique<C4AulAST::Declarations>(offset, std::move(declarations)); };
 	// get global constant definition(s)
 	while (1)
 	{
 		char Name[C4AUL_MAX_Identifier] = ""; // current identifier
 		// get desired variable name
 		if (TokenType != ATT_IDTF)
-			UnexpectedToken("constant name");
+			return {ErrorNode(node()), UnexpectedToken("constant name")};
 		SCopy(Idtf, Name);
 		// check func lists - functions of same name are allowed for backwards compatibility
 		// (e.g., for overloading constants such as OCF_Living() in chaos scenarios)
 		// it is not encouraged though, so better warn
 		if (a->Engine->GetFuncRecursive(Idtf))
-			Strict2Error("definition of constant hidden by function ", Idtf);
+			RETURN_NODE_ON_ERROR(Strict2Error("definition of constant hidden by function ", Idtf));
 		if (a->Engine->GlobalNamedNames.GetItemNr(Idtf) != -1)
-			Strict2Error("constant and variable with name ", Idtf);
-		Match(ATT_IDTF);
+			RETURN_NODE_ON_ERROR(Strict2Error("constant and variable with name ", Idtf));
+		RETURN_NODE_ON_ERROR(Match(ATT_IDTF));
 		// expect '='
 		if (TokenType != ATT_OPERATOR || !SEqual(C4ScriptOpMap[cInt].Identifier, "="))
-			UnexpectedToken("'='");
+			return {ErrorNode(node()), UnexpectedToken("'='")};
 		// expect value. Theoretically, something like C4AulScript::ExecOperator could be used here
 		// this would allow for definitions like "static const OCF_Edible = 1 << 23"
 		// However, such stuff should better be generalized, so the preparser (and parser)
 		// can evaluate any constant expression, including functions with constant retval (e.g. Sqrt)
 		// So allow only direct constants for now.
 		// Do not set a string constant to "Hold" (which would delete it in the next UnLink())
-		Shift(Ref, false);
+		RETURN_NODE_ON_ERROR(Shift(Ref, false));
 		C4Value vGlobalValue;
 		std::unique_ptr<C4AulAST::Literal> literal;
 		if (Type == PREPARSER)
@@ -3738,11 +4146,11 @@ std::unique_ptr<C4AulAST::Declarations> C4AulParseState::Parse_Const()
 			case ATT_IDTF:
 				// identifier is only OK if it's another constant
 				if (!a->Engine->GetGlobalConstant(Idtf, &vGlobalValue))
-					UnexpectedToken("constant value");
+					return {ErrorNode(node()), UnexpectedToken("constant value")};
 				break;
 
 			default:
-				UnexpectedToken("constant value");
+				return {ErrorNode(node()), UnexpectedToken("constant value")};
 			}
 			// register as constant
 			a->Engine->RegisterGlobalConstant(Name, vGlobalValue);
@@ -3751,7 +4159,7 @@ std::unique_ptr<C4AulAST::Declarations> C4AulParseState::Parse_Const()
 		{
 			if (!a->Engine->GetGlobalConstant(Name, &vGlobalValue))
 			{
-				throw C4AulParseError{this, std::format("internal error: global constant {} lost!", Name), Name};
+				return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, std::format("internal error: global constant {} lost!", Name), Name)};
 			}
 		}
 
@@ -3780,90 +4188,100 @@ std::unique_ptr<C4AulAST::Declarations> C4AulParseState::Parse_Const()
 				break;
 
 			default:
-				throw C4AulParseError{this, std::format("internal error: unexpected constant type {}", vGlobalValue.GetTypeInfo())};
+				return {ErrorNode(node()), C4AulParseError::FormatErrorMessage(*this, std::format("internal error: unexpected constant type {}", vGlobalValue.GetTypeInfo()))};
 			}
 		}
 
 		declarations.emplace_back(std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::Type::StaticConst, Name, std::move(literal)));
 
 		// expect ',' (next global) or ';' (end of definition) now
-		Shift();
+		RETURN_NODE_ON_ERROR(Shift());
 		switch (TokenType)
 		{
 		case ATT_COMMA:
 		{
-			Shift();
+			RETURN_NODE_ON_ERROR(Shift());
 			break;
 		}
 		case ATT_SCOLON:
 		{
-			return std::make_unique<C4AulAST::Declarations>(GetOffset(), std::move(declarations));
+			return {node()};
 		}
 		default:
 		{
-			UnexpectedToken("',' or ';'");
+			return {ErrorNode(node()), UnexpectedToken("',' or ';'")};
 		}
 		}
 	}
 }
 
 template<C4AulTokenType closingAtt>
-void C4AulParseState::SkipBlock()
+std::expected<void, C4AulParseError> C4AulParseState::SkipBlock()
 {
 	for (;;)
 	{
-		switch (GetNextToken(Idtf, &cInt, Discard, true))
+		auto result = GetNextToken(Idtf, &cInt, Discard, true);
+		if (!result)
 		{
-			case closingAtt: case ATT_EOF:
-				return;
-			case ATT_BOPEN:
-				SkipBlock<ATT_BCLOSE>();
-				break;
-			case ATT_BOPEN2:
-				SkipBlock<ATT_BCLOSE2>();
-				break;
-			case ATT_BLOPEN:
-				SkipBlock<ATT_BLCLOSE>();
-				break;
-			default:
-				continue;
+			return std::unexpected{std::move(result).error()};
+		}
+
+		switch (*result)
+		{
+		case closingAtt: case ATT_EOF:
+			return {};
+		case ATT_BOPEN:
+			RETURN_EXPECTED_ON_ERROR(SkipBlock<ATT_BCLOSE>());
+			break;
+		case ATT_BOPEN2:
+			RETURN_EXPECTED_ON_ERROR(SkipBlock<ATT_BCLOSE2>());
+			break;
+		case ATT_BLOPEN:
+			RETURN_EXPECTED_ON_ERROR(SkipBlock<ATT_BLCLOSE>());
+			break;
+		default:
+			continue;
 		}
 	}
 }
 
-bool C4AulParseState::IsMapLiteral()
+std::expected<bool, C4AulParseError> C4AulParseState::IsMapLiteral()
 {
 	bool result = false;
 	const char *SPos0 = SPos;
 	for (;;)
 	{
-		switch (GetNextToken(Idtf, &cInt, Discard, true))
+		auto token = GetNextToken(Idtf, &cInt, Discard, true);
+		if (!token)
 		{
-			case ATT_BOPEN:
-				SkipBlock<ATT_BCLOSE>();
-				break;
-			case ATT_BOPEN2:
-				SkipBlock<ATT_BCLOSE2>();
-				break;
-			case ATT_BLOPEN:
-				SkipBlock<ATT_BLCLOSE>();
-				break;
+			return std::unexpected{std::move(token).error()};
+		}
 
-			case ATT_OPERATOR:
-				if (SEqual(C4ScriptOpMap[cInt].Identifier, "=")) result = true;
-				break;
-
+		switch (*token)
+		{
+		case ATT_BOPEN:
+			RETURN_EXPECTED_ON_ERROR(SkipBlock<ATT_BCLOSE>());
+			break;
+		case ATT_BOPEN2:
+			RETURN_EXPECTED_ON_ERROR(SkipBlock<ATT_BCLOSE2>());
+			break;
+		case ATT_BLOPEN:
+			RETURN_EXPECTED_ON_ERROR(SkipBlock<ATT_BLCLOSE>());
+			break;
+		case ATT_OPERATOR:
+			if (SEqual(C4ScriptOpMap[cInt].Identifier, "=")) result = true;
+			break;
 				// in uncertain cases, {} is considered as an empty block
-			case ATT_BLCLOSE:
-				goto loopEnd;
-			case ATT_SCOLON:
-				result = false;
-				goto loopEnd;
-			case ATT_EOF:
-				goto loopEnd;
-			default:
-				// just continue
-				continue;
+		case ATT_BLCLOSE:
+			goto loopEnd;
+		case ATT_SCOLON:
+			result = false;
+			goto loopEnd;
+		case ATT_EOF:
+			goto loopEnd;
+		default:
+			// just continue
+			continue;
 		}
 	}
 
@@ -3928,81 +4346,45 @@ bool C4AulScript::Parse()
 		}
 		if (Fn)
 		{
-			// parse function
-			try
+			auto result = ParseFn(Fn);
+
+			file << Fn->Name << '\n';
+			file << DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(Fn->Body, "Script"));
+			file << std::endl;
+
+			file2 << Fn->Name << '\n';
+			file2 << Fn->Body->ToTree();
+			file2 << std::endl;
+
+			C4AulBCCGenerator generator{*this, Fn};
+			const auto &code = generator.Generate(Fn->Body);
+
+
+			file3 << Fn->Name << ":\n";
+			for (const auto &bcc : code)
 			{
-				const std::size_t oldCodeSize{static_cast<std::size_t>(CodeSize)};
-				ParseFn(Fn);
-				file << Fn->Name << '\n';
-				file << DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(Fn->Body, "Script"));
-				file << std::endl;
-
-				file2 << Fn->Name << '\n';
-				file2 << Fn->Body->ToTree();
-				file2 << std::endl;
-
-				const std::span oldCode{Code + reinterpret_cast<std::intptr_t>(Fn->Code), static_cast<std::size_t>(CodeSize) - oldCodeSize};
-
-				C4AulBCCGenerator generator{*this, Fn};
-				const auto &code = generator.Generate(Fn->Body);
-
-
-				file3 << Fn->Name << ":\n";
-				for (const auto &bcc : code)
+				C4AulBCCType eType = bcc.bccType;
+				const auto X = bcc.bccX;
+				switch (eType)
 				{
-					C4AulBCCType eType = bcc.bccType;
-					const auto X = bcc.bccX;
-					switch (eType)
-					{
-					case AB_FUNC: case AB_CALL: case AB_CALLFS: case AB_CALLGLOBAL:
-						file3 << std::format("{}\t'{}'\n", C4Aul::GetTTName(eType), X ? (reinterpret_cast<C4AulFunc *>(X))->Name : ""); break;
-					case AB_STRING:
-						file3 << std::format("{}\t'{}'\n", C4Aul::GetTTName(eType), X ? (reinterpret_cast<C4String *>(X))->Data.getData() : ""); break;
-					default:
-						file3 << std::format("{}\t{}\n", C4Aul::GetTTName(eType), X); break;
-					}
-					if (eType == AB_EOFN) break;
+				case AB_FUNC: case AB_CALL: case AB_CALLFS: case AB_CALLGLOBAL:
+					file3 << std::format("{}\t'{}'\n", C4Aul::GetTTName(eType), X ? (reinterpret_cast<C4AulFunc *>(X))->Name : ""); break;
+				case AB_STRING:
+					file3 << std::format("{}\t'{}'\n", C4Aul::GetTTName(eType), X ? (reinterpret_cast<C4String *>(X))->Data.getData() : ""); break;
+				default:
+					file3 << std::format("{}\t{}\n", C4Aul::GetTTName(eType), X); break;
 				}
-				file3 << std::endl;
-
-				const std::size_t minSize{std::min(oldCode.size(), code.size())};
-
-				logger->debug("Checking function {}", Fn->Name);
-
-				for (std::size_t i{0}; i < minSize; ++i)
-				{
-					if (oldCode[i].bccType != code[i].bccType || oldCode[i].bccX != code[i].bccX)
-					{
-						logger->error("Mismatch at offset {}: oldCode = {} {}, newCode = {} {}", i, C4Aul::GetTTName(oldCode[i].bccType), oldCode[i].bccX, C4Aul::GetTTName(code[i].bccType), code[i].bccX);
-						if (oldCode[i].bccType == AB_CALL && code[i].bccType == AB_CALL)
-						{
-							auto *const oldFunc = reinterpret_cast<C4AulScriptFunc *>(oldCode[i].bccX);
-							auto *const newFunc = reinterpret_cast<C4AulScriptFunc *>(code[i].bccX);
-							logger->info("old: {} ({}) new: {} ({})", oldFunc->Name, dynamic_cast<C4DefScriptHost *>(oldFunc->Owner)->GetFilePath(), newFunc->Name, dynamic_cast<C4DefScriptHost *>(newFunc->Owner)->GetFilePath());
-						}
-
-						++Game.ScriptEngine.errCnt;
-						break;
-					}
-
-					/*if (oldCode[i].SPos != code[i].SPos)
-					{
-						logger->warn("Mismatch at offset {}: oldPos = {}, newPos = {}", i, reinterpret_cast<std::uintptr_t>(oldCode[i].SPos), reinterpret_cast<std::uintptr_t>(code[i].SPos));
-					}*/
-				}
-
-				if (oldCode.size() != code.size())
-				{
-					logger->error("Size mismatch: old size = {}, new size = {}", oldCode.size(), code.size());
-				}
+				if (eType == AB_EOFN) break;
 			}
-			catch (const C4AulError &err)
+			file3 << std::endl;
+
+			if (!result)
 			{
 				// do not show errors for System.c4g scripts that appear to be pure #appendto scripts
 				if (Fn->Owner->Def || Fn->Owner->Appends.empty())
 				{
 					// show
-					err.show();
+					result.error().show();
 					// show a warning if the error is in a remote script
 					if (Fn->pOrgScript != this)
 						DebugLog("  (as #appendto/#include to {})", Fn->Owner->ScriptName);
@@ -4020,6 +4402,39 @@ bool C4AulScript::Parse()
 				}
 				// add an error chunk
 				AddBCC(AB_ERR);
+			}
+
+			const std::size_t oldCodeSize{static_cast<std::size_t>(CodeSize)};
+			const std::span oldCode{Code + reinterpret_cast<std::intptr_t>(Fn->Code), static_cast<std::size_t>(CodeSize) - oldCodeSize};
+			const std::size_t minSize{std::min(oldCode.size(), code.size())};
+
+			logger->debug("Checking function {}", Fn->Name);
+
+			if (oldCode.size() != code.size())
+			{
+				logger->error("Size mismatch: old size = {}, new size = {}", oldCode.size(), code.size());
+			}
+
+			for (std::size_t i{0}; i < minSize; ++i)
+			{
+				if (oldCode[i].bccType != code[i].bccType || oldCode[i].bccX != code[i].bccX)
+				{
+					logger->error("Mismatch at offset {}: oldCode = {} {}, newCode = {} {}", i, C4Aul::GetTTName(oldCode[i].bccType), oldCode[i].bccX, C4Aul::GetTTName(code[i].bccType), code[i].bccX);
+					if (oldCode[i].bccType == AB_CALL && code[i].bccType == AB_CALL)
+					{
+						auto *const oldFunc = reinterpret_cast<C4AulScriptFunc *>(oldCode[i].bccX);
+						auto *const newFunc = reinterpret_cast<C4AulScriptFunc *>(code[i].bccX);
+						logger->info("old: {} ({}) new: {} ({})", oldFunc->Name, dynamic_cast<C4DefScriptHost *>(oldFunc->Owner)->GetFilePath(), newFunc->Name, dynamic_cast<C4DefScriptHost *>(newFunc->Owner)->GetFilePath());
+					}
+
+					++Game.ScriptEngine.errCnt;
+					break;
+				}
+
+				/*if (oldCode[i].SPos != code[i].SPos)
+				{
+					logger->warn("Mismatch at offset {}: oldPos = {}, newPos = {}", i, reinterpret_cast<std::uintptr_t>(oldCode[i].SPos), reinterpret_cast<std::uintptr_t>(code[i].SPos));
+				}*/
 			}
 
 			// add separator
@@ -4056,7 +4471,7 @@ bool C4AulScript::Parse()
 
 	const auto log = [&]<typename... Args>(const std::format_string<Args &...> fmt, Args &&...args)
 	{
-		logger->info(fmt, args...);
+		//logger->info(fmt, args...);
 		file << std::format(fmt, args...) << '\n';
 	};
 

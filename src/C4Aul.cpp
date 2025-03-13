@@ -867,7 +867,13 @@ std::generator<std::string> Nop::ToTreeInternal() const
 
 std::generator<std::string> Error::ToTreeInternal() const
 {
-	co_yield "(error)";
+	co_yield "(error";
+	for (const auto &statement : statements)
+	{
+		co_yield std::ranges::elements_of(IndentElementsOf(statement->ToTreeInternal()));
+	}
+
+	co_yield ")";
 }
 
 }
@@ -1149,7 +1155,7 @@ C4AulScriptFunc *C4AulScript::GetSFuncWarn(const char *pIdtf, C4AulAccess AccNee
 	// get func?
 	C4AulScriptFunc *pFn = GetSFunc(pIdtf, AccNeeded, true);
 	if (!pFn)
-		Warn(std::format("Error getting {} function '{}'", WarnStr, pIdtf), nullptr);
+		Warn(std::format("Error getting {} function '{}'", WarnStr, pIdtf));
 	return pFn;
 }
 

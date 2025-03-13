@@ -75,14 +75,30 @@ public:
 	virtual void show() const; // present error message
 };
 
+template<typename T>
+struct C4AulParseResult;
+
 // parse error
 class C4AulParseError : public C4AulError
 {
-	C4AulParseError(std::string_view message, const char *identifier, bool warn);
+	C4AulParseError(std::string_view message, std::string_view identifier, bool warn);
 
 public:
-	C4AulParseError(C4AulScript *pScript, std::string_view msg, const char *pIdtf = nullptr, bool Warn = false);
-	C4AulParseError(class C4AulParseState *state, std::string_view msg, const char *pIdtf = nullptr, bool Warn = false);
+	C4AulParseError(C4AulScript *pScript, std::string_view msg, std::string_view identifier = {}, bool Warn = false);
+
+private:
+	C4AulParseError(class C4AulParseState *state, std::string_view msg, std::string_view identifier = {}, bool Warn = false);
+
+public:
+	static void ShowWarning(class C4AulParseState &state, std::string_view msg, std::string_view identifier = {});
+	static C4AulParseError FormatErrorMessage(class C4AulParseState &state, std::string_view msg, std::string_view identifier = {});
+};
+
+template<typename T>
+struct C4AulParseResult
+{
+	T Result;
+	std::optional<C4AulParseError> Error;
 };
 
 // execution error
@@ -484,6 +500,12 @@ public:
 		}
 
 		return expression;
+	}
+
+	template<typename T>
+	static C4AulParseResult<std::unique_ptr<T>> SetNoRef(C4AulParseResult<std::unique_ptr<T>> expression)
+	{
+		return {SetNoRef(std::move(expression.Result)), std::move(expression.Error)};
 	}
 
 	void CompileFunc(StdCompiler *comp);
@@ -1680,7 +1702,7 @@ protected:
 class Error : public Expression
 {
 public:
-	Error(const std::intptr_t position) : Expression{position, C4V_Any} {}
+	Error(const std::intptr_t position, std::vector<std::unique_ptr<Statement>> statements = {}) : Expression{position, C4V_Any}, statements{std::move(statements)} {}
 
 private:
 	explicit Error() : Expression{{}, {}} {}
@@ -1691,6 +1713,9 @@ public:
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Error; }
+
+protected:
+	std::vector<std::unique_ptr<Statement>> statements;
 
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
@@ -1912,7 +1937,7 @@ public:
 	int32_t ControlMethod; // 0 = all, 1 = Classic, 2 = Jump+Run
 	const char *Script; // script pos
 	C4AulBCC *Code; // code pos
-	std::unique_ptr<C4AulAST::Block> Body; // boy
+	std::unique_ptr<C4AulAST::Statement> Body; // boy
 	C4ValueMapNames VarNamed; // list of named vars in this function
 	C4ValueMapNames ParNamed; // list of named pars in this function
 	C4V_Type ParType[C4AUL_MAX_Par]; // parameter types
@@ -2060,7 +2085,7 @@ protected:
 	void AddBCC(C4AulBCCType eType, std::intptr_t = 0, const char *SPos = nullptr); // add byte code chunk and advance
 	bool Preparse(); // preparse script; return if successful
 	bool BuildAST(); // preparse script; return if successfull
-	void ParseFn(C4AulScriptFunc *Fn, bool fExprOnly = false); // parse single script function
+	std::expected<void, C4AulParseError> ParseFn(C4AulScriptFunc *Fn, bool fExprOnly = false); // parse single script function
 
 	bool Parse(); // parse preparsed script; return if successful
 	void ParseDescs(); // parse function descs
@@ -2105,7 +2130,7 @@ public:
 	bool IsReady() { return State == ASS_PARSED; } // whether script calls may be done
 
 	// helper functions
-	void Warn(std::string_view msg, const char *pIdtf);
+	void Warn(std::string_view msg, std::string_view identifier = {});
 
 	friend class C4AulParseError;
 	friend class C4AulFunc;
@@ -2208,12 +2233,16 @@ private:
 		std::intptr_t StackSize;
 	};
 
+	struct Error
+	{
+	};
+
 public:
 	C4AulBCCGenerator(C4AulScript &script, C4AulScriptFunc *const func)
 		: Script{script}, Function{func} {}
 
 public:
-	const std::vector<C4AulBCC> &Generate(const std::unique_ptr<C4AulAST::Block> &block);
+	const std::vector<C4AulBCC> &Generate(const std::unique_ptr<C4AulAST::Statement> &statement);
 
 	void AddBCC(intptr_t offset, C4AulBCCType type, std::intptr_t bccX = 0);
 	std::size_t JumpHere(); // Get position for a later jump to next instruction added
@@ -2224,7 +2253,6 @@ public:
 	void PushLoop();
 	void PopLoop();
 	void AddLoopControl(std::size_t position, bool fBreak);
-	[[noreturn]] void Error(const char *message, const char * identifier = nullptr);
 
 	std::size_t GetCodePos() const noexcept { return code.size(); }
 	C4AulBCC *GetCodeByPos(const std::size_t pos) noexcept { return code.data() + pos; }

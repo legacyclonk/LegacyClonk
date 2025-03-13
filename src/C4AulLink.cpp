@@ -284,13 +284,13 @@ void C4AulScriptEngine::Link(C4DefList *rDefs)
 			// find first non-#strict script
 			C4AulScript *pNonStrictScr = FindFirstNonStrictScript();
 			if (pNonStrictScr)
-				pNonStrictScr->Warn("using non-#strict syntax!", nullptr);
+				pNonStrictScr->Warn("using non-#strict syntax!");
 			else
 			{
-				Warn("non-#strict script detected, but def is lost", nullptr);
-				Warn("please contact piracy@treffpunktclonk.net for further instructions", nullptr);
+				Warn("non-#strict script detected, but def is lost");
+				Warn("please contact piracy@treffpunktclonk.net for further instructions");
 			}
-			Warn(std::format("{} script{} use non-#strict syntax!", nonStrictCnt, (nonStrictCnt != 1 ? "s" : "")), nullptr);
+			Warn(std::format("{} script{} use non-#strict syntax!", nonStrictCnt, (nonStrictCnt != 1 ? "s" : "")));
 		}
 
 		// update material pointers
