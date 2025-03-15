@@ -2157,9 +2157,18 @@ C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_Fu
 C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_Block()
 {
 	RETURN_ON_ERROR(Match(ATT_BLOPEN));
+	std::unique_ptr<C4AulAST::Statement> statement;
 	std::vector<std::unique_ptr<C4AulAST::Statement>> statements;
 
-	const auto node = [&statements, offset{GetOffset()}]() { return std::make_unique<C4AulAST::Block>(offset, std::move(statements)); };
+	const auto node = [&statement, &statements, offset{GetOffset()}]()
+	{
+		if (statement)
+		{
+			statements.emplace_back(std::move(statement));
+		}
+
+		return std::make_unique<C4AulAST::Block>(offset, std::move(statements));
+	};
 
 	// insert block in byte code
 	while (1) switch (TokenType)
@@ -2169,7 +2178,6 @@ C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_Bl
 		return {node()};
 	default:
 	{
-		std::unique_ptr<C4AulAST::Statement> statement;
 		ASSIGN_RESULT(statement, Parse_Statement());
 		if (statement)
 		{
