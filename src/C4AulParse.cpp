@@ -320,20 +320,22 @@ while (false)
 #define ASSIGN_RESULT_NOREF(var, expr) \
 do \
 { \
-auto result = C4AulAST::NoRef::SetNoRef(expr); \
-SetNoRef(); \
+auto result = (expr); \
 var = std::move(result.Result); \
 RETURN_NODE_ON_RESULT_ERROR(result); \
+var = C4AulAST::NoRef::SetNoRef(std::move(var)); \
+SetNoRef(); \
 } \
 while (false)
 
 #define ASSIGN_RESULT_NOREF_EXPR3(var, expr) \
 do \
 { \
-	auto result = C4AulAST::NoRef::SetNoRef(expr); \
-	SetNoRef(); \
+	auto result = (expr); \
 	var = std::move(result.Result); \
 	RETURN_NODE_ON_RESULT_ERROR_EXPR3(result); \
+	var = C4AulAST::NoRef::SetNoRef(std::move(var)); \
+	SetNoRef(); \
 } \
 while (false)
 
