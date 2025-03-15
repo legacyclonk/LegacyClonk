@@ -4259,7 +4259,7 @@ std::expected<void, C4AulParseError> C4AulParseState::SkipBlock()
 std::expected<bool, C4AulParseError> C4AulParseState::IsMapLiteral()
 {
 	bool result = false;
-	const char *SPos0 = SPos;
+	const struct Cleanup { ~Cleanup() { sPos = sPos0; } const char *&sPos; const char *sPos0; } cleanup{SPos, SPos};
 	for (;;)
 	{
 		auto token = GetNextToken(Idtf, &cInt, Discard, true);
@@ -4297,7 +4297,6 @@ std::expected<bool, C4AulParseError> C4AulParseState::IsMapLiteral()
 	}
 
 loopEnd:
-	SPos = SPos0;
 	return result;
 }
 
