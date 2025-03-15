@@ -4346,6 +4346,8 @@ bool C4AulScript::Parse()
 		}
 		if (Fn)
 		{
+			const std::size_t oldCodeSize{static_cast<std::size_t>(CodeSize)};
+
 			auto result = ParseFn(Fn);
 
 			file << Fn->Name << '\n';
@@ -4404,7 +4406,6 @@ bool C4AulScript::Parse()
 				AddBCC(AB_ERR);
 			}
 
-			const std::size_t oldCodeSize{static_cast<std::size_t>(CodeSize)};
 			const std::span oldCode{Code + reinterpret_cast<std::intptr_t>(Fn->Code), static_cast<std::size_t>(CodeSize) - oldCodeSize};
 			const std::size_t minSize{std::min(oldCode.size(), code.size())};
 
