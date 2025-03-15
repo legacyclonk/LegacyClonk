@@ -2604,7 +2604,7 @@ C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_St
 #define RETURN_VECTOR_ON_ERROR(expr) \
 do \
 { \
-	if (auto error = (expr); !expr) \
+	if (auto error = (expr); !error) \
 { \
 	nodes.emplace_back(ErrorNode()); \
 	return {std::move(nodes), std::move(error).error()}; \
