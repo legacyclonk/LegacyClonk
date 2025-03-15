@@ -2198,9 +2198,10 @@ C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_St
 	// do we have a block start?
 	case ATT_BLOPEN:
 	{
-		const auto isMap = IsMapLiteral();
+		auto isMap = IsMapLiteral();
 		TokenType = ATT_BLOPEN;
-		if (!isMap)
+		RETURN_ON_ERROR(isMap);
+		if (!*isMap)
 		{
 			return Parse_Block();
 		}
