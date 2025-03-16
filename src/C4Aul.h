@@ -342,6 +342,8 @@ inline void CompileFunc(NodeType &nodeType, StdCompiler *const comp)
 	}
 }
 
+class Visitor;
+
 class Statement
 {
 public:
@@ -419,6 +421,7 @@ public:
 
 	std::string ToTree() const;
 	virtual std::generator<std::string> ToTreeInternal() const = 0;
+	virtual void Accept(Visitor &visitor) = 0;
 protected:
 	virtual void EmitInternal(C4AulBCCGenerator &generator) const = 0;
 
@@ -433,25 +436,27 @@ class Script : public Statement
 {
 public:
 	Script(std::vector<std::unique_ptr<Statement>> statements)
-		: Statement{0}, statements{std::move(statements)} {}
+		: Statement{0}, Statements{std::move(statements)} {}
 
 public:
 	explicit Script() : Script{{}} {}
 
 public:
 
-	const std::vector<std::unique_ptr<Statement>> &GetStatements() const { return statements; }
+	const std::vector<std::unique_ptr<Statement>> &GetStatements() const { return Statements; }
 
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Script; }
 
-private:
-	std::vector<std::unique_ptr<Statement>> statements;
+public:
+	std::vector<std::unique_ptr<Statement>> Statements;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -460,19 +465,20 @@ private:
 class Expression : public Statement
 {
 public:
-	Expression(const std::intptr_t position, const C4V_Type type) : Statement{position}, type{type} {}
+	Expression(const std::intptr_t position, const C4V_Type type) : Statement{position}, Type{type} {}
 	virtual ~Expression() = 0;
 
 public:
-	C4V_Type GetType() const { return type; }
+	C4V_Type GetType() const { return Type; }
 
 public:
 	void CompileFunc(StdCompiler *comp) override;
 	void Emit(C4AulBCCGenerator &generator) const;
 
-protected:
-	C4V_Type type;
+public:
+	C4V_Type Type;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -513,7 +519,7 @@ public:
 protected:
 	virtual void OnSetNoRef() {}
 
-private:
+protected:
 	bool noRef{false};
 };
 
@@ -540,7 +546,7 @@ class Nil : public ConstantLiteral
 {
 public:
 	Nil(const std::intptr_t position, const bool preferStack = false)
-		: ConstantLiteral{position, C4V_Any}, preferStack{preferStack} {}
+		: ConstantLiteral{position, C4V_Any}, PreferStack{preferStack} {}
 
 protected:
 	explicit Nil() : ConstantLiteral{} {}
@@ -549,13 +555,15 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::string GetLiteralString() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Nil; }
 
-protected:
-	bool preferStack{false};
+public:
+	bool PreferStack{false};
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -565,7 +573,7 @@ protected:
 class IntLiteral : public ConstantLiteral
 {
 public:
-	IntLiteral(const std::intptr_t position, const C4ValueInt value) : ConstantLiteral{position, C4V_Int}, value{value} {}
+	IntLiteral(const std::intptr_t position, const C4ValueInt value) : ConstantLiteral{position, C4V_Int}, Value{value} {}
 
 protected:
 	explicit IntLiteral() : ConstantLiteral{} {}
@@ -574,15 +582,17 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::string GetLiteralString() const override;
+	void Accept(Visitor &visitor) override;
 
-	void Negate() noexcept { value = -value; }
+	void Negate() noexcept { Value = -Value; }
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::IntLiteral; }
 
-protected:
-	C4ValueInt value;
+public:
+	C4ValueInt Value;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -592,7 +602,7 @@ protected:
 class BoolLiteral : public ConstantLiteral
 {
 public:
-	BoolLiteral(const std::intptr_t position, const bool value) : ConstantLiteral{position, C4V_Bool}, value{value} {}
+	BoolLiteral(const std::intptr_t position, const bool value) : ConstantLiteral{position, C4V_Bool}, Value{value} {}
 
 protected:
 	explicit BoolLiteral() : ConstantLiteral{} {}
@@ -601,13 +611,15 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::string GetLiteralString() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::BoolLiteral; }
 
-protected:
-	bool value;
+public:
+	bool Value;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -616,7 +628,7 @@ protected:
 class C4IDLiteral : public ConstantLiteral
 {
 public:
-	C4IDLiteral(const std::intptr_t position, const C4ID value) : ConstantLiteral{position, C4V_C4ID}, value{value} {}
+	C4IDLiteral(const std::intptr_t position, const C4ID value) : ConstantLiteral{position, C4V_C4ID}, Value{value} {}
 
 protected:
 	explicit C4IDLiteral() : ConstantLiteral{} {}
@@ -625,13 +637,15 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::string GetLiteralString() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::C4IDLiteral; }
 
-protected:
-	C4ID value;
+public:
+	C4ID Value;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -641,7 +655,7 @@ protected:
 class StringLiteral : public ConstantLiteral
 {
 public:
-	StringLiteral(const std::intptr_t position, std::string value) : ConstantLiteral{position, C4V_String}, value{std::move(value)} {}
+	StringLiteral(const std::intptr_t position, std::string value) : ConstantLiteral{position, C4V_String}, Value{std::move(value)} {}
 
 protected:
 	explicit StringLiteral() : ConstantLiteral{} {}
@@ -650,13 +664,15 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::string GetLiteralString() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::StringLiteral; }
 
-protected:
-	std::string value;
+public:
+	std::string Value;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -667,7 +683,7 @@ class ArrayLiteral : public Literal
 {
 public:
 	ArrayLiteral(const std::intptr_t position, std::vector<std::unique_ptr<Expression>> expressions)
-		: Literal{position, C4V_Array}, expressions{std::move(expressions)} {}
+		: Literal{position, C4V_Array}, Expressions{std::move(expressions)} {}
 
 protected:
 	explicit ArrayLiteral() : ArrayLiteral({}, {}) {}
@@ -676,13 +692,15 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::ArrayLiteral; }
 
-protected:
-	std::vector<std::unique_ptr<Expression>> expressions;
+public:
+	std::vector<std::unique_ptr<Expression>> Expressions;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -704,7 +722,7 @@ public:
 
 public:
 	MapLiteral(const std::intptr_t position, std::vector<KeyValuePair> expressions)
-		: Literal{position, C4V_Map}, expressions{std::move(expressions)} {}
+		: Literal{position, C4V_Map}, Expressions{std::move(expressions)} {}
 
 protected:
 	explicit MapLiteral() : MapLiteral({}, {}) {}
@@ -713,13 +731,15 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::MapLiteral; }
 
-protected:
-	std::vector<KeyValuePair> expressions;
+public:
+	std::vector<KeyValuePair> Expressions;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -729,7 +749,7 @@ class GlobalConstant : public Expression
 {
 public:
 	GlobalConstant(const std::intptr_t position, std::string identifier, std::unique_ptr<C4AulAST::Literal> value)
-		: Expression{position, value->GetType()}, identifier{std::move(identifier)}, value{std::move(value)} {}
+		: Expression{position, value->GetType()}, Identifier{std::move(identifier)}, Value{std::move(value)} {}
 
 protected:
 	explicit GlobalConstant() : Expression({}, {}) {}
@@ -738,16 +758,18 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
-	const std::unique_ptr<C4AulAST::Literal> &GetValue() const noexcept { return value; }
+	const std::unique_ptr<C4AulAST::Literal> &GetValue() const noexcept { return Value; }
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::GlobalConstant; }
 
-protected:
-	std::string identifier;
-	std::unique_ptr<C4AulAST::Literal> value;
+public:
+	std::string Identifier;
+	std::unique_ptr<C4AulAST::Literal> Value;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -757,7 +779,7 @@ class ParN : public Expression, public NoRef
 {
 public:
 	ParN(const std::intptr_t position, const C4V_Type type, const std::size_t n)
-		: Expression{position, type}, n{n} {}
+		: Expression{position, type}, N{n} {}
 
 protected:
 	explicit ParN() : ParN{{}, {}, {}} {}
@@ -767,13 +789,15 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::ParN; }
 
-protected:
-	std::size_t n;
+public:
+	std::size_t N;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -783,7 +807,7 @@ class VarN : public Expression, public NoRef
 {
 public:
 	VarN(const std::intptr_t position, const C4V_Type type, std::string identifier)
-		: Expression{position, type}, identifier{std::move(identifier)} {}
+		: Expression{position, type}, Identifier{std::move(identifier)} {}
 
 protected:
 	explicit VarN() : VarN{{}, {}, {}} {}
@@ -793,13 +817,15 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::VarN; }
 
-protected:
-	std::string identifier;
+public:
+	std::string Identifier;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -810,7 +836,7 @@ class Par : public Expression, public NoRef
 {
 public:
 	Par(const std::intptr_t position, const C4V_Type type, std::unique_ptr<Expression> expression)
-		: Expression{position, type}, expression{std::move(expression)} {}
+		: Expression{position, type}, Expr{std::move(expression)} {}
 
 protected:
 	explicit Par() : Par{{}, {}, {}} {}
@@ -820,13 +846,15 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Par; }
 
-protected:
-	std::unique_ptr<Expression> expression;
+public:
+	std::unique_ptr<Expression> Expr;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -836,7 +864,7 @@ class Var : public Expression, public NoRef
 {
 public:
 	Var(const std::intptr_t position, const C4V_Type type, std::unique_ptr<Expression> expression)
-		: Expression{position, type}, expression{std::move(expression)} {}
+		: Expression{position, type}, Expr{std::move(expression)} {}
 
 protected:
 	explicit Var() : Var{{}, {}, {}} {}
@@ -846,13 +874,15 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Var; }
 
-protected:
-	std::unique_ptr<Expression> expression;
+public:
+	std::unique_ptr<Expression> Expr;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -863,7 +893,7 @@ class LocalN : public Expression, public NoRef
 {
 public:
 	LocalN(const std::intptr_t position, const C4V_Type type, std::string identifier)
-		: Expression{position, type}, identifier{std::move(identifier)} {}
+		: Expression{position, type}, Identifier{std::move(identifier)} {}
 
 protected:
 	explicit LocalN() : LocalN{{}, {}, {}} {}
@@ -873,13 +903,15 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::VarN; }
 
-protected:
-	std::string identifier;
+public:
+	std::string Identifier;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -889,7 +921,7 @@ class GlobalN : public Expression, public NoRef
 {
 public:
 	GlobalN(const std::intptr_t position, const C4V_Type type, std::string identifier)
-		: Expression{position, type}, identifier{std::move(identifier)} {}
+		: Expression{position, type}, Identifier{std::move(identifier)} {}
 
 protected:
 	explicit GlobalN() : GlobalN{{}, {}, {}} {}
@@ -899,13 +931,15 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::VarN; }
 
-protected:
-	std::string identifier;
+public:
+	std::string Identifier;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -914,7 +948,7 @@ protected:
 class Declaration : public Statement
 {
 public:
-	enum class Type
+	enum class DeclarationType
 	{
 		Var,
 		Local,
@@ -923,8 +957,8 @@ public:
 	};
 
 public:
-	Declaration(const std::intptr_t position, const Type type, std::string identifier, std::unique_ptr<Expression> value)
-		: Statement{position}, type{type}, identifier{std::move(identifier)}, value{std::move(value)} {}
+	Declaration(const std::intptr_t position, const DeclarationType type, std::string identifier, std::unique_ptr<Expression> value)
+		: Statement{position}, Type{type}, Identifier{std::move(identifier)}, Value{std::move(value)} {}
 
 protected:
 	Declaration() : Declaration{{}, {}, {}, {}} {}
@@ -933,17 +967,19 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
-	std::string_view GetIdentifier() const noexcept { return identifier; }
+	std::string_view GetIdentifier() const noexcept { return Identifier; }
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Declaration; }
 
-protected:
-	Type type;
-	std::string identifier;
-	std::unique_ptr<Expression> value;
+public:
+	DeclarationType Type;
+	std::string Identifier;
+	std::unique_ptr<Expression> Value;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -953,7 +989,7 @@ class Declarations : public Statement
 {
 public:
 	Declarations(const std::intptr_t position, std::vector<std::unique_ptr<Declaration>> declarations)
-		: declarations{std::move(declarations)} {}
+		: Values{std::move(declarations)} {}
 
 private:
 	explicit Declarations() : Declarations{{}, {}} {}
@@ -962,15 +998,17 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
-	auto GetIdentifiers() const noexcept { return declarations | std::views::transform(&Declaration::GetIdentifier); }
+	auto GetIdentifiers() const noexcept { return Values | std::views::transform(&Declaration::GetIdentifier); }
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Declarations; }
 
-protected:
-	std::vector<std::unique_ptr<Declaration>> declarations;
+public:
+	std::vector<std::unique_ptr<Declaration>> Values;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -980,13 +1018,14 @@ class BinaryExpression : public Expression
 {
 public:
 	BinaryExpression(const std::intptr_t position, const C4V_Type type, std::unique_ptr<Expression> &&lhs, std::unique_ptr<Expression> &&rhs)
-		: Expression{position, type}, lhs{std::move(lhs)}, rhs{std::move(rhs)} {}
+		: Expression{position, type}, LHS{std::move(lhs)}, RHS{std::move(rhs)} {}
 	virtual ~BinaryExpression() = 0;
 
-protected:
-	std::unique_ptr<Expression> lhs;
-	std::unique_ptr<Expression> rhs;
+public:
+	std::unique_ptr<Expression> LHS;
+	std::unique_ptr<Expression> RHS;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -996,26 +1035,28 @@ class UnaryOperator : public Expression
 {
 public:
 	UnaryOperator(const std::intptr_t position, const std::size_t opID, std::unique_ptr<Expression> &&side)
-		: Expression{position, C4ScriptOpMap[opID].RetType}, opID{opID}, side{std::move(side)}
+		: Expression{position, C4ScriptOpMap[opID].RetType}, OpID{opID}, Side{std::move(side)}
 	{
 	}
 
 private:
-	explicit UnaryOperator() : Expression{{}, {}}, opID{}, side{} {}
+	explicit UnaryOperator() : Expression{{}, {}}, OpID{}, Side{} {}
 
 public:
 
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::UnaryOperator; }
 
-protected:
-	std::size_t opID;
-	std::unique_ptr<Expression> side;
+public:
+	std::size_t OpID;
+	std::unique_ptr<Expression> Side;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1025,7 +1066,7 @@ class BinaryOperator : public BinaryExpression
 {
 public:
 	BinaryOperator(const std::intptr_t position, const std::size_t opID, std::unique_ptr<Expression> &&lhs, std::unique_ptr<Expression> &&rhs)
-		: BinaryExpression{position, C4ScriptOpMap[opID].RetType, std::move(lhs), std::move(rhs)}, opID{opID}
+		: BinaryExpression{position, C4ScriptOpMap[opID].RetType, std::move(lhs), std::move(rhs)}, OpID{opID}
 	{
 		assert(!C4ScriptOpMap[opID].NoSecondStatement);
 	}
@@ -1038,13 +1079,15 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::BinaryOperator; }
 
-protected:
-	std::size_t opID;
+public:
+	std::size_t OpID;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1064,31 +1107,33 @@ public:
 
 public:
 	Prototype(const std::intptr_t position, const C4V_Type returnType, const bool returnRef, const C4AulAccess access, std::string name, std::vector<Parameter> parameters)
-		: Statement{position}, returnType{returnType}, returnRef{returnRef}, access{access}, name{std::move(name)}, parameters{parameters} {}
+		: Statement{position}, ReturnType{returnType}, ReturnRef{returnRef}, Access{access}, Name{std::move(name)}, Parameters{parameters} {}
 
 private:
 	explicit Prototype() : Prototype{{}, {}, {}, {}, {}, {}} {}
 
 public:
-	const std::string &GetName() const { return name; }
-	const std::vector<Parameter> &GetParameters() const { return parameters; }
+	const std::string &GetName() const { return Name; }
+	const std::vector<Parameter> &GetParameters() const { return Parameters; }
 
 public:
 
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Prototype; }
 
-protected:
-	C4V_Type returnType;
-	bool returnRef;
-	C4AulAccess access;
-	std::string name;
-	std::vector<Parameter> parameters;
+public:
+	C4V_Type ReturnType;
+	bool ReturnRef;
+	C4AulAccess Access;
+	std::string Name;
+	std::vector<Parameter> Parameters;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1098,7 +1143,7 @@ class Function : public Statement
 {
 public:
 	Function(const std::intptr_t position, std::unique_ptr<Prototype> prototype, std::string description, std::unique_ptr<Statement> body)
-		: Statement{position}, prototype{std::move(prototype)}, description{std::move(description)}, body{std::move(body)} {}
+		: Statement{position}, Prototype{std::move(prototype)}, Description{std::move(description)}, Body{std::move(body)} {}
 
 private:
 	explicit Function() : Function{{}, {}, {}, {}} {}
@@ -1108,15 +1153,17 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Function; }
 
-protected:
-	std::unique_ptr<Prototype> prototype;
-	std::string description;
-	std::unique_ptr<Statement> body;
+public:
+	std::unique_ptr<Prototype> Prototype;
+	std::string Description;
+	std::unique_ptr<Statement> Body;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1126,7 +1173,7 @@ class Block : public Statement
 {
 public:
 	Block(const std::intptr_t position, std::vector<std::unique_ptr<Statement>> statements)
-		: Statement{position}, statements{std::move(statements)} {}
+		: Statement{position}, Statements{std::move(statements)} {}
 
 private:
 	explicit Block() : Block{{}, {}} {}
@@ -1136,13 +1183,15 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Block; }
 
-protected:
-	std::vector<std::unique_ptr<Statement>> statements;
+public:
+	std::vector<std::unique_ptr<Statement>> Statements;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1152,7 +1201,7 @@ class Include : public Statement
 {
 public:
 	Include(const std::intptr_t position, const C4ID id, const bool nowarn)
-		: Statement{position}, id{id}, nowarn{nowarn} {}
+		: Statement{position}, Id{id}, NoWarn{nowarn} {}
 
 private:
 	explicit Include() : Include{{}, {}, {}} {}
@@ -1162,14 +1211,16 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Include; }
 
-protected:
-	C4ID id;
-	bool nowarn;
+public:
+	C4ID Id;
+	bool NoWarn;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1179,7 +1230,7 @@ class Append : public Statement
 {
 public:
 	Append(const std::intptr_t position, const C4ID id, const bool nowarn)
-		: Statement{position}, id{id}, nowarn{nowarn} {}
+		: Statement{position}, Id{id}, NoWarn{nowarn} {}
 
 private:
 	explicit Append() : Append{{}, {}, {}} {}
@@ -1189,14 +1240,16 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Append; }
 
-protected:
-	C4ID id;
-	bool nowarn;
+public:
+	C4ID Id;
+	bool NoWarn;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1206,7 +1259,7 @@ class Strict : public Statement
 {
 public:
 	Strict(const std::intptr_t position, const C4AulScriptStrict strict)
-		: Statement{position}, strict{strict} {}
+		: Statement{position}, Strictness{strict} {}
 
 private:
 	explicit Strict() : Strict{{}, {}} {}
@@ -1216,13 +1269,15 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Strict; }
 
-protected:
-	C4AulScriptStrict strict;
+public:
+	C4AulScriptStrict Strictness;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1232,7 +1287,7 @@ class Return : public Statement
 {
 public:
 	Return(const std::intptr_t position, std::vector<std::unique_ptr<Expression>> expressions, const bool preferStack)
-		: Statement{position}, expressions{std::move(expressions)}, preferStack{preferStack} {}
+		: Statement{position}, Expressions{std::move(expressions)}, PreferStack{preferStack} {}
 
 private:
 	explicit Return() : Return{{}, {}, {}} {}
@@ -1241,14 +1296,16 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Return; }
 
-protected:
-	std::vector<std::unique_ptr<Expression>> expressions;
-	bool preferStack;
+public:
+	std::vector<std::unique_ptr<Expression>> Expressions;
+	bool PreferStack;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1258,7 +1315,7 @@ class ReturnAsParam : public Expression
 {
 public:
 	ReturnAsParam(const std::intptr_t position, std::unique_ptr<Expression> expression, const bool preferStack)
-		: Expression{position, expression->GetType()}, expression{std::move(expression)}, preferStack{preferStack} {}
+		: Expression{position, expression->GetType()}, Expr{std::move(expression)}, PreferStack{preferStack} {}
 
 private:
 	explicit ReturnAsParam() : ReturnAsParam{{}, {}, {}} {}
@@ -1268,14 +1325,16 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::ReturnAsParam; }
 
-protected:
-	std::unique_ptr<Expression> expression;
-	bool preferStack;
+public:
+	std::unique_ptr<Expression> Expr;
+	bool PreferStack;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1285,7 +1344,7 @@ class FunctionCall : public Expression
 {
 public:
 	FunctionCall(const std::intptr_t position, std::string identifier, std::vector<std::unique_ptr<Expression>> arguments)
-		: Expression{position, C4V_Any}, identifier{std::move(identifier)}, arguments{std::move(arguments)} {}
+		: Expression{position, C4V_Any}, Identifier{std::move(identifier)}, Arguments{std::move(arguments)} {}
 
 protected:
 	explicit FunctionCall() : Expression{{}, {}} {}
@@ -1294,14 +1353,16 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::FunctionCall; }
 
-protected:
-	std::string identifier;
-	std::vector<std::unique_ptr<Expression>> arguments;
+public:
+	std::string Identifier;
+	std::vector<std::unique_ptr<Expression>> Arguments;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1313,10 +1374,10 @@ public:
 	virtual ~NilTestExpression() = 0;
 
 public:
-	void AddNilTest() { testForNil = true; }
+	void AddNilTest() { TestForNil = true; }
 	void Dump(std::ostream &out) const
 	{
-		if (testForNil)
+		if (TestForNil)
 		{
 			out << "testForNil";
 		}
@@ -1324,12 +1385,13 @@ public:
 
 	void CompileFunc(StdCompiler *const comp)
 	{
-		comp->Value(mkNamingAdapt(testForNil, "TestForNil"));
+		comp->Value(mkNamingAdapt(TestForNil, "TestForNil"));
 	}
 
-protected:
-	bool testForNil{false};
+public:
+	bool TestForNil{false};
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1348,6 +1410,7 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	void OnSetNoRef() override;
@@ -1363,7 +1426,7 @@ class ArrayAppend : public Expression, public NilTestExpression
 {
 public:
 	ArrayAppend(const std::intptr_t position, std::unique_ptr<Expression> array)
-		: Expression{position, C4V_Any}, array{std::move(array)} {}
+		: Expression{position, C4V_Any}, Array{std::move(array)} {}
 
 private:
 	explicit ArrayAppend() : ArrayAppend{{}, {}} {}
@@ -1373,13 +1436,15 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::ArrayAppend; }
 
-protected:
-	std::unique_ptr<Expression> array;
+public:
+	std::unique_ptr<Expression> Array;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1389,7 +1454,7 @@ class PropertyAccess : public Expression, public NilTestExpression, public NoRef
 {
 public:
 	PropertyAccess(const std::intptr_t position, std::unique_ptr<Expression> object, std::string property)
-		: Expression{position, C4V_Any}, object{std::move(object)}, property{std::move(property)} {}
+		: Expression{position, C4V_Any}, Object{std::move(object)}, Property{std::move(property)} {}
 
 private:
 	explicit PropertyAccess() : PropertyAccess{{}, {}, {}} {}
@@ -1399,16 +1464,18 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	void OnSetNoRef() override;
 
 	NodeType GetNodeType() const override { return NodeType::PropertyAccess; }
 
-protected:
-	std::unique_ptr<Expression> object;
-	std::string property;
+public:
+	std::unique_ptr<Expression> Object;
+	std::string Property;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1418,7 +1485,7 @@ class IndirectCall : public Expression, public NilTestExpression
 {
 public:
 	IndirectCall(const std::intptr_t position, std::unique_ptr<Expression> callee, const C4ID namespaceId, std::string identifier, std::vector<std::unique_ptr<Expression>> arguments, const bool failSafe, const bool globalCall)
-		: Expression{position, C4V_Any}, callee{std::move(callee)}, namespaceId{namespaceId}, identifier{std::move(identifier)}, arguments{std::move(arguments)}, failSafe{failSafe}, globalCall{globalCall} {}
+		: Expression{position, C4V_Any}, Callee{std::move(callee)}, NamespaceId{namespaceId}, Identifier{std::move(identifier)}, Arguments{std::move(arguments)}, FailSafe{failSafe}, GlobalCall{globalCall} {}
 
 protected:
 	explicit IndirectCall() : Expression{{}, {}} {}
@@ -1428,18 +1495,20 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::IndirectCall; }
 
-protected:
-	std::unique_ptr<Expression> callee;
-	C4ID namespaceId{};
-	std::string identifier;
-	std::vector<std::unique_ptr<Expression>> arguments;
-	bool failSafe{};
-	bool globalCall{};
+public:
+	std::unique_ptr<Expression> Callee;
+	C4ID NamespaceId{};
+	std::string Identifier;
+	std::vector<std::unique_ptr<Expression>> Arguments;
+	bool FailSafe{};
+	bool GlobalCall{};
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1456,7 +1525,7 @@ class If : public Statement
 {
 public:
 	If(const std::intptr_t position, std::unique_ptr<Expression> condition, std::unique_ptr<Statement> then, std::unique_ptr<Statement> other)
-		: Statement{position}, condition{std::move(condition)}, then{std::move(then)}, other{std::move(other)} {}
+		: Statement{position}, Condition{std::move(condition)}, Then{std::move(then)}, Other{std::move(other)} {}
 
 private:
 	explicit If() : Statement{{}} {}
@@ -1466,15 +1535,17 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::If; }
 
-protected:
-	std::unique_ptr<Expression> condition;
-	std::unique_ptr<Statement> then;
-	std::unique_ptr<Statement> other;
+public:
+	std::unique_ptr<Expression> Condition;
+	std::unique_ptr<Statement> Then;
+	std::unique_ptr<Statement> Other;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1484,7 +1555,7 @@ class ExprIf : public Expression
 {
 public:
 	ExprIf(const std::intptr_t position, std::unique_ptr<Expression> condition, std::unique_ptr<Expression> then, std::unique_ptr<Expression> other)
-		: Expression{position, then->GetType()}, condition{std::move(condition)}, then{std::move(then)}, other{std::move(other)} {}
+		: Expression{position, then->GetType()}, Condition{std::move(condition)}, Then{std::move(then)}, Other{std::move(other)} {}
 
 private:
 	explicit ExprIf() : Expression{{}, {}} {}
@@ -1494,15 +1565,17 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::ExprIf; }
 
-protected:
-	std::unique_ptr<Expression> condition;
-	std::unique_ptr<Expression> then;
-	std::unique_ptr<Expression> other;
+public:
+	std::unique_ptr<Expression> Condition;
+	std::unique_ptr<Expression> Then;
+	std::unique_ptr<Expression> Other;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1512,7 +1585,7 @@ class While : public Statement
 {
 public:
 	While(const std::intptr_t position, std::unique_ptr<Expression> condition, std::unique_ptr<Statement> body)
-		: Statement{position}, condition{std::move(condition)}, body{std::move(body)} {}
+		: Statement{position}, Condition{std::move(condition)}, Body{std::move(body)} {}
 
 private:
 	explicit While() : Statement{{}} {}
@@ -1522,14 +1595,16 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::While; }
 
-protected:
-	std::unique_ptr<Expression> condition;
-	std::unique_ptr<Statement> body;
+public:
+	std::unique_ptr<Expression> Condition;
+	std::unique_ptr<Statement> Body;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1539,7 +1614,7 @@ class For : public Statement
 {
 public:
 	For(const std::intptr_t position, std::unique_ptr<Statement> init, std::unique_ptr<Expression> condition, std::unique_ptr<Statement> after, std::unique_ptr<Statement> body)
-		: Statement{position}, init{std::move(init)}, condition{std::move(condition)}, after{std::move(after)}, body{std::move(body)} {}
+		: Statement{position}, Init{std::move(init)}, Condition{std::move(condition)}, After{std::move(after)}, Body{std::move(body)} {}
 
 private:
 	explicit For() : Statement{{}} {}
@@ -1549,16 +1624,18 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::For; }
 
-protected:
-	std::unique_ptr<Statement> init;
-	std::unique_ptr<Expression> condition;
-	std::unique_ptr<Statement> after;
-	std::unique_ptr<Statement> body;
+public:
+	std::unique_ptr<Statement> Init;
+	std::unique_ptr<Expression> Condition;
+	std::unique_ptr<Statement> After;
+	std::unique_ptr<Statement> Body;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1568,7 +1645,7 @@ class ForEach : public Statement
 {
 public:
 	ForEach(const std::intptr_t position, std::unique_ptr<Statement> init, std::unique_ptr<Expression> iterable, std::unique_ptr<Statement> body)
-		: Statement{position}, init{std::move(init)}, iterable{std::move(iterable)}, body{std::move(body)} {}
+		: Statement{position}, Init{std::move(init)}, Iterable{std::move(iterable)}, Body{std::move(body)} {}
 
 private:
 	explicit ForEach() : Statement{{}} {}
@@ -1577,15 +1654,17 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::ForEach; }
 
-protected:
-	std::unique_ptr<Statement> init;
-	std::unique_ptr<Expression> iterable;
-	std::unique_ptr<Statement> body;
+public:
+	std::unique_ptr<Statement> Init;
+	std::unique_ptr<Expression> Iterable;
+	std::unique_ptr<Statement> Body;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1603,6 +1682,7 @@ private:
 public:
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Break; }
@@ -1624,6 +1704,7 @@ private:
 public:
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Continue; }
@@ -1637,7 +1718,7 @@ class Inherited : public FunctionCall
 {
 public:
 	Inherited(const std::intptr_t position, std::vector<std::unique_ptr<Expression>> arguments, bool failSafe, bool found)
-		: FunctionCall{position, failSafe ? "_inherited" : "inherited", std::move(arguments)}, failSafe{failSafe}, found{found} {}
+		: FunctionCall{position, failSafe ? "_inherited" : "inherited", std::move(arguments)}, FailSafe{failSafe}, Found{found} {}
 
 private:
 	explicit Inherited() : FunctionCall{} {}
@@ -1646,14 +1727,16 @@ public:
 	void CompileFunc(StdCompiler *comp) override;
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Inherited; }
 
-protected:
-	bool failSafe;
-	bool found;
+public:
+	bool FailSafe;
+	bool Found;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 	friend class ::C4AulBCCGenerator;
@@ -1670,6 +1753,7 @@ private:
 public:
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::This; }
@@ -1690,6 +1774,7 @@ private:
 public:
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Nop; }
@@ -1702,7 +1787,7 @@ protected:
 class Error : public Expression
 {
 public:
-	Error(const std::intptr_t position, std::vector<std::unique_ptr<Statement>> statements = {}) : Expression{position, C4V_Any}, statements{std::move(statements)} {}
+	Error(const std::intptr_t position, std::vector<std::unique_ptr<Statement>> statements = {}) : Expression{position, C4V_Any}, Statements{std::move(statements)} {}
 
 private:
 	explicit Error() : Expression{{}, {}} {}
@@ -1710,13 +1795,15 @@ private:
 public:
 	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
+	void Accept(Visitor &visitor) override;
 
 protected:
 	NodeType GetNodeType() const override { return NodeType::Error; }
 
-protected:
-	std::vector<std::unique_ptr<Statement>> statements;
+public:
+	std::vector<std::unique_ptr<Statement>> Statements;
 
+protected:
 	template<std::derived_from<Statement> T>
 	friend void CompileNewFunc(T *&, StdCompiler *);
 };
@@ -1843,6 +1930,256 @@ inline void CompileNewFunc(T *&obj, StdCompiler *const comp)
 		comp->excCorrupt("Node not assignable");
 	}
 }
+
+class Visitor
+{
+public:
+	virtual void Visit(Script &script)
+	{
+		for (const auto &statement : script.GetStatements())
+		{
+			statement->Accept(*this);
+		}
+	}
+
+	virtual void Visit(Nil &nil) {}
+	virtual void Visit(IntLiteral &intLiteral) {}
+	virtual void Visit(C4IDLiteral &idLiteral) {}
+	virtual void Visit(BoolLiteral &boolLiteral) {}
+	virtual void Visit(StringLiteral &stringLiteral) {}
+
+	virtual void Visit(ArrayLiteral &arrayLiteral)
+	{
+		for (const auto &expression : arrayLiteral.Expressions)
+		{
+			expression->Accept(*this);
+		}
+	}
+
+	virtual void Visit(MapLiteral &mapLiteral)
+	{
+		for (const auto &expression : mapLiteral.Expressions)
+		{
+			expression.Key->Accept(*this);
+			expression.Value->Accept(*this);
+		}
+	}
+
+	virtual void Visit(GlobalConstant &globalConstant)
+	{
+		globalConstant.Value->Accept(*this);
+	}
+
+	virtual void Visit(ParN &parN)
+	{
+	}
+
+	virtual void Visit(Par &par)
+	{
+		par.Expr->Accept(*this);
+	}
+
+	virtual void Visit(VarN &varN)
+	{
+	}
+
+	virtual void Visit(Var &var)
+	{
+		var.Expr->Accept(*this);
+	}
+
+	virtual void Visit(LocalN &localN)
+	{
+	}
+
+	virtual void Visit(GlobalN &globalN)
+	{
+	}
+
+	virtual void Visit(Declaration &declaration)
+	{
+		if (declaration.Value)
+		{
+			declaration.Value->Accept(*this);
+		}
+	}
+
+	virtual void Visit(Declarations &declarations)
+	{
+		for (const auto &declaration : declarations.Values)
+		{
+			declaration->Accept(*this);
+		}
+	}
+
+	virtual void Visit(UnaryOperator &unaryOperator)
+	{
+		unaryOperator.Side->Accept(*this);
+	}
+
+	virtual void Visit(BinaryOperator &binaryOperator)
+	{
+		binaryOperator.LHS->Accept(*this);
+		binaryOperator.RHS->Accept(*this);
+	}
+
+	virtual void Visit(Prototype &prototype)
+	{
+	}
+
+	virtual void Visit(Function &function)
+	{
+		function.Prototype->Accept(*this);
+		function.Body->Accept(*this);
+	}
+
+	virtual void Visit(Block &block)
+	{
+		for (const auto &statement : block.Statements)
+		{
+			statement->Accept(*this);
+		}
+	}
+
+	virtual void Visit(Include &include) {}
+	virtual void Visit(Append &append) {}
+	virtual void Visit(Strict &strict) {}
+
+	virtual void Visit(Return &returnNode)
+	{
+		for (const auto &expression : returnNode.Expressions)
+		{
+			expression->Accept(*this);
+		}
+	}
+
+	virtual void Visit(ReturnAsParam &returnAsParam)
+	{
+		returnAsParam.Expr->Accept(*this);
+	}
+
+	virtual void Visit(FunctionCall &functionCall)
+	{
+		for (const auto &argument : functionCall.Arguments)
+		{
+			argument->Accept(*this);
+		}
+	}
+
+	virtual void Visit(ArrayAccess &arrayAccess)
+	{
+		arrayAccess.LHS->Accept(*this);
+		arrayAccess.RHS->Accept(*this);
+	}
+
+	virtual void Visit(ArrayAppend &arrayAppend)
+	{
+		arrayAppend.Array->Accept(*this);
+	}
+
+	virtual void Visit(PropertyAccess &propertyAccess)
+	{
+		propertyAccess.Object->Accept(*this);
+	}
+
+	virtual void Visit(IndirectCall &indirectCall)
+	{
+		indirectCall.Callee->Accept(*this);
+		for (const auto &argument : indirectCall.Arguments)
+		{
+			argument->Accept(*this);
+		}
+	}
+
+	virtual void Visit(If &ifNode)
+	{
+		ifNode.Condition->Accept(*this);
+
+		if (ifNode.Then)
+		{
+			ifNode.Then->Accept(*this);
+		}
+
+		if (ifNode.Other)
+		{
+			ifNode.Other->Accept(*this);
+		}
+	}
+
+	virtual void Visit(ExprIf &exprIf)
+	{
+		std::abort();
+	}
+
+	virtual void Visit(While &whileNode)
+	{
+		if (whileNode.Condition)
+		{
+			whileNode.Condition->Accept(*this);
+		}
+
+		if (whileNode.Body)
+		{
+			whileNode.Body->Accept(*this);
+		}
+	}
+
+	virtual void Visit(For &forNode)
+	{
+		if (forNode.Init)
+		{
+			forNode.Init->Accept(*this);
+		}
+
+		if (forNode.Condition)
+		{
+			forNode.Condition->Accept(*this);
+		}
+
+		if (forNode.After)
+		{
+			forNode.After->Accept(*this);
+		}
+
+		if (forNode.Body)
+		{
+			forNode.Body->Accept(*this);
+		}
+	}
+
+	virtual void Visit(ForEach &forEach)
+	{
+		forEach.Init->Accept(*this);
+		forEach.Iterable->Accept(*this);
+
+		if (forEach.Body)
+		{
+			forEach.Body->Accept(*this);
+		}
+	}
+
+	virtual void Visit(Break &breakNode) {}
+	virtual void Visit(Continue &continueNode) {}
+
+	virtual void Visit(Inherited &inherited)
+	{
+		for (const auto &argument : inherited.Arguments)
+		{
+			argument->Accept(*this);
+		}
+	}
+
+	virtual void Visit(This &thisNode) {}
+	virtual void Visit(Nop &nop) {}
+
+	virtual void Visit(Error &error)
+	{
+		for (const auto &statement : error.Statements)
+		{
+			statement->Accept(*this);
+		}
+	}
+};
 };
 
 // call context

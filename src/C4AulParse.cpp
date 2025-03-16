@@ -3114,7 +3114,7 @@ C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_Fo
 	if (TokenType != ATT_IDTF)
 		return {ErrorNode(node()), UnexpectedToken("variable name")};
 
-	auto decl1 = std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::Type::Var, Idtf, nullptr);
+	auto decl1 = std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::DeclarationType::Var, Idtf, nullptr);
 
 	if (Type == PREPARSER)
 	{
@@ -3139,7 +3139,7 @@ C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_Fo
 
 			std::vector<std::unique_ptr<C4AulAST::Declaration>> declarations;
 			declarations.emplace_back(std::move(decl1));
-			declarations.emplace_back(std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::Type::Var, Idtf, nullptr));
+			declarations.emplace_back(std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::DeclarationType::Var, Idtf, nullptr));
 
 			init = std::make_unique<C4AulAST::Declarations>(GetOffset(), std::move(declarations));
 
@@ -3986,7 +3986,7 @@ C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_Va
 			}
 		}
 
-		declarations.emplace_back(std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::Type::Var, std::move(name), std::move(expression.Result)));
+		declarations.emplace_back(std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::DeclarationType::Var, std::move(name), std::move(expression.Result)));
 		if (expression.Error)
 		{
 			return {node(), std::move(expression.Error)};
@@ -4031,7 +4031,7 @@ C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_Lo
 		}
 		std::string name{Idtf};
 		RETURN_NODE_ON_ERROR(Match(ATT_IDTF));
-		declarations.emplace_back(std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::Type::Local, std::move(name), nullptr));
+		declarations.emplace_back(std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::DeclarationType::Local, std::move(name), nullptr));
 		switch (TokenType)
 		{
 		case ATT_COMMA:
@@ -4073,7 +4073,7 @@ C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_St
 
 		std::string name{Idtf};
 		RETURN_NODE_ON_ERROR(Match(ATT_IDTF));
-		declarations.emplace_back(std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::Type::Static, std::move(name), nullptr));
+		declarations.emplace_back(std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::DeclarationType::Static, std::move(name), nullptr));
 		switch (TokenType)
 		{
 		case ATT_COMMA:
@@ -4203,7 +4203,7 @@ C4AulParseResult<std::unique_ptr<C4AulAST::Statement>> C4AulParseState::Parse_Co
 			}
 		}
 
-		declarations.emplace_back(std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::Type::StaticConst, Name, std::move(literal)));
+		declarations.emplace_back(std::make_unique<C4AulAST::Declaration>(GetOffset(), C4AulAST::Declaration::DeclarationType::StaticConst, Name, std::move(literal)));
 
 		// expect ',' (next global) or ';' (end of definition) now
 		RETURN_NODE_ON_ERROR(Shift());
