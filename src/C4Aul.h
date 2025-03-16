@@ -416,14 +416,11 @@ public:
 		comp->Value(mkNamingAdapt(position, "Position"));
 	}
 
-	void Emit(C4AulBCCGenerator &generator) const;
 	std::intptr_t GetPosition() const { return position; }
 
 	std::string ToTree() const;
 	virtual std::generator<std::string> ToTreeInternal() const = 0;
 	virtual void Accept(Visitor &visitor) = 0;
-protected:
-	virtual void EmitInternal(C4AulBCCGenerator &generator) const = 0;
 
 protected:
 	virtual NodeType GetNodeType() const = 0;
@@ -446,7 +443,7 @@ public:
 	const std::vector<std::unique_ptr<Statement>> &GetStatements() const { return Statements; }
 
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
+
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -473,7 +470,6 @@ public:
 
 public:
 	void CompileFunc(StdCompiler *comp) override;
-	void Emit(C4AulBCCGenerator &generator) const;
 
 public:
 	C4V_Type Type;
@@ -553,7 +549,6 @@ protected:
 
 public:
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::string GetLiteralString() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -580,7 +575,6 @@ protected:
 
 public:
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::string GetLiteralString() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -609,7 +603,6 @@ protected:
 
 public:
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::string GetLiteralString() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -635,7 +628,6 @@ protected:
 
 public:
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::string GetLiteralString() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -662,7 +654,6 @@ protected:
 
 public:
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::string GetLiteralString() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -690,7 +681,6 @@ protected:
 
 public:
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -729,7 +719,6 @@ protected:
 
 public:
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -756,7 +745,6 @@ protected:
 
 public:
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -785,9 +773,7 @@ protected:
 	explicit ParN() : ParN{{}, {}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -813,9 +799,7 @@ protected:
 	explicit VarN() : VarN{{}, {}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -842,9 +826,7 @@ protected:
 	explicit Par() : Par{{}, {}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -870,9 +852,7 @@ protected:
 	explicit Var() : Var{{}, {}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -899,9 +879,7 @@ protected:
 	explicit LocalN() : LocalN{{}, {}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -927,9 +905,7 @@ protected:
 	explicit GlobalN() : GlobalN{{}, {}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -965,7 +941,6 @@ protected:
 
 public:
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -996,7 +971,6 @@ private:
 
 public:
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1043,9 +1017,7 @@ private:
 	explicit UnaryOperator() : Expression{{}, {}}, OpID{}, Side{} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1075,9 +1047,7 @@ private:
 	explicit BinaryOperator() : BinaryExpression{{}, {}, {}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1117,9 +1087,7 @@ public:
 	const std::vector<Parameter> &GetParameters() const { return Parameters; }
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1149,9 +1117,7 @@ private:
 	explicit Function() : Function{{}, {}, {}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1179,9 +1145,7 @@ private:
 	explicit Block() : Block{{}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1207,9 +1171,7 @@ private:
 	explicit Include() : Include{{}, {}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1236,9 +1198,7 @@ private:
 	explicit Append() : Append{{}, {}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1265,9 +1225,7 @@ private:
 	explicit Strict() : Strict{{}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1294,7 +1252,6 @@ private:
 
 public:
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1321,9 +1278,7 @@ private:
 	explicit ReturnAsParam() : ReturnAsParam{{}, {}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1351,7 +1306,6 @@ protected:
 
 public:
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1408,7 +1362,6 @@ private:
 
 public:
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1432,9 +1385,7 @@ private:
 	explicit ArrayAppend() : ArrayAppend{{}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1460,9 +1411,7 @@ private:
 	explicit PropertyAccess() : PropertyAccess{{}, {}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1491,9 +1440,7 @@ protected:
 	explicit IndirectCall() : Expression{{}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1531,9 +1478,7 @@ private:
 	explicit If() : Statement{{}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1561,9 +1506,7 @@ private:
 	explicit ExprIf() : Expression{{}, {}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1591,9 +1534,7 @@ private:
 	explicit While() : Statement{{}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1620,9 +1561,7 @@ private:
 	explicit For() : Statement{{}} {}
 
 public:
-
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1652,7 +1591,6 @@ private:
 
 public:
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1680,7 +1618,6 @@ private:
 	explicit Break() : Statement{{}} {}
 
 public:
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1702,7 +1639,6 @@ private:
 	explicit Continue() : Statement{{}} {}
 
 public:
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1725,7 +1661,6 @@ private:
 
 public:
 	void CompileFunc(StdCompiler *comp) override;
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1751,7 +1686,6 @@ private:
 	explicit This() : Expression{{}, {}} {}
 
 public:
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1772,7 +1706,6 @@ private:
 	explicit Nop() : Statement{{}} {}
 
 public:
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -1793,7 +1726,6 @@ private:
 	explicit Error() : Expression{{}, {}} {}
 
 public:
-	void EmitInternal(C4AulBCCGenerator &generator) const override;
 	std::generator<std::string> ToTreeInternal() const override;
 	void Accept(Visitor &visitor) override;
 
@@ -2055,7 +1987,10 @@ public:
 
 	virtual void Visit(ReturnAsParam &returnAsParam)
 	{
-		returnAsParam.Expr->Accept(*this);
+		if (returnAsParam.Expr)
+		{
+			returnAsParam.Expr->Accept(*this);
+		}
 	}
 
 	virtual void Visit(FunctionCall &functionCall)
@@ -2084,7 +2019,11 @@ public:
 
 	virtual void Visit(IndirectCall &indirectCall)
 	{
-		indirectCall.Callee->Accept(*this);
+		if (indirectCall.Callee)
+		{
+			indirectCall.Callee->Accept(*this);
+		}
+
 		for (const auto &argument : indirectCall.Arguments)
 		{
 			argument->Accept(*this);
@@ -2555,7 +2494,7 @@ struct C4LoggerConfig::Defaults<C4AulExec>
 	static constexpr bool ShowLoggerNameInGui{false};
 };
 
-class C4AulBCCGenerator
+class C4AulBCCGenerator : public C4AulAST::Visitor
 {
 private:
 	struct Loop
@@ -2603,6 +2542,46 @@ public:
 
 	void AddError(std::size_t position);
 	void RemoveBCC() { code.pop_back(); }
+
+public:
+	void Visit(C4AulAST::Nil &nil) override;
+	void Visit(C4AulAST::IntLiteral &intLiteral) override;
+	void Visit(C4AulAST::C4IDLiteral &idLiteral) override;
+	void Visit(C4AulAST::BoolLiteral &boolLiteral) override;
+	void Visit(C4AulAST::StringLiteral &stringLiteral) override;
+	void Visit(C4AulAST::ArrayLiteral &arrayLiteral) override;
+	void Visit(C4AulAST::MapLiteral &mapLiteral) override;
+	void Visit(C4AulAST::ParN &parN) override;
+	void Visit(C4AulAST::Par &par) override;
+	void Visit(C4AulAST::VarN &varN) override;
+	void Visit(C4AulAST::Var &var) override;
+	void Visit(C4AulAST::LocalN &localN) override;
+	void Visit(C4AulAST::GlobalN &globalN) override;
+	void Visit(C4AulAST::Declaration &declaration) override;
+	void Visit(C4AulAST::UnaryOperator &unaryOperator) override;
+	void Visit(C4AulAST::BinaryOperator &binaryOperator) override;
+	void Visit(C4AulAST::Block &block) override;
+	void Visit(C4AulAST::Return &returnNode) override;
+	void Visit(C4AulAST::ReturnAsParam &returnAsParam) override;
+	void Visit(C4AulAST::FunctionCall &functionCall) override;
+	void Visit(C4AulAST::ArrayAccess &arrayAccess) override;
+	void Visit(C4AulAST::ArrayAppend &arrayAppend) override;
+	void Visit(C4AulAST::PropertyAccess &propertyAccess) override;
+	void Visit(C4AulAST::IndirectCall &indirectCall) override;
+	void Visit(C4AulAST::If &ifNode) override;
+	void Visit(C4AulAST::While &whileNode) override;
+	void Visit(C4AulAST::For &forNode) override;
+	void Visit(C4AulAST::ForEach &forEach) override;
+	void Visit(C4AulAST::Break &breakNode) override;
+	void Visit(C4AulAST::Continue &continueNode) override;
+	void Visit(C4AulAST::Inherited &inherited) override;
+	void Visit(C4AulAST::This &thisNode) override;
+	void Visit(C4AulAST::Error &error) override;
+
+private:
+	template<std::same_as<C4AulAST::Statement> T>
+	void AcceptStatement(const std::unique_ptr<T> &node);
+	void EmitFunctionCall(std::intptr_t position, C4AulFunc *func, const std::vector<std::unique_ptr<C4AulAST::Expression>> &arguments);
 
 public:
 	C4AulScript &Script;
