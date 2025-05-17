@@ -19,7 +19,7 @@ Essential dependencies:
 - CMake
 - Fairly modern C++ compiler
 	- Windows: **Latest MSVC**
-	- Linux: **g++ ≥ 14.1** or **clang++ ≥ 20.1**
+	- Linux: **g++ ≥ 15.1** or **clang++ ≥ 20.1**
 	- macOS: **open source clang++ ≥ 20.1** - e.g. `brew install llvm@20 ninja`
 - Make or Ninja
 
