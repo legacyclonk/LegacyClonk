@@ -14,16 +14,16 @@ jobs:
       max-parallel: 15
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, windows-latest, macos-13]
+        os: [ubuntu-22.04, windows-latest, macos-13]
         env: [Linux, Windows, Mac]
         arch: [x64, x86]
         sound: [OFF, SDL_mixer]
         windowing: [Console, X11, GTK, SDL, Windows]
         debugrec: [OFF, ON]
         exclude:
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             env: Mac
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             env: Windows
           - os: windows-latest
             env: Mac
@@ -38,7 +38,7 @@ jobs:
             os: macos-13
 
           - arch: x86
-            os: ubuntu-20.04
+            os: ubuntu-22.04
 
           - os: windows-latest
             windowing: X11
@@ -50,7 +50,7 @@ jobs:
             windowing: GTK
           - os: macos-13
             windowing: Windows
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             windowing: Windows
 
           - sound: SDL_mixer

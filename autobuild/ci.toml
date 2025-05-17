@@ -74,7 +74,7 @@ platform-suffix = 'win32'
 debugrec = true
 
 [matrix.linux]
-runner = 'ubuntu-20.04'
+runner = 'ubuntu-22.04'
 
 [[matrix.linux.config]]
 arch = 'x64'
