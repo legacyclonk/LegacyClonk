@@ -19,8 +19,8 @@ Essential dependencies:
 - CMake
 - Fairly modern C++ compiler
 	- Windows: **Latest MSVC**
-	- Linux: **g++ ≥ 14.1** or **clang++ ≥ 19.1**
-	- macOS: **open source clang++ ≥ 19.1** - e.g. `brew install llvm@19 ninja`
+	- Linux: **g++ ≥ 14.1** or **clang++ ≥ 20.1**
+	- macOS: **open source clang++ ≥ 20.1** - e.g. `brew install llvm@20 ninja`
 - Make or Ninja
 
 Extract the [latest pre-built dependencies](https://github.com/legacyclonk/deps/releases/latest) for your platform into a folder called `deps`.
