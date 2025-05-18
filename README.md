@@ -45,9 +45,9 @@ cmake --build build
 ```
 
 #### macOS
-Configure with CMake (FIXME: Rename toolchain file, the version number doesn’t matter)
+Configure with CMake
 ```bash
-cmake . -B build -DCMAKE_TOOLCHAIN_FILE=$PWD/autobuild/clang16_mac.cmake
+cmake . -B build -DCMAKE_TOOLCHAIN_FILE=$PWD/autobuild/clang_mac.cmake
 ```
 
 Compile with CMake
