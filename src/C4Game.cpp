@@ -584,6 +584,8 @@ void C4Game::Clear()
 	MouseControl.Clear();
 	Players.Clear();
 	Parameters.Clear();
+	// Clear the logger now that C4GameRes has also destroyed all C4Network2Res objects
+	Network.ResList.ClearLogger();
 	RoundResults.Clear();
 	C4S.Clear();
 	Weather.Clear();

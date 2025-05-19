@@ -364,6 +364,7 @@ public:
 
 	void RemoveAtClient(int32_t iClientID); // by main thread
 	void Clear(); // by main thread
+	void ClearLogger(); // by main thread
 
 	bool SendDiscover(C4Network2IOConnection *pTo = nullptr); // by both
 	void OnClientConnect(C4Network2IOConnection *pConn); // by main thread

@@ -1526,19 +1526,22 @@ void C4Network2ResList::RemoveAtClient(int32_t iClientID) // by main thread
 
 void C4Network2ResList::Clear()
 {
-	// Make sure the logger is reset *after* the lock is released
-	// as OnShareFree() will destroy the C4Network2Res objects
+	CStdShareLock ResListLock(&ResListCSec);
+	for (C4Network2Res *pRes = pFirst; pRes; pRes = pRes->pNext)
 	{
-		CStdShareLock ResListLock(&ResListCSec);
-		for (C4Network2Res *pRes = pFirst; pRes; pRes = pRes->pNext)
-		{
-			pRes->Remove();
-			pRes->iLastReqTime = 0;
-		}
-		iClientID = C4ClientIDUnknown;
-		iLastDiscover = iLastStatus = 0;
+		pRes->Remove();
+		pRes->iLastReqTime = 0;
 	}
+	iClientID = C4ClientIDUnknown;
+	iLastDiscover = iLastStatus = 0;
 
+	// Make sure the logger is not reset as OnShareFree() and
+	// C4GameRes::~C4GameRes() will destroy the C4Network2Res objects
+}
+
+void C4Network2ResList::ClearLogger()
+{
+	assert(iClientID == C4ClientIDUnknown);
 	logger.reset();
 }
 
