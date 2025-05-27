@@ -23,6 +23,7 @@
 #include "C4GuiDialogs.h"
 #include "C4GameVersion.h"
 #include "C4Network2Reference.h"
+#include "StdOSVersion.h"
 
 // dialog showing info about a connected client
 class C4UpdateDlg : public C4GUI::InfoDialog
@@ -54,6 +55,6 @@ public:
 	C4Network2VersionInfoClient() : C4Network2HTTPClient() {}
 
 	bool QueryVersion();
-	bool GetVersion(C4GameVersion *pSaveToVer);
+	bool GetVersion(C4GameVersion &saveToVer, CStdOSVersion &osVersion, std::string &friendlyProductName);
 	bool GetRedirect(StdStrBuf &rRedirect);
 };
