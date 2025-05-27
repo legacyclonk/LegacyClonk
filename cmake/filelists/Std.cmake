@@ -22,5 +22,7 @@ src/StdFile.h
 src/StdGzCompressedFile.cpp
 src/StdGzCompressedFile.h
 src/StdHelpers.h
+src/StdOsVersion.cpp
+src/StdOsVersion.cpp
 src/StdSha1.h
 )
