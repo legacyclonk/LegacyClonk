@@ -18,6 +18,7 @@
 
 #include "C4Id.h"
 #include "C4AulScriptStrict.h"
+#include "C4ValueBase.h"
 
 #include <concepts>
 #include <cstdint>
@@ -33,33 +34,11 @@ class C4ValueArray;
 class C4ValueHash;
 class C4ValueContainer;
 
-// C4Value type
-enum C4V_Type
-{
-	C4V_Any          = 0, // unknown / no type
-	C4V_Int          = 1, // Integer
-	C4V_Bool         = 2, // Boolean
-	C4V_C4ID         = 3, // C4ID
-	C4V_C4Object     = 4, // Pointer on Object
-
-	C4V_String       = 5, // String
-
-	C4V_Array        = 6, // pointer on array of values
-	C4V_Map          = 7, // pointer on map of values
-
-	C4V_pC4Value     = 8, // reference on a value (variable)
-
-	C4V_C4ObjectEnum = 9, // enumerated object
-
-};
-
 constexpr auto C4V_Last = static_cast<std::underlying_type_t<C4V_Type>>(C4V_pC4Value);
 
 const char *GetC4VName(const C4V_Type Type);
 char GetC4VID(const C4V_Type Type);
 C4V_Type GetC4VFromID(char C4VID);
-
-using C4ValueInt = int32_t;
 
 union C4V_Data
 {
@@ -86,12 +65,10 @@ struct C4VCnvFn
 
 template <typename T> struct C4ValueConv;
 
-template<typename T> concept C4ValueInteger = !std::same_as<T, C4ID>;
-
 class C4Value
 {
 public:
-	C4Value() : Type(C4V_Any), NextRef(nullptr), FirstRef(nullptr) { Data.Raw = 0; }
+	constexpr C4Value() noexcept : Type(C4V_Any), NextRef(nullptr), FirstRef(nullptr) { Data.Raw = 0; }
 
 	C4Value(const C4Value &nValue, C4ValueHash *owningMap = nullptr) : Data(nValue.Data), Type(nValue.Type), NextRef(nullptr), FirstRef(nullptr), OwningMap(owningMap)
 	{
@@ -106,20 +83,31 @@ public:
 	template<typename T> requires (!std::same_as<T, C4ID>)
 	explicit C4Value(T nData, C4V_Type nType) : Type(nData || nType == C4V_Int || nType == C4V_Bool ? nType : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
 	{
-		Data.Raw = 0;
-		Data.Int = nData; AddDataRef();
+		Data.Raw = nData;
+		AddDataRef();
 	}
 
-	explicit C4Value(C4ID id) : Type(id ? C4V_C4ID : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
+	explicit constexpr C4Value(C4ID id) noexcept : Type(id ? C4V_C4ID : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
 	{
-		Data.Raw = 0;
-		Data.ID = id;
+		Data.Raw = id;
+	}
+
+	explicit constexpr C4Value(C4ValueInt value) noexcept : Type(C4V_Int), NextRef(nullptr), FirstRef(nullptr)
+	{
+		Data.Raw = value;
+	}
+
+	explicit constexpr C4Value(bool value) noexcept : Type(C4V_Bool), NextRef(nullptr), FirstRef(nullptr)
+	{
+		Data.Raw = value;
 	}
 
 	explicit C4Value(C4Object *pObj) : Type(pObj ? C4V_C4Object : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
 	{
 		Data.Obj = pObj; AddDataRef();
 	}
+
+	explicit C4Value(std::string_view str) : C4Value{MakeC4String(str)} {}
 
 	explicit C4Value(C4String *pStr) : Type(pStr ? C4V_String : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
 	{
@@ -150,7 +138,25 @@ public:
 
 	C4Value &operator=(const C4Value &nValue);
 
-	~C4Value();
+	constexpr ~C4Value()
+	{
+		// resolve all C4Values referencing this Value
+		while (FirstRef)
+			FirstRef->Set(*this);
+
+		if consteval
+		{
+			if (!IsNil(false) && Type != C4V_Bool && Type != C4V_Int && Type != C4V_C4ID)
+			{
+				throw std::runtime_error{"Only nil, bool, int and ID are supported for constexpr destruction currently"};
+			}
+		}
+		else
+		{
+			// delete contents
+			DelDataRef(Data, Type, GetNextRef(), GetBaseContainer());
+		}
+	}
 
 	// explicit conversion from int, bool and id
 	std::optional<StdStrBuf> toString() const;
@@ -167,15 +173,15 @@ public:
 	C4Value *getRef()        { return ConvertTo(C4V_pC4Value) ? Data.Ref   : nullptr; }
 
 	// Unchecked getters
-	C4ValueInt _getInt()      const { return Data.Int; }
-	bool _getBool()           const { return !!Data.Int; }
-	C4ID _getC4ID()           const { return Data.ID; }
-	C4Object *_getObj()       const { return Data.Obj; }
-	C4String *_getStr()       const { return Data.Str; }
-	C4ValueArray *_getArray() const { return Data.Array; }
-	C4ValueHash *_getMap()    const { return Data.Map; }
-	C4Value *_getRef()        const { return Data.Ref; }
-	std::intptr_t _getRaw()   const { return Data.Raw; }
+	constexpr C4ValueInt _getInt()      const noexcept { return Data.Int; }
+	constexpr bool _getBool()           const noexcept { return !!Data.Int; }
+	constexpr C4ID _getC4ID()           const noexcept { return Data.ID; }
+	constexpr C4Object *_getObj()       const noexcept { return Data.Obj; }
+	constexpr C4String *_getStr()       const noexcept { return Data.Str; }
+	constexpr C4ValueArray *_getArray() const noexcept { return Data.Array; }
+	constexpr C4ValueHash *_getMap()    const noexcept { return Data.Map; }
+	constexpr C4Value *_getRef()        const noexcept { return Data.Ref; }
+	constexpr std::intptr_t _getRaw()   const noexcept { return Data.Raw; }
 
 	// Template versions
 	template <typename T> inline T Get() { return C4ValueConv<T>::FromC4V(*this); }
@@ -221,6 +227,11 @@ public:
 	C4Value GetRef() { return C4Value(this); }
 	void Deref() { Set(GetRefVal()); }
 	bool IsRef() { return Type == C4V_pC4Value; }
+	constexpr bool IsNil(bool deref = true) const
+	{
+		const C4Value &val = deref ? GetRefVal() : *this;
+		return val.Type == C4V_Any && val.Data.Raw == 0;
+	}
 
 	// get data of referenced value
 	C4V_Data GetData() const { return GetRefVal().Data; }
@@ -292,6 +303,7 @@ protected:
 	// guess type from data (if type == c4v_any)
 	C4V_Type GuessType();
 
+	static C4String *MakeC4String(std::string_view value);
 	static C4VCnvFn C4ScriptCnvMap[C4V_Last + 1][C4V_Last + 1];
 	static bool FnCnvInt2Id(C4Value *Val, C4V_Type toType, bool fStrict);
 	static bool FnCnvGuess(C4Value *Val, C4V_Type toType, bool fStrict);
@@ -301,9 +313,9 @@ protected:
 };
 
 // converter
-inline C4Value C4VInt(C4ValueInt iVal) { return C4Value{iVal, C4V_Int}; }
-inline C4Value C4VBool(bool fVal) { return C4Value{fVal, C4V_Bool}; }
-inline C4Value C4VID(C4ID idVal) { return C4Value{idVal}; }
+inline constexpr C4Value C4VInt(C4ValueInt iVal) noexcept { return C4Value{iVal}; }
+inline constexpr C4Value C4VBool(bool fVal) noexcept { return C4Value{fVal}; }
+inline constexpr C4Value C4VID(C4ID idVal) noexcept { return C4Value{idVal}; }
 inline C4Value C4VObj(C4Object *pObj) { return C4Value(pObj); }
 inline C4Value C4VString(C4String *pStr) { return C4Value(pStr); }
 inline C4Value C4VArray(C4ValueArray *pArray) { return C4Value(pArray); }
@@ -316,65 +328,65 @@ C4Value C4VString(const char *strString);
 // converter templates
 template <> struct C4ValueConv<C4ValueInt>
 {
-	inline static C4V_Type Type() { return C4V_Int; }
+	inline static constexpr C4V_Type Type() noexcept { return C4V_Int; }
 	inline static C4ValueInt FromC4V(C4Value &v) { return v.getInt(); }
-	inline static C4ValueInt _FromC4V(const C4Value &v) { return v._getInt(); }
-	inline static C4Value ToC4V(int32_t v) { return C4VInt(v); }
+	inline static constexpr C4ValueInt _FromC4V(const C4Value &v) noexcept { return v._getInt(); }
+	inline static constexpr C4Value ToC4V(int32_t v) noexcept { return C4VInt(v); }
 };
 
 template <> struct C4ValueConv<bool>
 {
-	inline static C4V_Type Type() { return C4V_Bool; }
+	inline static constexpr C4V_Type Type() noexcept { return C4V_Bool; }
 	inline static bool FromC4V(C4Value &v) { return v.getBool(); }
-	inline static bool _FromC4V(const C4Value &v) { return v._getBool(); }
-	inline static C4Value ToC4V(bool v) { return C4VBool(v); }
+	inline static constexpr bool _FromC4V(const C4Value &v) noexcept { return v._getBool(); }
+	inline static constexpr C4Value ToC4V(bool v) noexcept { return C4VBool(v); }
 };
 
 template <> struct C4ValueConv<C4ID>
 {
-	inline static C4V_Type Type() { return C4V_C4ID; }
+	inline static constexpr C4V_Type Type() noexcept { return C4V_C4ID; }
 	inline static C4ID FromC4V(C4Value &v) { return v.getC4ID(); }
-	inline static C4ID _FromC4V(const C4Value &v) { return v._getC4ID(); }
-	inline static C4Value ToC4V(C4ID v) { return C4VID(v); }
+	inline static constexpr C4ID _FromC4V(const C4Value &v) noexcept { return v._getC4ID(); }
+	inline static constexpr C4Value ToC4V(C4ID v) noexcept { return C4VID(v); }
 };
 
 template <> struct C4ValueConv<C4Object *>
 {
-	inline static C4V_Type Type() { return C4V_C4Object; }
+	inline static constexpr C4V_Type Type() noexcept { return C4V_C4Object; }
 	inline static C4Object *FromC4V(C4Value &v) { return v.getObj(); }
-	inline static C4Object *_FromC4V(const C4Value &v) { return v._getObj(); }
+	inline static constexpr C4Object *_FromC4V(const C4Value &v) noexcept { return v._getObj(); }
 	inline static C4Value ToC4V(C4Object *v) { return C4VObj(v); }
 };
 
 template <> struct C4ValueConv<C4String *>
 {
-	inline static C4V_Type Type() { return C4V_String; }
+	inline static constexpr C4V_Type Type() noexcept { return C4V_String; }
 	inline static C4String *FromC4V(C4Value &v) { return v.getStr(); }
-	inline static C4String *_FromC4V(const C4Value &v) { return v._getStr(); }
+	inline static constexpr C4String *_FromC4V(const C4Value &v) noexcept { return v._getStr(); }
 	inline static C4Value ToC4V(C4String *v) { return C4VString(v); }
 };
 
 template <> struct C4ValueConv<C4ValueArray *>
 {
-	inline static C4V_Type Type() { return C4V_Array; }
+	inline static constexpr C4V_Type Type() noexcept { return C4V_Array; }
 	inline static C4ValueArray *FromC4V(C4Value &v) { return v.getArray(); }
-	inline static C4ValueArray *_FromC4V(const C4Value &v) { return v._getArray(); }
+	inline static constexpr C4ValueArray *_FromC4V(const C4Value &v) noexcept { return v._getArray(); }
 	inline static C4Value ToC4V(C4ValueArray *v) { return C4VArray(v); }
 };
 
 template <> struct C4ValueConv<C4ValueHash *>
 {
-	inline static C4V_Type Type() { return C4V_Map; }
+	inline static constexpr C4V_Type Type() noexcept { return C4V_Map; }
 	inline static C4ValueHash *FromC4V(C4Value &v) { return v.getMap(); }
-	inline static C4ValueHash *_FromC4V(const C4Value &v) { return v._getMap(); }
+	inline static constexpr C4ValueHash *_FromC4V(const C4Value &v) noexcept { return v._getMap(); }
 	inline static C4Value ToC4V(C4ValueHash *v) { return C4VMap(v); }
 };
 
 template <> struct C4ValueConv<C4Value *>
 {
-	inline static C4V_Type Type() { return C4V_pC4Value; }
+	inline static constexpr C4V_Type Type() noexcept { return C4V_pC4Value; }
 	inline static C4Value *FromC4V(C4Value &v) { return v.getRef(); }
-	inline static C4Value *_FromC4V(const C4Value &v) { return v._getRef(); }
+	inline static constexpr C4Value *_FromC4V(const C4Value &v) noexcept { return v._getRef(); }
 	inline static C4Value ToC4V(C4Value *v) { return C4VRef(v); }
 };
 
@@ -383,8 +395,10 @@ namespace std
 	template<>
 	struct hash<C4Value>
 	{
-		std::size_t operator()(C4Value value) const;
+		std::size_t operator()(const C4Value &value) const;
 	};
 }
 
-extern const C4Value C4VNull, C4VFalse, C4VTrue;
+inline constexpr const C4Value C4VNull{};
+inline constexpr const C4Value C4VFalse{false};
+inline constexpr const C4Value C4VTrue{true};

@@ -15,7 +15,7 @@
  */
 
 #include "C4ValueHash.h"
-#include "C4StringTable.h"
+#include "C4Value.h"
 
 #include <optional>
 #include <stdexcept>
@@ -79,6 +79,11 @@ bool C4ValueHash::contains(const C4Value &key) const
 	return map.find(key) != map.end();
 }
 
+bool C4ValueHash::contains(const C4ValueConstexpr &key) const
+{
+	return map.find(key) != map.end();
+}
+
 void C4ValueHash::clear()
 {
 	for (auto &[key, value] : map) delete value.value;
@@ -136,6 +141,27 @@ C4Value &C4ValueHash::operator[](const C4Value &key)
 	}
 }
 
+C4Value &C4ValueHash::operator[](const C4ValueConstexpr &key)
+{
+	const auto it = map.find(key);
+	if (it != map.end())
+	{
+		return *it->second.value;
+	}
+
+	C4Value *value;
+	if (emptyValues.empty()) value = C4Value::OfMap(this);
+	else
+	{
+		value = emptyValues.front();
+		emptyValues.pop_front();
+	}
+
+	const auto &inserted = map.emplace(std::piecewise_construct, std::forward_as_tuple(key, this), std::forward_as_tuple(MapEntry{value, {}})).first;
+	inserted->second.keyOrderIterator = keyOrder.insert(keyOrder.end(), &inserted->first);
+	return *value;
+}
+
 const C4Value &C4ValueHash::operator[](const C4Value &key) const
 {
 	try
@@ -146,6 +172,17 @@ const C4Value &C4ValueHash::operator[](const C4Value &key) const
 	{
 		return C4VNull;
 	}
+}
+
+const C4Value &C4ValueHash::operator[](const C4ValueConstexpr &key) const
+{
+	const auto it = map.find(key);
+	if (it == map.end())
+	{
+		return C4VNull;
+	}
+
+	return *it->second.value;
 }
 
 C4ValueHash::Iterator C4ValueHash::begin()

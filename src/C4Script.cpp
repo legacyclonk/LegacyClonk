@@ -5044,7 +5044,7 @@ static C4ValueHash *FnGetPath(C4AulContext *ctx, C4ValueInt iFromX, C4ValueInt i
 	SetWaypoint(static_cast<int32_t>(iToX), static_cast<int32_t>(iToY), reinterpret_cast<intptr_t>(nullptr), reinterpret_cast<intptr_t>(&pathinfo));
 
 	auto *hash = new C4ValueHash;
-	(*hash)[C4VString("Length")] = C4VInt(pathinfo.length);
+	(*hash)["Length"] = C4VInt(pathinfo.length);
 
 	auto *array = new C4ValueArray(static_cast<int32_t>(pathinfo.path.size()));
 
@@ -5053,16 +5053,16 @@ static C4ValueHash *FnGetPath(C4AulContext *ctx, C4ValueInt iFromX, C4ValueInt i
 		for (size_t i = 0; i < pathinfo.path.size(); ++i)
 		{
 			auto *waypoint = new C4ValueHash;
-			(*waypoint)[C4VString("X")] = C4VInt(pathinfo.path[i].x);
-			(*waypoint)[C4VString("Y")] = C4VInt(pathinfo.path[i].y);
+			(*waypoint)["X"] = C4VInt(pathinfo.path[i].x);
+			(*waypoint)["Y"] = C4VInt(pathinfo.path[i].y);
 			if (pathinfo.path[i].obj)
-				(*waypoint)[C4VString("TransferTarget")] = C4VObj(pathinfo.path[i].obj);
+				(*waypoint)["TransferTarget"] = C4VObj(pathinfo.path[i].obj);
 
 			(*array)[static_cast<int32_t>(i)] = C4VMap(waypoint);
 		}
 	}
 
-	(*hash)[C4VString("Waypoints")] = C4VArray(array);
+	(*hash)["Waypoints"] = C4VArray(array);
 
 	return hash;
 }
