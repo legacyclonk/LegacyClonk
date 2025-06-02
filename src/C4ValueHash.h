@@ -16,12 +16,12 @@
 #pragma once
 
 #include "C4Value.h"
+#include "C4ValueConstexpr.h"
 #include "C4ValueStandardRefCountedContainer.h"
 
 #include <unordered_map>
 #include <forward_list>
 #include <list>
-#include <memory>
 
 class C4ValueHash : public C4ValueStandardRefCountedContainer<C4ValueHash>
 {
@@ -38,10 +38,19 @@ private:
 
 	struct KeyEqual
 	{
+		using is_transparent = bool;
 		bool operator()(const C4Value &lhs, const C4Value &rhs) const noexcept { return lhs.Equals(rhs, C4AulScriptStrict::MAXSTRICT); }
+		bool operator()(const C4ValueConstexpr &lhs, const C4Value &rhs) const noexcept { return lhs == rhs; }
 	};
 
-	std::unordered_map<key_type, MapEntry, std::hash<key_type>, KeyEqual> map;
+	struct KeyHash : std::hash<key_type>, std::hash<C4ValueConstexpr>
+	{
+		using is_transparent = bool;
+		using std::hash<key_type>::operator();
+		using std::hash<C4ValueConstexpr>::operator();
+	};
+
+	std::unordered_map<key_type, MapEntry, KeyHash, KeyEqual> map;
 	std::forward_list<C4Value *> emptyValues;
 
 	// we need a defined order for network sync
@@ -80,10 +89,13 @@ public:
 	virtual bool hasIndex(const C4Value &key) const override;
 	virtual C4Value &operator[](const C4Value &key) override;
 	virtual const C4Value &operator[](const C4Value &key) const;
+	C4Value &operator[](const C4ValueConstexpr &key);
+	const C4Value &operator[](const C4ValueConstexpr &key) const;
 	Iterator begin();
 	Iterator end();
 
 	bool contains(const C4Value &key) const;
+	bool contains(const C4ValueConstexpr &key) const;
 	void removeValue(C4Value *value);
 	auto size() const { return map.size(); }
 	void clear();

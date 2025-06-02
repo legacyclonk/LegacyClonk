@@ -31,8 +31,8 @@ src/C4Console.h
 src/C4Constants.h
 src/C4Control.cpp
 src/C4Control.h
-src/C4Coroutine.h
 src/C4Cooldown.h
+src/C4Coroutine.h
 src/C4CurlSystem.cpp
 src/C4CurlSystem.h
 src/C4Def.cpp
@@ -298,10 +298,10 @@ src/C4SurfaceFile.cpp
 src/C4SurfaceFile.h
 src/C4Teams.cpp
 src/C4Teams.h
-src/C4Texture.cpp
-src/C4Texture.h
 src/C4TextEncoding.cpp
 src/C4TextEncoding.h
+src/C4Texture.cpp
+src/C4Texture.h
 src/C4Thread.cpp
 src/C4Thread.h
 src/C4ThreadPool.cpp
@@ -320,6 +320,9 @@ src/C4UpperBoard.h
 src/C4UserMessages.h
 src/C4Value.cpp
 src/C4Value.h
+src/C4ValueBase.h
+src/C4ValueConstexpr.cpp
+src/C4ValueConstexpr.h
 src/C4ValueContainer.h
 src/C4ValueHash.cpp
 src/C4ValueHash.h
