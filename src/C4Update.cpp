@@ -59,6 +59,10 @@ bool C4Group_ApplyUpdate(C4Group &hGroup)
 			case C4UpdatePackage::CheckResult::BadVersion:
 				std::println(stderr, "This update {} can only be applied using version {}.{}.{}.{} or higher.", +Upd.Name, Upd.RequireVersion[0], Upd.RequireVersion[1], Upd.RequireVersion[2], Upd.RequireVersion[3]);
 				return false;
+			// Bad OS version
+			case C4UpdatePackage::CheckResult::BadOSVersion:
+				std::println(stderr, "This update {} can only be applied using OS version {} or higher.", +Upd.Name, Upd.RequireOSVersion);
+				return false;
 			// Target not found: keep going
 			case C4UpdatePackage::CheckResult::NoSource:
 				std::println(stderr, "Target {} for update {} not found. Ignoring.", +Upd.DestPath, +Upd.Name);
@@ -222,6 +226,7 @@ C4UpdatePackageCore::C4UpdatePackageCore() :
 void C4UpdatePackageCore::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(mkArrayAdapt(RequireVersion, 0), "RequireVersion"));
+	pComp->Value(mkNamingAdapt(RequireOSVersion,         "RequireOSVersion"));
 	pComp->Value(mkNamingAdapt(toC4CStr(Name),           "Name",        ""));
 	pComp->Value(mkNamingAdapt(toC4CStr(DestPath),       "DestPath",    ""));
 	pComp->Value(mkNamingAdapt(GrpUpdate,                "GrpUpdate",   0));
@@ -444,6 +449,14 @@ C4UpdatePackage::CheckResult C4UpdatePackage::Check(C4Group *pGroup)
 		// Engine and game version must match (rest ignored)
 		if ((C4XVER1 != RequireVersion[0]) || (C4XVER2 != RequireVersion[1]))
 			return CheckResult::BadSource;
+	}
+
+	if (RequireOSVersion.GetMajor())
+	{
+		if (CStdOSVersion::GetLocal() >= RequireOSVersion)
+		{
+			return CheckResult::BadOSVersion;
+		}
 	}
 
 	// only group updates have any special needs

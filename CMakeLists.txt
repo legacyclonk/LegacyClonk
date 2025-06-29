@@ -309,6 +309,10 @@ else ()
 	list(APPEND LIBSTANDARD_SOURCES src/StdSha1OpenSSL.cpp)
 endif ()
 
+if (APPLE)
+	list(APPEND LIBSTANDARD_SOURCES src/StdOSVersion.mm)
+endif ()
+
 add_library(standard STATIC ${LIBSTANDARD_SOURCES})
 target_compile_definitions(standard PRIVATE C4ENGINE)
 
@@ -500,6 +504,7 @@ endif ()
 
 if (APPLE)
 	target_link_libraries(clonk "-framework AppKit")
+	target_link_libraries(standard "-framework Foundation")
 endif ()
 
 # Link X11

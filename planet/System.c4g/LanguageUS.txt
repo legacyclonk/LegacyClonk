@@ -990,6 +990,7 @@ IDS_MSG_TRYLEAGUESIGNUP=League login for player %s on %s...
 IDS_MSG_UPDATEFAILED=Update failed.
 IDS_MSG_UPDATEINPROGRESS=Update still in progress. Please wait.
 IDS_MSG_UPDATENOTAVAILABLE=The update is possibly not yet available for this operating system.
+IDS_MSG_UPDATENOTAVAILABLEFOROSVERSION=An update to version %s is available, but requires a newer operating system version.|%s (%s) is needed, got %s (%s).|Deactivate automatic updates?
 IDS_MSG_USINGPLR=Using %s
 IDS_MSG_USINGPLR_DESC=Use this player to continue the savegame
 IDS_MSG_WASKICKEDFROMTHECHANNEL=%s was kicked from the channel (%s).

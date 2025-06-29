@@ -20,6 +20,7 @@
 
 #include "C4Constants.h"
 #include "C4Group.h"
+#include "StdOSVersion.h"
 
 const int C4UP_MaxUpGrpCnt = 50;
 
@@ -30,6 +31,7 @@ public:
 
 public:
 	int32_t RequireVersion[4];
+	CStdOSVersion RequireOSVersion;
 	char Name[C4MaxName + 1];
 	char DestPath[_MAX_PATH + 1];
 	int32_t GrpUpdate;
@@ -53,7 +55,8 @@ public:
 		NoSource,
 		BadSource,
 		AlreadyUpdated,
-		BadVersion
+		BadVersion,
+		BadOSVersion,
 	};
 
 	bool Load(C4Group *pGroup);
