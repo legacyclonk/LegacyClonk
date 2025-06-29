@@ -82,7 +82,7 @@ CStdOSVersion CStdOSVersion::GetLocal()
 	};
 }
 
-std::string CStdOSVersion::GetFriendlyProductName()
+std::string CStdOSVersion::GetFriendlyOSName()
 {
 	using KeyHandle = std::unique_ptr<HKEY, RegKeyDeleter>;
 
@@ -144,7 +144,7 @@ CStdOSVersion CStdOSVersion::GetLocal()
 	return {major, minor, build};
 }
 
-std::string CStdOSVersion::GetFriendlyProductName()
+std::string CStdOSVersion::GetFriendlyOSName()
 {
 	utsname name;
 	uname(&name);

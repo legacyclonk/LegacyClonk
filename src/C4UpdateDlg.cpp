@@ -270,7 +270,7 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	// Get current update version from server
 	C4GameVersion UpdateVersion;
 	CStdOSVersion osVersion;
-	std::string friendlyProductName;
+	std::string friendlyOSName;
 	C4GUI::Dialog *pWaitDlg = nullptr;
 	if (pScreen && C4GUI::IsGUIValid())
 	{
@@ -297,7 +297,7 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 		}
 		if (!fAborted)
 		{
-			fSuccess = VerChecker.GetVersion(UpdateVersion, osVersion, friendlyProductName);
+			fSuccess = VerChecker.GetVersion(UpdateVersion, osVersion, friendlyOSName);
 			VerChecker.GetRedirect(strUpdateRedirect);
 		}
 		Application.InteractiveThread.RemoveProc(&VerChecker);
@@ -364,9 +364,9 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 			const std::string message{LoadResStr(
 							C4ResStrTableKey::IDS_MSG_UPDATENOTAVAILABLEFOROSVERSION,
 							UpdateVersion.GetString(),
-							friendlyProductName,
+							friendlyOSName,
 							std::format("{}", osVersion),
-							CStdOSVersion::GetFriendlyProductName(),
+							CStdOSVersion::GetFriendlyOSName(),
 							std::format("{}", CStdOSVersion::GetLocal())
 							)};
 
@@ -407,7 +407,7 @@ bool C4Network2VersionInfoClient::QueryVersion()
 	return Query(StdBuf{}, false);
 }
 
-bool C4Network2VersionInfoClient::GetVersion(C4GameVersion &saveToVer, CStdOSVersion &osVersion, std::string &friendlyProductName)
+bool C4Network2VersionInfoClient::GetVersion(C4GameVersion &saveToVer, CStdOSVersion &osVersion, std::string &friendlyOSName)
 {
 	// Sanity check
 	if (isBusy() || !isSuccess()) return false;
@@ -418,7 +418,7 @@ bool C4Network2VersionInfoClient::GetVersion(C4GameVersion &saveToVer, CStdOSVer
 	{
 		C4GameVersion &Version;
 		CStdOSVersion &OsVersion;
-		std::string &FriendlyProductName;
+		std::string &FriendlyOSName;
 
 		void CompileFunc(StdCompiler *const comp)
 		{
@@ -427,17 +427,17 @@ bool C4Network2VersionInfoClient::GetVersion(C4GameVersion &saveToVer, CStdOSVer
 			if (const auto guard = comp->Name(C4_OS))
 			{
 				comp->Value(mkNamingAdapt(OsVersion, "RequiredOSVersion"));
-				comp->Value(mkNamingAdapt(FriendlyProductName, "FriendlyProductName"));
+				comp->Value(mkNamingAdapt(FriendlyOSName, "FriendlyOSName"));
 			}
 			else if (comp->isCompiler())
 			{
 				OsVersion = {};
-				FriendlyProductName.clear();
+				FriendlyOSName.clear();
 			}
 		}
 	};
 
-	VersionAndOsVersion versionAndOsVersion{saveToVer, osVersion, friendlyProductName};
+	VersionAndOsVersion versionAndOsVersion{saveToVer, osVersion, friendlyOSName};
 
 	try
 	{

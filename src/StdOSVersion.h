@@ -38,7 +38,7 @@ public:
 
 public:
 	static CStdOSVersion GetLocal();
-	static std::string GetFriendlyProductName();
+	static std::string GetFriendlyOSName();
 
 private:
 	std::uint16_t major;

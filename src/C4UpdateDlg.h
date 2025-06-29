@@ -55,6 +55,6 @@ public:
 	C4Network2VersionInfoClient() : C4Network2HTTPClient() {}
 
 	bool QueryVersion();
-	bool GetVersion(C4GameVersion &saveToVer, CStdOSVersion &osVersion, std::string &friendlyProductName);
+	bool GetVersion(C4GameVersion &saveToVer, CStdOSVersion &osVersion, std::string &friendlyOSName);
 	bool GetRedirect(StdStrBuf &rRedirect);
 };

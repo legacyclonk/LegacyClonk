@@ -27,7 +27,7 @@ CStdOSVersion CStdOSVersion::GetLocal()
 	};
 }
 
-std::string CStdOSVersion::GetFriendlyProductName()
+std::string CStdOSVersion::GetFriendlyOSName()
 {
 	const NSString *operatingSystemVersionString{[[NSProcessInfo processInfo] operatingSystemVersionString]};
 	const char *const cstr{[operatingSystemVersionString cStringUsingEncoding:NSWindowsCP1252StringEncoding]};
