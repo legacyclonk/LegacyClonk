@@ -371,8 +371,8 @@ std::string C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bo
 	// not found: Compose as direct code
 	return std::format("\\x{:x}", static_cast<uint32_t>(wCode));
 #elif defined(USE_X11)
-	const char* name = XKeysymToString(wCode);
-	return name ? name : "unknown";
+	const auto name = XKeysymToString(wCode);
+	return name ? name : "invalid";
 #elif defined(USE_SDL_MAINLOOP)
 	const auto name = SDL_GetScancodeName(static_cast<SDL_Scancode>(wCode));
 	if (!name)
