@@ -24,6 +24,8 @@
 #include <curl/curl.h>
 
 static constexpr long C4HTTPQueryTimeout{20}; // (s)
+static constexpr long C4HTTPQueryLowSpeedTime{20}; // (s)
+static constexpr long C4HTTPQueryLowSpeedLimit{30}; // (bytes)
 
 template<typename T, typename... Args> requires (sizeof...(Args) >= 1)
 static decltype(auto) ThrowIfFailed(T &&result, Args &&...args)
@@ -187,7 +189,9 @@ C4CurlSystem::EasyHandle C4HTTPClient::PrepareRequest(const Request &request, He
 	curl_easy_setopt(curl.get(), CURLOPT_CURLU, request.Uri.get());
 	curl_easy_setopt(curl.get(), CURLOPT_ACCEPT_ENCODING, "gzip");
 	curl_easy_setopt(curl.get(), CURLOPT_USERAGENT, C4ENGINENAME "/" C4VERSION );
-	curl_easy_setopt(curl.get(), CURLOPT_TIMEOUT, C4HTTPQueryTimeout);
+	curl_easy_setopt(curl.get(), CURLOPT_CONNECTTIMEOUT, C4HTTPQueryTimeout);
+	curl_easy_setopt(curl.get(), CURLOPT_LOW_SPEED_TIME, C4HTTPQueryLowSpeedTime);
+	curl_easy_setopt(curl.get(), CURLOPT_LOW_SPEED_LIMIT, C4HTTPQueryLowSpeedLimit);
 	curl_easy_setopt(curl.get(), CURLOPT_FAILONERROR, 1L);
 	curl_easy_setopt(curl.get(), CURLOPT_COOKIEFILE, "");
 	curl_easy_setopt(curl.get(), CURLOPT_SHARE, shareHandle.get());
