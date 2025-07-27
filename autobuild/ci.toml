@@ -1,6 +1,7 @@
 [groups.'System.c4g']
 parts = [
     'v360',
+    'v363',
 ]
 
 [groups.'Graphics.c4g']
