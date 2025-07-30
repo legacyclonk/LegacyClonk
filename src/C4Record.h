@@ -23,8 +23,8 @@ class C4Record;
 
 #include "C4Group.h"
 #include "C4Control.h"
+#include "C4File.h"
 #include "C4Log.h"
-#include "CStdFile.h"
 #include "Fixed.h"
 
 #include <list>

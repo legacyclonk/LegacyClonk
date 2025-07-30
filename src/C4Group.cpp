@@ -18,6 +18,7 @@
 
 /* Needs to be compiles as Objective C++ on OS X */
 
+#include "C4File.h"
 #include <C4Group.h>
 
 #include <C4Components.h>

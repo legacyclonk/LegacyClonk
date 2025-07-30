@@ -17,13 +17,13 @@
 
 // a wrapper class to DirectDraw surfaces
 
+#include "C4File.h"
 #include "C4Group.h"
 #include <Standard.h>
 #include <StdSurface8.h>
 #include <Bitmap256.h>
 #include <StdPNG.h>
 #include <StdDDraw2.h>
-#include <CStdFile.h>
 #include <Bitmap256.h>
 
 #include <utility>

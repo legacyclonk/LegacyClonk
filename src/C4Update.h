@@ -19,6 +19,7 @@
 #pragma once
 
 #include "C4Constants.h"
+#include "C4File.h"
 #include "C4Group.h"
 #include "StdOSVersion.h"
 
