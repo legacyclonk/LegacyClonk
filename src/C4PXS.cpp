@@ -331,19 +331,18 @@ bool C4PXSSystem::Save(C4Group &hGroup)
 	}
 
 	// Save chunks to temp file
-	CStdFile hTempFile;
-	if (!hTempFile.Create(Config.AtTempPath(C4CFN_TempPXS)))
+	C4File tempFile{Config.AtTempPath(C4CFN_TempPXS), "wb"};
+	if (!tempFile)
 		return false;
 	int32_t iNumFormat = 1;
-	if (!hTempFile.Write(&iNumFormat, sizeof(iNumFormat)))
+	if (!tempFile.WriteElement(iNumFormat))
 		return false;
 	for (cnt = 0; cnt < PXSMaxChunk; cnt++)
 		if (Chunk[cnt]) // must save all chunks in order to keep order consistent on all clients
-			if (!hTempFile.Write(Chunk[cnt], PXSChunkSize * sizeof(C4PXS)))
+			if (!tempFile.WriteElements(std::span{Chunk[cnt], PXSChunkSize}))
 				return false;
 
-	if (!hTempFile.Close())
-		return false;
+	tempFile.Close();
 
 	// Move temp file to group
 	if (!hGroup.Move(Config.AtTempPath(C4CFN_TempPXS),

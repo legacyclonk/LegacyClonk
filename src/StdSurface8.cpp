@@ -182,10 +182,10 @@ bool CSurface8::Save(const char *szFilename, uint8_t *bpPalette)
 	BitmapInfo.Set(Wdt, Hgt, bpPalette ? bpPalette : pPal->Colors);
 
 	// Create file & write info
-	CStdFile hFile;
+	C4File file;
 
-	if (!hFile.Create(szFilename)
-		|| !hFile.Write(&BitmapInfo, sizeof(BitmapInfo)))
+	if (!file.Open(szFilename, "wb")
+		|| !file.WriteElement(BitmapInfo))
 	{
 		return false;
 	}
@@ -194,19 +194,19 @@ bool CSurface8::Save(const char *szFilename, uint8_t *bpPalette)
 	char bpEmpty[4]{}; int iEmpty = DWordAligned(Wdt) - Wdt;
 	for (int cnt = Hgt - 1; cnt >= 0; cnt--)
 	{
-		if (!hFile.Write(Bits + (Pitch * cnt), Wdt))
+		if (!file.WriteRaw(Bits + (Pitch * cnt), Wdt))
 		{
 			return false;
 		}
 		if (iEmpty)
-			if (!hFile.Write(bpEmpty, iEmpty))
+			if (!file.WriteRaw(bpEmpty, iEmpty))
 			{
 				return false;
 			}
 	}
 
 	// Close file
-	hFile.Close();
+	file.Close();
 
 	// Success
 	return true;

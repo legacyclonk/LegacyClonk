@@ -664,7 +664,7 @@ bool C4UpdatePackage::Optimize(C4Group *pGrpFrom, C4GroupEx *pGrpTo, const char 
 bool C4UpdatePackage::MakeUpdate(const char *strFile1, const char *strFile2, const char *strUpdateFile, const char *strName, const bool allowMissingTarget)
 {
 	// open Log
-	if (!Log.Create("Update.log"))
+	if (!Log.Open("Update.log", "wb"))
 		return false;
 
 	// begin message

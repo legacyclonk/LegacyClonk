@@ -731,10 +731,12 @@ bool C4ConfigGeneral::CreateSaveFolder(const char *strDirectory, const char *str
 	char lang[3]; SCopy(Config.General.Language, lang, 2);
 	const std::string titleFile{std::format("{}" DirSep C4CFN_WriteTitle, strDirectory)};
 	const std::string titleData{std::format("{}:{}", +lang, strLanguageTitle)};
-	CStdFile hFile;
 	if (!FileExists(titleFile.c_str()))
-		if (!hFile.Create(titleFile.c_str()) || !hFile.WriteString(titleData.c_str()) || !hFile.Close())
+	{
+		C4File file;
+		if (!file.Open(titleFile, "wb") || !file.WriteStringLine(titleData))
 			return false;
+	}
 	// Save folder seems okay
 	return true;
 }

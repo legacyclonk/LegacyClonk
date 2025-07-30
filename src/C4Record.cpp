@@ -39,7 +39,7 @@
 #ifdef DEBUGREC
 
 #ifdef DEBUGREC_EXTFILE
-CStdFile DbgRecFile;
+C4File DbgRecFile;
 #endif
 int DoNoDebugRec = 0; // debugrec disable counter
 
@@ -161,7 +161,7 @@ bool C4Record::Start(bool fInitial)
 
 	// open control record file
 	const std::string ctrlRecFilename{std::format("{}" DirSep C4CFN_CtrlRec, sFilename.getData())};
-	if (!CtrlRec.Create(ctrlRecFilename.c_str())) return false;
+	if (!CtrlRec.Open(ctrlRecFilename, "wb")) return false;
 
 	// open record group
 	if (!RecordGrp.Open(sFilename.getData()))
@@ -195,7 +195,7 @@ bool C4Record::Stop(StdStrBuf *pRecordName, uint8_t *pRecordSHA1)
 	C4RecordChunkHead Head;
 	Head.iFrm = Game.FrameCounter + 37;
 	Head.Type = RCT_End;
-	CtrlRec.Write(&Head, sizeof(Head));
+	CtrlRec.WriteElement(Head);
 	CtrlRec.Close();
 
 	// pack group
@@ -251,8 +251,8 @@ bool C4Record::Rec(uint32_t iFrame, const StdBuf &sBuf, C4RecordChunkType eType)
 	// create head
 	C4RecordChunkHead Head = { static_cast<uint8_t>(iFrameDiff), static_cast<uint8_t>(eType) };
 	// pack
-	CtrlRec.Write(&Head, sizeof(Head));
-	CtrlRec.Write(sBuf.getData(), sBuf.getSize());
+	CtrlRec.WriteElement(Head);
+	CtrlRec.WriteRaw(sBuf.getData(), sBuf.getSize());
 #ifdef IMMEDIATEREC
 	// immediate rec: always flush
 	CtrlRec.Flush();
@@ -413,7 +413,7 @@ bool C4Playback::Open(C4Group &rGrp)
 		if (fLoadSequential)
 		{
 			if (!rGrp.FindEntry(C4CFN_CtrlRec)) return false;
-			if (!playbackFile.Open(std::format("{}" DirSep "{}", rGrp.GetFullName().getData(), C4CFN_CtrlRec).c_str())) return false;
+			if (!playbackFile.Open(std::format("{}" DirSep "{}", rGrp.GetFullName().getData(), C4CFN_CtrlRec), "rb")) return false;
 			// forcing first chunk to be read; will call ReadBinary
 			currChunk = chunks.end();
 			if (!NextSequentialChunk())
@@ -460,14 +460,14 @@ bool C4Playback::Open(C4Group &rGrp)
 	// external debugrec file
 #if defined(DEBUGREC_EXTFILE) && defined(DEBUGREC)
 #ifdef DEBUGREC_EXTFILE_WRITE
-	if (!DbgRecFile.Create(DEBUGREC_EXTFILE))
+	if (!DbgRecFile.Open(DEBUGREC_EXTFILE, "wb"))
 	{
 		LogFatalNTr("DbgRec: Creation of external file \"" DEBUGREC_EXTFILE "\" failed!");
 		return false;
 	}
 	else loggerDebugRec->info("Writing to \"" DEBUGREC_EXTFILE "\"...");
 #else
-	if (!DbgRecFile.Open(DEBUGREC_EXTFILE))
+	if (!DbgRecFile.Open(DEBUGREC_EXTFILE, "rb"))
 	{
 		LogFatalNTr("DbgRec: Opening of external file \"" DEBUGREC_EXTFILE "\" failed!");
 		return false;
@@ -594,14 +594,15 @@ void C4Playback::NextChunk()
 
 bool C4Playback::NextSequentialChunk()
 {
-	StdBuf BinaryBuf; size_t iRealSize;
+	StdBuf BinaryBuf;
+	bool success;
+	size_t iRealSize;
 	BinaryBuf.New(4096);
 	// load data until a chunk could be filled
 	for (;;)
 	{
-		iRealSize = 0;
-		playbackFile.Read(BinaryBuf.getMData(), 4096, &iRealSize);
-		if (!iRealSize) return false;
+		std::tie(success, iRealSize) = playbackFile.ReadPartialRaw(BinaryBuf.getMData(), 4096);
+		if (!success || !iRealSize) return false;
 		BinaryBuf.SetSize(iRealSize);
 		if (!ReadBinary(BinaryBuf)) return false;
 		// okay, at least one chunk has been read!
@@ -966,21 +967,21 @@ void C4Playback::Check(C4RecordChunkType eType, const uint8_t *pData, int iSize)
 #ifdef DEBUGREC_EXTFILE
 #ifdef DEBUGREC_EXTFILE_WRITE
 	// writing of external debugrec file
-	DbgRecFile.Write(&eType, sizeof(eType));
+	DbgRecFile.WriteElement(eType);
 	int32_t iSize32 = iSize;
-	DbgRecFile.Write(&iSize32, sizeof(iSize32));
-	DbgRecFile.Write(pData, iSize);
+	DbgRecFile.WriteElement(iSize32);
+	DbgRecFile.WriteRaw(pData, iSize);
 	return;
 #else
 	int32_t iSize32 = 0;
 	C4RecordChunkType eTypeRec = RCT_Undefined;
-	DbgRecFile.Read(&eTypeRec, sizeof(eTypeRec));
-	DbgRecFile.Read(&iSize32, sizeof(iSize32));
+	DbgRecFile.ReadElement(eTypeRec);
+	DbgRecFile.ReadElement(iSize32);
 	if (iSize32)
 	{
 		StdBuf buf;
 		buf.SetSize(iSize32);
-		DbgRecFile.Read(buf.getMData(), iSize32);
+		DbgRecFile.ReadRaw(buf.getMData(), iSize32);
 		PktInReplay = C4PktDebugRec(eTypeRec, buf);
 	}
 #endif

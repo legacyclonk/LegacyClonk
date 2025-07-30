@@ -254,7 +254,7 @@ public:
 class C4Record // demo recording
 {
 private:
-	CStdFile CtrlRec; // control file handle
+	C4File CtrlRec; // control file handle
 	StdStrBuf sFilename; // recorded scenario file name
 	C4Group RecordGrp; // record scenario group
 	bool fRecording; // set if recording is active
@@ -298,7 +298,7 @@ private:
 	chunks_t chunks;
 	chunks_t::iterator currChunk;
 	bool Finished; // if set, free playback in next frame
-	CStdFile playbackFile; // if open, try reading additional chunks from this file
+	C4File playbackFile; // if open, try reading additional chunks from this file
 	bool fLoadSequential; // used for debugrecs: Sequential reading of files
 	StdBuf sequentialBuffer; // buffer to manage sequential reads
 	uint32_t iLastSequentialFrame; // frame number of last chunk read

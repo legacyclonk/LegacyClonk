@@ -438,23 +438,26 @@ bool C4Group_GetFileCRC(const char *szFilename, uint32_t *pCRC32)
 		fTemporary = true;
 	}
 	// open file
-	CStdFile File;
-	if (!File.Open(szPath))
+	C4File file{szPath, "rb"};
+	if (!file)
 		return false;
 	// calculcate CRC
 	uint32_t iCRC32 = 0;
 	for (;;)
 	{
 		// read a chunk of data
-		uint8_t szData[CStdFileBufSize]; size_t iSize = 0;
-		if (!File.Read(szData, CStdFileBufSize, &iSize))
-			if (!iSize)
-				break;
+		std::array<std::uint8_t, CStdFileBufSize> data;
+		const auto [success, size] = file.ReadPartial(std::as_writable_bytes(std::span{data}));
+		if (!success || !size)
+		{
+			break;
+		}
+
 		// update CRC
-		iCRC32 = crc32(iCRC32, szData, checked_cast<unsigned int>(iSize));
+		iCRC32 = crc32(iCRC32, data.data(), checked_cast<unsigned int>(data.size()));
 	}
 	// close file
-	File.Close();
+	file.Close();
 	// okay
 	*pCRC32 = iCRC32;
 
@@ -494,23 +497,25 @@ bool C4Group_GetFileSHA1(const char *szFilename, uint8_t *pSHA1)
 		fTemporary = true;
 	}
 	// open file
-	CStdFile File;
-	if (!File.Open(szPath))
+	C4File file{szPath, "rb"};
+	if (!file)
 		return false;
 	// calculcate CRC
 	StdSha1 sha1;
 	for (;;)
 	{
 		// read a chunk of data
-		uint8_t szData[CStdFileBufSize]; size_t iSize = 0;
-		if (!File.Read(szData, CStdFileBufSize, &iSize))
-			if (!iSize)
-				break;
+		std::array<std::uint8_t, CStdFileBufSize> data;
+		const auto [success, size] = file.ReadPartial(std::as_writable_bytes(std::span{data}));
+		if (!success || !size)
+		{
+			break;
+		}
 		// update CRC
-		sha1.Update(szData, iSize);
+		sha1.Update(data.data(), size);
 	}
 	// close file
-	File.Close();
+	file.Close();
 
 	if (fTemporary)
 	{
@@ -675,8 +680,8 @@ bool C4Group::Open(const char *szGroupName, bool fCreate, const OpenFlags openFl
 	// If requested, try creating a new group file
 	if (fCreate)
 	{
-		CStdFile temp;
-		if (temp.Create(szGroupNameN, false))
+		C4File temp{szGroupNameN, "wb"};
+		if (temp)
 		{
 			// Temporary file has been created
 			temp.Close();
