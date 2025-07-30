@@ -65,7 +65,6 @@ public:
 			  bool exclusive = false);
 	// flush contents to disk
 	inline bool Flush() { if (ModeWrite && BufferLoad) return SaveBuffer(); else return true; }
-	size_t AccessedEntrySize();
 
 protected:
 	void ClearBuffer();
