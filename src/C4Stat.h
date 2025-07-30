@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "C4File.h"
 #include "Standard.h"
 
 #include <cassert>
@@ -45,8 +46,7 @@ public:
 	void OpenStatFile();
 	void CloseStatFile();
 
-	FILE *StatFile;
-	bool bStatFileOpen;
+	C4File StatFile;
 
 protected:
 	C4Stat *pFirst;

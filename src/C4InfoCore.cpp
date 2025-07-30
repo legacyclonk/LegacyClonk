@@ -36,22 +36,22 @@ const char *GetAName(const char *szNameFile)
 	// always eat the Random-value, so having or not having a Names.txt makes no difference
 	int iName = Random(1000);
 
-	FILE *hNamefile;
-
 	if (!szNameFile) return "Clonk";
-	if (!(hNamefile = fopen(szNameFile, "r"))) return "Clonk";
+
+	C4File nameFile{szNameFile, "r"};
+	if (!nameFile) return "Clonk";
 
 	for (int iCnt = 0; iCnt < iName; iCnt++)
-		AdvanceFileLine(hNamefile);
+		AdvanceFileLine(nameFile.GetHandle());
 	GetANameBuffer[0] = 0; int iLoops = 0;
 	do
 	{
-		if (!ReadFileLine(hNamefile, GetANameBuffer, C4MaxName))
+		if (!ReadFileLine(nameFile.GetHandle(), GetANameBuffer, C4MaxName))
 		{
-			rewind(hNamefile); iLoops++;
+			nameFile.Rewind(); iLoops++;
 		}
 	} while ((iLoops < 2) && (!GetANameBuffer[0] || (GetANameBuffer[0] == '#') || (GetANameBuffer[0] == ' ')));
-	fclose(hNamefile);
+	nameFile.Close();
 	if (iLoops >= 2) return "Clonk";
 	return GetANameBuffer;
 }

@@ -1750,13 +1750,7 @@ bool C4Network2ResList::FindTempResFileName(const char *szFilename, char *pTarge
 {
 	static constexpr auto newFileCreated = [](const char *const filename)
 	{
-		FILE *const file{fopen(filename, "wxb")};
-		if (file)
-		{
-			fclose(file);
-		}
-
-		return file != nullptr;
+		return !!C4File{filename, "wxb"};
 	};
 
 	char safeFilename[_MAX_PATH];
