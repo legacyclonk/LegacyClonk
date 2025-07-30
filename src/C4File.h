@@ -149,6 +149,11 @@ public:
 		std::fflush(file.get());
 	}
 
+	void Rewind()
+	{
+		std::rewind(file.get());
+	}
+
 	void Close()
 	{
 		file.reset();
