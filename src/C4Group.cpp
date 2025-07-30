@@ -1254,12 +1254,7 @@ bool C4Group::SetFilePtr(size_t iOffset)
 
 bool C4Group::Advance(size_t iOffset)
 {
-	if (Status == GRPF_Folder) return !!StdFile.Advance(iOffset);
-	// FIXME: reading the file one byte at a time sounds just slow.
-	uint8_t buf;
-	for (; iOffset > 0; iOffset--)
-		if (!Read(&buf, 1)) return false;
-	return true;
+	return AdvanceFilePtr(iOffset);
 }
 
 bool C4Group::Read(void *pBuffer, size_t iSize)
