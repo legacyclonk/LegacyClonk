@@ -159,6 +159,8 @@ public:
 		file.reset();
 	}
 
+	FILE *GetHandle() const noexcept { return file.get(); }
+
 	explicit operator bool() const { return !!file; }
 
 public:
