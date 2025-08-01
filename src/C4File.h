@@ -24,6 +24,12 @@
 #include <tuple>
 #include <utility>
 
+#ifdef _WIN32
+#include "C4Windows.h"
+#else
+#include <sys/uio.h>
+#endif
+
 class C4File
 {
 #ifndef _WIN32
@@ -95,6 +101,17 @@ public:
 		return {result != -1, result};
 	}
 
+	std::pair<bool, std::size_t> ReadAt(const std::span<std::byte> buffer, const std::size_t offset)
+	{
+		return ReadAt(buffer.data(), buffer.size_bytes(), offset);
+	}
+
+	std::pair<bool, std::size_t> ReadAt(void *const buffer, const std::size_t size, const std::size_t offset)
+	{
+		const ssize_t result{pread(fileno(file.get()), buffer, size, offset)};
+		return {result != -1, static_cast<std::size_t>(result)};
+	}
+
 	template<typename T>
 	bool WriteElement(T &&ptr)
 	{
@@ -115,6 +132,12 @@ public:
 	bool WriteExact(const void *const buffer, const std::size_t size)
 	{
 		return std::fwrite(buffer, 1, size, file.get()) == size;
+	}
+
+	bool WriteExactAt(const void *const buffer, const std::size_t size, const std::size_t offset)
+	{
+		const ssize_t result{pwrite(fileno(file.get()), buffer, size, offset)};
+		return static_cast<std::size_t>(result) == size;
 	}
 
 	template<typename... Args>
@@ -148,9 +171,15 @@ public:
 		std::fflush(file.get());
 	}
 
-	void Rewind()
+	bool Rewind()
 	{
 		std::rewind(file.get());
+		return errno != 0;
+	}
+
+	bool AtEnd() const
+	{
+		return std::feof(file.get());
 	}
 
 	void Close()
