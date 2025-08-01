@@ -74,23 +74,22 @@ public:
 		return std::fread(buffer.data(), sizeof(T), buffer.size(), file.get()) == buffer.size();
 	}
 
-	bool Read(const std::span<std::byte> buffer)
+	bool ReadExact(const std::span<std::byte> buffer)
 	{
-		return std::fread(buffer.data(), 1, buffer.size(), file.get()) == buffer.size();
+		return ReadExact(buffer.data(), buffer.size_bytes());
 	}
 
-	bool ReadRaw(void *const buffer, const std::size_t size)
+	bool ReadExact(void *const buffer, const std::size_t size)
 	{
 		return std::fread(buffer, 1, size, file.get()) == size;
 	}
 
-	std::pair<bool, std::size_t> ReadPartial(const std::span<std::byte> buffer)
+	std::pair<bool, std::size_t> Read(const std::span<std::byte> buffer)
 	{
-		const std::size_t result{std::fread(buffer.data(), 1, buffer.size(), file.get())};
-		return {result != -1, result};
+		return Read(buffer.data(), buffer.size_bytes());
 	}
 
-	std::pair<bool, std::size_t> ReadPartialRaw(void *const buffer, const std::size_t size)
+	std::pair<bool, std::size_t> Read(void *const buffer, const std::size_t size)
 	{
 		const std::size_t result{std::fread(buffer, 1, size, file.get())};
 		return {result != -1, result};
@@ -108,12 +107,12 @@ public:
 		return std::fwrite(buffer.data(), sizeof(T), buffer.size(), file.get()) == buffer.size();
 	}
 
-	bool Write(const std::span<const std::byte> buffer)
+	bool WriteExact(const std::span<const std::byte> buffer)
 	{
-		return std::fwrite(buffer.data(), 1, buffer.size(), file.get()) == buffer.size();
+		return WriteExact(buffer.data(), buffer.size_bytes());
 	}
 
-	bool WriteRaw(const void *const buffer, const std::size_t size)
+	bool WriteExact(const void *const buffer, const std::size_t size)
 	{
 		return std::fwrite(buffer, 1, size, file.get()) == size;
 	}
@@ -126,7 +125,7 @@ public:
 
 	bool WriteString(const std::string_view value)
 	{
-		return Write(std::as_bytes(std::span{value.data(), value.size()}));
+		return WriteExact(std::as_bytes(std::span{value.data(), value.size()}));
 	}
 
 	template<typename... Args>

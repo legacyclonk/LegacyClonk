@@ -252,7 +252,7 @@ bool C4Record::Rec(uint32_t iFrame, const StdBuf &sBuf, C4RecordChunkType eType)
 	C4RecordChunkHead Head = { static_cast<uint8_t>(iFrameDiff), static_cast<uint8_t>(eType) };
 	// pack
 	CtrlRec.WriteElement(Head);
-	CtrlRec.WriteRaw(sBuf.getData(), sBuf.getSize());
+	CtrlRec.WriteExact(sBuf.getData(), sBuf.getSize());
 #ifdef IMMEDIATEREC
 	// immediate rec: always flush
 	CtrlRec.Flush();
@@ -601,7 +601,7 @@ bool C4Playback::NextSequentialChunk()
 	// load data until a chunk could be filled
 	for (;;)
 	{
-		std::tie(success, iRealSize) = playbackFile.ReadPartialRaw(BinaryBuf.getMData(), 4096);
+		std::tie(success, iRealSize) = playbackFile.Read(BinaryBuf.getMData(), 4096);
 		if (!success || !iRealSize) return false;
 		BinaryBuf.SetSize(iRealSize);
 		if (!ReadBinary(BinaryBuf)) return false;

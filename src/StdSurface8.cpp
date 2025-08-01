@@ -194,12 +194,12 @@ bool CSurface8::Save(const char *szFilename, uint8_t *bpPalette)
 	char bpEmpty[4]{}; int iEmpty = DWordAligned(Wdt) - Wdt;
 	for (int cnt = Hgt - 1; cnt >= 0; cnt--)
 	{
-		if (!file.WriteRaw(Bits + (Pitch * cnt), Wdt))
+		if (!file.WriteExact(Bits + (Pitch * cnt), Wdt))
 		{
 			return false;
 		}
 		if (iEmpty)
-			if (!file.WriteRaw(bpEmpty, iEmpty))
+			if (!file.WriteExact(bpEmpty, iEmpty))
 			{
 				return false;
 			}
