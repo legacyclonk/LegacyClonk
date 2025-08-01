@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "C4File.h"
 #include "Standard.h"
 
 #include <cstdio>
@@ -44,7 +45,7 @@ class Read
 	// and this value is bounded by ChunkSize anyway
 	unsigned int bufferedSize = 0;
 
-	FILE *file;
+	C4File file;
 	size_t position = 0;
 	z_stream gzStream;
 	bool gzStreamValid = false;
@@ -64,7 +65,7 @@ private:
 
 class Write
 {
-	FILE *file;
+	C4File file;
 	z_stream gzStream;
 	std::unique_ptr<uint8_t[]> buffer{new uint8_t[ChunkSize]};
 	// the gzip struct only has size fields of unsigned int

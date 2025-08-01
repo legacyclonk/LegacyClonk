@@ -24,8 +24,8 @@
 namespace StdGzCompressedFile
 {
 Read::Read(const std::string &filename)
+	: file{filename, "rb"}
 {
-	file = fopen(filename.c_str(), "rb");
 	if (!file)
 	{
 		throw Exception{std::format("Opening \"{}\": {}", filename, std::strerror(errno))};
@@ -34,23 +34,14 @@ Read::Read(const std::string &filename)
 	gzStream.next_out = nullptr;
 	gzStream.avail_out = 0;
 
-	try
-	{
-		PrepareInflate();
-	}
-	catch (...)
-	{
-		fclose(file);
-		throw;
-	}
+	PrepareInflate();
 }
 
 Read::~Read()
 {
 	if (file)
 	{
-		fclose(file);
-		file = nullptr;
+		file.Close();
 	}
 
 	if (gzStreamValid)
@@ -71,7 +62,7 @@ void Read::CheckMagicBytes()
 		{
 			RefillBuffer();
 
-			if (feof(file) && bufferedSize == 0)
+			if (file.AtEnd() && bufferedSize == 0)
 			{
 				throw Exception("Unexpected end of file while reading the magic bytes");
 			}
@@ -156,7 +147,7 @@ size_t Read::ReadData(uint8_t *const toBuffer, const size_t size)
 	gzStream.avail_out = checked_cast<unsigned int>(size);
 	for (; size > readSize;)
 	{
-		if (!gzStreamValid && !(feof(file) && bufferedSize == 0))
+		if (!gzStreamValid && !file.AtEnd() && bufferedSize != 0)
 		{
 			PrepareInflate();
 		}
@@ -167,7 +158,7 @@ size_t Read::ReadData(uint8_t *const toBuffer, const size_t size)
 			{
 				RefillBuffer();
 
-				if (feof(file) && bufferedSize == 0)
+				if (file.AtEnd() && bufferedSize == 0)
 				{
 					break;
 				}
@@ -206,15 +197,16 @@ size_t Read::ReadData(uint8_t *const toBuffer, const size_t size)
 
 void Read::RefillBuffer()
 {
-	bufferedSize = static_cast<unsigned int>(fread(buffer.get(), 1, ChunkSize, file));
-	if (ferror(file)) throw Exception("fread failed");
+	bool success;
+	std::tie(success, bufferedSize) = file.Read(buffer.get(), ChunkSize);
+	if (!success) throw Exception("fread failed");
 	bufferPtr = buffer.get();
 }
 
 void Read::Rewind()
 {
 	position = 0;
-	fseek(file, 0, SEEK_SET);
+	file.Rewind();
 
 	inflateEnd(&gzStream);
 
@@ -225,8 +217,8 @@ void Read::Rewind()
 }
 
 Write::Write(const std::string &filename)
+	: file{filename, "wb"}
 {
-	file = fopen(filename.c_str(), "wb");
 	if (!file)
 	{
 		throw Exception{std::format("Opening \"{}\": {}", filename, std::strerror(errno))};
@@ -242,7 +234,6 @@ Write::Write(const std::string &filename)
 
 	if (const auto ret = deflateInit2(&gzStream, CompressionLevel, Z_DEFLATED, 15 + 16, 9, Z_DEFAULT_STRATEGY); ret != Z_OK)
 	{
-		fclose(file);
 		throw Exception(std::string{"deflateInit2 failed: "} + zError(ret));
 	}
 }
@@ -254,7 +245,7 @@ Write::~Write() noexcept(false)
 		DeflateToBuffer(nullptr, 0, Z_FINISH, Z_STREAM_END);
 
 		FlushBuffer();
-		fclose(file);
+		file.Close();
 	}
 
 	deflateEnd(&gzStream);
@@ -262,7 +253,7 @@ Write::~Write() noexcept(false)
 
 void Write::FlushBuffer()
 {
-	if (static_cast<unsigned int>(fwrite(buffer.get(), 1, bufferedSize, file)) != bufferedSize)
+	if (!file.WriteExact(buffer.get(), bufferedSize))
 	{
 		throw Exception("fwrite failed");
 	}
