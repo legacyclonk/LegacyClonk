@@ -179,7 +179,7 @@ public:
 		return std::fwrite(buffer, 1, size, file.get()) == size;
 	}
 
-	bool Seek(const long offset, const SeekMode mode);
+	bool Seek(std::int64_t offset, SeekMode mode);
 
 	std::int64_t Tell() const;
 
