@@ -448,7 +448,7 @@ bool C4Group_GetFileCRC(const char *szFilename, uint32_t *pCRC32)
 	{
 		// read a chunk of data
 		std::array<std::uint8_t, CStdFileBufSize> data;
-		const auto [success, size] = file.Read(std::as_writable_bytes(std::span{data}));
+		const auto [success, size] = file.Read(data.data(), data.size());
 		if (!success || !size)
 		{
 			break;
@@ -507,7 +507,7 @@ bool C4Group_GetFileSHA1(const char *szFilename, uint8_t *pSHA1)
 	{
 		// read a chunk of data
 		std::array<std::uint8_t, CStdFileBufSize> data;
-		const auto [success, size] = file.Read(std::as_writable_bytes(std::span{data}));
+		const auto [success, size] = file.Read(data.data(), data.size());
 		if (!success || !size)
 		{
 			break;
