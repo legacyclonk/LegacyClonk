@@ -132,12 +132,12 @@ C4GroupSet &C4Language::GetPackGroups(const char *strRelativePath)
 		return PackGroups;
 
 	// Process all language packs (and their respective pack groups)
-	C4Group *pPack, *pPackGroup;
-	for (int iPack = 0; (pPack = Packs.GetGroup(iPack)) && (pPackGroup = PackGroups.GetGroup(iPack)); iPack++)
+	C4Group *pPack, *newPackGroup, **pPackGroupPtr;
+	for (int iPack = 0; (pPack = Packs.GetGroup(iPack)) && (pPackGroupPtr = PackGroups.GetGroupPtr(iPack)); iPack++)
 	{
 		// Get current pack group position within pack
 		SCopy(pPack->GetFullName().getData(), strPackPath, _MAX_PATH);
-		GetRelativePath(pPackGroup->GetFullName().getData(), strPackPath, strPackGroupLocation);
+		GetRelativePath((*pPackGroupPtr)->GetFullName().getData(), strPackPath, strPackGroupLocation);
 
 		// Pack group is at correct position within pack: continue with next pack
 		if (SEqualNoCase(strPackGroupLocation, strTargetLocation))
@@ -145,27 +145,41 @@ C4GroupSet &C4Language::GetPackGroups(const char *strRelativePath)
 
 		// Try to backtrack until we can reach the target location as a relative child
 		while (strPackGroupLocation[0]
-			&& !GetRelativePath(strTargetLocation, strPackGroupLocation, strAdvance)
-			&& pPackGroup->OpenMother())
+			&& !GetRelativePath(strTargetLocation, strPackGroupLocation, strAdvance))
 		{
+			newPackGroup = (*pPackGroupPtr)->GrabMother();
+			if (newPackGroup)
+			{
+				delete *pPackGroupPtr; // Pack groups are always owned
+				*pPackGroupPtr = newPackGroup;
+			}
+			else
+			{
+				break;
+			}
+
 			// Update pack group location
-			GetRelativePath(pPackGroup->GetFullName().getData(), strPackPath, strPackGroupLocation);
+			GetRelativePath((*pPackGroupPtr)->GetFullName().getData(), strPackPath, strPackGroupLocation);
 		}
 
 		// We can reach the target location as a relative child
 		if (strPackGroupLocation[0] && GetRelativePath(strTargetLocation, strPackGroupLocation, strAdvance))
 		{
 			// Advance pack group to relative child
-			pPackGroup->OpenChild(strAdvance);
+			auto *group = new C4Group;
+			if (group->OpenAsChild(*pPackGroupPtr, strAdvance, true))
+			{
+				(*pPackGroupPtr) = group;
+			}
 		}
 
 		// Cannot reach by advancing: need to close and reopen (rewinding group file)
 		else
 		{
 			// Close pack group (if it is open at all)
-			pPackGroup->Close();
+			(*pPackGroupPtr)->Close();
 			// Reopen pack group to relative position in language pack if possible
-			pPackGroup->OpenAsChild(pPack, strTargetLocation);
+			(*pPackGroupPtr)->OpenAsChild(pPack, strTargetLocation);
 		}
 	}
 

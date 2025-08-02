@@ -235,6 +235,21 @@ C4Group *C4GroupSet::GetGroup(int32_t iIndex)
 	return nullptr;
 }
 
+C4Group **C4GroupSet::GetGroupPtr(std::int32_t index)
+{
+	// Invalid index
+	if (index < 0)
+		return nullptr;
+	// Find indicated group
+	for (C4GroupSetNode *pNode = pFirst; pNode; pNode = pNode->pNext)
+		if (index == 0)
+			return &pNode->pGroup;
+		else
+			index--;
+	// Indicated group not found
+	return nullptr;
+}
+
 C4Group *C4GroupSet::RegisterParentFolders(const char *szScenFilename)
 {
 	// the scenario filename may be a scenario or directly a group folder
