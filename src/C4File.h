@@ -30,12 +30,77 @@
 #include <sys/uio.h>
 #endif
 
-class C4File
+class C4FileBase
+{
+public:
+	enum class SeekMode
+	{
+		Start = SEEK_SET,
+		Current = SEEK_CUR,
+		End = SEEK_END
+	};
+
+public:
+	bool ReadExact(this auto &&self, const std::span<std::byte> buffer)
+	{
+		return self.ReadExact(buffer.data(), buffer.size_bytes());
+	}
+
+	std::pair<bool, std::size_t> Read(this auto &&self, const std::span<std::byte> buffer)
+	{
+		return self.Read(buffer.data(), buffer.size_bytes());
+	}
+
+	std::pair<bool, std::size_t> ReadAt(this auto &&self, const std::span<std::byte> buffer, const std::size_t offset)
+	{
+		return self.ReadAt(buffer.data(), buffer.size_bytes(), offset);
+	}
+
+	std::pair<bool, std::size_t> Write(this auto &&self, const std::span<const std::byte> buffer)
+	{
+		return self.Write(buffer.data(), buffer.size_bytes());
+	}
+
+	bool WriteExact(this auto &&self, const std::span<const std::byte> buffer)
+	{
+		return self.WriteExact(buffer.data(), buffer.size_bytes());
+	}
+
+	bool WriteExactAt(this auto &&self, const std::span<const std::byte> buffer, const std::size_t offset)
+	{
+		return self.WriteExactAt(buffer.data(), buffer.size_bytes(), offset);
+	}
+
+	template<typename... Args> requires (sizeof...(Args) > 0)
+	bool WriteString(const std::format_string<Args...> fmt, Args &&...args)
+	{
+		return WriteString(std::format(fmt, std::forward<Args>(args)...));
+	}
+
+	bool WriteString(this auto &&self, const std::string_view value)
+	{
+		return self.WriteExact(std::as_bytes(std::span{value.data(), value.size()}));
+	}
+
+	template<typename... Args> requires (sizeof...(Args) > 0)
+	bool WriteStringLine(const std::format_string<Args...> fmt, Args &&...args)
+	{
+		return WriteString(std::format("{}\n", std::format(fmt, std::forward<Args>(args)...)));
+	}
+
+	bool WriteStringLine(this auto &&self, const std::string_view value)
+	{
+		return self.WriteString(std::format("{}\n", value));
+	}
+};
+
+class C4File : public C4FileBase
 {
 #ifndef _WIN32
 	static_assert(sizeof(off_t) == sizeof(std::int64_t), "64-bit off_t required");
 #endif
 
+public:
 	enum class SeekMode
 	{
 		Start = SEEK_SET,
