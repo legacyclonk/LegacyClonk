@@ -22,6 +22,7 @@
 #error C4Log.h must not be included in non-C4ENGINE builds
 #endif
 
+#include "C4File.h"
 #include "C4ResStrTable.h"
 
 #include "StdAdaptors.h"
@@ -158,7 +159,6 @@ class C4LogSystem
 	{
 	public:
 		LogSink(std::unique_ptr<spdlog::formatter> formatter);
-		~LogSink();
 
 		LogSink(const LogSink &) = delete;
 		LogSink &operator=(const LogSink &) = delete;
@@ -167,14 +167,14 @@ class C4LogSystem
 		LogSink &operator=(LogSink &&) = delete;
 
 	public:
-		int GetFD() const noexcept { return fileno(file); }
+		int GetFD() const noexcept { return fileno(file.GetHandle()); }
 
 	protected:
 		void sink_it_(const spdlog::details::log_msg &msg) override;
 		void flush_() override;
 
 	private:
-		FILE *file{nullptr};
+		C4File file;
 	};
 
 	class GuiSink : public spdlog::sinks::base_sink<spdlog::details::null_mutex>, public std::enable_shared_from_this<GuiSink>
