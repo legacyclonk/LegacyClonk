@@ -43,6 +43,7 @@
 #include <StdSha1.h>
 #include <fcntl.h>
 
+#include <array>
 #include <cstring>
 #include <print>
 
