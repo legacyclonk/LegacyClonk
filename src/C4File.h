@@ -72,20 +72,20 @@ public:
 	}
 
 	template<typename... Args> requires (sizeof...(Args) > 0)
-	bool WriteString(const std::format_string<Args...> fmt, Args &&...args)
+	bool WriteString(this auto &&self, const std::format_string<Args...> fmt, Args &&...args)
 	{
-		return WriteString(std::format(fmt, std::forward<Args>(args)...));
+		return self.WriteString(std::format(fmt, std::forward<Args>(args)...));
 	}
 
 	bool WriteString(this auto &&self, const std::string_view value)
 	{
-		return self.WriteExact(std::as_bytes(std::span{value.data(), value.size()}));
+		return self.WriteExact(value.data(), value.size());
 	}
 
 	template<typename... Args> requires (sizeof...(Args) > 0)
-	bool WriteStringLine(const std::format_string<Args...> fmt, Args &&...args)
+	bool WriteStringLine(this auto &&self, const std::format_string<Args...> fmt, Args &&...args)
 	{
-		return WriteString(std::format("{}\n", std::format(fmt, std::forward<Args>(args)...)));
+		return self.WriteString(std::format("{}\n", std::format(fmt, std::forward<Args>(args)...)));
 	}
 
 	bool WriteStringLine(this auto &&self, const std::string_view value)
@@ -121,6 +121,11 @@ public:
 	{
 	}
 
+	explicit C4File(FILE *const file)
+		: file{file}
+	{
+	}
+
 public:
 	bool Open(const char *const filename, const char *const mode)
 	{
@@ -145,30 +150,15 @@ public:
 		return std::fread(buffer.data(), sizeof(T), buffer.size(), file.get()) == buffer.size();
 	}
 
-	bool ReadExact(const std::span<std::byte> buffer)
-	{
-		return ReadExact(buffer.data(), buffer.size_bytes());
-	}
-
 	bool ReadExact(void *const buffer, const std::size_t size)
 	{
 		return std::fread(buffer, 1, size, file.get()) == size;
-	}
-
-	std::pair<bool, std::size_t> Read(const std::span<std::byte> buffer)
-	{
-		return Read(buffer.data(), buffer.size_bytes());
 	}
 
 	std::pair<bool, std::size_t> Read(void *const buffer, const std::size_t size)
 	{
 		const std::size_t result{std::fread(buffer, 1, size, file.get())};
 		return {result != -1, result};
-	}
-
-	std::pair<bool, std::size_t> ReadAt(const std::span<std::byte> buffer, const std::size_t offset)
-	{
-		return ReadAt(buffer.data(), buffer.size_bytes(), offset);
 	}
 
 	std::pair<bool, std::size_t> ReadAt(void *const buffer, const std::size_t size, const std::size_t offset)
@@ -189,9 +179,10 @@ public:
 		return std::fwrite(buffer.data(), sizeof(T), buffer.size(), file.get()) == buffer.size();
 	}
 
-	bool WriteExact(const std::span<const std::byte> buffer)
+	std::pair<bool, std::size_t> Write(const void *const buffer, const std::size_t size)
 	{
-		return WriteExact(buffer.data(), buffer.size_bytes());
+		const std::size_t result{std::fwrite(buffer, 1, size, file.get())};
+		return {result != -1, result};
 	}
 
 	bool WriteExact(const void *const buffer, const std::size_t size)
@@ -203,28 +194,6 @@ public:
 	{
 		const ssize_t result{pwrite(fileno(file.get()), buffer, size, offset)};
 		return static_cast<std::size_t>(result) == size;
-	}
-
-	template<typename... Args>
-	bool WriteString(const std::format_string<Args...> fmt, Args &&...args)
-	{
-		return WriteString(std::format(fmt, std::forward<Args>(args)...));
-	}
-
-	bool WriteString(const std::string_view value)
-	{
-		return WriteExact(std::as_bytes(std::span{value.data(), value.size()}));
-	}
-
-	template<typename... Args>
-	bool WriteStringLine(const std::format_string<Args...> fmt, Args &&...args)
-	{
-		return WriteString(std::format("{}\n", std::format(fmt, std::forward<Args>(args)...)));
-	}
-
-	bool WriteStringLine(const std::string_view value)
-	{
-		return WriteString(std::format("{}\n", value));
 	}
 
 	bool Seek(const long offset, const SeekMode mode);
