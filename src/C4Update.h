@@ -78,7 +78,14 @@ protected:
 	template<typename... Args>
 	void WriteLog(const std::format_string<Args...> fmt, Args &&... args)
 	{
-		Log.WriteStringLine(fmt, std::forward<Args>(args)...);
+		if constexpr (sizeof...(Args) > 0)
+		{
+			Log.WriteStringLine(fmt, std::forward<Args>(args)...);
+		}
+		else
+		{
+			Log.WriteStringLine(fmt.get());
+		}
 		Log.Flush();
 	}
 };
