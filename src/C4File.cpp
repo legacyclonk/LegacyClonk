@@ -64,7 +64,7 @@ std::tuple<bool, std::unique_ptr<std::byte[]>, std::size_t> C4File::LoadContents
 
 	auto buffer = std::make_unique_for_overwrite<std::byte[]>(static_cast<std::size_t>(size));
 
-	if (!file.ReadExact(std::span{buffer.get(), static_cast<std::size_t>(size)}))
+	if (!file.ReadExact(buffer.get(), size))
 	{
 		return {};
 	}
