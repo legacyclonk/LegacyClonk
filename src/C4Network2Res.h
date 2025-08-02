@@ -280,7 +280,8 @@ public:
 	bool GetClientProgress(int32_t clientID, int32_t &presentChunkCnt, int32_t &chunkCnt);
 
 protected:
-	int32_t OpenFileRead(); int32_t OpenFileWrite();
+	C4File OpenFileRead();
+	C4File OpenFileWrite();
 
 	void StartNewLoads();
 	bool StartLoad(int32_t iFromClient, const C4Network2ResChunkData &Chunks);

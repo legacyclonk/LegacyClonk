@@ -1001,17 +1001,17 @@ void C4Network2Res::Clear()
 	ClearLoad();
 }
 
-int32_t C4Network2Res::OpenFileRead()
+C4File C4Network2Res::OpenFileRead()
 {
 	CStdLock FileLock(&FileCSec);
-	if (!GetStandalone(nullptr, 0, false, false, true)) return -1;
-	return open(szStandalone, _O_BINARY | O_RDONLY);
+	if (!GetStandalone(nullptr, 0, false, false, true)) return C4File{};
+	return {szStandalone, "rb"};
 }
 
-int32_t C4Network2Res::OpenFileWrite()
+C4File C4Network2Res::OpenFileWrite()
 {
 	CStdLock FileLock(&FileCSec);
-	return open(szStandalone, _O_BINARY | O_CREAT | O_WRONLY, S_IREAD | S_IWRITE);
+	return C4File{fdopen(open(szStandalone, _O_BINARY | O_CREAT | O_WRONLY, S_IREAD | S_IWRITE), "wb")};
 }
 
 void C4Network2Res::StartNewLoads()
@@ -1238,24 +1238,22 @@ bool C4Network2ResChunk::Set(C4Network2Res *pRes, uint32_t inChunk)
 		iSize = std::min<int32_t>(Core.getFileSize() - iOffset, C4NetResChunkSize);
 	if (iSize < 0) { logger->error("could not get chunk from offset {} from resource file {}: File size is only {}!", iOffset, pRes->getFile(), Core.getFileSize()); return false; }
 	// open file
-	int32_t f = pRes->OpenFileRead();
-	if (f == -1) { logger->error("could not open resource file {}!", pRes->getFile()); return false; }
+	C4File file{pRes->OpenFileRead()};
+	if (!file) { logger->error("could not open resource file {}!", pRes->getFile()); return false; }
 	// seek
 	if (iOffset)
-		if (lseek(f, iOffset, SEEK_SET) != iOffset)
+		if (!file.Seek(iOffset, C4File::SeekMode::Start))
 		{
-			close(f); logger->error("could not read resource file {}!", pRes->getFile()); return false;
+			logger->error("could not read resource file {}!", pRes->getFile()); return false;
 		}
 	// read chunk of data
 	char *pBuf = static_cast<char *>(malloc(sizeof(char) * iSize));
-	if (read(f, pBuf, iSize) != iSize)
+	if (!file.ReadExact(pBuf, iSize))
 	{
-		free(pBuf); close(f); logger->error("could not read resource file {}!", pRes->getFile()); return false;
+		free(pBuf); logger->error("could not read resource file {}!", pRes->getFile()); return false;
 	}
 	// set
 	Data.Take(pBuf, iSize);
-	// close
-	close(f);
 	// ok
 	return true;
 }
@@ -1285,8 +1283,8 @@ bool C4Network2ResChunk::AddTo(C4Network2Res *pRes, C4Network2IO *pIO) const
 		return false;
 	}
 	// open file
-	int32_t f = pRes->OpenFileWrite();
-	if (f == -1)
+	C4File file{pRes->OpenFileWrite()};
+	if (!file)
 	{
 #ifdef C4NET2RES_DEBUG_LOG
 		logger->trace("C4Network2ResChunk({})::AddTo({} [{}]): Open write file error: {}!", iResID, Core.getFileName(), pRes->getResID(), strerror(errno));
@@ -1295,25 +1293,22 @@ bool C4Network2ResChunk::AddTo(C4Network2Res *pRes, C4Network2IO *pIO) const
 	}
 	// seek
 	if (iOffset)
-		if (lseek(f, iOffset, SEEK_SET) != iOffset)
+		if (!file.Seek(iOffset, C4File::SeekMode::Start))
 		{
 #ifdef C4NET2RES_DEBUG_LOG
 			logger->trace("C4Network2ResChunk({})::AddTo({} [{}]): lseek file error: {}!", iResID, Core.getFileName(), pRes->getResID(), strerror(errno));
 #endif
-			close(f);
 			return false;
 		}
 	// write
-	if (write(f, Data.getData(), Data.getSize()) != int32_t(Data.getSize()))
+	if (!file.WriteExact(Data.getData(), Data.getSize()))
 	{
 #ifdef C4NET2RES_DEBUG_LOG
 		logger->trace("C4Network2ResChunk({})::AddTo({} [{}]): write error: {}!", iResID, Core.getFileName(), pRes->getResID(), strerror(errno));
 #endif
-		close(f);
 		return false;
 	}
 	// ok, add chunks
-	close(f);
 	pRes->Chunks.AddChunk(iChunk);
 	return true;
 }
