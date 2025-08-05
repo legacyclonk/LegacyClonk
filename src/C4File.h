@@ -163,7 +163,7 @@ private:
 	std::optional<std::size_t> WriteInternal(const void *buffer, std::size_t elementSize, std::size_t count);
 
 public:
-	static std::expected<std::pair<std::unique_ptr<std::byte[]>, std::size_t>, std::error_code> LoadContents(const char *filename);
+	static std::expected<std::string, std::error_code> LoadContentsAsString(const char *filename);
 
 private:
 	std::unique_ptr<FILE, decltype([](FILE *const file) { std::fclose(file); })> file;

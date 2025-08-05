@@ -174,7 +174,7 @@ std::optional<std::size_t> C4File::WriteInternal(const void *const buffer, const
 	return result != -1 ? std::optional{result} : std::nullopt;
 }
 
-std::expected<std::pair<std::unique_ptr<std::byte[]>, std::size_t>, std::error_code> C4File::LoadContents(const char *const filename)
+std::expected<std::string, std::error_code> C4File::LoadContentsAsString(const char *const filename)
 {
 	C4File file{filename, "rb"};
 	if (!file)
@@ -195,7 +195,7 @@ std::expected<std::pair<std::unique_ptr<std::byte[]>, std::size_t>, std::error_c
 	}
 	else if (*size == 0)
 	{
-		return {std::pair{nullptr, 0}};
+		return {};
 	}
 
 	if (const auto result = file.Seek(0, C4File::SeekMode::Start); !result)
@@ -203,12 +203,33 @@ std::expected<std::pair<std::unique_ptr<std::byte[]>, std::size_t>, std::error_c
 		return std::unexpected{result.error()};
 	}
 
-	auto buffer = std::make_unique_for_overwrite<std::byte[]>(static_cast<std::size_t>(*size));
+	std::error_code ec;
+	std::string result;
 
-	if (!file.ReadExact(buffer.get(), *size))
+	result.resize_and_overwrite(*size + 1, [&ec, &file](char *const ptr, const std::size_t size)
 	{
-		return {};
+		if (!file.ReadExact(ptr, size - 1))
+		{
+			if (const auto error = file.GetError())
+			{
+				ec = *error;
+			}
+
+			return 0zu;
+		}
+
+		if (ptr[size - 2] != '\0')
+		{
+			ptr[size - 1] = '0';
+		}
+
+		return std::strlen(ptr);
+	});
+
+	if (ec)
+	{
+		return std::unexpected{ec};
 	}
 
-	return {std::pair{std::move(buffer), static_cast<std::size_t>(*size)}};
+	return {std::move(result)};
 }
