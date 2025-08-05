@@ -211,7 +211,10 @@ void Read::RefillBuffer()
 void Read::Rewind()
 {
 	position = 0;
-	file.Rewind();
+	if (const auto result = file.Rewind(); !result)
+	{
+		throw Exception(std::string{"inflateInit2 failed: "} + strerror(static_cast<int>(result.error())));
+	}
 
 	inflateEnd(&gzStream);
 

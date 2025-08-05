@@ -171,13 +171,16 @@ bool C4TableGraph::DumpToFile(const StdStrBuf &rszFilename, bool fAppend) const
 	{
 		if (!out.Open(rszFilename.getData(), "w")) return false;
 		// print header
-		out.WriteString("t\tv\r\n");
+		if (!out.WriteString("t\tv\r\n")) return false;
 	}
 	// write out current timeframe
 	int iEndTime = GetEndTime();
 	for (int iWriteTime = GetStartTime(); iWriteTime < iEndTime; ++iWriteTime)
 	{
-		out.WriteString("{}\t{}\r\n", iWriteTime, GetValue(iWriteTime));
+		if (!out.WriteString("{}\t{}\r\n", iWriteTime, GetValue(iWriteTime)))
+		{
+			return false;
+		}
 	}
 	return true;
 }

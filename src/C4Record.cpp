@@ -195,8 +195,10 @@ bool C4Record::Stop(StdStrBuf *pRecordName, uint8_t *pRecordSHA1)
 	C4RecordChunkHead Head;
 	Head.iFrm = Game.FrameCounter + 37;
 	Head.Type = RCT_End;
-	CtrlRec.WriteElement(Head);
+
+	const bool success{CtrlRec.WriteElement(Head)};
 	CtrlRec.Close();
+	if (!success) return false;
 
 	// pack group
 #ifndef DEBUGREC
@@ -251,11 +253,11 @@ bool C4Record::Rec(uint32_t iFrame, const StdBuf &sBuf, C4RecordChunkType eType)
 	// create head
 	C4RecordChunkHead Head = { static_cast<uint8_t>(iFrameDiff), static_cast<uint8_t>(eType) };
 	// pack
-	CtrlRec.WriteElement(Head);
-	CtrlRec.WriteExact(sBuf.getData(), sBuf.getSize());
+	if (!CtrlRec.WriteElement(Head)) return false;
+	if (!CtrlRec.WriteExact(sBuf.getData(), sBuf.getSize())) return false;
 #ifdef IMMEDIATEREC
 	// immediate rec: always flush
-	CtrlRec.Flush();
+	(void) CtrlRec.Flush();
 #endif
 	// Stream
 	if (fStreaming)

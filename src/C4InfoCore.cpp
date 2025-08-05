@@ -48,7 +48,7 @@ const char *GetAName(const char *szNameFile)
 	{
 		if (!ReadFileLine(nameFile.GetHandle(), GetANameBuffer, C4MaxName))
 		{
-			nameFile.Rewind(); iLoops++;
+			(void) nameFile.Rewind(); iLoops++;
 		}
 	} while ((iLoops < 2) && (!GetANameBuffer[0] || (GetANameBuffer[0] == '#') || (GetANameBuffer[0] == ' ')));
 	nameFile.Close();

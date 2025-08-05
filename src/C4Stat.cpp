@@ -134,7 +134,7 @@ void C4MainStat::Show()
 
 	delete[] bHS;
 
-	StatFile.WriteStringLine("** Stat");
+	(void) StatFile.WriteStringLine("** Stat");
 
 	// output in order
 	for (i = 0; i < iCnt; i++)
@@ -143,7 +143,7 @@ void C4MainStat::Show()
 
 		// output it!
 		if (pAkt->iCount)
-			StatFile.WriteStringLine("{}: n = {}, t = {}, td = {:.2f}",
+			(void) StatFile.WriteStringLine("{}: n = {}, t = {}, td = {:.2f}",
 				pAkt->strName, pAkt->iCount, pAkt->iTimeSum,
 				double(pAkt->iTimeSum) / std::max<int>(1, pAkt->iCount - 100) * 1000);
 	}
@@ -152,8 +152,8 @@ void C4MainStat::Show()
 	delete[] StatArray;
 
 	// ok. job done
-	StatFile.WriteStringLine("** Stat end");
-	StatFile.Flush();
+	(void) StatFile.WriteStringLine("** Stat end");
+	(void) StatFile.Flush();
 }
 
 void C4MainStat::ShowPart()
@@ -165,15 +165,15 @@ void C4MainStat::ShowPart()
 		OpenStatFile();
 
 	// insert tick nr
-	StatFile.WriteStringLine("** PartStat begin {}", Game.FrameCounter);
+	(void) StatFile.WriteStringLine("** PartStat begin {}", Game.FrameCounter);
 
 	// insert all stats
 	for (pAkt = pFirst; pAkt; pAkt = pAkt->pNext)
-		StatFile.WriteStringLine("{}: n={}, t={}\n", pAkt->strName, pAkt->iCountPart, pAkt->iTimeSumPart);
+		(void) StatFile.WriteStringLine("{}: n={}, t={}\n", pAkt->strName, pAkt->iCountPart, pAkt->iTimeSumPart);
 
 	// insert part stat end idtf
-	StatFile.WriteStringLine("** PartStat end");
-	StatFile.Flush();
+	(void) StatFile.WriteStringLine("** PartStat end");
+	(void) StatFile.Flush();
 }
 
 // stat file handling
@@ -182,7 +182,7 @@ void C4MainStat::OpenStatFile()
 	if (StatFile) return;
 
 	// open & reset file
-	StatFile.Open("stat.txt", "w");
+	(void) StatFile.Open("stat.txt", "w");
 }
 
 void C4MainStat::CloseStatFile()

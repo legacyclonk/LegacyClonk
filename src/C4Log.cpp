@@ -172,12 +172,12 @@ void C4LogSystem::LogSink::sink_it_(const spdlog::details::log_msg &msg)
 {
 	std::string formatted;
 	formatter_->format(msg, formatted);
-	file.WriteString(formatted);
+	(void) file.WriteString(formatted);
 }
 
 void C4LogSystem::LogSink::flush_()
 {
-	file.Flush();
+	(void) file.Flush();
 }
 
 C4LogSystem::GuiSink::GuiSink(const spdlog::level::level_enum level, const bool showLoggerNameInGui)
