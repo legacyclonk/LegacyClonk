@@ -46,6 +46,7 @@ static std::unexpected<std::error_code> GetErrnoUnexpected() noexcept
 std::expected<void, std::error_code> C4File::Open(const char *const filename, const char *const mode)
 {
 	file.reset(std::fopen(filename, mode));
+
 	if (file)
 	{
 		return {};
@@ -91,6 +92,7 @@ std::expected<void, std::error_code> C4File::Seek(const std::int64_t offset, con
 #else
 	const auto result = fseeko(file.get(), offset, std::to_underlying(mode)) == 0;
 #endif
+
 	if (result == 0)
 	{
 		return {};
