@@ -107,33 +107,13 @@ public:
 
 public:
 	explicit C4File() = default;
-
-	C4File(const char *const filename, const char *const mode)
-		: file{std::fopen(filename, mode)}
-	{
-	}
-
-	C4File(const std::string &filename, const char *const mode)
-		: C4File{filename.c_str(), mode}
-	{
-	}
-
-	explicit C4File(FILE *const file)
-		: file{file}
-	{
-	}
+	C4File(const char *filename, const char *mode);
+	C4File(const std::string &filename, const char *mode);
+	explicit C4File(FILE *file);
 
 public:
-	bool Open(const char *const filename, const char *const mode)
-	{
-		file.reset(std::fopen(filename, mode));
-		return file.get();
-	}
-
-	bool Open(const std::string &filename, const char *const mode)
-	{
-		return Open(filename.c_str(), mode);
-	}
+	bool Open(const char *filename, const char *mode);
+	bool Open(const std::string &filename, const char *mode);
 
 	template<typename T>
 	bool ReadElement(T &ptr)
@@ -144,13 +124,8 @@ public:
 	template<typename T, std::size_t Extent>
 	bool ReadElements(const std::span<T, Extent> buffer)
 	{
-		return std::fread(buffer.data(), sizeof(T), buffer.size(), file.get()) == buffer.size();
-	}
-
-	std::pair<bool, std::size_t> Read(void *const buffer, const std::size_t size)
-	{
-		const std::size_t result{std::fread(buffer, 1, size, file.get())};
-		return {result != -1, result};
+		const auto [success, size] = ReadInternal(buffer.data(), sizeof(T), buffer.size());
+		return success && size == buffer.size();
 	}
 
 	template<typename T>
@@ -162,43 +137,26 @@ public:
 	template<typename T, std::size_t Extent>
 	bool WriteElements(const std::span<T, Extent> buffer)
 	{
-		return std::fwrite(buffer.data(), sizeof(T), buffer.size(), file.get()) == buffer.size();
+		const auto [success, size] = WriteInternal(buffer.data(), sizeof(T), buffer.size());
+		return success && size == buffer.size();
 	}
 
-	std::pair<bool, std::size_t> Write(const void *const buffer, const std::size_t size)
-	{
-		const std::size_t result{std::fwrite(buffer, 1, size, file.get())};
-		return {result != -1, result};
-	}
+	std::pair<bool, std::size_t> Read(void *buffer, std::size_t size);
+	std::pair<bool, std::size_t> Write(const void *buffer, std::size_t size);
 
 	bool Seek(std::int64_t offset, SeekMode mode);
-
 	std::int64_t Tell() const;
+	void Flush();
+	bool Rewind();
+	bool AtEnd() const;
+	void Close();
 
-	void Flush()
-	{
-		std::fflush(file.get());
-	}
+	FILE *GetHandle() const { return file.get(); }
+	explicit operator bool() const { return GetHandle(); }
 
-	bool Rewind()
-	{
-		std::rewind(file.get());
-		return errno != 0;
-	}
-
-	bool AtEnd() const
-	{
-		return std::feof(file.get());
-	}
-
-	void Close()
-	{
-		file.reset();
-	}
-
-	FILE *GetHandle() const noexcept { return file.get(); }
-
-	explicit operator bool() const { return !!file; }
+private:
+	std::pair<bool, std::size_t> ReadInternal(void *buffer, std::size_t elementSize, std::size_t count);
+	std::pair<bool, std::size_t> WriteInternal(const void *buffer, std::size_t elementSize, std::size_t count);
 
 public:
 	static std::tuple<bool, std::unique_ptr<std::byte[]>, std::size_t> LoadContents(const char *filename);

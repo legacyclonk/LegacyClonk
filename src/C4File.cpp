@@ -15,6 +15,41 @@
 
 #include "C4File.h"
 
+C4File::C4File(const char *const filename, const char *const mode)
+{
+	Open(filename, mode);
+}
+
+C4File::C4File(const std::string &filename, const char *const mode)
+{
+	Open(filename, mode);
+}
+
+C4File::C4File(FILE *const file) : file{file}
+{
+}
+
+bool C4File::Open(const char *const filename, const char *const mode)
+{
+	file.reset(std::fopen(filename, mode));
+	return file.get();
+}
+
+bool C4File::Open(const std::string &filename, const char *const mode)
+{
+	return Open(filename.c_str(), mode);
+}
+
+std::pair<bool, std::size_t> C4File::Read(void *const buffer, const std::size_t size)
+{
+	return ReadInternal(buffer, 1, size);
+}
+
+std::pair<bool, std::size_t> C4File::Write(const void *const buffer, const std::size_t size)
+{
+	return WriteInternal(buffer, 1, size);
+}
+
 bool C4File::Seek(const std::int64_t offset, const SeekMode mode)
 {
 #ifdef _WIN32
@@ -31,6 +66,39 @@ std::int64_t C4File::Tell() const
 #else
 	return ftello(file.get());
 #endif
+}
+
+void C4File::Flush()
+{
+	std::fflush(file.get());
+}
+
+bool C4File::Rewind()
+{
+	std::rewind(file.get());
+	return errno != 0;
+}
+
+bool C4File::AtEnd() const
+{
+	return std::feof(file.get());
+}
+
+void C4File::Close()
+{
+	file.reset();
+}
+
+std::pair<bool, std::size_t> C4File::ReadInternal(void *const buffer, const std::size_t elementSize, const std::size_t count)
+{
+	const std::size_t result{std::fread(buffer, elementSize, count, file.get())};
+	return {result != -1, result};
+}
+
+std::pair<bool, std::size_t> C4File::WriteInternal(const void *const buffer, const std::size_t elementSize, const std::size_t count)
+{
+	const std::size_t result{std::fwrite(buffer, elementSize, count, file.get())};
+	return {result != -1, result};
 }
 
 std::tuple<bool, std::unique_ptr<std::byte[]>, std::size_t> C4File::LoadContents(const char *const filename)
