@@ -213,7 +213,7 @@ void Read::Rewind()
 	position = 0;
 	if (const auto result = file.Rewind(); !result)
 	{
-		throw Exception(std::string{"inflateInit2 failed: "} + strerror(static_cast<int>(result.error())));
+		throw Exception(std::string{"inflateInit2 failed: "} + result.error().message());
 	}
 
 	inflateEnd(&gzStream);

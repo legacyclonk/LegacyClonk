@@ -23,6 +23,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <system_error>
 #include <tuple>
 #include <utility>
 
@@ -113,8 +114,8 @@ public:
 	explicit C4File(FILE *file);
 
 public:
-	[[nodiscard]] std::expected<void, std::errc> Open(const char *filename, const char *mode);
-	[[nodiscard]] std::expected<void, std::errc> Open(const std::string &filename, const char *mode);
+	[[nodiscard]] std::expected<void, std::error_code> Open(const char *filename, const char *mode);
+	[[nodiscard]] std::expected<void, std::error_code> Open(const std::string &filename, const char *mode);
 
 	template<typename T>
 	[[nodiscard]] bool ReadElement(T &ptr)
@@ -145,12 +146,12 @@ public:
 	[[nodiscard]] std::optional<std::size_t> Read(void *buffer, std::size_t size);
 	[[nodiscard]] std::optional<std::size_t> Write(const void *buffer, std::size_t size);
 
-	[[nodiscard]] std::expected<void, std::errc> Seek(std::int64_t offset, SeekMode mode);
-	[[nodiscard]] std::expected<std::uint64_t, std::errc> Tell() const;
-	[[nodiscard]] std::expected<void, std::errc> Flush();
-	[[nodiscard]] std::expected<void, std::errc> Rewind();
+	[[nodiscard]] std::expected<void, std::error_code> Seek(std::int64_t offset, SeekMode mode);
+	[[nodiscard]] std::expected<std::uint64_t, std::error_code> Tell() const;
+	[[nodiscard]] std::expected<void, std::error_code> Flush();
+	[[nodiscard]] std::expected<void, std::error_code> Rewind();
 	[[nodiscard]] bool AtEnd() const;
-	[[nodiscard]] std::optional<std::errc> GetError() const;
+	[[nodiscard]] std::optional<std::error_code> GetError() const;
 	void Close();
 
 	FILE *GetHandle() const { return file.get(); }
@@ -161,7 +162,7 @@ private:
 	std::optional<std::size_t> WriteInternal(const void *buffer, std::size_t elementSize, std::size_t count);
 
 public:
-	static std::expected<std::pair<std::unique_ptr<std::byte[]>, std::size_t>, std::errc> LoadContents(const char *filename);
+	static std::expected<std::pair<std::unique_ptr<std::byte[]>, std::size_t>, std::error_code> LoadContents(const char *filename);
 
 private:
 	std::unique_ptr<FILE, decltype([](FILE *const file) { std::fclose(file); })> file;

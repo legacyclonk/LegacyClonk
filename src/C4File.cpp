@@ -29,12 +29,17 @@ C4File::C4File(FILE *const file) : file{file}
 {
 }
 
-static std::unexpected<std::errc> GetErrnoUnexpected() noexcept
+static std::unexpected<std::error_code> GetErrorUnexpected(const int error) noexcept
 {
-	return std::unexpected{static_cast<std::errc>(errno)};
+	return std::unexpected{std::make_error_code(static_cast<std::errc>(error))};
 }
 
-std::expected<void, std::errc> C4File::Open(const char *const filename, const char *const mode)
+static std::unexpected<std::error_code> GetErrnoUnexpected() noexcept
+{
+	return GetErrorUnexpected(errno);
+}
+
+std::expected<void, std::error_code> C4File::Open(const char *const filename, const char *const mode)
 {
 	file.reset(std::fopen(filename, mode));
 	if (file)
@@ -47,7 +52,7 @@ std::expected<void, std::errc> C4File::Open(const char *const filename, const ch
 	}
 }
 
-std::expected<void, std::errc> C4File::Open(const std::string &filename, const char *const mode)
+std::expected<void, std::error_code> C4File::Open(const std::string &filename, const char *const mode)
 {
 	return Open(filename.c_str(), mode);
 }
@@ -62,7 +67,7 @@ std::optional<std::size_t> C4File::Write(const void *const buffer, const std::si
 	return WriteInternal(buffer, 1, size);
 }
 
-std::expected<void, std::errc> C4File::Seek(const std::int64_t offset, const SeekMode mode)
+std::expected<void, std::error_code> C4File::Seek(const std::int64_t offset, const SeekMode mode)
 {
 #ifdef _WIN32
 	const auto result = _fseeki64(file.get(), offset, std::to_underlying(mode)) == 0;
@@ -79,7 +84,7 @@ std::expected<void, std::errc> C4File::Seek(const std::int64_t offset, const See
 	}
 }
 
-std::expected<std::uint64_t, std::errc> C4File::Tell() const
+std::expected<std::uint64_t, std::error_code> C4File::Tell() const
 {
 #ifdef _WIN32
 	const auto result = _ftelli64(file.get());
@@ -97,7 +102,7 @@ std::expected<std::uint64_t, std::errc> C4File::Tell() const
 	}
 }
 
-std::expected<void, std::errc> C4File::Flush()
+std::expected<void, std::error_code> C4File::Flush()
 {
 	if (std::fflush(file.get()) != EOF)
 	{
@@ -109,7 +114,7 @@ std::expected<void, std::errc> C4File::Flush()
 	}
 }
 
-std::expected<void, std::errc> C4File::Rewind()
+std::expected<void, std::error_code> C4File::Rewind()
 {
 	std::rewind(file.get());
 
@@ -119,7 +124,7 @@ std::expected<void, std::errc> C4File::Rewind()
 	}
 	else
 	{
-		return std::unexpected{static_cast<std::errc>(error)};
+		return GetErrorUnexpected(error);
 	}
 }
 
@@ -128,9 +133,9 @@ bool C4File::AtEnd() const
 	return std::feof(file.get());
 }
 
-std::optional<std::errc> C4File::GetError() const
+std::optional<std::error_code> C4File::GetError() const
 {
-	return std::ferror(file.get()) ? std::optional{static_cast<std::errc>(errno)} : std::nullopt;
+	return std::ferror(file.get()) ? std::optional{std::make_error_code(static_cast<std::errc>(errno))} : std::nullopt;
 }
 
 void C4File::Close()
@@ -150,7 +155,7 @@ std::optional<std::size_t> C4File::WriteInternal(const void *const buffer, const
 	return result != -1 ? std::optional{result} : std::nullopt;
 }
 
-std::expected<std::pair<std::unique_ptr<std::byte[]>, std::size_t>, std::errc> C4File::LoadContents(const char *const filename)
+std::expected<std::pair<std::unique_ptr<std::byte[]>, std::size_t>, std::error_code> C4File::LoadContents(const char *const filename)
 {
 	C4File file{filename, "rb"};
 	if (!file)
