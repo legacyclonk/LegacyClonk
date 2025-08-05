@@ -41,6 +41,12 @@ public:
 		return self.ReadExact(buffer.data(), buffer.size_bytes());
 	}
 
+	bool ReadExact(this auto &&self, void *const buffer, const std::size_t size)
+	{
+		const auto [success, written] = self.Read(buffer, size);
+		return success && written == size;
+	}
+
 	std::pair<bool, std::size_t> Read(this auto &&self, const std::span<std::byte> buffer)
 	{
 		return self.Read(buffer.data(), buffer.size_bytes());
@@ -54,6 +60,12 @@ public:
 	bool WriteExact(this auto &&self, const std::span<const std::byte> buffer)
 	{
 		return self.WriteExact(buffer.data(), buffer.size_bytes());
+	}
+
+	bool WriteExact(this auto &&self, const void *const buffer, const std::size_t size)
+	{
+		const auto [success, written] = self.Write(buffer, size);
+		return success && written == size;
 	}
 
 	template<typename... Args> requires (sizeof...(Args) > 0)
@@ -126,18 +138,13 @@ public:
 	template<typename T>
 	bool ReadElement(T &ptr)
 	{
-		return std::fread(&ptr, sizeof(T), 1, file.get()) == 1;
+		return ReadElements(std::span<T, 1>{&ptr, 1});
 	}
 
 	template<typename T, std::size_t Extent>
 	bool ReadElements(const std::span<T, Extent> buffer)
 	{
 		return std::fread(buffer.data(), sizeof(T), buffer.size(), file.get()) == buffer.size();
-	}
-
-	bool ReadExact(void *const buffer, const std::size_t size)
-	{
-		return std::fread(buffer, 1, size, file.get()) == size;
 	}
 
 	std::pair<bool, std::size_t> Read(void *const buffer, const std::size_t size)
@@ -149,7 +156,7 @@ public:
 	template<typename T>
 	bool WriteElement(T &&ptr)
 	{
-		return std::fwrite(&ptr, sizeof(T), 1, file.get()) == 1;
+		return WriteElements(std::span<std::remove_reference_t<T>, 1>{&ptr, 1});
 	}
 
 	template<typename T, std::size_t Extent>
@@ -162,11 +169,6 @@ public:
 	{
 		const std::size_t result{std::fwrite(buffer, 1, size, file.get())};
 		return {result != -1, result};
-	}
-
-	bool WriteExact(const void *const buffer, const std::size_t size)
-	{
-		return std::fwrite(buffer, 1, size, file.get()) == size;
 	}
 
 	bool Seek(std::int64_t offset, SeekMode mode);
