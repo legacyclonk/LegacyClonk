@@ -15,12 +15,16 @@
 
 #include "C4File.h"
 
+#ifdef _WIN32
+#include "StdStringEncodingConverter.h"
+#endif
+
 C4File::C4File(const char *const filename, const char *const mode)
 {
 	(void) Open(filename, mode);
 }
 
-C4File::C4File(const std::string &filename, const char *const mode)
+C4File::C4File(const std::filesystem::path &filename, const char *const mode)
 {
 	(void) Open(filename, mode);
 }
@@ -52,9 +56,22 @@ std::expected<void, std::error_code> C4File::Open(const char *const filename, co
 	}
 }
 
-std::expected<void, std::error_code> C4File::Open(const std::string &filename, const char *const mode)
+std::expected<void, std::error_code> C4File::Open(const std::filesystem::path &filename, const char *const mode)
 {
-	return Open(filename.c_str(), mode);
+#ifdef _WIN32
+	file.reset(_wfopen(filename.native().c_str(), StdStringEncodingConverter::WinAcpToUtf16(mode).c_str()));
+#else
+	file.reset(std::fopen(filename.c_str(), mode));
+#endif
+
+	if (file)
+	{
+		return {};
+	}
+	else
+	{
+		return GetErrnoUnexpected();
+	}
 }
 
 std::optional<std::size_t> C4File::Read(void *const buffer, const std::size_t size)

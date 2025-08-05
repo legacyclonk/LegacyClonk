@@ -18,6 +18,7 @@
 #include <cstdio>
 #include <cstdint>
 #include <expected>
+#include <filesystem>
 #include <format>
 #include <memory>
 #include <span>
@@ -110,12 +111,12 @@ public:
 public:
 	explicit C4File() = default;
 	C4File(const char *filename, const char *mode);
-	C4File(const std::string &filename, const char *mode);
+	C4File(const std::filesystem::path &filename, const char *mode);
 	explicit C4File(FILE *file);
 
 public:
 	[[nodiscard]] std::expected<void, std::error_code> Open(const char *filename, const char *mode);
-	[[nodiscard]] std::expected<void, std::error_code> Open(const std::string &filename, const char *mode);
+	[[nodiscard]] std::expected<void, std::error_code> Open(const std::filesystem::path &filename, const char *mode);
 
 	template<typename T>
 	[[nodiscard]] bool ReadElement(T &ptr)
