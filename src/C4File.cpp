@@ -15,6 +15,8 @@
 
 #include "C4File.h"
 
+#include <cstring>
+
 #ifdef _WIN32
 #include <ranges>
 #endif
