@@ -46,11 +46,6 @@ public:
 		return self.Read(buffer.data(), buffer.size_bytes());
 	}
 
-	std::pair<bool, std::size_t> ReadAt(this auto &&self, const std::span<std::byte> buffer, const std::size_t offset)
-	{
-		return self.ReadAt(buffer.data(), buffer.size_bytes(), offset);
-	}
-
 	std::pair<bool, std::size_t> Write(this auto &&self, const std::span<const std::byte> buffer)
 	{
 		return self.Write(buffer.data(), buffer.size_bytes());
@@ -59,11 +54,6 @@ public:
 	bool WriteExact(this auto &&self, const std::span<const std::byte> buffer)
 	{
 		return self.WriteExact(buffer.data(), buffer.size_bytes());
-	}
-
-	bool WriteExactAt(this auto &&self, const std::span<const std::byte> buffer, const std::size_t offset)
-	{
-		return self.WriteExactAt(buffer.data(), buffer.size_bytes(), offset);
 	}
 
 	template<typename... Args> requires (sizeof...(Args) > 0)
