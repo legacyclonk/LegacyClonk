@@ -16,7 +16,7 @@
 #include "C4File.h"
 
 #ifdef _WIN32
-#include "StdStringEncodingConverter.h"
+#include <ranges>
 #endif
 
 C4File::C4File(const char *const filename, const char *const mode)
@@ -60,7 +60,8 @@ std::expected<void, std::error_code> C4File::Open(const char *const filename, co
 std::expected<void, std::error_code> C4File::Open(const std::filesystem::path &filename, const char *const mode)
 {
 #ifdef _WIN32
-	file.reset(_wfopen(filename.native().c_str(), StdStringEncodingConverter::WinAcpToUtf16(mode).c_str()));
+	const auto wideMode = std::string_view{mode} | std::views::transform([](const char c) { return static_cast<wchar_t>(static_cast<unsigned char>(c)); }) | std::ranges::to<std::wstring>();
+	file.reset(_wfopen(filename.native().c_str(), wideMode.c_str()));
 #else
 	file.reset(std::fopen(filename.c_str(), mode));
 #endif
