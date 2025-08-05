@@ -166,10 +166,10 @@ C4GroupSet &C4Language::GetPackGroups(const char *strRelativePath)
 		if (strPackGroupLocation[0] && GetRelativePath(strTargetLocation, strPackGroupLocation, strAdvance))
 		{
 			// Advance pack group to relative child
-			auto *group = new C4Group;
+			auto group = std::make_unique<C4Group>();
 			if (group->OpenAsChild(*pPackGroupPtr, strAdvance, true))
 			{
-				(*pPackGroupPtr) = group;
+				(*pPackGroupPtr) = group.release();
 			}
 		}
 
