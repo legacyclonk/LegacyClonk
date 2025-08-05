@@ -197,10 +197,15 @@ size_t Read::ReadData(uint8_t *const toBuffer, const size_t size)
 
 void Read::RefillBuffer()
 {
-	bool success;
-	std::tie(success, bufferedSize) = file.Read(buffer.get(), ChunkSize);
-	if (!success) throw Exception("fread failed");
-	bufferPtr = buffer.get();
+	if (const auto result = file.Read(buffer.get(), ChunkSize))
+	{
+		bufferedSize = *result;
+		bufferPtr = buffer.get();
+	}
+	else
+	{
+		throw Exception("fread failed");
+	}
 }
 
 void Read::Rewind()

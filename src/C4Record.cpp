@@ -595,15 +595,13 @@ void C4Playback::NextChunk()
 bool C4Playback::NextSequentialChunk()
 {
 	StdBuf BinaryBuf;
-	bool success;
-	size_t iRealSize;
 	BinaryBuf.New(4096);
 	// load data until a chunk could be filled
 	for (;;)
 	{
-		std::tie(success, iRealSize) = playbackFile.Read(BinaryBuf.getMData(), 4096);
-		if (!success || !iRealSize) return false;
-		BinaryBuf.SetSize(iRealSize);
+		const auto result = playbackFile.Read(BinaryBuf.getMData(), 4096);
+		if (!result) return false;
+		BinaryBuf.SetSize(*result);
 		if (!ReadBinary(BinaryBuf)) return false;
 		// okay, at least one chunk has been read!
 		if (chunks.size())
