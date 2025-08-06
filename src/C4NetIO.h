@@ -319,7 +319,7 @@ protected:
 
 	// *** implementation
 
-	bool Listen(uint16_t inListenPort);
+	bool Listen(uint16_t inListenPort, bool fallbackAutoPort = true);
 
 	SOCKET CreateSocket(addr_t::AddressFamily family);
 	bool Connect(const addr_t &addr, SOCKET nsock);

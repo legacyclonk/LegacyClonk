@@ -1132,7 +1132,7 @@ C4NetIOTCP::Peer *C4NetIOTCP::Accept(SOCKET nsock, const addr_t &ConnectAddr) //
 	return pnPeer;
 }
 
-bool C4NetIOTCP::Listen(uint16_t inListenPort)
+bool C4NetIOTCP::Listen(const uint16_t inListenPort, const bool fallbackAutoPort)
 {
 	// already listening?
 	if (lsock != INVALID_SOCKET)
@@ -1141,10 +1141,17 @@ bool C4NetIOTCP::Listen(uint16_t inListenPort)
 		closesocket(lsock);
 		lsock = INVALID_SOCKET;
 	}
+
 	iListenPort = addr_t::IPPORT_NONE;
+	std::uint16_t assignedPort = inListenPort;
+
+	static auto createSocket = []
+	{
+		return ::socket(AF_INET6, SOCK_STREAM | SOCK_CLOEXEC, IPPROTO_TCP);
+	};
 
 	// create socket
-	if ((lsock = ::socket(AF_INET6, SOCK_STREAM | SOCK_CLOEXEC, IPPROTO_TCP)) == INVALID_SOCKET)
+	if ((lsock = createSocket()) == INVALID_SOCKET)
 	{
 		SetError("socket creation failed", true);
 		return false;
@@ -1160,11 +1167,51 @@ bool C4NetIOTCP::Listen(uint16_t inListenPort)
 #endif
 	// bind listen socket
 	const addr_t addr{addr_t::Any, inListenPort};
-	if (::bind(lsock, &addr, addr.GetAddrLen()) == SOCKET_ERROR)
+	const int bindingResult = ::bind(lsock, &addr, addr.GetAddrLen());
+
+	if (bindingResult == SOCKET_ERROR)
 	{
 		SetError("socket bind failed", true);
 		closesocket(lsock); lsock = INVALID_SOCKET;
 		return false;
+	}
+
+	if (bindingResult == WSAEADDRINUSE)
+	{
+		SetError("port already in use", true);
+		closesocket(lsock);
+
+		if (!fallbackAutoPort)
+		{
+			lsock = INVALID_SOCKET;
+			return false;
+		}
+
+		if ((lsock = createSocket()) == INVALID_SOCKET)
+		{
+			SetError("socket bind failed", true);
+			return false;
+		}
+
+		addr_t addrAuto{addr_t::Any, 0};
+		const int autoBindingResult = ::bind(lsock, &addrAuto, addrAuto.GetAddrLen());
+
+		if (autoBindingResult == SOCKET_ERROR)
+		{
+			SetError("socket bind with auto port failed", true);
+			closesocket(lsock); lsock = INVALID_SOCKET;
+			return false;
+		}
+
+		addr_t assignedAddr;
+		socklen_t assignedAddrLen { sizeof(assignedAddr) };
+		if (::getsockname(lsock, &assignedAddr, &assignedAddrLen) == SOCKET_ERROR)
+		{
+			SetError("getsockname failed", true);
+			return false;
+		}
+
+		assignedPort = assignedAddr.GetPort();
 	}
 
 #ifdef _WIN32
@@ -1186,7 +1233,7 @@ bool C4NetIOTCP::Listen(uint16_t inListenPort)
 	}
 
 	// ok
-	iListenPort = inListenPort;
+	iListenPort = assignedPort;
 	return true;
 }
 
