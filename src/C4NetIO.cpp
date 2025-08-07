@@ -419,6 +419,53 @@ bool C4NetIO::InitIPv6Socket(const SOCKET socket)
 	return true;
 }
 
+bool C4NetIO::BindSocket(SOCKET socket, const addr_t &addr, const bool useFallbackAutoPort, std::uint16_t *outAutoAssignedPort)
+{
+	const size_t addrLen = addr.GetAddrLen();
+
+	if (::bind(socket, &addr, addrLen) == SOCKET_ERROR)
+	{
+		bool isPortInUse = false;
+
+#ifdef _WIN32
+		isPortInUse = WSAGetLastError() == WSAEADDRINUSE;
+#else
+		isPortInUse = errno == EADDRINUSE;
+#endif
+
+		if (!isPortInUse && !useFallbackAutoPort)
+		{
+			SetError("socket bind failed", true);
+			return false;
+		}
+
+		auto addrAuto = addr_t(addr);
+		addrAuto.SetPort(0);
+
+		if (::bind(socket, &addrAuto, addrLen) == SOCKET_ERROR)
+		{
+			SetError("socket bind with auto port failed", true);
+			return false;
+		}
+
+		addr_t assignedAddr;
+		socklen_t assignedAddrLen { sizeof(assignedAddr) };
+		if (::getsockname(socket, &assignedAddr, &assignedAddrLen) == SOCKET_ERROR)
+		{
+			SetError("getsockname failed", true);
+			return false;
+		}
+
+		if (outAutoAssignedPort != nullptr)
+		{
+			*outAutoAssignedPort = assignedAddr.GetPort();
+		}
+	}
+
+	return true;
+}
+
+
 void C4NetIO::SetError(const char *strnError, bool fSockErr)
 {
 	fSockErr &= HaveSocketError();
@@ -824,9 +871,8 @@ std::unique_ptr<C4NetIOTCP::Socket> C4NetIOTCP::Bind(const C4NetIO::addr_t &addr
 	if (nsock == INVALID_SOCKET) return {};
 
 	// Bind the socket to the given address
-	if (::bind(nsock, &addr, addr.GetAddrLen()) == SOCKET_ERROR)
+	if (!BindSocket(nsock, addr))
 	{
-		SetError("binding the socket failed", true);
 		::closesocket(nsock);
 		return {};
 	}
@@ -1132,7 +1178,7 @@ C4NetIOTCP::Peer *C4NetIOTCP::Accept(SOCKET nsock, const addr_t &ConnectAddr) //
 	return pnPeer;
 }
 
-bool C4NetIOTCP::Listen(const uint16_t inListenPort, const bool fallbackAutoPort)
+bool C4NetIOTCP::Listen(const uint16_t inListenPort)
 {
 	// already listening?
 	if (lsock != INVALID_SOCKET)
@@ -1143,15 +1189,10 @@ bool C4NetIOTCP::Listen(const uint16_t inListenPort, const bool fallbackAutoPort
 	}
 
 	iListenPort = addr_t::IPPORT_NONE;
-	std::uint16_t assignedPort = inListenPort;
-
-	static auto createSocket = []
-	{
-		return ::socket(AF_INET6, SOCK_STREAM | SOCK_CLOEXEC, IPPROTO_TCP);
-	};
+	std::uint16_t assignedPort;
 
 	// create socket
-	if ((lsock = createSocket()) == INVALID_SOCKET)
+	if ((lsock = ::socket(AF_INET6, SOCK_STREAM | SOCK_CLOEXEC, IPPROTO_TCP)) == INVALID_SOCKET)
 	{
 		SetError("socket creation failed", true);
 		return false;
@@ -1165,53 +1206,13 @@ bool C4NetIOTCP::Listen(const uint16_t inListenPort, const bool fallbackAutoPort
 	int reuseaddr = 1;
 	setsockopt(lsock, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&reuseaddr), sizeof(reuseaddr));
 #endif
+
 	// bind listen socket
 	const addr_t addr{addr_t::Any, inListenPort};
-	const int bindingResult = ::bind(lsock, &addr, addr.GetAddrLen());
-
-	if (bindingResult == SOCKET_ERROR)
+	if (!BindSocket(lsock, addr, true, &assignedPort))
 	{
-		SetError("socket bind failed", true);
 		closesocket(lsock); lsock = INVALID_SOCKET;
 		return false;
-	}
-
-	if (bindingResult == WSAEADDRINUSE)
-	{
-		SetError("port already in use", true);
-		closesocket(lsock);
-
-		if (!fallbackAutoPort)
-		{
-			lsock = INVALID_SOCKET;
-			return false;
-		}
-
-		if ((lsock = createSocket()) == INVALID_SOCKET)
-		{
-			SetError("socket bind failed", true);
-			return false;
-		}
-
-		addr_t addrAuto{addr_t::Any, 0};
-		const int autoBindingResult = ::bind(lsock, &addrAuto, addrAuto.GetAddrLen());
-
-		if (autoBindingResult == SOCKET_ERROR)
-		{
-			SetError("socket bind with auto port failed", true);
-			closesocket(lsock); lsock = INVALID_SOCKET;
-			return false;
-		}
-
-		addr_t assignedAddr;
-		socklen_t assignedAddrLen { sizeof(assignedAddr) };
-		if (::getsockname(lsock, &assignedAddr, &assignedAddrLen) == SOCKET_ERROR)
-		{
-			SetError("getsockname failed", true);
-			return false;
-		}
-
-		assignedPort = assignedAddr.GetPort();
 	}
 
 #ifdef _WIN32
@@ -1579,13 +1580,14 @@ bool C4NetIOSimpleUDP::Init(uint16_t inPort)
 	}
 
 	// bind socket
-	iPort = inPort;
+	uint16_t assignedPort = inPort;
 	const addr_t naddr{addr_t::Any, iPort};
-	if (::bind(sock, &naddr, sizeof(naddr)) == SOCKET_ERROR)
+	if (!BindSocket(sock, naddr, true, &assignedPort))
 	{
 		SetError("could not bind socket", true);
 		return false;
 	}
+	iPort = assignedPort;
 
 #ifdef _WIN32
 

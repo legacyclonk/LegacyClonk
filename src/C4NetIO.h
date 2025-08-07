@@ -110,6 +110,8 @@ public:
 protected:
 	// Makes IPv4 connections from an IPv6 socket work.
 	bool InitIPv6Socket(SOCKET socket);
+	// Socket binding logic with fallback support.
+	bool BindSocket(SOCKET socket, const addr_t &addr, bool useFallbackAutoPort = true, std::uint16_t *outAutoAssignedPort = nullptr);
 
 	// *** errors
 protected:
@@ -319,7 +321,7 @@ protected:
 
 	// *** implementation
 
-	bool Listen(uint16_t inListenPort, bool fallbackAutoPort = true);
+	bool Listen(uint16_t inListenPort);
 
 	SOCKET CreateSocket(addr_t::AddressFamily family);
 	bool Connect(const addr_t &addr, SOCKET nsock);
