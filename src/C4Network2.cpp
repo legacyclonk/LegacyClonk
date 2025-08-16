@@ -192,6 +192,59 @@ void C4Network2::ReadyCheckDialog::OnAction(std::string_view action)
 	Close(action == LoadResStrNoAmp(C4ResStrTableKey::IDS_DLG_YES));
 }
 
+C4Network2::DifferentPortAssignedDialog::DifferentPortAssignedDialog(std::vector<pdiff_t> differences) : MessageDialog(
+	"", "", btnYesNo | btnRetry, C4GUI::Ico_NetWait)
+{
+	SetFocus(nullptr, false);
+
+	if (Application.ToastSystem)
+	{
+		std::string text;
+
+		text.append(LoadResStr(C4ResStrTableKey::IDS_DLG_PORTDIFF_TITLE));
+
+		for (const pdiff_t diff : differences)
+		{
+			const std::string line = LoadResStr(
+				C4ResStrTableKey::IDS_DLG_PORTDIFF_ENTRY,
+				diff.protocol,
+				diff.actual,
+				diff.expected);
+
+			text.append(line);
+		}
+
+		StdStrBuf message;
+		C4GUI::GetRes()->TextFont.BreakMessage(
+			text.c_str(),
+			Window::GetClientRect().Wdt,
+			&message,
+			false);
+
+		// TODO: make sure message looks right
+
+		toast = Application.ToastSystem->CreateToast();
+
+		toast->SetTitle(LoadResStr(C4ResStrTableKey::IDS_DLG_PORTDIFF_TITLE));
+		toast->SetText(message.getData());
+		toast->AddAction(LoadResStrNoAmp(C4ResStrTableKey::IDS_DLG_YES));
+		toast->AddAction(LoadResStrNoAmp(C4ResStrTableKey::IDS_DLG_NO));
+		toast->AddAction(LoadResStrNoAmp(C4ResStrTableKey::IDS_BTN_RETRY));
+	}
+}
+
+void C4Network2::DifferentPortAssignedDialog::OnAction(const std::string_view action)
+{
+	const bool proceed = action == LoadResStrNoAmp(C4ResStrTableKey::IDS_DLG_YES);
+
+	if (!proceed && action == LoadResStrNoAmp(C4ResStrTableKey::IDS_BTN_RETRY))
+	{
+		retrySelected = true;
+	}
+
+	Close(proceed);
+}
+
 #endif
 
 C4Network2::C4Network2()
@@ -1248,9 +1301,40 @@ bool C4Network2::InitNetIO(bool fNoClientID, bool fHost)
 	// discovery: disable for client
 	const std::uint16_t iPortDiscovery = fHost ? Config.Network.PortDiscovery : 0;
 	const std::uint16_t iPortRefServer = fHost ? Config.Network.PortRefServer : 0;
+
 	// init subclass
 	if (!NetIO.Init(Config.Network.PortTCP, Config.Network.PortUDP, iPortDiscovery, iPortRefServer))
 		return false;
+
+	const uint16_t ioPortTCP = NetIO.GetPortTCP(),
+				   ioPortUDP = NetIO.GetPortUDP();
+
+	// assigned ports differ?
+	std::vector<DifferentPortAssignedDialog::PortDifferenceRecord> portDifferences;
+	if (ioPortTCP != Config.Network.PortTCP)
+	{
+		// TODO: unsafe cast
+		portDifferences.push_back({"TCP", static_cast<uint16_t>(Config.Network.PortTCP), ioPortTCP});
+	}
+	if (ioPortUDP != Config.Network.PortUDP)
+	{
+		// TODO: unsafe cast
+		portDifferences.push_back({"UDP", static_cast<uint16_t>(Config.Network.PortUDP), ioPortUDP});
+	}
+
+	if (portDifferences.size() > 0)
+	{
+		diffPortAssignedDialog = new DifferentPortAssignedDialog(portDifferences);
+		bool accept = Game.pGUI ? Game.pGUI->ShowModalDlg(diffPortAssignedDialog, false) : true;
+
+		if (!accept)
+		{
+			NetIO.Clear();
+		}
+
+		// TODO: retry handling
+	}
+
 	// set core (unset ID if sepecified, has to be set later)
 	C4ClientCore Core = Game.Clients.getLocalCore();
 	if (fNoClientID) Core.SetID(C4ClientIDUnknown);
@@ -1672,7 +1756,7 @@ void C4Network2::HandleReadyCheck(const C4PacketReadyCheck &packet)
 #ifndef USE_CONSOLE
 			if (pLobby->CanBeReady())
 			{
-				readyCheckDialog = new ReadyCheckDialog;
+				readyCheckDialog = new ReadyCheckDialog();
 				ready = Game.pGUI ? Game.pGUI->ShowModalDlg(readyCheckDialog, true) : false;
 				readyCheckDialog = nullptr;
 			}

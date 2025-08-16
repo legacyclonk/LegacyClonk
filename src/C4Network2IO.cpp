@@ -117,6 +117,8 @@ bool C4Network2IO::Init(const std::uint16_t iPortTCP, const std::uint16_t iPortU
 	pNetIO_TCP = CreateNetIO(logger, "TCP I/O", new C4NetIOTCP{}, iPortTCP, Thread);
 	if (pNetIO_TCP)
 	{
+		portTCP = pNetIO_TCP->GetPort();
+
 		pNetIO_TCP->SetCallback(this);
 
 		if (Config.Network.EnableUPnP)
@@ -129,6 +131,8 @@ bool C4Network2IO::Init(const std::uint16_t iPortTCP, const std::uint16_t iPortU
 	pNetIO_UDP = CreateNetIO(logger, "UDP I/O", new C4NetIOUDP{}, iPortUDP, Thread);
 	if (pNetIO_UDP)
 	{
+		portUDP = pNetIO_UDP->GetPort();
+
 		pNetIO_UDP->SetCallback(this);
 
 		if (Config.Network.EnableUPnP)
