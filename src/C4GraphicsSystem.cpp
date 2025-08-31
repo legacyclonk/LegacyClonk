@@ -672,7 +672,7 @@ void C4GraphicsSystem::DrawHelp()
 
 	std::string text{std::format(
 				// left coloumn
-				"[{}]\n\n",
+				"[{}]\n\n"
 				// main functions
 				"<c ffff00>{}</c> - {}\n"
 				"<c ffff00>{}</c> - {}\n"
