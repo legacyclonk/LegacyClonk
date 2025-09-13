@@ -57,7 +57,7 @@ jobs:
         run: |
           mkdir deps
           cd deps
-          curl -L https://github.com/legacyclonk/deps/releases/download/2025-05-19/lc_deps-${{ matrix.os }}-${{ matrix.arch }}.tar.gz | tar -xz
+          curl -L https://github.com/legacyclonk/deps/releases/download/2025-09-13/lc_deps-${{ matrix.os }}-${{ matrix.arch }}.tar.gz | tar -xz
           ./fix_paths.sh
 
       - name: Configure
