@@ -588,7 +588,8 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 								}
 								else if (pEff->idCommandTarget)
 								{
-									command = std::format("DefinitionCall({}, \"{}\", Object({}),{},Object({}),{})", C4IdText(pEff->idCommandTarget), +pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
+									std::string commandTargetId{C4IdText(pEff->idCommandTarget)};
+									command = std::format("DefinitionCall({}, \"{}\", Object({}),{},Object({}),{})", commandTargetId, +pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
 								}
 								else
 								{
