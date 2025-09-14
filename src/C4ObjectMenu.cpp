@@ -523,7 +523,7 @@ bool C4ObjectMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 
 	case CB_Scenario:
 		// Object menu with scenario script callback
-		Game.Script.DirectExec(nullptr, szCommand, "MenuCommand", false, Game.Script.Strict);
+		Game.Script.DirectExec(nullptr, szCommand, std::format("(internal) C4ObjectMenu::MenuCommand: {}", szCommand).c_str(), false, Game.Script.Strict);
 		break;
 
 	case CB_None:

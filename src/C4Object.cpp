@@ -3731,7 +3731,7 @@ bool C4Object::MenuCommand(const char *szCommand)
 {
 	// Native script execution
 	if (!Def || !Status) return false;
-	return static_cast<bool>(Def->Script.DirectExec(this, szCommand, "MenuCommand", false, Def->Script.Strict));
+	return static_cast<bool>(Def->Script.DirectExec(this, szCommand, std::format("(internal) C4Object::MenuCommand: {}", szCommand).c_str(), false, Def->Script.Strict));
 }
 
 C4Object *C4Object::ComposeContents(C4ID id)
