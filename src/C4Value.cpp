@@ -22,7 +22,6 @@
 #include <C4ValueHash.h>
 
 #include <bit>
-#include <cinttypes>
 #include <functional>
 #include <format>
 #include <string_view>
