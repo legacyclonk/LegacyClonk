@@ -21,6 +21,7 @@
 #include <C4ValueList.h>
 #include <C4ValueHash.h>
 
+#include <bit>
 #include <cinttypes>
 #include <functional>
 #include <format>
@@ -926,18 +927,16 @@ namespace
 	{
 		if constexpr (sizeof(std::size_t) == 4)
 		{
-#define rotateLeft32(x, r) (x << r) | (x >> (32 - r))
 			constexpr std::size_t c1 = 0xcc9e2d51;
 			constexpr std::size_t c2 = 0x1b873593;
 
 			nextHash *= c1;
-			nextHash = rotateLeft32(nextHash, 15);
+			nextHash = std::rotl(nextHash, 15);
 			nextHash *= c2;
 
 			hash ^= nextHash;
-			hash = rotateLeft32(hash, 13);
+			hash = std::rotl(hash, 13);
 			hash = hash * 5 + 0xe6546b64;
-#undef rotateLeft32
 		}
 		else if constexpr (sizeof(std::size_t) == 8)
 		{
