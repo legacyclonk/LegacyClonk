@@ -1199,7 +1199,10 @@ bool C4Network2Res::OptimizeStandalone(bool fSilent)
 		size_t iBigIconSize = 0;
 		if (Grp.FindEntry(C4CFN_BigIcon, nullptr, &iBigIconSize))
 			if (iBigIconSize > C4NetResMaxBigicon * 1024)
-				Grp.Delete(C4CFN_BigIcon);
+            {
+                Grp.Delete(C4CFN_BigIcon);
+                LogF("OptimizeStandalone: BigIcon is too large! Maximum allowed file size is %" PRId32 " Kibibytes. Deleting BigIcon.png for distribution of the player file in network.", C4NetResMaxBigicon);
+            }
 		Grp.Close();
 	}
 	return true;
