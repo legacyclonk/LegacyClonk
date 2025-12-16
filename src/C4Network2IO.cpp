@@ -78,7 +78,7 @@ static T *CreateNetIO(const std::shared_ptr<spdlog::logger> &logger, const char 
 
 	if (netIO->Init(port))
 	{
-		logger->info("{} initialized on port {}", name, port);
+		logger->info("{} initialized on port {}", name, netIO->GetPort());
 		thread.AddProc(netIO.get());
 		return netIO.release();
 	}
@@ -117,11 +117,13 @@ bool C4Network2IO::Init(const std::uint16_t iPortTCP, const std::uint16_t iPortU
 	pNetIO_TCP = CreateNetIO(logger, "TCP I/O", new C4NetIOTCP{}, iPortTCP, Thread);
 	if (pNetIO_TCP)
 	{
+		portTCP = pNetIO_TCP->GetPort();
+
 		pNetIO_TCP->SetCallback(this);
 
 		if (Config.Network.EnableUPnP)
 		{
-			UPnP->AddMapping(P_TCP, iPortTCP, 0);
+			UPnP->AddMapping(P_TCP, pNetIO_TCP->GetPort(), 0);
 		}
 	}
 
@@ -129,11 +131,13 @@ bool C4Network2IO::Init(const std::uint16_t iPortTCP, const std::uint16_t iPortU
 	pNetIO_UDP = CreateNetIO(logger, "UDP I/O", new C4NetIOUDP{}, iPortUDP, Thread);
 	if (pNetIO_UDP)
 	{
+		portUDP = pNetIO_UDP->GetPort();
+
 		pNetIO_UDP->SetCallback(this);
 
 		if (Config.Network.EnableUPnP)
 		{
-			UPnP->AddMapping(P_UDP, iPortUDP, 0);
+			UPnP->AddMapping(P_UDP, pNetIO_UDP->GetPort(), 0);
 		}
 	}
 

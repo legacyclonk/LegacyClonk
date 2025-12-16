@@ -142,6 +142,32 @@ class C4Network2
 	private:
 		std::unique_ptr<class C4Toast> toast;
 	};
+
+	class DifferentPortAssignedDialog : public C4GUI::MessageDialog, C4ToastEventHandler
+	{
+	public:
+		struct PortDifferenceRecord
+		{
+			std::string protocol;
+			uint16_t expected;
+			uint16_t actual;
+		};
+
+		using pdiff_t = PortDifferenceRecord;
+
+		DifferentPortAssignedDialog(std::vector<pdiff_t> differences);
+		~DifferentPortAssignedDialog() override = default;
+
+		bool IsRetrySelected() const { return retrySelected; }
+
+	protected:
+		bool retrySelected = false;
+
+	private:
+		void OnAction(std::string_view action) override;
+
+		std::unique_ptr<C4Toast> toast;
+	};
 #endif
 
 public:
@@ -194,6 +220,7 @@ protected:
 	C4GameLobby::Countdown *pLobbyCountdown;
 #ifndef USE_CONSOLE
 	ReadyCheckDialog *readyCheckDialog;
+	DifferentPortAssignedDialog *diffPortAssignedDialog;
 #endif
 
 	// master server used
