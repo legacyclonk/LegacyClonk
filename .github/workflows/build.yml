@@ -45,7 +45,12 @@ jobs:
 
       - name: "Mac: Work around libpng mess"
         if: ${{ matrix.os == 'Mac' }}
-        run: sudo rm -r /Library/Frameworks/Mono.framework/Headers
+        run: |
+          if [ -d /Library/Frameworks/Mono.framework/Headers ]; then
+            sudo rm -r /Library/Frameworks/Mono.framework/Headers
+          else
+            echo "Mono headers not found, skipping."
+          fi
 
       - name: "Windows: Setup VS Dev Environment"
         if: ${{ matrix.os == 'Windows' }}

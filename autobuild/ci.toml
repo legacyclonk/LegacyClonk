@@ -89,7 +89,7 @@ platform-suffix = 'linux64'
 debugrec = true
 
 [matrix.mac]
-runner = 'macos-13'
+runner = 'macos-15-intel'
 
 [[matrix.mac.config]]
 arch = 'x64'
