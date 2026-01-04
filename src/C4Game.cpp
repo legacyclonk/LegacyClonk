@@ -3024,9 +3024,9 @@ bool C4Game::InitKeyboard()
 	return true;
 }
 
-std::uint32_t C4Game::CreateSection(const char *const name, std::string callback, C4Section &sourceSection, C4Object *const	target)
+std::uint32_t C4Game::CreateSection(const char *const name, std::string callback, C4Section &sourceSection, C4Object *const	target, const C4Value &value)
 {
-	C4Section *const section{SectionsLoading.emplace_back(std::make_unique<C4Section>(name), std::move(callback), sourceSection.Number, target ? target->Number : 0).Section.get()};
+	C4Section *const section{SectionsLoading.emplace_back(std::make_unique<C4Section>(name), std::move(callback), sourceSection.Number, target ? target->Number : 0, value).Section.get()};
 
 	const std::lock_guard lock{SectionLoadMutex};
 
@@ -3041,9 +3041,9 @@ std::uint32_t C4Game::CreateSection(const char *const name, std::string callback
 	return section->Number;
 }
 
-std::uint32_t C4Game::CreateEmptySection(const C4SLandscape &landscape, std::string callback, C4Section &sourceSection, C4Object *const	target)
+std::uint32_t C4Game::CreateEmptySection(const C4SLandscape &landscape, std::string callback, C4Section &sourceSection, C4Object *const	target, const C4Value &value)
 {
-	C4Section *const section{SectionsLoading.emplace_back(std::make_unique<C4Section>(), std::move(callback), sourceSection.Number, target ? target->Number : 0).Section.get()};
+	C4Section *const section{SectionsLoading.emplace_back(std::make_unique<C4Section>(), std::move(callback), sourceSection.Number, target ? target->Number : 0, value).Section.get()};
 
 	const std::lock_guard lock{SectionLoadMutex};
 
@@ -3157,7 +3157,7 @@ void C4Game::OnSectionLoadFinished(const std::uint32_t sectionNumber, bool succe
 	C4AulScriptFunc *const func{script->GetSFuncWarn(sectionWithCallback.Callback.c_str(), AA_PROTECTED, "section callback")};
 	if (func)
 	{
-		func->Exec(*callbackSection, obj, C4AulParSet{C4VInt(static_cast<C4ValueInt>(newSectionNumber)), C4VBool(success)});
+		func->Exec(*callbackSection, obj, C4AulParSet{C4VInt(static_cast<C4ValueInt>(newSectionNumber)), C4VBool(success), sectionWithCallback.Value});
 	}
 }
 
