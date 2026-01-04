@@ -6264,11 +6264,11 @@ static void FnSetRestoreInfos(C4AulContext *ctx, C4ValueInt what)
 	Game.RestartRestoreInfos.What = static_cast<std::underlying_type_t<C4NetworkRestartInfos::RestoreInfo>>(what);
 }
 
-static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data, C4String *callback, C4Object *obj)
+static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data, C4String *callback, C4Object *obj, C4Value value)
 {
 	if (C4String *const name{data.getStr()}; name)
 	{
-		return static_cast<C4ValueInt>(Game.CreateSection(name->Data.getData(), FnStringPar(callback), ctx->GetSection(), obj ? obj : ctx->Obj));
+		return static_cast<C4ValueInt>(Game.CreateSection(name->Data.getData(), FnStringPar(callback), ctx->GetSection(), obj ? obj : ctx->Obj, value));
 	}
 	else if (data.GetType() != C4V_Map)
 	{
@@ -6280,10 +6280,10 @@ static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data, C4String *cal
 	C4SLandscape landscape;
 	landscape.Default();
 
-	C4Value value{map[C4VString("Landscape")]};
-	if (value.GetType() == C4V_Map)
+	C4Value landscapeValue{map[C4VString("Landscape")]};
+	if (landscapeValue.GetType() == C4V_Map)
 	{
-		C4ValueHash &landscapeParams{*value._getMap()};
+		C4ValueHash &landscapeParams{*landscapeValue._getMap()};
 
 		const auto assign = [&landscapeParams]<typename T>(T &field, const char *const key)
 		{
@@ -6352,7 +6352,7 @@ static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data, C4String *cal
 		assign(landscape.ShadeMaterials, "ShadeMaterials");
 	}
 
-	return static_cast<C4ValueInt>(Game.CreateEmptySection(landscape, FnStringPar(callback), ctx->GetSection(), obj ? obj : ctx->Obj));
+	return static_cast<C4ValueInt>(Game.CreateEmptySection(landscape, FnStringPar(callback), ctx->GetSection(), obj ? obj : ctx->Obj, value));
 }
 
 static C4ValueInt FnGetSectionCount(C4AulContext *ctx)

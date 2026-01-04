@@ -133,6 +133,7 @@ private:
 		std::string Callback;
 		std::uint32_t CallbackSection;
 		std::int32_t Target;
+		C4Value Value;
 	};
 
 public:
@@ -391,8 +392,8 @@ public:
 	bool SlowDown();
 	bool InitKeyboard(); // register main keyboard input functions
 
-	std::uint32_t CreateSection(const char *name, std::string callback, C4Section &sourceSection, C4Object *target);
-	std::uint32_t CreateEmptySection(const C4SLandscape &landscape, std::string callback, C4Section &sourceSection, C4Object *target);
+	std::uint32_t CreateSection(const char *name, std::string callback, C4Section &sourceSection, C4Object *target, const C4Value &value);
+	std::uint32_t CreateEmptySection(const C4SLandscape &landscape, std::string callback, C4Section &sourceSection, C4Object *target, const C4Value &value);
 	void OnSectionLoaded(std::uint32_t sectionNumber, std::int32_t byClient, bool success);
 	void OnSectionLoadFinished(std::uint32_t sectionNumber, bool success);
 
