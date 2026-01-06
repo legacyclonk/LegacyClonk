@@ -6360,7 +6360,7 @@ static C4ValueInt FnGetSectionCount(C4AulContext *ctx)
 	return static_cast<C4ValueInt>(std::ranges::count_if(Game.GetAllSections(), &C4Section::IsActive));
 }
 
-static C4ValueInt FnGetSectionByindex(C4AulContext *ctx, C4ValueInt i)
+static C4ValueInt FnGetSectionByIndex(C4AulContext *ctx, C4ValueInt i)
 {
 	// Check if we need to iterate in the first place
 	if (Inside(i, 0, static_cast<std::int32_t>(Game.GetAllSections().size()) - 1))
@@ -7432,7 +7432,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "SetRestoreInfos",                 FnSetRestoreInfos);
 	AddFunc(pEngine, "CreateSection",                   FnCreateSection);
 	AddFunc(pEngine, "GetSectionCount",                 FnGetSectionCount);
-	AddFunc(pEngine, "GetSectionByIndex",               FnGetSectionByindex);
+	AddFunc(pEngine, "GetSectionByIndex",               FnGetSectionByIndex);
 	AddFunc(pEngine, "SetSection",                      FnSetSection);
 	AddFunc(pEngine, "GetSection",                      FnGetSection);
 	AddFunc(pEngine, "GetSectionContext",               FnGetSectionContext);
