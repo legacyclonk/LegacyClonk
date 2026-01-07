@@ -61,7 +61,7 @@ const char *C4CFN_FLS[] =
 	C4CFN_ObjectInfoFiles,  C4FLS_Object,
 	C4CFN_ScenarioFiles,    C4FLS_Scenario,
 	C4CFN_FolderFiles,      C4FLS_Folder,
-	C4CFN_ScenarioSections, C4FLS_Section,
+	C4CFN_Sections,         C4FLS_Section,
 	C4CFN_Music,            C4FLS_Music,
 	nullptr, nullptr
 };

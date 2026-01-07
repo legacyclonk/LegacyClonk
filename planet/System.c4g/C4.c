@@ -2,6 +2,10 @@
 
 #strict 3
 
+static const C4SECT_SaveLandscape = 1;
+static const C4SECT_SaveObjects = 2;
+static const C4SECT_KeepEffects = 4;
+
 // Abgelöst durch SetPosition
 global func ForcePosition(object obj, int x, int y) { return SetPosition(x, y, obj); }
 
@@ -102,6 +106,11 @@ global func GetPathLength(int fromX, int fromY, int toX, int toY)
 }
 
 global func DrawModLandscape()
+{
+  return false;
+}
+
+global func LoadScenarioSection(string section, flags)
 {
   return false;
 }

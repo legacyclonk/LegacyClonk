@@ -108,34 +108,6 @@ bool C4GameSave::SaveCore()
 	return !!rC4S.Save(*pSaveGroup);
 }
 
-bool C4GameSave::SaveScenarioSections()
-{
-	// any scenario sections?
-	if (!Game.pScenarioSections) return true;
-	// prepare section filename
-	int iWildcardPos = SCharPos('*', C4CFN_ScenarioSections);
-	char fn[_MAX_FNAME + 1];
-	// save all modified sections
-	for (C4ScenarioSection *pSect = Game.pScenarioSections; pSect; pSect = pSect->pNext)
-	{
-		// compose section filename
-		SCopy(C4CFN_ScenarioSections, fn);
-		SDelete(fn, 1, iWildcardPos); SInsert(fn, pSect->GetName(), iWildcardPos);
-		// do not save self, because that is implied in CurrentScenarioSection and the main landscape/object data
-		if (pSect == Game.pCurrentScenarioSection)
-			pSaveGroup->DeleteEntry(fn);
-		else if (pSect->fModified)
-		{
-			// modified section: delete current
-			pSaveGroup->DeleteEntry(fn);
-			// replace by new
-			pSaveGroup->Add(pSect->GetTempFilename(), fn);
-		}
-	}
-	// done, success
-	return true;
-}
-
 bool C4GameSave::SaveLandscape(C4Section &section, C4Group &group)
 {
 	// exact?
@@ -187,12 +159,6 @@ bool C4GameSave::SaveLandscape(C4Section &section, C4Group &group)
 
 bool C4GameSave::SaveRuntimeData()
 {
-	// scenario sections (exact only)
-	if (IsExact()) if (!SaveScenarioSections())
-	{
-		Log(C4ResStrTableKey::IDS_ERR_SAVE_SCENSECTIONS); return false;
-	}
-
 	if (IsExact())
 	{
 		std::size_t counter{0};
@@ -597,7 +563,7 @@ bool C4GameSave::Save(C4Group &hToGroup, bool fKeepGroup)
 		pSaveGroup->Delete(C4CFN_Info);
 	}
 	// Always save Game.txt; even for saved scenarios, because global effects need to be saved
-	if (!Game.SaveData(*pSaveGroup, false, fInitial, IsExact()))
+	if (!Game.SaveData(*pSaveGroup, fInitial, IsExact()))
 	{
 		Log(C4ResStrTableKey::IDS_ERR_SAVE_RUNTIMEDATA); return false;
 	}
