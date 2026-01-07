@@ -5550,15 +5550,6 @@ static C4Value FnGetPortrait(C4AulContext *ctx, C4Object *pObj, bool fGetID, boo
 	}
 }
 
-static C4ValueInt FnLoadScenarioSection(C4AulContext *ctx, C4String *pstrSection, C4ValueInt dwFlags)
-{
-	// safety
-	const char *szSection;
-	if (!pstrSection || !*(szSection = FnStringPar(pstrSection))) return false;
-
-	throw C4AulExecError{ctx->Obj, "LoadScenarioSection broken"};
-}
-
 static bool FnSetObjectStatus(C4AulContext *ctx, C4ValueInt iNewStatus, C4Object *pObj, bool fClearPointers)
 {
 	// local call / safety
@@ -6904,10 +6895,6 @@ static constexpr C4ScriptConstDef C4ScriptConstMap[] =
 	{ "C4CMD_MoveTo_PushTarget",  C4V_Int, C4CMD_MoveTo_PushTarget },
 	{ "C4CMD_Enter_PushTarget",   C4V_Int, C4CMD_Enter_PushTarget },
 
-	{ "C4SECT_SaveLandscape", C4V_Int, C4S_SAVE_LANDSCAPE },
-	{ "C4SECT_SaveObjects",   C4V_Int, C4S_SAVE_OBJECTS },
-	{ "C4SECT_KeepEffects",   C4V_Int, C4S_KEEP_EFFECTS },
-
 	{ "TEAMID_New", C4V_Int, TEAMID_New },
 
 	{ "MSG_NoLinebreak", C4V_Int, C4GM_NoBreak },
@@ -7378,7 +7365,6 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "SetObjDrawTransform",             FnSetObjDrawTransform);
 	AddFunc(pEngine, "SetObjDrawTransform2",            FnSetObjDrawTransform2,            false);
 	AddFunc(pEngine, "SetPortrait",                     FnSetPortrait);
-	AddFunc(pEngine, "LoadScenarioSection",             FnLoadScenarioSection,             false);
 	AddFunc(pEngine, "SetObjectStatus",                 FnSetObjectStatus,                 false);
 	AddFunc(pEngine, "GetObjectStatus",                 FnGetObjectStatus,                 false);
 	AddFunc(pEngine, "AdjustWalkRotation",              FnAdjustWalkRotation,              false);

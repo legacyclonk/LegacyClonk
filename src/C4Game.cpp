@@ -492,10 +492,6 @@ void C4Game::CloseScenario()
 		EraseItem(szSzenarioFile);
 		TempScenarioFile = false;
 	}
-	// clear scenario section
-	// this removes any temp files, which may yet need to be used by any future features
-	// so better don't do this too early (like, in C4Game::Clear)
-	if (pScenarioSections) { delete pScenarioSections; pScenarioSections = pCurrentScenarioSection = nullptr; }
 }
 
 bool C4Game::PreInit()
@@ -1541,8 +1537,6 @@ void C4Game::Default()
 	GroupSet.Default();
 	pParentGroup = nullptr;
 	pGUI = nullptr;
-	pScenarioSections = pCurrentScenarioSection = nullptr;
-	*CurrentScenarioSection = 0;
 	pNetworkStatistics = nullptr;
 	IsMusicEnabled = false;
 	iMusicLevel = 100;
@@ -1646,7 +1640,7 @@ void C4Game::Ticks()
 
 void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp, std::function<C4Section &(StdCompiler &)> mainSectionProvider)
 {
-	if (!comp.fScenarioSection && comp.fExact)
+	if (comp.fExact)
 	{
 		const auto name = pComp->Name("Game");
 		pComp->Value(mkNamingAdapt(Time,                                    "Time",                   0));
@@ -1664,7 +1658,6 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp, std::function
 		pComp->Value(mkNamingAdapt(ObjectEnumerationIndex,                  "ObjectEnumerationIndex", 0));
 		pComp->Value(mkNamingAdapt(Rules,                                   "Rules",                  0));
 		pComp->Value(mkNamingAdapt(PlayList,                                "PlayList",               ""));
-		pComp->Value(mkNamingAdapt(mkStringAdaptMA(CurrentScenarioSection), "CurrentScenarioSection", ""));
 		pComp->Value(mkNamingAdapt(IsMusicEnabled,                          "MusicEnabled",           false));
 		pComp->Value(mkNamingAdapt(iMusicLevel,                             "MusicLevel",             100));
 		pComp->Value(mkNamingAdapt(NextMission,                             "NextMission",            StdStrBuf()));
@@ -1691,7 +1684,7 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp, std::function
 	}
 
 	// scoreboard compiles into main level [Scoreboard]
-	if (!comp.fScenarioSection && comp.fExact)
+	if (comp.fExact)
 		pComp->Value(mkNamingAdapt(Scoreboard, "Scoreboard"));
 	if (comp.fPlayers)
 	{
@@ -1707,10 +1700,10 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp, std::function
 
 void SetClientPrefix(char *szFilename, const char *szClient);
 
-bool C4Game::Decompile(std::string &buf, bool fSaveSection, bool fSaveExact)
+bool C4Game::Decompile(std::string &buf, bool fSaveExact)
 {
 	// Decompile (without players for scenario sections)
-	buf = DecompileToBuf<StdCompilerINIWrite>(mkParAdapt(*this, CompileSettings(fSaveSection, !fSaveSection && fSaveExact, fSaveExact)));
+	buf = DecompileToBuf<StdCompilerINIWrite>(mkParAdapt(*this, CompileSettings(fSaveExact, fSaveExact)));
 	return true;
 }
 
@@ -1762,7 +1755,7 @@ bool C4Game::CompileRuntimeData(C4ComponentHost &rGameData, std::function<C4Sect
 		// C4Game is not defaulted on compilation.
 		// Loading of runtime data overrides only certain values.
 		// Doesn't compile players; those will be done later
-		CompileSettings Settings(false, false, true);
+		CompileSettings Settings(false, true);
 		if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(
 			mkParAdapt(*this, Settings, mainSectionProvider),
 			StdStrBuf(data, false),
@@ -1776,7 +1769,7 @@ bool C4Game::CompileRuntimeData(C4ComponentHost &rGameData, std::function<C4Sect
 	return true;
 }
 
-bool C4Game::SaveData(C4Group &hGroup, bool fSaveSection, bool fInitial, bool fSaveExact)
+bool C4Game::SaveData(C4Group &hGroup, bool fInitial, bool fSaveExact)
 {
 	// Enumerate pointers & strings
 	if (PointersDenumerated)
@@ -1788,7 +1781,7 @@ bool C4Game::SaveData(C4Group &hGroup, bool fSaveSection, bool fInitial, bool fS
 
 	// Decompile
 	std::string buf;
-	if (!Decompile(buf, fSaveSection, fSaveExact))
+	if (!Decompile(buf, fSaveExact))
 		return false;
 
 	// Denumerate pointers, if game is in denumerated state
@@ -2800,29 +2793,6 @@ bool C4Game::LoadScenarioComponents()
 	// Overload clonk names from scenario file
 	if (ScenarioFile.EntryCount(C4CFN_Names))
 		Names.Load(LoadResStr(C4ResStrTableKey::IDS_CNS_NAMES), ScenarioFile, C4CFN_Names);
-	// scenario sections
-	char fn[_MAX_FNAME + 1] = { 0 };
-	ScenarioFile.ResetSearch(); *fn = 0;
-	while (ScenarioFile.FindNextEntry(C4CFN_ScenarioSections, fn, nullptr, nullptr, !!*fn))
-	{
-		// get section name
-		char SctName[_MAX_FNAME + 1];
-		int32_t iWildcardPos = SCharPos('*', C4CFN_ScenarioSections);
-		SCopy(fn + iWildcardPos, SctName, _MAX_FNAME);
-		RemoveExtension(SctName);
-		if (SLen(SctName) > C4MaxName || !*SctName)
-		{
-			DebugLog("invalid section name");
-			LogFatal(C4ResStrTableKey::IDS_ERR_SCENSECTION, +fn); return false;
-		}
-		// load this section into temp store
-		C4ScenarioSection *pSection = new C4ScenarioSection(SctName);
-		if (!pSection->ScenarioLoad(fn))
-		{
-			LogFatal(C4ResStrTableKey::IDS_ERR_SCENSECTION, +fn); return false;
-		}
-	}
-
 	// Success
 	return true;
 }
@@ -3728,167 +3698,6 @@ void C4Game::OnResolutionChanged()
 	{
 		GraphicsResource.ReloadResolutionDependentFiles();
 	}
-}
-
-bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
-{
-	LogNTr(spdlog::level::err, "LoadScenarioSection: broken");
-	return false;
-#if 0
-	// note on scenario section saving:
-	// if a scenario section overwrites a value that had used the default values in the main scenario section,
-	// returning to the main section with an unsaved landscape (and thus an unsaved scenario core),
-	// would leave those values in the altered state of the previous section
-	// scenario designers should regard this and always define any values, that are defined in subsections as well
-	C4Group hGroup, *pGrp;
-
-	// if current section was the loaded section (maybe main, but need not for resumed savegames)
-	if (!pCurrentScenarioSection)
-	{
-		pCurrentScenarioSection = new C4ScenarioSection(CurrentScenarioSection);
-		if (!*CurrentScenarioSection) SCopy(C4ScenSect_Main, CurrentScenarioSection, C4MaxName);
-	}
-
-	// find section to load
-	C4ScenarioSection *pLoadSect = pScenarioSections;
-	while (pLoadSect) if (SEqualNoCase(pLoadSect->GetName(), szSection)) break; else pLoadSect = pLoadSect->pNext;
-	if (!pLoadSect)
-	{
-		DebugLog(spdlog::level::err, "LoadScenarioSection: scenario section {} not found!", szSection);
-		return false;
-	}
-
-	// save current section state
-	if (pLoadSect != pCurrentScenarioSection && dwFlags & (C4S_SAVE_LANDSCAPE | C4S_SAVE_OBJECTS))
-	{
-		// ensure that the section file does point to temp store
-		if (!pCurrentScenarioSection->EnsureTempStore(!(dwFlags & C4S_SAVE_LANDSCAPE), !(dwFlags & C4S_SAVE_OBJECTS)))
-		{
-			DebugLog(spdlog::level::err, "LoadScenarioSection({}): could not extract section files of current section {}", szSection, pCurrentScenarioSection->GetName());
-			return false;
-		}
-		// open current group
-		if (!(pGrp = pCurrentScenarioSection->GetGroupfile(hGroup)))
-		{
-			DebugLog(spdlog::level::err, "LoadScenarioSection: error opening current group file");
-			return false;
-		}
-		// store landscape, if desired (w/o material enumeration - that's assumed to stay consistent during the game)
-		if (dwFlags & C4S_SAVE_LANDSCAPE)
-		{
-			// storing the landscape implies storing the scenario core
-			// otherwise, the ExactLandscape-flag would be lost
-			// maybe imply exact landscapes by the existance of Landscape.png-files?
-			C4Scenario rC4S = C4S;
-			rC4S.SetExactLandscape();
-			if (!rC4S.Save(*pGrp, true))
-			{
-				DebugLog(spdlog::level::err, "LoadScenarioSection: Error saving C4S");
-				return false;
-			}
-			// landscape
-			{
-				C4DebugRecOff DBGRECOFF;
-				Objects.RemoveSolidMasks();
-				if (!Landscape.Save(*pGrp))
-				{
-					DebugLog(spdlog::level::err, "LoadScenarioSection: Error saving Landscape");
-					return false;
-				}
-				Objects.PutSolidMasks();
-			}
-			// PXS
-			if (!PXS.Save(*pGrp))
-			{
-				DebugLog(spdlog::level::err, "LoadScenarioSection: Error saving PXS");
-				return false;
-			}
-			// MassMover (create copy, may not modify running data)
-			C4MassMoverSet MassMoverSet;
-			MassMoverSet.Copy(MassMover);
-			if (!MassMoverSet.Save(*pGrp))
-			{
-				DebugLog(spdlog::level::err, "LoadScenarioSection: Error saving MassMover");
-				return false;
-			}
-		}
-		// store objects
-		if (dwFlags & C4S_SAVE_OBJECTS)
-		{
-			// strings; those will have to be merged when reloaded
-			if (!ScriptEngine.Strings.Save(*pGrp))
-			{
-				DebugLog(spdlog::level::err, "LoadScenarioSection: Error saving strings");
-				return false;
-			}
-			// objects: do not save info objects or inactive objects
-			if (!Objects.Save(*pGrp, false, false))
-			{
-				DebugLog(spdlog::level::err, "LoadScenarioSection: Error saving objects");
-				return false;
-			}
-		}
-		// close current group
-		if (hGroup.IsOpen()) hGroup.Close();
-		// mark modified
-		pCurrentScenarioSection->fModified = true;
-	}
-	// open section group
-	if (!(pGrp = pLoadSect->GetGroupfile(hGroup)))
-	{
-		DebugLog(spdlog::level::err, "LoadScenarioSection: error opening group file");
-		return false;
-	}
-	// remove all objects (except inactive)
-	// do correct removal calls, because this will stop fire sounds, etc.
-	C4ObjectLink *clnk;
-	for (clnk = Objects.First; clnk; clnk = clnk->Next) clnk->Obj->AssignRemoval();
-	for (clnk = Objects.First; clnk; clnk = clnk->Next)
-		if (clnk->Obj->Status)
-		{
-			DebugLog(spdlog::level::warn, "LoadScenarioSection: Object {} created in destruction process!", static_cast<int>(clnk->Obj->Number));
-			ClearPointers(clnk->Obj);
-			// clnk->Obj->AssignRemoval(); - this could create additional objects in endless recursion...
-		}
-	DeleteObjects(false);
-	// remove global effects
-	if (pGlobalEffects)
-	{
-		pGlobalEffects->ClearAll(nullptr, C4FxCall_RemoveClear);
-		// scenario section call might have been done from a global effect
-		// rely on dead effect removal for actually removing the effects; do not clear the array here!
-	}
-	// del particles as well
-	Particles.ClearParticles();
-	// clear transfer zones
-	TransferZones.Clear();
-	// backup old sky
-	char szOldSky[C4MaxDefString + 1];
-	SCopy(C4S.Landscape.SkyDef, szOldSky, C4MaxDefString);
-	// overload scenario values (fails if no scenario core is present; that's OK)
-	C4S.Load(*pGrp, true);
-	// determine whether a new sky has to be loaded
-	bool fLoadNewSky = !SEqualNoCase(szOldSky, C4S.Landscape.SkyDef) || pGrp->FindEntry(C4CFN_Sky ".*");
-	// re-init game in new section
-	if (!InitGame(*pGrp, pLoadSect, fLoadNewSky))
-	{
-		DebugLog(spdlog::level::err, "LoadScenarioSection: Error reiniting game");
-		return false;
-	}
-	// set new current section
-	pCurrentScenarioSection = pLoadSect;
-	SCopy(pCurrentScenarioSection->GetName(), CurrentScenarioSection);
-	// resize viewports
-	GraphicsSystem.RecalculateViewports();
-
-	for (auto plr = Players.First; plr; plr = plr->Next)
-	{
-		plr->ApplyForcedControl();
-	}
-
-	// done, success
-	return true;
-#endif
 }
 
 bool C4Game::ToggleDebugMode()

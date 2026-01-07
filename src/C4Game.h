@@ -105,12 +105,11 @@ private:
 	// used as StdCompiler-parameter
 	struct CompileSettings
 	{
-		bool fScenarioSection;
 		bool fPlayers;
 		bool fExact;
 
-		CompileSettings(bool fScenarioSection, bool fPlayers, bool fExact)
-			: fScenarioSection(fScenarioSection), fPlayers(fPlayers), fExact(fExact) {}
+		CompileSettings(bool fPlayers, bool fExact)
+			: fPlayers(fPlayers), fExact(fExact) {}
 	};
 
 	// struct of keyboard set and indexed control key
@@ -178,7 +177,6 @@ public:
 	C4Group *pParentGroup;
 	C4Extra Extra;
 	C4GUI::Screen *pGUI;
-	C4ScenarioSection *pScenarioSections, *pCurrentScenarioSection;
 #ifndef USE_CONSOLE
 	// We don't need fonts when we don't have graphics
 	C4FontLoader FontLoader;
@@ -186,7 +184,6 @@ public:
 	C4Scoreboard Scoreboard;
 	class C4Network2Stats *pNetworkStatistics; // may be nullptr if no statistics are recorded
 	class C4KeyboardInput &KeyboardInput;
-	char CurrentScenarioSection[C4MaxName + 1];
 	char ScenarioFilename[_MAX_PATH + 1];
 	char PlayerFilenames[20 * _MAX_PATH + 1];
 	std::vector<std::string> DefinitionFilenames;
@@ -385,8 +382,6 @@ public:
 		}
 	}
 
-	bool LoadScenarioSection(const char *szSection, uint32_t dwFlags);
-
 	bool DrawTextSpecImage(C4FacetExSurface &fctTarget, const char *szSpec, uint32_t dwClr = 0xff);
 	bool SpeedUp();
 	bool SlowDown();
@@ -437,11 +432,11 @@ protected:
 	bool InitDefs();
 	bool EnumerateMaterials();
 	bool GameOverCheck();
-	bool Decompile(std::string &buf, bool fSaveSection, bool fSaveExact);
+	bool Decompile(std::string &buf, bool fSaveExact);
 
 public:
 	void CompileFunc(StdCompiler *pComp, CompileSettings comp, std::function<C4Section &(StdCompiler &)> mainSectionProvider = {});
-	bool SaveData(C4Group &hGroup, bool fSaveSection, bool fInitial, bool fSaveExact);
+	bool SaveData(C4Group &hGroup, bool fInitial, bool fSaveExact);
 
 protected:
 	bool CompileRuntimeData(C4ComponentHost &rGameData, std::function<C4Section &(StdCompiler &)> mainSectionProvider);

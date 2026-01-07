@@ -30,7 +30,7 @@
 #define C4CFN_Extra     "Extra.c4g"
 #define C4CFN_Languages "Language.c4g"
 
-#define C4CFN_ScenarioSections "Sect*.c4g"
+#define C4CFN_Sections "Sect*.c4g"
 #define C4CFN_Section "Sect{}.c4g"
 #define C4CFN_SectionRuntimeData "Section.txt"
 #define C4CFN_SavedSection "SaveSect{}-{}.c4g"
