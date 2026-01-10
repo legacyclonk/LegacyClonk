@@ -1036,7 +1036,8 @@ bool C4Network2::HandlePuncherPacket(const C4NetpuncherPacket::uptr pkt, const C
 			}
 			return true;
 		default:
-			return false;
+			// ignore unexpected puncher packets
+			return true;
 	}
 #pragma pop_macro("GETPKT")
 }
