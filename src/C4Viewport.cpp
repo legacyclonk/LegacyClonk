@@ -193,6 +193,7 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 
 		case WM_MOUSEMOVE: Console.EditCursor.Move(cvp, static_cast<int32_t>(LOWORD(lParam) / scale), static_cast<int32_t>(HIWORD(lParam) / scale), wParam); break;
 
+		case WM_KEYDOWN: Console.EditCursor.MoveObjects(wParam); break;
 		}
 	}
 

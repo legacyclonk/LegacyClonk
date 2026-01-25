@@ -78,6 +78,7 @@ public:
 	void OnSelectionChanged();
 	bool AltDown();
 	bool AltUp();
+	void MoveObjects(uint16_t wKeyFlags);
 
 protected:
 	bool UpdateStatusBar();

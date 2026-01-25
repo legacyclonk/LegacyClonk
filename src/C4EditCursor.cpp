@@ -835,3 +835,21 @@ bool C4EditCursor::AltUp()
 	// key not processed - allow further usages of Alt
 	return false;
 }
+
+void C4EditCursor::MoveObjects(uint16_t wKeyFlags)
+{
+	C4Object *cobj;
+	C4ObjectLink *clnk;
+	for (clnk = Selection.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
+	{
+		if(!cobj)
+		{
+			continue;
+		}
+
+		if (wKeyFlags == VK_UP) cobj->MovePosition(0, -1);
+		if (wKeyFlags == VK_DOWN) cobj->MovePosition(0, 1);
+		if (wKeyFlags == VK_RIGHT) cobj->MovePosition(1, 0);
+		if (wKeyFlags == VK_LEFT) cobj->MovePosition(-1, 0);
+	}
+}
