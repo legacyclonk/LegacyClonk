@@ -436,6 +436,18 @@ void C4EditCursor::Draw(C4FacetEx &cgo)
 			cobj->BlitMode = dwOldBlitMode;
 		}
 	}
+	// Highlight target on hover.
+	if(Target)
+	{
+		uint32_t dwOldMod = Target->ColorMod;
+		uint32_t dwOldBlitMode = Target->BlitMode;
+		Target->ColorMod = 0x5555aa;
+		Target->BlitMode = C4GFXBLIT_CLRSFC_MOD2 | C4GFXBLIT_ADDITIVE;
+		Target->Draw(cgo, -1);
+		Target->DrawTopFace(cgo, -1);
+		Target->ColorMod = dwOldMod;
+		Target->BlitMode = dwOldBlitMode;
+	}
 	// Draw drag frame
 	if (DragFrame)
 		Application.DDraw->DrawFrame(cgo.Surface, (std::min)(X, X2) + cgo.X - cgo.TargetX, (std::min)(Y, Y2) + cgo.Y - cgo.TargetY, (std::max)(X, X2) + cgo.X - cgo.TargetX, (std::max)(Y, Y2) + cgo.Y - cgo.TargetY, CWhite);
