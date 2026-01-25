@@ -230,12 +230,23 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 			// Click on unselected: select single
 			if (Target && !Selection.GetLink(Target))
 			{
-				Selection.Clear(); Selection.Add(Target, C4ObjectList::stNone);
+				if(!Application.IsShiftDown())
+				{
+					Selection.Clear();
+				}
+
+				Selection.Add(Target, C4ObjectList::stNone);
 			}
 			// Click on nothing: drag frame
 			if (!Target)
 			{
-				Selection.Clear(); DragFrame = true; X2 = X; Y2 = Y;
+				if(!Application.IsShiftDown())
+				{
+					Selection.Clear();
+				}
+				DragFrame = true;
+				X2 = X;
+				Y2 = Y;
 			}
 		}
 		break;
@@ -272,23 +283,9 @@ bool C4EditCursor::RightButtonDown(bool fControl)
 	case C4CNS_ModeEdit:
 		if (!fControl)
 		{
-			// Check whether cursor is on anything in the selection
-			bool fCursorIsOnSelection = false;
-			for (C4ObjectLink *pLnk = Selection.First; pLnk; pLnk = pLnk->Next)
-				if (pLnk->Obj->At(X, Y))
-				{
-					fCursorIsOnSelection = true;
-					break;
-				}
-			if (!fCursorIsOnSelection)
+			if (Target && Selection.IsClear())
 			{
-				// Click on unselected
-				if (Target && !Selection.GetLink(Target))
-				{
-					Selection.Clear(); Selection.Add(Target, C4ObjectList::stNone);
-				}
-				// Click on nothing
-				if (!Target) Selection.Clear();
+				Selection.Add(Target, C4ObjectList::stNone);
 			}
 		}
 		break;
@@ -482,11 +479,14 @@ void C4EditCursor::MoveSelection(int32_t iXOff, int32_t iYOff)
 
 void C4EditCursor::FrameSelection()
 {
-	Selection.Clear();
 	C4Object *cobj; C4ObjectLink *clnk;
 	for (clnk = Game.Objects.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
 		if (cobj->Status) if (cobj->OCF & OCF_NotContained)
 		{
+			if(Selection.IsContained(cobj)) // Contained as in: "Part of selection"
+			{
+				continue;
+			}
 			if (Inside(cobj->x, (std::min)(X, X2), (std::max)(X, X2)) && Inside(cobj->y, (std::min)(Y, Y2), (std::max)(Y, Y2)))
 				Selection.Add(cobj, C4ObjectList::stNone);
 		}
