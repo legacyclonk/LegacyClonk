@@ -162,6 +162,7 @@ public:
 	bool DrawBox(int32_t iX1, int32_t iY1, int32_t iX2, int32_t iY2, int32_t iGrade, const char *szMaterial, const char *szTexture, bool fIFT);
 	bool DrawChunks(int32_t tx, int32_t ty, int32_t wdt, int32_t hgt, int32_t icntx, int32_t icnty, const char *szMaterial, const char *szTexture, bool bIFT);
 	bool DrawQuad(int32_t iX1, int32_t iY1, int32_t iX2, int32_t iY2, int32_t iX3, int32_t iY3, int32_t iX4, int32_t iY4, const char *szMaterial, bool bIFT);
+	bool DrawLandscape(const C4Landscape &source, std::int32_t x, std::int32_t y, std::int32_t width, std::int32_t height, std::int32_t targetX, std::int32_t targetY, const std::array<std::uint8_t, 255> *materialTranslation);
 	CStdPalette *GetPal() const { return Surface8 ? Surface8->pPal : nullptr; }
 
 	inline uint8_t _GetPix(int32_t x, int32_t y) // get landscape pixel (bounds not checked)

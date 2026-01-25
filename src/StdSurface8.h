@@ -50,13 +50,13 @@ public:
 		if (Bits) Bits[iY * Pitch + iX] = byCol;
 	}
 
-	uint8_t GetPix(int iX, int iY) // get pixel
+	uint8_t GetPix(int iX, int iY) const noexcept // get pixel
 	{
 		if (iX < 0 || iY < 0 || iX >= Wdt || iY >= Hgt) return 0;
 		return Bits ? Bits[iY * Pitch + iX] : 0;
 	}
 
-	inline uint8_t _GetPix(int x, int y) // get pixel (bounds not checked)
+	inline uint8_t _GetPix(int x, int y) const noexcept // get pixel (bounds not checked)
 	{
 		return Bits[y * Pitch + x];
 	}

@@ -6496,6 +6496,26 @@ static bool FnSetSectionPosition(C4AulContext *ctx, C4ValueInt sectionNumber, C4
 	return true;
 }
 
+static bool FnDrawLandscape(C4AulContext *ctx, C4ValueInt sourceSectionNumber, C4ValueInt x, C4ValueInt y, C4ValueInt width, C4ValueInt height, C4ValueInt targetSectionNumber, C4ValueInt targetX, C4ValueInt targetY)
+{
+	C4Section *const sourceSection{Game.GetSectionByNumber(static_cast<std::uint32_t>(sourceSectionNumber))};
+	if (!sourceSection) return false;
+
+	C4Section *const targetSection{Game.GetSectionByNumber(static_cast<std::uint32_t>(targetSectionNumber))};
+	if (!targetSection) return false;
+
+	return targetSection->Landscape.DrawLandscape(
+				sourceSection->Landscape,
+				static_cast<std::int32_t>(x),
+				static_cast<std::int32_t>(y),
+				static_cast<std::int32_t>(width),
+				static_cast<std::int32_t>(height),
+				static_cast<std::int32_t>(targetX),
+				static_cast<std::int32_t>(targetY),
+				nullptr
+				);
+}
+
 template<std::size_t ParCount>
 class C4AulEngineFuncHelper : public C4AulFunc
 {
@@ -7428,6 +7448,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "SetSectionStatus",                FnSetSectionStatus);
 	AddFunc(pEngine, "AddBackgroundSection",            FnAddBackgroundSection);
 	AddFunc(pEngine, "SetSectionPosition",              FnSetSectionPosition);
+	AddFunc(pEngine, "DrawLandscape",                   FnDrawLandscape);
 	new C4AulDefCastFunc<C4V_C4ID, C4V_Int>{pEngine, "ScoreboardCol"};
 	new C4AulDefCastFunc<C4V_Any, C4V_Int>{pEngine, "CastInt"};
 	new C4AulDefCastFunc<C4V_Any, C4V_Bool>{pEngine, "CastBool"};

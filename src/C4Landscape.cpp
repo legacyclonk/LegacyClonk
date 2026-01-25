@@ -2605,6 +2605,44 @@ bool C4Landscape::DrawQuad(int32_t iX1, int32_t iY1, int32_t iX2, int32_t iY2, i
 	return true;
 }
 
+bool C4Landscape::DrawLandscape(const C4Landscape &source, const std::int32_t x, const std::int32_t y, const std::int32_t width, const std::int32_t height, const std::int32_t targetX, const std::int32_t targetY, const std::array<std::uint8_t, 255> *const materialTranslation)
+{
+	const CSurface8 &sourceSurface{*source.Surface8};
+	if (x < 0 || y < 0 || width <= 0 || height <= 0 || x + width > sourceSurface.Wdt || y + height > sourceSurface.Hgt || targetX + width > Surface8->Wdt || targetY + height > Surface8->Hgt)
+	{
+		return false;
+	}
+
+	const C4Rect boundingBox{targetX, targetY, width, height};
+	PrepareChange(boundingBox);
+
+	if (materialTranslation)
+	{
+		for (std::int32_t j{0}; j < height; ++j)
+		{
+			for (std::int32_t i{0}; i < width; ++i)
+			{
+				std::uint8_t material{(*materialTranslation)[sourceSurface.GetPix(x + i, y + j)]};
+				Surface8->SetPix(targetX + i, targetY + j, material);
+			}
+		}
+	}
+	else
+	{
+		for (std::int32_t j{0}; j < height; ++j)
+		{
+			for (std::int32_t i{0}; i < width; ++i)
+			{
+				Surface8->SetPix(targetX + i, targetY + j, sourceSurface.GetPix(x + i, y + j));
+			}
+		}
+	}
+
+	FinishChange(boundingBox);
+
+	return true;
+}
+
 uint8_t C4Landscape::GetMapIndex(int32_t iX, int32_t iY)
 {
 	if (!Map) return 0;
