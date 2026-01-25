@@ -112,6 +112,7 @@ public:
 	bool IsViewportMenu(class C4Menu *pMenu);
 	int32_t GetPlayer() { return Player; }
 	void CenterPosition();
+	bool ScrollBarsByViewPosition();
 
 protected:
 	int32_t Player;
@@ -134,7 +135,6 @@ protected:
 	void AdjustPosition();
 	bool UpdateOutputSize();
 	bool ViewPositionByScrollBars();
-	bool ScrollBarsByViewPosition();
 
 	friend class C4ViewportWindow;
 };

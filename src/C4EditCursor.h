@@ -35,8 +35,9 @@ protected:
 	bool fAltWasDown;
 	bool fSelectionChanged;
 	int32_t Mode;
-	int32_t X, Y, X2, Y2;
-	bool Hold, DragFrame, DragLine;
+	int32_t X, Y, X2, Y2, CursorX, CursorY;
+	bool HoldLeft, DragFrame, DragLine;
+	bool HoldRight, DragViewport;
 	C4Object *Target, *DropTarget;
 #ifdef _WIN32
 	HMENU hMenu;
@@ -69,11 +70,11 @@ public:
 	bool RightButtonUp();
 	bool RightButtonDown(bool fControl);
 	void MiddleButtonUp();
-	bool Move(int32_t iX, int32_t iY, uint16_t wKeyFlags);
+	bool Move(C4Viewport *cvp, int32_t iX, int32_t iY, uint16_t wKeyFlags);
 	bool Init();
 	bool EditingOK();
 	C4ObjectList &GetSelection() { return Selection; }
-	void SetHold(bool fToState) { Hold = fToState; }
+	void SetHold(bool fToState) { HoldLeft = fToState; }
 	void OnSelectionChanged();
 	bool AltDown();
 	bool AltUp();

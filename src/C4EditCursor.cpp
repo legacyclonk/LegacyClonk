@@ -53,7 +53,7 @@ void C4EditCursor::Execute()
 	{
 	case C4CNS_ModeEdit:
 		// Hold selection
-		if (Hold)
+		if (HoldLeft)
 			EMMoveObject(EMMO_Move, 0, 0, nullptr, &Selection);
 		break;
 
@@ -61,7 +61,7 @@ void C4EditCursor::Execute()
 		switch (Console.ToolsDlg.Tool)
 		{
 		case C4TLS_Fill:
-			if (Hold) if (!Game.HaltCount) if (Console.Editing) ApplyToolFill();
+			if (HoldLeft) if (!Game.HaltCount) if (Console.Editing) ApplyToolFill();
 			break;
 		}
 		break;
@@ -116,16 +116,38 @@ void C4EditCursor::ClearPointers(C4Object *pObj)
 		OnSelectionChanged();
 }
 
-bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
+bool C4EditCursor::Move(C4Viewport *cvp, int32_t iX, int32_t iY, uint16_t wKeyFlags)
 {
 	// Offset movement
-	int32_t xoff = iX - X; int32_t yoff = iY - Y; X = iX; Y = iY;
+	int32_t xoff = iX - CursorX;
+	int32_t yoff = iY - CursorY;
+	CursorX = iX;
+	CursorY = iY;
+	X = cvp->ViewX + iX;
+	Y = cvp->ViewY + iY;
+
+	if(HoldRight)
+	{
+		if(C4Viewport *Viewport = Game.GraphicsSystem.GetViewport(NO_OWNER))
+		{
+			Viewport->ViewX -= xoff;
+			Viewport->ViewY -= yoff;
+			Viewport->UpdateViewPosition();
+			cvp->ScrollBarsByViewPosition();
+			// Allow the context menu on right click to be opened when we didn't drag the viewport.
+			if(abs(xoff) > 1 || abs(yoff) > 1)
+			{
+				DragViewport = true;
+			}
+		}
+		return true;
+	}
 
 	switch (Mode)
 	{
 	case C4CNS_ModeEdit:
 		// Hold
-		if (!DragFrame && Hold)
+		if (!DragFrame && HoldLeft)
 		{
 			MoveSelection(xoff, yoff);
 			UpdateDropTarget(wKeyFlags);
@@ -146,7 +168,7 @@ bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
 		switch (Console.ToolsDlg.Tool)
 		{
 		case C4TLS_Brush:
-			if (Hold) ApplyToolBrush();
+			if (HoldLeft) ApplyToolBrush();
 			break;
 		case C4TLS_Line: case C4TLS_Rect:
 			break;
@@ -191,7 +213,7 @@ void C4EditCursor::OnSelectionChanged()
 bool C4EditCursor::LeftButtonDown(bool fControl)
 {
 	// Hold
-	Hold = true;
+	HoldLeft = true;
 
 	switch (Mode)
 	{
@@ -227,7 +249,7 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 		case C4TLS_Fill:
 			if (Game.HaltCount)
 			{
-				Hold = false; Console.Message(LoadResStr(C4ResStrTableKey::IDS_CNS_FILLNOHALT)); return false;
+				HoldLeft = false; Console.Message(LoadResStr(C4ResStrTableKey::IDS_CNS_FILLNOHALT)); return false;
 			}
 			break;
 		case C4TLS_Picker: ApplyToolPicker(); break;
@@ -243,6 +265,8 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 
 bool C4EditCursor::RightButtonDown(bool fControl)
 {
+	HoldRight = true;
+
 	switch (Mode)
 	{
 	case C4CNS_ModeEdit:
@@ -298,7 +322,7 @@ bool C4EditCursor::LeftButtonUp()
 	}
 
 	// Release
-	Hold = false;
+	HoldLeft = false;
 	DragFrame = false;
 	DragLine = false;
 	DropTarget = nullptr;
@@ -333,16 +357,25 @@ bool C4EditCursor::RightButtonUp()
 {
 	Target = nullptr;
 
-	DoContextMenu();
+	if(DragViewport)
+	{
+		DragViewport = false;
+	}
+	else
+	{
+		DoContextMenu();
+	}
 
 	// Update
 	UpdateStatusBar();
+	// Release
+	HoldRight = false;
 	return true;
 }
 
 void C4EditCursor::MiddleButtonUp()
 {
-	if (Hold) return;
+	if (HoldLeft) return;
 
 	ApplyToolPicker();
 }
@@ -475,7 +508,7 @@ void C4EditCursor::Default()
 #ifdef _WIN32
 	hMenu = nullptr;
 #endif
-	Hold = DragFrame = DragLine = false;
+	HoldLeft = DragFrame = DragLine = false;
 	Selection.Default();
 	fSelectionChanged = false;
 }
@@ -634,7 +667,7 @@ void C4EditCursor::GrabContents()
 	if (!(pFrom = Selection.GetObject())) return;
 	Selection.Copy(pFrom->Contents);
 	Console.PropertyDlg.Update(Selection);
-	Hold = true;
+	HoldLeft = true;
 
 	// Exit all objects
 	EMMoveObject(EMMO_Exit, 0, 0, nullptr, &Selection);
@@ -674,7 +707,7 @@ bool C4EditCursor::EditingOK()
 {
 	if (!Console.Editing)
 	{
-		Hold = false;
+		HoldLeft = false;
 		Console.Message(LoadResStr(C4ResStrTableKey::IDS_CNS_NONETEDIT));
 		return false;
 	}
@@ -718,7 +751,7 @@ void C4EditCursor::ApplyToolPicker()
 			Console.ToolsDlg.SelectMaterial(C4TLS_MatSky);
 		break;
 	}
-	Hold = false;
+	HoldLeft = false;
 }
 
 void C4EditCursor::EMMoveObject(C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj, const C4ObjectList *pObjs, const char *szScript)
