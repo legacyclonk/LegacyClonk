@@ -4222,6 +4222,7 @@ bool C4Game::ToggleDebugMode()
 	Toggle(DebugMode);
 	if (!DebugMode) GraphicsSystem.DeactivateDebugOutput();
 	GraphicsSystem.FlashMessageOnOff(LoadResStr(C4ResStrTableKey::IDS_CTL_DEBUGMODE), DebugMode);
+	Application.LogSystem.EnableDebugLog(DebugMode);
 	return true;
 }
 
