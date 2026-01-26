@@ -194,6 +194,26 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 		case WM_MOUSEMOVE: Console.EditCursor.Move(cvp, static_cast<int32_t>(LOWORD(lParam) / scale), static_cast<int32_t>(HIWORD(lParam) / scale), wParam); break;
 
 		case WM_KEYDOWN: Console.EditCursor.MoveObjects(wParam); break;
+
+		case WM_MOUSEWHEEL:
+			const int32_t PreviousBrushSize = Console.ToolsDlg.Grade;
+			const short Direction = static_cast<short>(wParam >> 16) > 0 ? 1.0 : -1.0;
+			if (Game.Landscape.Mode == C4LSC_Exact)
+			{
+				Console.ToolsDlg.ChangeGrade(Direction);
+			}
+			else
+			{
+				int32_t ZoomHalf = Game.Landscape.MapZoom / 2;
+				// Snap to grid for static landscapes.
+				int32_t BrushSizeIncrements = Direction * ZoomHalf;
+				Console.ToolsDlg.ChangeGrade(BrushSizeIncrements);
+			}
+			if(PreviousBrushSize != Console.ToolsDlg.Grade)
+			{
+				DebugLog(spdlog::level::info, std::format("Current brush size: {}", Console.ToolsDlg.Grade));
+			}
+			break;
 		}
 	}
 
