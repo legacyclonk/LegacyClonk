@@ -451,14 +451,56 @@ void C4EditCursor::Draw(C4FacetEx &cgo)
 	// Draw drag frame
 	if (DragFrame)
 		Application.DDraw->DrawFrame(cgo.Surface, (std::min)(X, X2) + cgo.X - cgo.TargetX, (std::min)(Y, Y2) + cgo.Y - cgo.TargetY, (std::max)(X, X2) + cgo.X - cgo.TargetX, (std::max)(Y, Y2) + cgo.Y - cgo.TargetY, CWhite);
-	// Draw drag line
-	if (DragLine)
-		Application.DDraw->DrawLine(cgo.Surface, X + cgo.X - cgo.TargetX, Y + cgo.Y - cgo.TargetY, X2 + cgo.X - cgo.TargetX, Y2 + cgo.Y - cgo.TargetY, CWhite);
 	// Draw drop target
 	if (DropTarget)
 		Game.GraphicsResource.fctDropTarget.Draw(cgo.Surface,
 			DropTarget->x +                       cgo.X - cgo.TargetX - Game.GraphicsResource.fctDropTarget.Wdt / 2,
 			DropTarget->y + DropTarget->Shape.y + cgo.Y - cgo.TargetY - Game.GraphicsResource.fctDropTarget.Hgt);
+	if(Mode == C4CNS_ModeDraw)
+	{
+		// Draw cursor outline for Brush and Line
+			C4ToolsDlg *pTools = &Console.ToolsDlg;
+			if(pTools)
+			{
+				int32_t ScreenPosX1 = CursorX;
+				int32_t ScreenPosY1 = CursorY;
+				int32_t Radius = pTools->Grade;
+				const int32_t ViewportOffsetX = X - CursorX;
+				const int32_t ViewportOffsetY = Y - CursorY;
+				int32_t ScreenPosX2 = X2 - ViewportOffsetX;
+				int32_t ScreenPosY2 = Y2 - ViewportOffsetY;
+				if(Game.Landscape.Mode != C4LSC_Exact)
+				{
+					// Snap circle to map grid.
+					int32_t Zoom = Game.Landscape.MapZoom;
+					ScreenPosX1 = std::round(X / Zoom) * Zoom - (ViewportOffsetX) + (Radius > Zoom / 2 ? 0 : Zoom / 2);
+					ScreenPosY1 = std::round(Y / Zoom) * Zoom - (ViewportOffsetY) + Zoom / 2;
+
+					ScreenPosX2 = std::round(X2 / Zoom) * Zoom - (ViewportOffsetX) + (Radius > Zoom / 2 ? 0 : Zoom / 2);
+					ScreenPosY2 = std::round(Y2 / Zoom) * Zoom - (ViewportOffsetY) + Zoom / 2;
+
+					Radius = pTools->Grade + ((pTools->Grade / (Zoom / 2)) - 1) * (Zoom / 2);
+				}
+				switch (Console.ToolsDlg.SelectedTool)
+				{
+				case C4TLS_Brush:
+					Application.DDraw->DrawCircleOutline(cgo.Surface, ScreenPosX1, ScreenPosY1, Radius, CWhite);
+					break;
+				case C4TLS_Line:
+					if(DragLine)
+					{
+						Application.DDraw->DrawCapsuleOutline(cgo.Surface, ScreenPosX1, ScreenPosY1, ScreenPosX2, ScreenPosY2, Radius, CWhite);
+					}
+					else
+					{
+						Application.DDraw->DrawCircleOutline(cgo.Surface, ScreenPosX1, ScreenPosY1, Radius, CWhite);
+					}
+					break;
+				default:
+					break;
+				}
+			}
+	}
 }
 
 void C4EditCursor::DrawSelectMark(C4Facet &cgo)
