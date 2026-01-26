@@ -193,7 +193,11 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 
 		case WM_MOUSEMOVE: Console.EditCursor.Move(cvp, static_cast<int32_t>(LOWORD(lParam) / scale), static_cast<int32_t>(HIWORD(lParam) / scale), wParam); break;
 
-		case WM_KEYDOWN: Console.EditCursor.MoveObjects(wParam); break;
+		case WM_KEYDOWN:
+			if (wParam == VK_UP) Console.EditCursor.MoveSelection(0, -1);
+			if (wParam == VK_DOWN) Console.EditCursor.MoveSelection(0, 1);
+			if (wParam == VK_RIGHT) Console.EditCursor.MoveSelection(1, 0);
+			if (wParam == VK_LEFT) Console.EditCursor.MoveSelection(-1, 0);
 
 		case WM_MOUSEWHEEL:
 			const int32_t PreviousBrushSize = Console.ToolsDlg.Grade;
