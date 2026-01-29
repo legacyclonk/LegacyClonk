@@ -449,7 +449,7 @@ void C4EditCursor::Draw(C4FacetEx &cgo)
 		Target->BlitMode = dwOldBlitMode;
 	}
 	// Draw drag frame
-	if (DragFrame)
+	if (DragFrame && Mode != C4CNS_ModeDraw)
 		Application.DDraw->DrawFrame(cgo.Surface, (std::min)(X, X2) + cgo.X - cgo.TargetX, (std::min)(Y, Y2) + cgo.Y - cgo.TargetY, (std::max)(X, X2) + cgo.X - cgo.TargetX, (std::max)(Y, Y2) + cgo.Y - cgo.TargetY, CWhite);
 	// Draw drop target
 	if (DropTarget)
@@ -469,17 +469,28 @@ void C4EditCursor::Draw(C4FacetEx &cgo)
 			const int32_t ViewportOffsetY = Y - CursorY;
 			int32_t ScreenPosX2 = X2 - ViewportOffsetX;
 			int32_t ScreenPosY2 = Y2 - ViewportOffsetY;
+			int32_t Zoom = Game.Landscape.MapZoom;
 			if(Game.Landscape.Mode != C4LSC_Exact)
 			{
 				// Snap circle to map grid.
-				int32_t Zoom = Game.Landscape.MapZoom;
-				ScreenPosX1 = std::round(X / Zoom) * Zoom - (ViewportOffsetX) + (Radius > Zoom / 2 ? 0 : Zoom / 2);
-				ScreenPosY1 = std::round(Y / Zoom) * Zoom - (ViewportOffsetY) + Zoom / 2;
+				ScreenPosX1 = std::round(X / Zoom) * Zoom - (ViewportOffsetX);
+				ScreenPosY1 = std::round(Y / Zoom) * Zoom - (ViewportOffsetY);
 
-				ScreenPosX2 = std::round(X2 / Zoom) * Zoom - (ViewportOffsetX) + (Radius > Zoom / 2 ? 0 : Zoom / 2);
-				ScreenPosY2 = std::round(Y2 / Zoom) * Zoom - (ViewportOffsetY) + Zoom / 2;
+				ScreenPosX2 = std::round(X2 / Zoom) * Zoom - (ViewportOffsetX);
+				ScreenPosY2 = std::round(Y2 / Zoom) * Zoom - (ViewportOffsetY);
 
 				Radius = pTools->Grade + ((pTools->Grade / (Zoom / 2)) - 1) * (Zoom / 2);
+
+				if(Console.ToolsDlg.SelectedTool == C4TLS_Brush || Console.ToolsDlg.SelectedTool == C4TLS_Line)
+				{
+					// Drawn circles are offset to the left when the radius is greater than one grid unit.
+					ScreenPosX1 += (Radius > Zoom / 2 ? 0 : Zoom / 2);
+					ScreenPosX2 += (Radius > Zoom / 2 ? 0 : Zoom / 2);
+
+					// Circles always use the center of the grid on the Y axis.
+					ScreenPosY1 += Zoom / 2;
+					ScreenPosY2 += Zoom / 2;
+				}
 			}
 			switch (Console.ToolsDlg.SelectedTool)
 			{
@@ -496,6 +507,27 @@ void C4EditCursor::Draw(C4FacetEx &cgo)
 					Application.DDraw->DrawCircleOutline(cgo.Surface, ScreenPosX1, ScreenPosY1, Radius, CWhite);
 				}
 				break;
+			case C4TLS_Rect:
+				if(DragFrame)
+				{
+					if(Game.Landscape.Mode != C4LSC_Exact)
+					{
+						ScreenPosX1 = std::round((X<X2?X:X2) / Zoom) * Zoom - (ViewportOffsetX);
+						ScreenPosY1 = std::round((Y<Y2?Y:Y2) / Zoom) * Zoom - (ViewportOffsetY);
+						ScreenPosX2 = std::round((X>X2?X:X2) / Zoom + 1) * Zoom - (ViewportOffsetX);
+						ScreenPosY2 = std::round((Y>Y2?Y:Y2) / Zoom + 1) * Zoom - (ViewportOffsetY);
+					}
+					Application.DDraw->DrawFrame(cgo.Surface, ScreenPosX1, ScreenPosY1, ScreenPosX2, ScreenPosY2, CWhite);
+				}
+				else
+				{
+					int32_t box_size = 1;
+					if(Game.Landscape.Mode != C4LSC_Exact)
+					{
+						box_size = Zoom;
+					}
+					Application.DDraw->DrawFrame(cgo.Surface, ScreenPosX1, ScreenPosY1, ScreenPosX1 + box_size, ScreenPosY1 + box_size, CWhite);
+				}
 			default:
 				break;
 			}
