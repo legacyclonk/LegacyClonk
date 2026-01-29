@@ -557,12 +557,12 @@ void C4EditCursor::Default()
 {
 	fAltWasDown = false;
 	Mode = C4CNS_ModePlay;
-	X = Y = X2 = Y2 = 0;
+	X = Y = X2 = Y2 = CursorX = CursorY = 0;
 	Target = DropTarget = nullptr;
 #ifdef _WIN32
 	hMenu = nullptr;
 #endif
-	HoldLeft = DragFrame = DragLine = false;
+	HoldLeft = HoldRight = DragFrame = DragLine = false;
 	Selection.Default();
 	fSelectionChanged = false;
 }
