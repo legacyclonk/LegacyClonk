@@ -128,11 +128,11 @@ bool C4EditCursor::Move(C4Viewport *cvp, int32_t iX, int32_t iY, uint16_t wKeyFl
 
 	if(HoldRight)
 	{
-		if(C4Viewport *Viewport = Game.GraphicsSystem.GetViewport(NO_OWNER))
+		if(cvp->fIsNoOwnerViewport)
 		{
-			Viewport->ViewX -= xoff;
-			Viewport->ViewY -= yoff;
-			Viewport->UpdateViewPosition();
+			cvp->ViewX -= xoff;
+			cvp->ViewY -= yoff;
+			cvp->UpdateViewPosition();
 			cvp->ScrollBarsByViewPosition();
 			// Allow the context menu on right click to be opened when we didn't drag the viewport.
 			if(abs(xoff) > 1 || abs(yoff) > 1)
