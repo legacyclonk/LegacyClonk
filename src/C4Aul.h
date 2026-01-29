@@ -139,6 +139,8 @@ enum C4AulBCCType
 	AB_LOCALN_V,
 	AB_GLOBALN_R,    // a named global
 	AB_GLOBALN_V,
+	AB_SECTIONLOCALN_R, // a named section-local
+	AB_SECTIONLOCALN_V,
 	AB_VAR_R,        // Var statement
 	AB_VAR_V,
 	AB_PAR_R,        // Par statement
@@ -552,6 +554,8 @@ public:
 	C4ValueList Global;
 	C4ValueMapNames GlobalNamedNames;
 	C4ValueMapData GlobalNamed;
+	C4ValueMapNames SectionLocalNamedNames;
+	std::map<std::uint32_t, std::unique_ptr<C4ValueMapData>> SectionLocalNamed;
 
 	C4StringTable Strings;
 
@@ -590,6 +594,9 @@ public:
 
 	void RegisterGlobalConstant(const char *szName, const C4Value &rValue); // creates a new constants or overwrites an old one
 	bool GetGlobalConstant(const char *szName, C4Value *pTargetValue); // check if a constant exists; assign value to pTargetValue if not nullptr
+	void RegisterSection(C4Section &section);
+	void UnregisterSection(C4Section &section);
+	C4ValueMapData *GetSectionLocalNamed(std::uint32_t sectionNumber);
 
 	bool DenumerateVariablePointers();
 	void UnLink(); // called when a script is being reloaded (clears string table)

@@ -71,6 +71,7 @@ void C4Section::Default()
 
 void C4Section::Clear()
 {
+	Game.ScriptEngine.UnregisterSection(*this);
 	Weather.Clear();
 	Landscape.Clear();
 	DeleteObjects(true);

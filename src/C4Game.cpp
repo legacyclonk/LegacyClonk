@@ -2424,6 +2424,11 @@ bool C4Game::InitScriptEngine()
 	// engine functions
 	InitFunctionMap(&ScriptEngine);
 
+	for (const auto &section : Sections)
+	{
+		ScriptEngine.RegisterSection(*section);
+	}
+
 	// system functions: check if system group is open
 	if (!Application.OpenSystemGroup())
 	{
@@ -3111,6 +3116,8 @@ void C4Game::OnSectionLoadFinished(const std::uint32_t sectionNumber, bool succe
 	if (success)
 	{
 		auto it = Sections.emplace(Sections.end(), std::move(sectionWithCallback.Section));
+		ScriptEngine.RegisterSection(*it->get());
+
 		success = it->get()->FinishObjectLoading(true);
 		if (success)
 		{

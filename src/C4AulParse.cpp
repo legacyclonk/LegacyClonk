@@ -70,6 +70,7 @@
 #define C4AUL_GlobalNamed "static"
 #define C4AUL_LocalNamed  "local"
 #define C4AUL_VarNamed    "var"
+#define C4AUL_SectionLocalNamed "section_local"
 
 #define C4AUL_TypeInt      "int"
 #define C4AUL_TypeBool     "bool"
@@ -163,6 +164,7 @@ public:
 	bool Parse_Expression3(); // navigation: ->, [], . and ?
 	void Parse_Var();
 	void Parse_Local();
+	void Parse_SectionLocal();
 	void Parse_Static();
 	void Parse_Const();
 
@@ -833,6 +835,8 @@ static const char *GetTTName(C4AulBCCType e)
 	case AB_LOCALN_V:  return "AB_LOCALN_V";
 	case AB_GLOBALN_R: return "AB_GLOBALN_R"; // a named global
 	case AB_GLOBALN_V: return "AB_GLOBALN_V";
+	case AB_SECTIONLOCALN_R: return "AB_SECTIONLOCALN_R"; // a named section-local
+	case AB_SECTIONLOCALN_V: return "AB_SECTIONLOCALN_V";
 	case AB_VAR_R:     return "AB_VAR_R";     // Var statement
 	case AB_VAR_V:     return "AB_VAR_V";
 	case AB_PAR_R:     return "AB_PAR_R";     // Par statement
@@ -1002,6 +1006,8 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, std::intptr_t X)
 	case AB_LOCALN_V:
 	case AB_GLOBALN_R:
 	case AB_GLOBALN_V:
+	case AB_SECTIONLOCALN_R:
+	case AB_SECTIONLOCALN_V:
 		iStack++;
 		break;
 
@@ -1158,6 +1164,7 @@ namespace
 				case AB_PARN_R: case AB_PARN_V: case AB_VARN_R: case AB_VARN_V:
 				case AB_LOCALN_R: case AB_LOCALN_V:
 				case AB_GLOBALN_R: case AB_GLOBALN_V:
+				case AB_SECTIONLOCALN_R: case AB_SECTIONLOCALN_V:
 					--n;
 					--CPos;
 					break;
@@ -1258,6 +1265,7 @@ void C4AulParseState::SetNoRef()
 		case AB_VARN_R: CPos->bccType = AB_VARN_V; return;
 		case AB_LOCALN_R: CPos->bccType = AB_LOCALN_V; return;
 		case AB_GLOBALN_R: CPos->bccType = AB_GLOBALN_V; return;
+		case AB_SECTIONLOCALN_R: CPos->bccType = AB_SECTIONLOCALN_V; return;
 		default: return;
 		}
 	}
@@ -1528,6 +1536,14 @@ void C4AulParseState::Parse_Script()
 			{
 				Shift();
 				Parse_Local();
+				Match(ATT_SCOLON);
+				break;
+			}
+			// check for section-local variable definition (section_local)
+			else if (SEqual(Idtf, C4AUL_SectionLocalNamed))
+			{
+				Shift();
+				Parse_SectionLocal();
 				Match(ATT_SCOLON);
 				break;
 			}
@@ -2000,6 +2016,12 @@ void C4AulParseState::Parse_Statement()
 			if (Fn->Owner == &Game.ScriptEngine)
 				throw C4AulParseError(this, "using local variable in global function!");
 			// insert variable by id
+			Parse_Expression();
+			AddBCC(AB_STACK, -1);
+		}
+		// check for section-local variable (section_local)
+		else if (a->Engine->SectionLocalNamedNames.GetItemNr(Idtf) != -1)
+		{
 			Parse_Expression();
 			AddBCC(AB_STACK, -1);
 		}
@@ -2736,6 +2758,13 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 			AddBCC(AB_LOCALN_R, a->LocalNamed.GetItemNr(Idtf));
 			Shift();
 		}
+		// check for section-local variable (section_local)
+		else if (a->Engine->SectionLocalNamedNames.GetItemNr(Idtf) != -1)
+		{
+			// insert variable by id
+			AddBCC(AB_SECTIONLOCALN_R, a->Engine->SectionLocalNamedNames.GetItemNr(Idtf));
+			Shift();
+		}
 		// check for global variable (static)
 		else if (a->Engine->GlobalNamedNames.GetItemNr(Idtf) != -1)
 		{
@@ -3321,6 +3350,43 @@ void C4AulParseState::Parse_Local()
 				throw C4AulParseError(this, "variable definition: name already in use");
 			// insert variable
 			a->LocalNamed.AddName(Idtf);
+		}
+		Match(ATT_IDTF);
+		switch (TokenType)
+		{
+		case ATT_COMMA:
+		{
+			Shift();
+			break;
+		}
+		case ATT_SCOLON:
+		{
+			return;
+		}
+		default:
+		{
+			UnexpectedToken("',' or ';'");
+		}
+		}
+	}
+}
+
+void C4AulParseState::Parse_SectionLocal()
+{
+	while (1)
+	{
+		if (Type == PREPARSER)
+		{
+			// get desired variable name
+			if (TokenType != ATT_IDTF)
+				UnexpectedToken("variable name");
+			// section local variable definition
+			// check: symbol already in use?
+			if (a->Engine->GetFuncRecursive(Idtf)) throw C4AulParseError(this, "variable definition: name already in use");
+			if (a->Engine->GetGlobalConstant(Idtf, nullptr)) Strict2Error("constant and variable with name ", Idtf);
+			// insert variable if not defined already
+			if (a->Engine->SectionLocalNamedNames.GetItemNr(Idtf) == -1)
+				a->Engine->SectionLocalNamedNames.AddName(Idtf);
 		}
 		Match(ATT_IDTF);
 		switch (TokenType)

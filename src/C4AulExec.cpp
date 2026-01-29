@@ -452,6 +452,12 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			case AB_GLOBALN_V:
 				PushValue(*Game.ScriptEngine.GlobalNamed.GetItem(pCPos->bccX));
 				break;
+			case AB_SECTIONLOCALN_R:
+				PushValueRef(*Game.ScriptEngine.GetSectionLocalNamed(pCurCtx->GetSection().Number)->GetItem(pCPos->bccX));
+				break;
+			case AB_SECTIONLOCALN_V:
+				PushValue(*Game.ScriptEngine.GetSectionLocalNamed(pCurCtx->GetSection().Number)->GetItem(pCPos->bccX));
+				break;
 			// prefix
 			case AB_Inc1: // ++
 				CheckOpPar<C4V_Int, false>(pCPos->bccX);

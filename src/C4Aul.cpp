@@ -448,6 +448,7 @@ C4AulScriptEngine::C4AulScriptEngine() :
 	GlobalConstNames.Reset();
 	GlobalConsts.Reset();
 	GlobalConsts.SetNameList(&GlobalConstNames);
+	SectionLocalNamedNames.Reset();
 }
 
 C4AulScriptEngine::~C4AulScriptEngine() { Clear(); }
@@ -468,6 +469,8 @@ void C4AulScriptEngine::Clear()
 	GlobalConsts.SetNameList(&GlobalConstNames);
 	GlobalNamed.Reset();
 	GlobalNamed.SetNameList(&GlobalNamedNames);
+	SectionLocalNamedNames.Reset();
+	SectionLocalNamed.clear();
 }
 
 void C4AulScriptEngine::UnLink()
@@ -503,10 +506,38 @@ bool C4AulScriptEngine::GetGlobalConstant(const char *szName, C4Value *pTargetVa
 	return true;
 }
 
+void C4AulScriptEngine::RegisterSection(C4Section &section)
+{
+	auto mapData = std::make_unique<C4ValueMapData>();
+	mapData->SetNameList(&SectionLocalNamedNames);
+	SectionLocalNamed.try_emplace(section.Number, std::move(mapData));
+}
+
+void C4AulScriptEngine::UnregisterSection(C4Section &section)
+{
+	SectionLocalNamed.erase(section.Number);
+}
+
+C4ValueMapData *C4AulScriptEngine::GetSectionLocalNamed(const std::uint32_t sectionNumber)
+{
+	if (auto it = SectionLocalNamed.find(sectionNumber); it != SectionLocalNamed.end())
+	{
+		return it->second.get();
+	}
+
+	return nullptr;
+}
+
 bool C4AulScriptEngine::DenumerateVariablePointers()
 {
 	Global.DenumeratePointers();
 	GlobalNamed.DenumeratePointers();
+
+	for (auto &[key, value] : SectionLocalNamed)
+	{
+		value->DenumeratePointers();
+	}
+
 	// runtime data only: don't denumerate consts
 	return true;
 }
@@ -517,6 +548,50 @@ void C4AulScriptEngine::CompileFunc(StdCompiler *pComp)
 	C4ValueMapData GlobalNamedDefault;
 	GlobalNamedDefault.SetNameList(&GlobalNamedNames);
 	pComp->Value(mkNamingAdapt(GlobalNamed, "GlobalNamed", GlobalNamedDefault));
+
+	if (pComp->isCompiler())
+	{
+		std::size_t sectionCount;
+		pComp->Value(mkNamingCountAdapt(sectionCount, "SectionLocalNamed"));
+
+		SectionLocalNamed.clear();
+
+		if (sectionCount > 0)
+		{
+			for (std::size_t i{0}; i < sectionCount; ++i)
+			{
+				std::uint32_t sectionNumber;
+				std::unique_ptr<C4ValueMapData> named;
+
+				const auto guard = pComp->Name("SectionLocalNamed");
+				pComp->Value(mkNamingAdapt(sectionNumber, "Number"));
+				pComp->Value(mkNamingAdapt(StdPtrAdapt{named, false}, "Named"));
+				named->SetNameList(&SectionLocalNamedNames);
+
+				if (Game.GetSectionByNumber(sectionNumber))
+				{
+					SectionLocalNamed.try_emplace(sectionNumber, std::move(named));
+				}
+			}
+		}
+
+	}
+	else
+	{
+		std::size_t sectionCount{SectionLocalNamed.size()};
+		pComp->Value(mkNamingCountAdapt(sectionCount, "SectionLocalNamed"));
+
+		for (auto &[sectionNumber, named] : SectionLocalNamed)
+		{
+			// sectionNumber is the key and thus a const reference
+			std::uint32_t sectionNumberTemp{sectionNumber};
+
+			const auto guard = pComp->Name("SectionLocalNamed");
+			pComp->Value(mkNamingAdapt(sectionNumberTemp, "Number"));
+
+			pComp->Value(mkNamingAdapt(named, "Named"));
+		}
+	}
 }
 
 // C4AulFuncMap

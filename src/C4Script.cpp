@@ -4767,6 +4767,25 @@ static C4Value FnGlobalN(C4AulContext *cthr, C4String *name)
 	return pVarN->GetRef();
 }
 
+static C4Value FnSectionLocalN(C4AulContext *cthr, C4ValueInt sectionNumber, C4String *name)
+{
+	C4ValueMapData *const sectionLocalNamed{Game.ScriptEngine.GetSectionLocalNamed(sectionNumber)};
+	if (!sectionLocalNamed)
+	{
+		return C4VNull;
+	}
+
+	const char *strName = FnStringPar(name);
+
+	// find variable
+	C4Value *pVarN = sectionLocalNamed->GetItem(strName);
+
+	if (!pVarN) return C4VNull;
+
+	// return reference on variable
+	return pVarN->GetRef();
+}
+
 static void FnSetSkyAdjust(C4AulContext *cthr, C4ValueInt dwAdjust, C4ValueInt dwBackClr)
 {
 	// set adjust
@@ -7068,6 +7087,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "VarN", FnVarN);
 	AddFunc(pEngine, "LocalN", FnLocalN);
 	AddFunc(pEngine, "GlobalN", FnGlobalN);
+	AddFunc(pEngine, "SectionLocalN", FnSectionLocalN);
 	AddFunc(pEngine, "Set", FnSet);
 	AddFunc(pEngine, "Inc", FnInc);
 	AddFunc(pEngine, "Dec", FnDec);
