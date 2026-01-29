@@ -620,19 +620,22 @@ bool C4EditCursor::SetMode(int32_t iMode)
 	// Set mode
 	Mode = iMode;
 	// Update prop tools by mode
-	bool fOpenPropTools = false;
 	switch (Mode)
 	{
-	case C4CNS_ModeEdit: case C4CNS_ModePlay:
-		if (Console.ToolsDlg.Active || Console.PropertyDlg.Active) fOpenPropTools = true;
+	case C4CNS_ModePlay:
+		if (Console.ToolsDlg.Active)
+			Console.ToolsDlg.Clear();
+		if(Console.PropertyDlg.Active)
+			Console.PropertyDlg.Clear();
+	case C4CNS_ModeEdit:
 		Console.ToolsDlg.Clear();
-		if (fOpenPropTools) OpenPropTools();
+		OpenPropTools();
 		break;
 
 	case C4CNS_ModeDraw:
-		if (Console.ToolsDlg.Active || Console.PropertyDlg.Active) fOpenPropTools = true;
 		Console.PropertyDlg.Clear();
-		if (fOpenPropTools) OpenPropTools();
+		OpenPropTools();
+		Console.ToolsDlg.ChangeGrade(0); // Refresh Grade to account for map zoom.
 		break;
 	}
 	// Update cursor
