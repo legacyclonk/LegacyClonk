@@ -6413,9 +6413,9 @@ std::optional<C4ValueInt> FnSetSectionContext(C4AulContext *ctx, C4ValueInt sect
 	return std::exchange(ctx->Caller->Section, section)->Number;
 }
 
-static void FnSetObjectContext(C4AulContext *ctx, C4Object *obj)
+static C4Object *FnSetObjectContext(C4AulContext *ctx, C4Object *obj)
 {
-	if (!ctx->Caller) return;
+	if (!ctx->Caller) return nullptr;
 
 	if (!ctx->Caller->Def)
 	{
@@ -6427,7 +6427,7 @@ static void FnSetObjectContext(C4AulContext *ctx, C4Object *obj)
 		throw new C4AulExecError{ctx->Caller->Obj, "SetObjectContext: Object definition mismatch"};
 	}
 
-	ctx->Caller->Obj = obj;
+	return std::exchange(ctx->Caller->Obj, obj);
 }
 
 static bool FnRemoveSection(C4AulContext *ctx, C4ValueInt section)
