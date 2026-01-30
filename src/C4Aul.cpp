@@ -22,8 +22,10 @@
 
 #include <C4Config.h>
 #include <C4Def.h>
+#include "C4Game.h"
 #include <C4Log.h>
 #include <C4Components.h>
+#include "C4Section.h"
 
 #include <format>
 

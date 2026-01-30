@@ -70,8 +70,10 @@ public:
 public:
 	static C4Random Default;
 
+#ifdef DEBUGREC
 private:
 	static inline std::atomic_uint32_t NextId{0};
+#endif
 
 private:
 	std::uint32_t randomCount;

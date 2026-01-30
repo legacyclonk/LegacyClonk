@@ -34,6 +34,7 @@
 
 #include <cstdint>
 #include <list>
+#include <map>
 #include <vector>
 
 // class predefs
