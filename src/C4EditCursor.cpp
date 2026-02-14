@@ -224,8 +224,13 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 		{
 			// Toggle target
 			if (Target)
+			{
 				if (!Selection.Remove(Target))
+				{
 					Selection.Add(Target, C4ObjectList::stNone);
+					OnSelectionChanged();
+				}
+			}
 		}
 		else
 		{
@@ -238,6 +243,7 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 				}
 
 				Selection.Add(Target, C4ObjectList::stNone);
+				OnSelectionChanged();
 			}
 			// Click on nothing: drag frame
 			if (!Target)
@@ -245,6 +251,7 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 				if(!Application.IsShiftDown())
 				{
 					Selection.Clear();
+					OnSelectionChanged();
 				}
 				DragFrame = true;
 				X2 = X;
@@ -272,7 +279,6 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 
 	DropTarget = nullptr;
 
-	OnSelectionChanged();
 	return true;
 }
 
@@ -288,12 +294,12 @@ bool C4EditCursor::RightButtonDown(bool fControl)
 			if (Target && Selection.IsClear())
 			{
 				Selection.Add(Target, C4ObjectList::stNone);
+				OnSelectionChanged();
 			}
 		}
 		break;
 	}
 
-	OnSelectionChanged();
 	return true;
 }
 
