@@ -361,7 +361,7 @@ bool C4EditCursor::RightButtonUp()
 	{
 		DragViewport = false;
 	}
-	else
+	else if(!HoldLeft)
 	{
 		DoContextMenu();
 	}
