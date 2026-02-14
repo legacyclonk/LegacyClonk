@@ -118,11 +118,14 @@ void C4EditCursor::ClearPointers(C4Object *pObj)
 
 bool C4EditCursor::Move(C4Viewport *cvp, int32_t iX, int32_t iY, uint16_t wKeyFlags)
 {
-	// Offset movement
-	int32_t xoff = iX - CursorX;
-	int32_t yoff = iY - CursorY;
+	// Viewport Space
+	int32_t viewOffsetX = iX - CursorX;
+	int32_t viewOffsetY = iY - CursorY;
 	CursorX = iX;
 	CursorY = iY;
+	// Map space
+	int32_t offsetX = (cvp->ViewX + iX) - X;
+	int32_t offsetY = (cvp->ViewY + iY) - Y;
 	X = cvp->ViewX + iX;
 	Y = cvp->ViewY + iY;
 
@@ -130,12 +133,12 @@ bool C4EditCursor::Move(C4Viewport *cvp, int32_t iX, int32_t iY, uint16_t wKeyFl
 	{
 		if(cvp->fIsNoOwnerViewport)
 		{
-			cvp->ViewX -= xoff;
-			cvp->ViewY -= yoff;
+			cvp->ViewX -= viewOffsetX;
+			cvp->ViewY -= viewOffsetY;
 			cvp->UpdateViewPosition();
 			cvp->ScrollBarsByViewPosition();
 			// Allow the context menu on right click to be opened when we didn't drag the viewport.
-			if(abs(xoff) > 1 || abs(yoff) > 1)
+			if(abs(viewOffsetX) > 1 || abs(viewOffsetY) > 1)
 			{
 				DragViewport = true;
 			}
@@ -149,7 +152,7 @@ bool C4EditCursor::Move(C4Viewport *cvp, int32_t iX, int32_t iY, uint16_t wKeyFl
 		// Hold
 		if (!DragFrame && HoldLeft)
 		{
-			MoveSelection(xoff, yoff);
+			MoveSelection(offsetX, offsetY);
 			UpdateDropTarget(wKeyFlags);
 		}
 		// Update target
