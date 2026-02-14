@@ -143,7 +143,6 @@ bool C4EditCursor::Move(C4Viewport *cvp, int32_t iX, int32_t iY, uint16_t wKeyFl
 				DragViewport = true;
 			}
 		}
-		return true;
 	}
 
 	switch (Mode)
