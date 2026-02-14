@@ -119,10 +119,10 @@ void C4EditCursor::ClearPointers(C4Object *pObj)
 bool C4EditCursor::Move(C4Viewport *cvp, int32_t iX, int32_t iY, uint16_t wKeyFlags)
 {
 	// Viewport Space
-	int32_t viewOffsetX = iX - XViewSpace;
-	int32_t viewOffsetY = iY - YViewSpace;
-	XViewSpace = iX;
-	YViewSpace = iY;
+	int32_t viewOffsetX = iX - ViewSpaceX;
+	int32_t viewOffsetY = iY - ViewSpaceY;
+	ViewSpaceX = iX;
+	ViewSpaceY = iY;
 	// Map space
 	int32_t offsetX = (cvp->ViewX + iX) - X;
 	int32_t offsetY = (cvp->ViewY + iY) - Y;
@@ -470,11 +470,11 @@ void C4EditCursor::Draw(C4FacetEx &cgo)
 		C4ToolsDlg *pTools = &Console.ToolsDlg;
 		if(pTools)
 		{
-			int32_t ScreenPosX1 = XViewSpace;
-			int32_t ScreenPosY1 = YViewSpace;
+			int32_t ScreenPosX1 = ViewSpaceX;
+			int32_t ScreenPosY1 = ViewSpaceY;
 			int32_t Radius = pTools->Grade;
-			const int32_t ViewportOffsetX = X - XViewSpace;
-			const int32_t ViewportOffsetY = Y - YViewSpace;
+			const int32_t ViewportOffsetX = X - ViewSpaceX;
+			const int32_t ViewportOffsetY = Y - ViewSpaceY;
 			int32_t ScreenPosX2 = X2 - ViewportOffsetX;
 			int32_t ScreenPosY2 = Y2 - ViewportOffsetY;
 			int32_t Zoom = Game.Landscape.MapZoom;
@@ -597,7 +597,7 @@ void C4EditCursor::Default()
 {
 	fAltWasDown = false;
 	Mode = C4CNS_ModePlay;
-	X = Y = X2 = Y2 = XViewSpace = YViewSpace = 0;
+	X = Y = X2 = Y2 = ViewSpaceX = ViewSpaceY = 0;
 	Target = DropTarget = nullptr;
 #ifdef _WIN32
 	hMenu = nullptr;

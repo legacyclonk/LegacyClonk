@@ -36,7 +36,7 @@ protected:
 	bool fSelectionChanged;
 	int32_t Mode;
 	int32_t X, Y, X2, Y2; // Cursor position in map space
-	int32_t XViewSpace, YViewSpace; // Cursor position in viewport space
+	int32_t ViewSpaceX, ViewSpaceY; // Cursor position in viewport space
 	bool HoldLeft, DragFrame, DragLine;
 	bool HoldRight, DragViewport;
 	C4Object *Target, *DropTarget;
