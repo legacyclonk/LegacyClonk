@@ -1375,7 +1375,9 @@ void C4Viewport::UpdateViewPosition()
 		}
 		else
 		{
-			ViewX = std::clamp(ViewX, 0, section.Landscape.Width - ViewWdt);
+			// Don't replace this with std::clamp, as section.Landscape.Width - ViewWdt might be < 0
+			ViewX = std::min(ViewX, section.Landscape.Width - ViewWdt);
+			ViewX = std::max(ViewX, 0);
 		}
 		if (Application.isFullScreen && section.Landscape.Height < ViewHgt)
 		{
@@ -1383,7 +1385,9 @@ void C4Viewport::UpdateViewPosition()
 		}
 		else
 		{
-			ViewY = std::clamp(ViewY, 0, section.Landscape.Height - ViewHgt);
+			// See above
+			ViewY = std::min(ViewY, section.Landscape.Height - ViewHgt);
+			ViewY = std::max(ViewY, 0);
 		}
 	}
 	// update borders
