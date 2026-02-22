@@ -107,9 +107,13 @@ public:
 	virtual bool GetConnStatistic(const addr_t &addr, int *pIRate, int *pORate, int *pLoss) = 0;
 	virtual void ClearStatistic() = 0;
 
+	virtual u_int64 GetPort() = 0;
+
 protected:
 	// Makes IPv4 connections from an IPv6 socket work.
 	bool InitIPv6Socket(SOCKET socket);
+	// Socket binding logic with fallback support.
+	bool BindSocket(SOCKET socket, const addr_t &addr, bool useFallbackAutoPort = true, std::uint16_t *outAutoAssignedPort = nullptr);
 
 	// *** errors
 protected:
@@ -188,6 +192,8 @@ public:
 	virtual bool CloseBroadcast();
 
 	virtual bool Execute(int iMaxTime = StdSync::Infinite) override;
+
+	virtual u_int64 GetPort() override { return iListenPort; }
 
 	// * multithreading safe
 	std::unique_ptr<Socket> Bind(const addr_t &addr);
@@ -383,6 +389,8 @@ public:
 
 	virtual void ClearStatistic() override { assert(false); }
 
+	virtual u_int64 GetPort() override { return iPort; }
+
 private:
 	// status
 	bool fInit;
@@ -461,6 +469,7 @@ public:
 	virtual bool GetStatistic(int *pBroadcastRate) override;
 	virtual bool GetConnStatistic(const addr_t &addr, int *pIRate, int *pORate, int *pLoss) override;
 	virtual void ClearStatistic() override;
+
 
 protected:
 	// *** data
