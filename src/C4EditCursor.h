@@ -20,6 +20,7 @@
 
 #include "C4ObjectList.h"
 #include "C4Control.h"
+#include "C4ForwardDeclarations.h"
 
 #ifdef WITH_DEVELOPER_MODE
 #include <gtk/gtk.h>

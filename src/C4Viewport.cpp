@@ -621,7 +621,7 @@ gboolean C4ViewportWindow::OnMotionNotifyStatic(GtkWidget *widget, GdkEventMotio
 	{
 		const auto scale = Application.GetScale();
 
-		Console.EditCursor.Move(window->cvp->ViewX + static_cast<int32_t>(event->x / scale), window->cvp->ViewY + static_cast<int32_t>(event->y / scale), event->state);
+		Console.EditCursor.Move(window->cvp, window->cvp->ViewX + static_cast<int32_t>(event->x / scale), window->cvp->ViewY + static_cast<int32_t>(event->y / scale), event->state);
 	}
 
 	return TRUE;

@@ -22,6 +22,7 @@
 #include <C4Object.h>
 #include <C4Application.h>
 #include <C4Random.h>
+#include "C4Viewport.h"
 #include <C4Wrappers.h>
 
 #ifdef _WIN32
