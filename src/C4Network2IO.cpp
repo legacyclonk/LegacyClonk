@@ -1120,10 +1120,13 @@ void C4Network2IO::HandleFwdReq(const C4PacketFwd &rFwd, C4Network2IOConnection 
 void C4Network2IO::HandlePuncherPacket(const C4NetIOPacket &packet)
 {
 	auto pkt = C4NetpuncherPacket::Construct(packet);
-	if (!pkt || !Game.Network.HandlePuncherPacket(std::move(pkt), packet.getAddr().GetFamily()))
+	if (pkt)
 	{
-		assert(pNetIO_UDP);
-		pNetIO_UDP->Close(packet.getAddr());
+		if (!Game.Network.HandlePuncherPacket(std::move(pkt), packet.getAddr().GetFamily()))
+		{
+			assert(pNetIO_UDP);
+			pNetIO_UDP->Close(packet.getAddr());
+		}
 	}
 }
 
