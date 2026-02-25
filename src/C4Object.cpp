@@ -148,6 +148,7 @@ void C4Object::Default()
 	FirstRef = nullptr;
 	pGfxOverlay = nullptr;
 	iLastAttachMovementFrame = -1;
+	InSectionMoveCallback = false;
 }
 
 bool C4Object::Init(C4Def *pDef, C4Section &section, C4Object *pCreator,
@@ -2209,14 +2210,14 @@ void C4Object::ClearPointers(C4Object *pObj)
 	}
 }
 
-void C4Object::OnSectionMove(C4Object *const obj, C4Section &newSection)
+void C4Object::OnSectionMove(C4Object *const obj, C4Section &newSection, std::vector<MovedObject> &movedObjects)
 {
 	if (Action.Target == obj || Action.Target2 == obj)
 	{
 		// attach target is moving to another section: move
 		if ((GetProcedure() == DFA_ATTACH))
 		{
-			MoveToSection(newSection);
+			MoveToSection(newSection, true, movedObjects);
 		}
 		else
 		{
@@ -6343,7 +6344,27 @@ bool C4Object::IsUserPlayerObject()
 
 void C4Object::MoveToSection(C4Section &newSection, const bool checkContained)
 {
+	if (InSectionMoveCallback) return;
 	if (Section == &newSection) return;
+
+	std::vector<MovedObject> movedObjects;
+	MoveToSection(newSection, checkContained, movedObjects);
+
+	for (const auto [obj, oldSection] : movedObjects)
+	{
+		obj->InSectionMoveCallback = true;
+
+		const struct Cleanup { ~Cleanup() { Obj->InSectionMoveCallback = false; } C4Object *Obj; } cleanup{obj};
+
+		Call(PSF_OnSectionMoved, {C4VInt(static_cast<C4ValueInt>(oldSection))});
+	}
+}
+
+void C4Object::MoveToSection(C4Section &newSection, const bool checkContained, std::vector<MovedObject> &movedObjects)
+{
+	if (Section == &newSection) return;
+
+	movedObjects.emplace_back(this, Section->Number);
 
 	if (checkContained && Contained && Contained->Section != &newSection)
 	{
@@ -6357,7 +6378,7 @@ void C4Object::MoveToSection(C4Section &newSection, const bool checkContained)
 
 	for (C4ObjectLink *link{Contents.First}; link; link = link->Next)
 	{
-		link->Obj->MoveToSection(newSection, false);
+		link->Obj->MoveToSection(newSection, false, movedObjects);
 	}
 
 	if (pSolidMaskData)
@@ -6365,7 +6386,7 @@ void C4Object::MoveToSection(C4Section &newSection, const bool checkContained)
 		pSolidMaskData->Remove(true, true);
 	}
 
-	Section->Objects.OnSectionMove(this, newSection);
+	Section->Objects.OnSectionMove(this, newSection, movedObjects);
 
 	Section->Objects.Remove(this);
 	Section = &newSection;

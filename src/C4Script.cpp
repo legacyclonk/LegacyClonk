@@ -6392,13 +6392,15 @@ static C4ValueInt FnGetSectionByIndex(C4AulContext *ctx, C4ValueInt i)
 static bool FnSetSection(C4AulContext *ctx, C4ValueInt targetSection, C4Object *obj)
 {
 	if (!obj) if (!(obj = ctx->Obj)) return false;
+	if (obj->InSectionMoveCallback) return false;
+
 	C4Section *const section{Game.GetSectionByNumber(static_cast<std::uint32_t>(targetSection))};
 	if (!section)
 	{
 		return false;
 	}
 
-	obj->MoveToSection(*section);
+	obj->MoveToSection(*section, true);
 
 	return true;
 }

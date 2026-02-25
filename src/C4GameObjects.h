@@ -86,7 +86,7 @@ public:
 	bool ValidateOwners();
 	bool AssignInfo();
 
-	void OnSectionMove(C4Object *obj, C4Section &newSection);
+	void OnSectionMove(C4Object *obj, C4Section &newSection, std::vector<std::pair<C4Object *, std::uint32_t>> &movedObjects);
 };
 
 class C4AulFunc;

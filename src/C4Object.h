@@ -118,6 +118,10 @@ public:
 class C4Object
 {
 public:
+	// Cannot use a struct here as this is needed in C4GameObjects.h, which can't include C4Object.h
+	using MovedObject = std::pair<C4Object *, std::uint32_t>;
+
+public:
 	C4Object();
 	~C4Object();
 
@@ -209,6 +213,7 @@ public:
 	C4Value *FirstRef; // No-Save
 
 	class C4GraphicsOverlay *pGfxOverlay; // singly linked list of overlay graphics
+	bool InSectionMoveCallback; // NoSave
 
 protected:
 	std::string CustomName;
@@ -283,7 +288,7 @@ public:
 	void DrawFace(C4FacetEx &cgo, int32_t cgoX, int32_t cgoY, int32_t iPhaseX = 0, int32_t iPhaseY = 0);
 	void Execute();
 	void ClearPointers(C4Object *ptr);
-	void OnSectionMove(C4Object *obj, C4Section &newSection);
+	void OnSectionMove(C4Object *obj, C4Section &newSection, std::vector<MovedObject> &movedObjects);
 	bool ExecMovement();
 	bool ExecFire(int32_t iIndex, int32_t iCausedByPlr);
 	void ExecAction();
@@ -461,5 +466,8 @@ public:
 	bool IsUserPlayerObject(); // true for any object that belongs to any player (NO_OWNER) or a specified player
 
 
-	void MoveToSection(C4Section &newSection, bool checkContained = true);
+	void MoveToSection(C4Section &newSection, bool checkContained);
+
+private:
+	void MoveToSection(C4Section &newSection, bool checkContained, std::vector<MovedObject> &movedObjects);
 };

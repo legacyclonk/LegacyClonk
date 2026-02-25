@@ -939,13 +939,13 @@ bool C4GameObjects::AssignInfo()
 	return fSucc;
 }
 
-void C4GameObjects::OnSectionMove(C4Object *const obj, C4Section &newSection)
+void C4GameObjects::OnSectionMove(C4Object *const obj, C4Section &newSection, std::vector<C4Object::MovedObject> &movedObjects)
 {
 	for (C4ObjectLink *link{First}; link; )
 	{
 		C4Object *const linkObj{link->Obj};
 		link = link->Next;
-		linkObj->OnSectionMove(obj, newSection);
+		linkObj->OnSectionMove(obj, newSection, movedObjects);
 	}
 }
 
