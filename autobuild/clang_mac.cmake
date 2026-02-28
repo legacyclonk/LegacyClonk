@@ -12,7 +12,7 @@ set(CMAKE_MAKE_PROGRAM "/usr/local/opt/ninja/bin/ninja" CACHE FILEPATH "Path to 
 # -------------------------------------
 # macOS target + sysroot (no Xcode)
 # -------------------------------------
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "")
+set(CMAKE_OSX_DEPLOYMENT_TARGET "13.3" CACHE STRING "")
 set(CMAKE_OSX_SYSROOT "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk" CACHE STRING "")
 
 # -------------------------------------
