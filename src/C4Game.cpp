@@ -53,6 +53,7 @@
 
 #include <StdFile.h>
 #include <StdGL.h>
+#include <StdPNG.h>
 
 #include <format>
 #include <iterator>
@@ -2091,17 +2092,21 @@ bool C4Game::SaveGameTitle(C4Group &hGroup)
 	// Fullscreen screenshot
 	else if (Application.isFullScreen && Application.Active)
 	{
-		constexpr std::int32_t surfaceWidth{200};
-		constexpr std::int32_t surfaceHeight{150};
+		const auto screenshot = Application.DDraw->lpBack->CloneToBitmap(false, !Config.Graphics.Shader, false, Application.GetScale());
+		if (!screenshot)
+		{
+			return false;
+		}
 
-		const auto surface = std::make_unique<C4Surface>(surfaceWidth, surfaceHeight);
+		constexpr std::uint32_t titleWidth{200};
+		constexpr std::uint32_t titleHeight{150};
+		const StdBitmap thumbnail{screenshot->Scaled(titleWidth, titleHeight)};
 
-		// Fullscreen
-		Application.DDraw->Blit(Application.DDraw->lpBack,
-			0.0f, 0.0f, float(Application.DDraw->lpBack->Wdt), float(Application.DDraw->lpBack->Hgt),
-			surface.get(), 0, 0, surfaceWidth, surfaceHeight);
-
-		if (!surface->SavePNG(Config.AtTempPath(C4CFN_TempTitle), false, !Config.Graphics.Shader, false))
+		try
+		{
+			CPNGFile{Config.AtTempPath(C4CFN_TempTitle), titleWidth, titleHeight, false}.Encode(thumbnail.GetBytes());
+		}
+		catch (const std::runtime_error &)
 		{
 			return false;
 		}
