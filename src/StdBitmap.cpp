@@ -1,7 +1,7 @@
 /*
  * LegacyClonk
  *
- * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2026, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -92,4 +92,36 @@ void StdBitmap::SetPixel24(const std::uint32_t x, const std::uint32_t y, const s
 void StdBitmap::SetPixel32(const std::uint32_t x, const std::uint32_t y, const std::uint32_t value)
 {
 	*static_cast<std::uint32_t *>(GetPixelAddr32(x, y)) = value;
+}
+
+std::uint32_t StdBitmap::GetWidth() const noexcept
+{
+	return width;
+}
+
+std::uint32_t StdBitmap::GetHeight() const noexcept
+{
+	return height;
+}
+
+StdBitmap StdBitmap::Scaled(std::uint32_t targetWidth, std::uint32_t targetHeight) const
+{
+	StdBitmap result{targetWidth, targetHeight, useAlpha};
+
+	constexpr auto scaleCoordinate = [](const std::uint32_t target, const std::uint32_t targetSize, const std::uint32_t sourceSize)
+	{
+		return static_cast<std::uint32_t>((target + 0.5) * sourceSize / targetSize);
+	};
+
+	for (std::uint32_t targetY = 0; targetY < targetHeight; ++targetY)
+	{
+		for (std::uint32_t targetX = 0; targetX < targetWidth; ++targetX)
+		{
+			const auto srcX = scaleCoordinate(targetX, targetWidth, width);
+			const auto srcY = scaleCoordinate(targetY, targetHeight, height);
+			result.SetPixel(targetX, targetY, GetPixel(srcX, srcY));
+		}
+	}
+
+	return result;
 }
