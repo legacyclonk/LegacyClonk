@@ -1186,34 +1186,35 @@ void CStdDDraw::DrawFrameDw(C4Surface *sfcDest, int x1, int y1, int x2, int y2, 
 	DrawLineDw(sfcDest, static_cast<float>(x1), static_cast<float>(y2), static_cast<float>(x1), static_cast<float>(y1), dwClr);
 }
 
-void CStdDDraw::DrawCircleOutline(C4Surface *sfcDest, int32_t x1, int32_t y1, int32_t r, uint8_t byCol, bool half, float additional_angle_rad)
+void CStdDDraw::DrawCircleOutline(C4Surface *sfcDest, int32_t x1, int32_t y1, int32_t r, uint8_t byCol, bool half, float additionalAngleRad)
 {
-	const int32_t resolution =  std::clamp(6 * r / 4, 12, 32);
+	std::int32_t resolution {static_cast<std::int32_t>(std::round(6.0f * static_cast<float>(r) / 4.0f))};
+	std::int32_t resolutionClamped {std::clamp(resolution, 12, 32)};
 
-	for (int32_t index = 0; index < resolution / (half ? 2 : 1); ++index)
+	for (std::int32_t index {0}; index < static_cast<std::int32_t>(std::round(static_cast<float>(resolutionClamped) / (half ? 2.0f : 1.0f))); ++index)
 	{
-		const float angle_1 = (2.0f*std::numbers::pi/static_cast<float>(resolution))*static_cast<float>(index) + additional_angle_rad;
-		const float angle_2 = (2.0f*std::numbers::pi/static_cast<float>(resolution))*static_cast<float>(index + 1) + additional_angle_rad;
+		const float angle1 {(2.0f * static_cast<float>(std::numbers::pi) / static_cast<float>(resolutionClamped)) * static_cast<float>(index) + additionalAngleRad};
+		const float angle2 {(2.0f * static_cast<float>(std::numbers::pi) / static_cast<float>(resolutionClamped)) * static_cast<float>(index + 1) + additionalAngleRad};
 
-		const float x_pos_1 = static_cast<float>(x1) + sinf(angle_1) * static_cast<float>(r);
-		const float y_pos_1 = static_cast<float>(y1) + cosf(angle_1) * static_cast<float>(r);
-		const float x_pos_2 = static_cast<float>(x1) + sinf(angle_2) * static_cast<float>(r);
-		const float y_pos_2 = static_cast<float>(y1) + cosf(angle_2) * static_cast<float>(r);
-		DrawLineDw(sfcDest, x_pos_1, y_pos_1, x_pos_2, y_pos_2, Pal.GetClr(byCol));
+		const float posX1 {static_cast<float>(x1) + sinf(angle1) * static_cast<float>(r)};
+		const float posY1 {static_cast<float>(y1) + cosf(angle1) * static_cast<float>(r)};
+		const float posX2 {static_cast<float>(x1) + sinf(angle2) * static_cast<float>(r)};
+		const float posY2 {static_cast<float>(y1) + cosf(angle2) * static_cast<float>(r)};
+		DrawLineDw(sfcDest, posX1, posY1, posX2, posY2, Pal.GetClr(byCol));
 	}
 }
 
 void CStdDDraw::DrawCapsuleOutline(C4Surface *sfcDest, int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t r, uint8_t byCol)
 {
-	const float angle_rad = -atan2f(static_cast<float>(y1-y2), static_cast<float>(x1-x2));
-	DrawCircleOutline(sfcDest, x1, y1, r, byCol, true, angle_rad);
-	DrawCircleOutline(sfcDest, x2, y2, r, byCol, true, angle_rad + std::numbers::pi);
+	const float angleRad {-atan2f(static_cast<float>(y1-y2), static_cast<float>(x1-x2))};
+	DrawCircleOutline(sfcDest, x1, y1, r, byCol, true, angleRad);
+	DrawCircleOutline(sfcDest, x2, y2, r, byCol, true, angleRad + std::numbers::pi);
 
-	const float x_offset = sinf(angle_rad) * static_cast<float>(r);
-	const float y_offset = cosf(angle_rad) * static_cast<float>(r);
+	const float offsetX {sinf(angleRad) * static_cast<float>(r)};
+	const float offsetY {cosf(angleRad) * static_cast<float>(r)};
 
-	DrawLineDw(sfcDest, static_cast<float>(x1) + x_offset, static_cast<float>(y1) + y_offset, static_cast<float>(x2) + x_offset, static_cast<float>(y2) + y_offset, Pal.GetClr(byCol));
-	DrawLineDw(sfcDest, static_cast<float>(x1) - x_offset, static_cast<float>(y1) - y_offset, static_cast<float>(x2) - x_offset, static_cast<float>(y2) - y_offset, Pal.GetClr(byCol));
+	DrawLineDw(sfcDest, static_cast<float>(x1) + offsetX, static_cast<float>(y1) + offsetY, static_cast<float>(x2) + offsetX, static_cast<float>(y2) + offsetY, Pal.GetClr(byCol));
+	DrawLineDw(sfcDest, static_cast<float>(x1) - offsetX, static_cast<float>(y1) - offsetY, static_cast<float>(x2) - offsetX, static_cast<float>(y2) - offsetY, Pal.GetClr(byCol));
 }
 
 // Globally locked surface variables - for DrawLine callback crap

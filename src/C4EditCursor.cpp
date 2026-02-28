@@ -117,16 +117,16 @@ void C4EditCursor::ClearPointers(C4Object *pObj)
 		OnSelectionChanged();
 }
 
-bool C4EditCursor::Move(C4Viewport *cvp, int32_t iX, int32_t iY, uint16_t wKeyFlags)
+bool C4EditCursor::Move(C4Viewport *const cvp, int32_t iX, int32_t iY, uint16_t wKeyFlags)
 {
 	// Viewport Space
-	int32_t viewOffsetX = iX - ViewSpaceX;
-	int32_t viewOffsetY = iY - ViewSpaceY;
+	const std::int32_t viewOffsetX {iX - ViewSpaceX};
+	const std::int32_t viewOffsetY {iY - ViewSpaceY};
 	ViewSpaceX = iX;
 	ViewSpaceY = iY;
 	// Map space
-	int32_t offsetX = (cvp->ViewX + iX) - X;
-	int32_t offsetY = (cvp->ViewY + iY) - Y;
+	const std::int32_t offsetX {cvp->ViewX + iX - X};
+	const std::int32_t offsetY {cvp->ViewY + iY - Y};
 	X = cvp->ViewX + iX;
 	Y = cvp->ViewY + iY;
 
@@ -139,7 +139,7 @@ bool C4EditCursor::Move(C4Viewport *cvp, int32_t iX, int32_t iY, uint16_t wKeyFl
 			cvp->UpdateViewPosition();
 			cvp->ScrollBarsByViewPosition();
 			// Allow the context menu on right click to be opened when we didn't drag the viewport.
-			if(abs(viewOffsetX) > 1 || abs(viewOffsetY) > 1)
+			if(std::abs(viewOffsetX) > 1 || std::abs(viewOffsetY) > 1)
 			{
 				DragViewport = true;
 			}
@@ -448,8 +448,8 @@ void C4EditCursor::Draw(C4FacetEx &cgo)
 	// Highlight target on hover.
 	if(Target)
 	{
-		uint32_t dwOldMod = Target->ColorMod;
-		uint32_t dwOldBlitMode = Target->BlitMode;
+		const std::uint32_t dwOldMod {Target->ColorMod};
+		const std::uint32_t dwOldBlitMode {Target->BlitMode};
 		Target->ColorMod = 0x5555aa;
 		Target->BlitMode = C4GFXBLIT_CLRSFC_MOD2 | C4GFXBLIT_ADDITIVE;
 		Target->Draw(cgo, -1);
@@ -459,61 +459,65 @@ void C4EditCursor::Draw(C4FacetEx &cgo)
 	}
 	// Draw drag frame
 	if (DragFrame && Mode != C4CNS_ModeDraw)
+	{
 		Application.DDraw->DrawFrame(cgo.Surface, (std::min)(X, X2) + cgo.X - cgo.TargetX, (std::min)(Y, Y2) + cgo.Y - cgo.TargetY, (std::max)(X, X2) + cgo.X - cgo.TargetX, (std::max)(Y, Y2) + cgo.Y - cgo.TargetY, CWhite);
+	}
 	// Draw drop target
 	if (DropTarget)
+	{
 		Game.GraphicsResource.fctDropTarget.Draw(cgo.Surface,
 			DropTarget->x +                       cgo.X - cgo.TargetX - Game.GraphicsResource.fctDropTarget.Wdt / 2,
 			DropTarget->y + DropTarget->Shape.y + cgo.Y - cgo.TargetY - Game.GraphicsResource.fctDropTarget.Hgt);
+	}
 	if(Mode == C4CNS_ModeDraw)
 	{
 		// Draw cursor outline for Brush and Line
 		C4ToolsDlg *pTools = &Console.ToolsDlg;
 		if(pTools)
 		{
-			int32_t ScreenPosX1 = ViewSpaceX;
-			int32_t ScreenPosY1 = ViewSpaceY;
-			int32_t Radius = pTools->Grade;
-			const int32_t ViewportOffsetX = X - ViewSpaceX;
-			const int32_t ViewportOffsetY = Y - ViewSpaceY;
-			int32_t ScreenPosX2 = X2 - ViewportOffsetX;
-			int32_t ScreenPosY2 = Y2 - ViewportOffsetY;
-			int32_t Zoom = Game.Landscape.MapZoom;
+			std::int32_t screenPosX1 {ViewSpaceX};
+			std::int32_t screenPosY1 {ViewSpaceY};
+			std::int32_t radius {pTools->Grade};
+			const std::int32_t viewportOffsetX {X - ViewSpaceX};
+			const std::int32_t viewportOffsetY {Y - ViewSpaceY};
+			std::int32_t screenPosX2 {X2 - viewportOffsetX};
+			std::int32_t screenPosY2 {Y2 - viewportOffsetY};
+			const std::int32_t zoom {Game.Landscape.MapZoom};
 			if(Game.Landscape.Mode != C4LSC_Exact)
 			{
 				// Snap circle to map grid.
-				ScreenPosX1 = std::round(X / Zoom) * Zoom - (ViewportOffsetX);
-				ScreenPosY1 = std::round(Y / Zoom) * Zoom - (ViewportOffsetY);
+				screenPosX1 = std::round(X / zoom) * zoom - (viewportOffsetX);
+				screenPosY1 = std::round(Y / zoom) * zoom - (viewportOffsetY);
 
-				ScreenPosX2 = std::round(X2 / Zoom) * Zoom - (ViewportOffsetX);
-				ScreenPosY2 = std::round(Y2 / Zoom) * Zoom - (ViewportOffsetY);
+				screenPosX2 = std::round(X2 / zoom) * zoom - (viewportOffsetX);
+				screenPosY2 = std::round(Y2 / zoom) * zoom - (viewportOffsetY);
 
-				Radius = pTools->Grade + ((pTools->Grade / (Zoom / 2)) - 1) * (Zoom / 2);
+				radius = pTools->Grade + ((pTools->Grade / (zoom / 2)) - 1) * (zoom / 2);
 
 				if(Console.ToolsDlg.SelectedTool == C4TLS_Brush || Console.ToolsDlg.SelectedTool == C4TLS_Line)
 				{
 					// Drawn circles are offset to the left when the radius is greater than one grid unit.
-					ScreenPosX1 += (Radius > Zoom / 2 ? 0 : Zoom / 2);
-					ScreenPosX2 += (Radius > Zoom / 2 ? 0 : Zoom / 2);
+					screenPosX1 += (radius > zoom / 2 ? 0 : zoom / 2);
+					screenPosX2 += (radius > zoom / 2 ? 0 : zoom / 2);
 
 					// Circles always use the center of the grid on the Y axis.
-					ScreenPosY1 += Zoom / 2;
-					ScreenPosY2 += Zoom / 2;
+					screenPosY1 += zoom / 2;
+					screenPosY2 += zoom / 2;
 				}
 			}
 			switch (Console.ToolsDlg.SelectedTool)
 			{
 			case C4TLS_Brush:
-				Application.DDraw->DrawCircleOutline(cgo.Surface, ScreenPosX1, ScreenPosY1, Radius, CWhite);
+				Application.DDraw->DrawCircleOutline(cgo.Surface, screenPosX1, screenPosY1, radius, CWhite);
 				break;
 			case C4TLS_Line:
 				if(DragLine)
 				{
-					Application.DDraw->DrawCapsuleOutline(cgo.Surface, ScreenPosX1, ScreenPosY1, ScreenPosX2, ScreenPosY2, Radius, CWhite);
+					Application.DDraw->DrawCapsuleOutline(cgo.Surface, screenPosX1, screenPosY1, screenPosX2, screenPosY2, radius, CWhite);
 				}
 				else
 				{
-					Application.DDraw->DrawCircleOutline(cgo.Surface, ScreenPosX1, ScreenPosY1, Radius, CWhite);
+					Application.DDraw->DrawCircleOutline(cgo.Surface, screenPosX1, screenPosY1, radius, CWhite);
 				}
 				break;
 			case C4TLS_Rect:
@@ -521,21 +525,21 @@ void C4EditCursor::Draw(C4FacetEx &cgo)
 				{
 					if(Game.Landscape.Mode != C4LSC_Exact)
 					{
-						ScreenPosX1 = std::round((X<X2?X:X2) / Zoom) * Zoom - (ViewportOffsetX);
-						ScreenPosY1 = std::round((Y<Y2?Y:Y2) / Zoom) * Zoom - (ViewportOffsetY);
-						ScreenPosX2 = std::round((X>X2?X:X2) / Zoom + 1) * Zoom - (ViewportOffsetX);
-						ScreenPosY2 = std::round((Y>Y2?Y:Y2) / Zoom + 1) * Zoom - (ViewportOffsetY);
+						screenPosX1 = std::round((X < X2 ? X : X2) / zoom) * zoom - (viewportOffsetX);
+						screenPosY1 = std::round((Y < Y2 ? Y : Y2) / zoom) * zoom - (viewportOffsetY);
+						screenPosX2 = std::round((X > X2 ? X : X2) / zoom + 1) * zoom - (viewportOffsetX);
+						screenPosY2 = std::round((Y > Y2 ? Y : Y2) / zoom + 1) * zoom - (viewportOffsetY);
 					}
-					Application.DDraw->DrawFrame(cgo.Surface, ScreenPosX1, ScreenPosY1, ScreenPosX2, ScreenPosY2, CWhite);
+					Application.DDraw->DrawFrame(cgo.Surface, screenPosX1, screenPosY1, screenPosX2, screenPosY2, CWhite);
 				}
 				else
 				{
-					int32_t box_size = 1;
+					std::int32_t boxSize {1};
 					if(Game.Landscape.Mode != C4LSC_Exact)
 					{
-						box_size = Zoom;
+						boxSize = zoom;
 					}
-					Application.DDraw->DrawFrame(cgo.Surface, ScreenPosX1, ScreenPosY1, ScreenPosX1 + box_size, ScreenPosY1 + box_size, CWhite);
+					Application.DDraw->DrawFrame(cgo.Surface, screenPosX1, screenPosY1, screenPosX1 + boxSize, screenPosY1 + boxSize, CWhite);
 				}
 			default:
 				break;
@@ -578,7 +582,8 @@ void C4EditCursor::FrameSelection()
 	for (clnk = Game.Objects.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
 		if (cobj->Status) if (cobj->OCF & OCF_NotContained)
 		{
-			if(Selection.IsContained(cobj)) // Contained as in: "Part of selection"
+			// Contained as in: "Part of selection"
+			if(Selection.IsContained(cobj))
 			{
 				continue;
 			}
@@ -633,9 +638,13 @@ bool C4EditCursor::SetMode(int32_t iMode)
 	{
 	case C4CNS_ModePlay:
 		if (Console.ToolsDlg.Active)
+		{
 			Console.ToolsDlg.Clear();
+		}
 		if(Console.PropertyDlg.Active)
+		{
 			Console.PropertyDlg.Clear();
+		}
 	case C4CNS_ModeEdit:
 		Console.ToolsDlg.Clear();
 		OpenPropTools();

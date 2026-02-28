@@ -72,7 +72,7 @@ public:
 	bool RightButtonUp();
 	bool RightButtonDown(bool fControl);
 	void MiddleButtonUp();
-	bool Move(C4Viewport *cvp, int32_t iX, int32_t iY, uint16_t wKeyFlags);
+	bool Move(C4Viewport *const cvp, int32_t iX, int32_t iY, uint16_t wKeyFlags);
 	bool Init();
 	bool EditingOK();
 	C4ObjectList &GetSelection() { return Selection; }

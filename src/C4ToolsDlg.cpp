@@ -745,7 +745,7 @@ bool C4ToolsDlg::SetGrade(int32_t iGrade)
 
 bool C4ToolsDlg::ChangeGrade(int32_t iChange)
 {
-	int32_t iGrade = Grade + iChange;
+	std::int32_t iGrade {Grade + iChange};
 	SetGrade(iGrade);
 	InitGradeCtrl();
 	return true;
