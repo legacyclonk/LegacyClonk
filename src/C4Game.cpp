@@ -2098,8 +2098,13 @@ bool C4Game::SaveGameTitle(C4Group &hGroup)
 			return false;
 		}
 
-		constexpr std::uint32_t titleWidth{200};
-		constexpr std::uint32_t titleHeight{150};
+		const auto srcWidth = static_cast<std::uint32_t>(screenshot->GetWidth());
+		const auto srcHeight = static_cast<std::uint32_t>(screenshot->GetHeight());
+		const auto srcSize = std::max(srcWidth, srcHeight);
+
+		constexpr std::uint32_t titleSize{400};
+		const std::uint32_t titleWidth{RoundedDivision(titleSize * srcWidth, srcSize)};
+		const std::uint32_t titleHeight{RoundedDivision(titleSize * srcHeight, srcSize)};
 		const StdBitmap thumbnail{screenshot->Scaled(titleWidth, titleHeight)};
 
 		try

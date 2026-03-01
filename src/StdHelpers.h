@@ -55,6 +55,12 @@ To checked_cast(From from)
 	return static_cast<To>(from);
 }
 
+template<std::integral T>
+constexpr T RoundedDivision(T numerator, T denominator) noexcept
+{
+	return (numerator + denominator / 2) / denominator;
+}
+
 template<typename... T>
 class StdOverloadedCallable : public T...
 {
