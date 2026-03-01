@@ -621,7 +621,7 @@ gboolean C4ViewportWindow::OnMotionNotifyStatic(GtkWidget *widget, GdkEventMotio
 	{
 		const auto scale = Application.GetScale();
 
-		Console.EditCursor.Move(window->cvp, window->cvp->ViewX + static_cast<int32_t>(event->x / scale), window->cvp->ViewY + static_cast<int32_t>(event->y / scale), event->state);
+		Console.EditCursor.Move(window->cvp, static_cast<int32_t>(event->x / scale), static_cast<int32_t>(event->y / scale), event->state);
 	}
 
 	return TRUE;
@@ -787,7 +787,7 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 		{
 			const auto scale = Application.GetScale();
 
-			Console.EditCursor.Move(cvp->ViewX + static_cast<int32_t>(e.xbutton.x / scale), cvp->ViewY + static_cast<int32_t>(e.xbutton.y / scale), e.xbutton.state);
+			Console.EditCursor.Move(cvp, static_cast<int32_t>(e.xbutton.x / scale), static_cast<int32_t>(e.xbutton.y / scale), e.xbutton.state);
 		}
 		break;
 	case ConfigureNotify:
