@@ -445,7 +445,7 @@ void C4KeyCodeEx::CompileFunc(StdCompiler *pComp)
 bool C4KeyCodeEx::IsStandardAlphaNumeric() const noexcept
 {
 #ifdef USE_SDL_MAINLOOP
-	const auto key = SDL_GetKeyName(SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(key.Key)))[0];
+	const int key{SDL_GetKeyName(SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(Key)))[0]};
 #else
 	const auto key = Key;
 #endif
