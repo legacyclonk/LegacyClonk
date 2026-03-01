@@ -481,8 +481,16 @@ void C4ViewportWindow::OnRealizeStatic(GtkWidget *widget, gpointer user_data)
 
 gboolean C4ViewportWindow::OnKeyPressStatic(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
+	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
+	if (!window)
+	{
+		return TRUE;
+	}
+
 	if (event->keyval == GDK_KEY_Scroll_Lock)
+	{
 		static_cast<C4ViewportWindow *>(user_data)->cvp->TogglePlayerLock();
+	}
 #ifndef NDEBUG
 	switch (event->keyval)
 	{
@@ -492,15 +500,41 @@ gboolean C4ViewportWindow::OnKeyPressStatic(GtkWidget *widget, GdkEventKey *even
 	case GDK_KEY_4: Config.Graphics.TexIndent  += 0.05; printf("%f\n", Config.Graphics.TexIndent);  break;
 	}
 #endif
-	uint32_t key = XkbKeycodeToKeysym(GDK_WINDOW_XDISPLAY(event->window), event->hardware_keycode, 0, 0);
+	std::uint32_t key = XkbKeycodeToKeysym(GDK_WINDOW_XDISPLAY(event->window), event->hardware_keycode, 0, 0);
 	Game.DoKeyboardInput(key, KEYEV_Down, !!(event->state & GDK_MOD1_MASK), !!(event->state & GDK_CONTROL_MASK), !!(event->state & GDK_SHIFT_MASK), false, nullptr);
-	return TRUE;
+
+	if (Console.EditCursor.GetMode() != C4CNS_ModePlay)
+	{
+		switch (event->keyval)
+		{
+		case GDK_KEY_Up:
+			Console.EditCursor.MoveSelection(0, -1);
+			break;
+		case GDK_KEY_Down:
+			Console.EditCursor.MoveSelection(0, 1);
+			break;
+		case GDK_KEY_Right:
+			Console.EditCursor.MoveSelection(1, 0);
+			break;
+		case GDK_KEY_Left:
+			Console.EditCursor.MoveSelection(-1, 0);
+			break;
+		}
+	}
+		return TRUE;
 }
 
 gboolean C4ViewportWindow::OnKeyReleaseStatic(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
+	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
+	if (!window)
+	{
+		return TRUE;
+	}
+
 	uint32_t key = XkbKeycodeToKeysym(GDK_WINDOW_XDISPLAY(event->window), event->hardware_keycode, 0, 0);
 	Game.DoKeyboardInput(key, KEYEV_Up, !!(event->state & GDK_MOD1_MASK), !!(event->state & GDK_CONTROL_MASK), !!(event->state & GDK_SHIFT_MASK), false, nullptr);
+
 	return TRUE;
 }
 
