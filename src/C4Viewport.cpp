@@ -212,23 +212,8 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 			}
 
 		case WM_MOUSEWHEEL:
-			const std::int32_t PreviousBrushSize {Console.ToolsDlg.Grade};
 			const std::int32_t Direction {static_cast<short>(wParam >> 16) > 0 ? 1 : -1};
-			if (Game.Landscape.Mode == C4LSC_Exact)
-			{
-				Console.ToolsDlg.ChangeGrade(Direction);
-			}
-			else
-			{
-				const std::int32_t ZoomHalf {Game.Landscape.MapZoom / 2};
-				// Snap to grid for static landscapes.
-				const std::int32_t BrushSizeIncrements {Direction * ZoomHalf};
-				Console.ToolsDlg.ChangeGrade(BrushSizeIncrements);
-			}
-			if(PreviousBrushSize != Console.ToolsDlg.Grade)
-			{
-				DebugLog(spdlog::level::info, "Current brush size: {}", Console.ToolsDlg.Grade);
-			}
+			cvp->IncrementBrushSize(Direction);
 			break;
 		}
 	}
@@ -380,7 +365,7 @@ GtkWidget *C4ViewportWindow::InitGUI()
 
 	gtk_container_add(GTK_CONTAINER(window), table);
 
-	gtk_widget_add_events(window, GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK | GDK_POINTER_MOTION_MASK);
+	gtk_widget_add_events(window, GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_SCROLL_MASK |  GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK | GDK_POINTER_MOTION_MASK);
 
 	gtk_drag_dest_set(drawing_area, GTK_DEST_DEFAULT_ALL, drag_drop_entries, 1, GDK_ACTION_COPY);
 	g_signal_connect(G_OBJECT(drawing_area), "drag-data-received", G_CALLBACK(OnDragDataReceivedStatic), this);
@@ -522,7 +507,10 @@ gboolean C4ViewportWindow::OnKeyReleaseStatic(GtkWidget *widget, GdkEventKey *ev
 gboolean C4ViewportWindow::OnScrollStatic(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
 	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
-
+	if (!window)
+	{
+		return TRUE;
+	}
 	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
 	{
 		switch (event->direction)
@@ -535,6 +523,18 @@ gboolean C4ViewportWindow::OnScrollStatic(GtkWidget *widget, GdkEventScroll *eve
 			break;
 		case GDK_SCROLL_LEFT: case GDK_SCROLL_RIGHT:
 			// no horizontal scrolling implemented so far
+			break;
+		}
+	}
+	else if (window->cvp)
+	{
+		switch (event->direction)
+		{
+		case GDK_SCROLL_UP:
+			window->cvp->IncrementBrushSize(1);
+			break;
+		case GDK_SCROLL_DOWN:
+			window->cvp->IncrementBrushSize(-1);
 			break;
 		}
 	}
@@ -755,6 +755,12 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 			case Button3:
 				Console.EditCursor.RightButtonDown(e.xbutton.state & MK_CONTROL);
 				break;
+			case Button4:
+				cvp->IncrementBrushSize(1);
+				break;
+			case Button5:
+				cvp->IncrementBrushSize(-1);
+				break;
 			}
 		}
 	}
@@ -811,6 +817,26 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 #endif // USE_X11
 
 #endif // WITH_DEVELOPER_MODE/_WIN32
+
+void C4Viewport::IncrementBrushSize(std::int32_t Direction)
+{
+	const std::int32_t PreviousBrushSize {Console.ToolsDlg.Grade};
+	if (Game.Landscape.Mode == C4LSC_Exact)
+	{
+		Console.ToolsDlg.ChangeGrade(Direction);
+	}
+	else
+	{
+		const std::int32_t ZoomHalf {Game.Landscape.MapZoom / 2};
+		// Snap to grid for static landscapes.
+		const std::int32_t BrushSizeIncrements {Direction * ZoomHalf};
+		Console.ToolsDlg.ChangeGrade(BrushSizeIncrements);
+	}
+	if(PreviousBrushSize != Console.ToolsDlg.Grade)
+	{
+		DebugLog(spdlog::level::info, "Current brush size: {}", Console.ToolsDlg.Grade);
+	}
+}
 
 void C4ViewportWindow::Close()
 {

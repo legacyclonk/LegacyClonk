@@ -135,6 +135,7 @@ protected:
 	void AdjustPosition();
 	bool UpdateOutputSize();
 	bool ViewPositionByScrollBars();
+	void IncrementBrushSize(std::int32_t Direction);
 
 	friend class C4ViewportWindow;
 };
