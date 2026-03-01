@@ -594,9 +594,29 @@ bool C4ScenarioSection::ScenarioLoad(char *szFilename)
 C4Group *C4ScenarioSection::GetGroupfile(C4Group &rGrp)
 {
 	// check temp filename
-	if (!TempFilename.empty()) if (rGrp.Open(TempFilename.c_str())) return &rGrp; else return nullptr;
+	if (!TempFilename.empty())
+	{
+		if (rGrp.Open(TempFilename.c_str()))
+		{
+			return &rGrp;
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
 	// check filename within scenario
-	if (!Filename.empty()) if (rGrp.OpenAsChild(&Game.ScenarioFile, Filename.c_str())) return &rGrp; else return nullptr;
+	if (!Filename.empty())
+	{
+		if (rGrp.OpenAsChild(&Game.ScenarioFile, Filename.c_str()))
+		{
+			return &rGrp;
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
 	// unmodified main section: return main group
 	if (SEqualNoCase(Name.c_str(), C4ScenSect_Main)) return &Game.ScenarioFile;
 	// failure

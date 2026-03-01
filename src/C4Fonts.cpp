@@ -106,7 +106,7 @@ void C4FontLoader::Clear()
 	FontDefs.clear();
 	// delete loaded vector fonts
 	C4VectorFont *pVecFont, *pNextVecFont = pVectorFonts;
-	while (pVecFont = pNextVecFont)
+	while ((pVecFont = pNextVecFont))
 	{
 		pNextVecFont = pVecFont->pNext;
 		delete pVecFont;

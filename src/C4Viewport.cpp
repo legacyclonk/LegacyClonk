@@ -1493,7 +1493,7 @@ void C4Viewport::SetOutputSize(int32_t iDrawX, int32_t iDrawY, int32_t iOutX, in
 	ResetMenuPositions = true;
 	// player uses mouse control? then clip the cursor
 	C4Player *pPlr;
-	if (pPlr = Game.Players.Get(Player))
+	if ((pPlr = Game.Players.Get(Player)))
 		if (pPlr->MouseControl)
 		{
 			Game.MouseControl.UpdateClip();

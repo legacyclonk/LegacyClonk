@@ -213,7 +213,7 @@ bool C4GameResList::Load(const std::vector<std::string> &DefinitionFilenames)
 	CreateByFile(NRT_System, C4CFN_System);
 	// add all instances of Material.c4g, except those inside the scenario file
 	C4Group *pMatParentGrp = nullptr;
-	while (pMatParentGrp = Game.GroupSet.FindGroup(C4GSCnt_Material, pMatParentGrp))
+	while ((pMatParentGrp = Game.GroupSet.FindGroup(C4GSCnt_Material, pMatParentGrp)))
 		if (pMatParentGrp != &Game.ScenarioFile)
 		{
 			CreateByFile(NRT_Material, (pMatParentGrp->GetFullName() + DirSep C4CFN_Material).getData());
@@ -476,10 +476,10 @@ bool C4GameParameters::CheckLeagueRulesStart(bool fFixIt)
 
 	// league games: enforce one team per client
 	C4ClientPlayerInfos *pClient; C4PlayerInfo *pInfo;
-	for (int iClient = 0; pClient = Game.PlayerInfos.GetIndexedInfo(iClient); iClient++)
+	for (int iClient = 0; (pClient = Game.PlayerInfos.GetIndexedInfo(iClient)); iClient++)
 	{
 		bool fHaveTeam = false; int32_t iClientTeam; const char *szFirstPlayer;
-		for (int iInfo = 0; pInfo = pClient->GetPlayerInfo(iInfo); iInfo++)
+		for (int iInfo = 0; (pInfo = pClient->GetPlayerInfo(iInfo)); iInfo++)
 		{
 			// Actual human players only
 			if (pInfo->GetType() != C4PT_User) continue;
@@ -591,7 +591,7 @@ std::string C4GameParameters::GetGameGoalString()
 	std::string result;
 	C4ID idGoal;
 	for (int32_t i = 0; i < Goals.GetNumberOfIDs(); ++i)
-		if (idGoal = Goals.GetID(i)) if (idGoal != C4ID_None)
+		if ((idGoal = Goals.GetID(i))) if (idGoal != C4ID_None)
 		{
 			if (Game.IsRunning)
 			{

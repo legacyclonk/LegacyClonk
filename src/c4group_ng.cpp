@@ -610,16 +610,28 @@ int main(int argc, char *argv[])
 
 	// Register shell
 	if (fRegisterShell)
+	{
 		if (RegisterShellExtensions())
+		{
 			std::println("Shell extensions registered.");
+		}
 		else
+		{
 			std::println("Error registering shell extensions.");
+		}
+	}
 	// Unregister shell
 	if (fUnregisterShell)
+	{
 		if (UnregisterShellExtensions())
+		{
 			std::println("Shell extensions removed.");
+		}
 		else
+		{
 			std::println("Error removing shell extensions.");
+		}
+	}
 
 	// At least one parameter (filename, not option or command): process file(s)
 	if (iFirstGroup)

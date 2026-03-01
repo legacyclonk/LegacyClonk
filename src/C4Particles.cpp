@@ -177,7 +177,7 @@ bool C4ParticleDef::Load(C4Group &rGrp)
 		}
 		// particle overloading
 		C4ParticleDef *pDefOverload;
-		if (pDefOverload = ParticleSystem.GetDef(Name.getData(), this))
+		if ((pDefOverload = ParticleSystem.GetDef(Name.getData(), this)))
 		{
 			if (Config.Graphics.VerboseObjectLoading >= 1)
 			{
@@ -214,7 +214,7 @@ void C4Particle::MoveList(C4ParticleList &rFrom, C4ParticleList &rTo)
 		if (rFrom.pFirst == this) rFrom.pFirst = pNext;
 	if (pNext) pNext->pPrev = pPrev;
 	// add to the other list - insert before first
-	if (pNext = rTo.pFirst) pNext->pPrev = this;
+	if ((pNext = rTo.pFirst)) pNext->pPrev = this;
 	rTo.pFirst = this; pPrev = nullptr;
 }
 
@@ -251,7 +251,7 @@ void C4ParticleList::Exec(C4Object *pObj)
 {
 	// execute all particles
 	C4Particle *pPrtNext = pFirst, *pPrt;
-	while (pPrt = pPrtNext)
+	while ((pPrt = pPrtNext))
 	{
 		// get next now, because destruction could corrupt the list
 		pPrtNext = pPrt->pNext;
@@ -278,7 +278,7 @@ void C4ParticleList::Clear()
 {
 	// remove all particles
 	C4Particle *pPrtNext = pFirst, *pPrt;
-	while (pPrt = pPrtNext)
+	while ((pPrt = pPrtNext))
 	{
 		// get next now, because destruction could corrupt the list
 		pPrtNext = pPrt->pNext;
@@ -293,7 +293,7 @@ int32_t C4ParticleList::Remove(C4ParticleDef *pOfDef)
 	int32_t iNumRemoved = 0;
 	// check all particles for def
 	C4Particle *pPrtNext = pFirst, *pPrt;
-	while (pPrt = pPrtNext)
+	while ((pPrt = pPrtNext))
 	{
 		// get next now, because destruction could corrupt the list
 		pPrtNext = pPrt->pNext;
@@ -333,7 +333,7 @@ C4ParticleChunk *C4ParticleSystem::AddChunk()
 	pNewChnk->pNext = Chunk.pNext;
 	Chunk.pNext = pNewChnk;
 	// register into free-particle-list
-	if (pNewChnk->Data[C4Px_BufSize - 1].pNext = FreeParticles.pFirst)
+	if ((pNewChnk->Data[C4Px_BufSize - 1].pNext = FreeParticles.pFirst))
 		FreeParticles.pFirst->pPrev = &pNewChnk->Data[C4Px_BufSize - 1];
 	FreeParticles.pFirst = &pNewChnk->Data[0];
 	// return it
@@ -351,7 +351,7 @@ void C4ParticleSystem::ClearParticles()
 	GlobalParticles.pFirst = nullptr;
 	// reset chunks
 	C4ParticleChunk *pNextChnk = Chunk.pNext, *pChnk;
-	while (pChnk = pNextChnk)
+	while ((pChnk = pNextChnk))
 	{
 		pNextChnk = pChnk->pNext;
 		delete pChnk;
@@ -660,7 +660,18 @@ bool fxStdExec(C4Particle *pPrt, C4Object *pTarget)
 	}
 	// fade out
 	int32_t iFade = pPrt->pDef->AlphaFade;
-	if (iFade < 0) if (Game.FrameCounter % -iFade == 0) iFade = 1; else iFade = 0;
+	if (iFade < 0)
+	{
+		if (Game.FrameCounter % -iFade == 0)
+		{
+			iFade = 1;
+		}
+		else
+		{
+			iFade = 0;
+		}
+	}
+
 	if (iFade)
 	{
 		uint32_t dwClr = pPrt->b;
@@ -753,6 +764,7 @@ void fxStdDraw(C4Particle *pPrt, C4FacetEx &cgo, C4Object *pTarget)
 	// get phase
 	int32_t iPhase = pPrt->life;
 	if (pDef->Delay)
+	{
 		if (iPhase >= 0)
 		{
 			iPhase /= pDef->Delay;
@@ -764,27 +776,32 @@ void fxStdDraw(C4Particle *pPrt, C4FacetEx &cgo, C4Object *pTarget)
 			}
 			else iPhase %= length;
 		}
-		else iPhase = (iPhase + 1) / -pDef->FadeOutDelay + pDef->Length;
-		// get rotation
-		int32_t r = 0;
-		if ((pDef->RByV == 1) || (pDef->RByV == 2)) // rotation by direction
-			r = Angle(0, 0, static_cast<int32_t>(dxdir * 10.0f), static_cast<int32_t>(dydir * 10.0f)) * 100;
-		if (pDef->RByV == 3) // random rotation - currently a pseudo random rotation by x/y position
-			r = (static_cast<int32_t>(pPrt->x * 23 + pPrt->y * 12) % 360) * 100;
-		// draw at pos
-		Application.DDraw->ActivateBlitModulation(pPrt->b);
-		Application.DDraw->StorePrimaryClipper();
-		Application.DDraw->SubPrimaryClipper(cgox, cgoy + pDef->YOff, 100000, 100000);
-		if (pDef->Additive) lpDDraw->SetBlitMode(C4GFXBLIT_ADDITIVE);
-		int32_t iDrawWdt = int32_t(pPrt->a);
-		int32_t iDrawHgt = int32_t(pDef->Aspect * iDrawWdt);
-		if (r)
-			pDef->Gfx.DrawXR(cgo.Surface, cx - iDrawWdt, cy - iDrawHgt, iDrawWdt * 2, iDrawHgt * 2, iPhase, 0, r);
 		else
-			pDef->Gfx.DrawX(cgo.Surface, cx - iDrawWdt, cy - iDrawHgt, iDrawWdt * 2, iDrawHgt * 2, iPhase, 0);
-		Application.DDraw->ResetBlitMode();
-		Application.DDraw->RestorePrimaryClipper();
-		Application.DDraw->DeactivateBlitModulation();
+		{
+			iPhase = (iPhase + 1) / -pDef->FadeOutDelay + pDef->Length;
+		}
+	}
+
+	// get rotation
+	int32_t r = 0;
+	if ((pDef->RByV == 1) || (pDef->RByV == 2)) // rotation by direction
+		r = Angle(0, 0, static_cast<int32_t>(dxdir * 10.0f), static_cast<int32_t>(dydir * 10.0f)) * 100;
+	if (pDef->RByV == 3) // random rotation - currently a pseudo random rotation by x/y position
+		r = (static_cast<int32_t>(pPrt->x * 23 + pPrt->y * 12) % 360) * 100;
+	// draw at pos
+	Application.DDraw->ActivateBlitModulation(pPrt->b);
+	Application.DDraw->StorePrimaryClipper();
+	Application.DDraw->SubPrimaryClipper(cgox, cgoy + pDef->YOff, 100000, 100000);
+	if (pDef->Additive) lpDDraw->SetBlitMode(C4GFXBLIT_ADDITIVE);
+	int32_t iDrawWdt = int32_t(pPrt->a);
+	int32_t iDrawHgt = int32_t(pDef->Aspect * iDrawWdt);
+	if (r)
+		pDef->Gfx.DrawXR(cgo.Surface, cx - iDrawWdt, cy - iDrawHgt, iDrawWdt * 2, iDrawHgt * 2, iPhase, 0, r);
+	else
+		pDef->Gfx.DrawX(cgo.Surface, cx - iDrawWdt, cy - iDrawHgt, iDrawWdt * 2, iDrawHgt * 2, iPhase, 0);
+	Application.DDraw->ResetBlitMode();
+	Application.DDraw->RestorePrimaryClipper();
+	Application.DDraw->DeactivateBlitModulation();
 }
 
 C4ParticleProcRec C4ParticleProcMap[] =

@@ -146,7 +146,7 @@ bool C4FacetExSurface::Load(C4Group &hGroup, const char *szName, int iWdt, int i
 		// no extension: Default to extension that is found as file in group
 		const char *const extensions[] = { "png", "bmp", "jpeg", "jpg", nullptr };
 		int i = 0; const char *szExt;
-		while (szExt = extensions[i++])
+		while ((szExt = extensions[i++]))
 		{
 			EnforceExtension(szFilename, szExt);
 			if (hGroup.FindEntry(szFilename)) break;

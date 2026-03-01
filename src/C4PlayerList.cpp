@@ -44,7 +44,7 @@ void C4PlayerList::Default()
 void C4PlayerList::Clear()
 {
 	C4Player *pPlr;
-	while (pPlr = First)
+	while ((pPlr = First))
 	{
 		First = pPlr->Next; delete pPlr;
 	}
@@ -467,7 +467,7 @@ bool C4PlayerList::RemoveAtClient(int iClient, bool fDisconnect)
 {
 	C4Player *pPlr;
 	// Get players
-	while (pPlr = GetAtClient(iClient))
+	while ((pPlr = GetAtClient(iClient)))
 	{
 		// Log
 		Log(C4ResStrTableKey::IDS_PRC_REMOVEPLR, pPlr->GetName());
@@ -500,7 +500,7 @@ bool C4PlayerList::RemoveAtRemoteClient(bool fDisconnect, bool fNoCalls)
 {
 	C4Player *pPlr;
 	// Get players
-	while (pPlr = GetAtRemoteClient())
+	while ((pPlr = GetAtRemoteClient()))
 	{
 		// Log
 		Log(C4ResStrTableKey::IDS_PRC_REMOVEPLR, pPlr->GetName());
@@ -588,7 +588,7 @@ bool C4PlayerList::SynchronizeLocalFiles()
 void C4PlayerList::ClearLocalPlayerPressedComs()
 {
 	C4Player *plr;
-	for (int cnt = 0; plr = Game.Players.GetLocalByIndex(cnt); cnt++)
+	for (int cnt = 0; (plr = Game.Players.GetLocalByIndex(cnt)); cnt++)
 	{
 		plr->ClearPressedComsSynced();
 	}

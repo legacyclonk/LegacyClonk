@@ -421,7 +421,7 @@ static bool FnSplit2Components(C4AulContext *cthr, C4Object *pObj)
 	// Store container
 	pContainer = pObj->Contained;
 	// Contents: exit / transfer to container
-	while (pThing = pObj->Contents.GetObject())
+	while ((pThing = pObj->Contents.GetObject()))
 		if (pContainer) pThing->Enter(pContainer);
 		else pThing->Exit(pThing->x, pThing->y);
 	// Destroy the object, create its components
@@ -437,11 +437,11 @@ static bool FnSplit2Components(C4AulContext *cthr, C4Object *pObj)
 			const auto r3 = itofix(Rnd3());
 			const auto r2 = itofix(Rnd3());
 			const auto r1 = Random(360);
-			if (pNew = Game.CreateObject(ObjComponents.GetID(cnt),
+			if ((pNew = Game.CreateObject(ObjComponents.GetID(cnt),
 				pObj,
 				pObj->Owner,
 				pObj->x, pObj->y,
-				r1, r2, r3, r4))
+				r1, r2, r3, r4)))
 			{
 				if (pObj->GetOnFire()) pNew->Incinerate(pObj->Owner);
 				if (pContainer) pNew->Enter(pContainer);
@@ -668,10 +668,16 @@ static std::optional<C4ValueInt> FnGetPhysical(C4AulContext *cthr, C4String *szP
 		if (!pObj->Info) return {};
 		// In fair crew mode, scripts may not read permanent physical values - fallback to fair def physical instead!
 		if (Game.Parameters.UseFairCrew)
+		{
 			if (pObj->Info->pDef)
+			{
 				return {pObj->Info->pDef->GetFairCrewPhysicals()->*off};
+			}
 			else
+			{
 				return {pObj->Def->GetFairCrewPhysicals()->*off};
+			}
+		}
 		// Get physical
 		return {pObj->Info->Physical.*off};
 	// Temporary physical
@@ -1013,7 +1019,7 @@ static bool FnSetName(C4AulContext *cthr, C4String *pNewName, C4Object *pObj, C4
 	C4Def *pDef;
 
 	if (idDef)
-		if (pDef = C4Id2Def(idDef))
+		if ((pDef = C4Id2Def(idDef)))
 			pDef->Name.Copy(FnStringPar(pNewName));
 		else
 			return false;
@@ -1351,7 +1357,7 @@ static std::optional<C4ValueInt> FnGetCategory(C4AulContext *cthr, C4Object *pOb
 {
 	// Def category
 	C4Def *pDef;
-	if (idDef) if (pDef = C4Id2Def(idDef)) return {pDef->Category};
+	if (idDef) if ((pDef = C4Id2Def(idDef))) return {pDef->Category};
 	// Object category
 	if (!pObj) pObj = cthr->Obj; if (!pObj) return {};
 	return {pObj->Category};
@@ -1374,8 +1380,18 @@ static std::optional<C4ValueInt> FnGetValue(C4AulContext *cthr, C4Object *pObj, 
 	// Def value
 	C4Def *pDef;
 	if (idDef)
+	{
 		// return Def value or 0 if def unloaded
-		if (pDef = C4Id2Def(idDef)) return pDef->GetValue(pInBase, iForPlayer); else return {};
+		if ((pDef = C4Id2Def(idDef)))
+		{
+			return pDef->GetValue(pInBase, iForPlayer);
+		}
+		else
+		{
+			return {};
+		}
+	}
+
 	// Object value
 	if (!pObj) pObj = cthr->Obj; if (!pObj) return {};
 	return {pObj->GetValue(pInBase, iForPlayer)};
@@ -1443,7 +1459,7 @@ static bool FnCreateMenu(C4AulContext *cthr, C4ID iSymbol, C4Object *pMenuObj, C
 	C4Def *pDef;
 	C4FacetExSurface fctSymbol;
 	fctSymbol.Create(C4SymbolSize, C4SymbolSize);
-	if (pDef = C4Id2Def(iSymbol)) pDef->Draw(fctSymbol);
+	if ((pDef = C4Id2Def(iSymbol))) pDef->Draw(fctSymbol);
 
 	// Clear any old menu, init new menu
 	if (!pMenuObj->CloseMenu(false)) return false;
@@ -1773,7 +1789,7 @@ static C4Object *FnContents(C4AulContext *cthr, C4ValueInt index, C4Object *pObj
 	// Special: objects attaching to another object
 	//          cannot be accessed by FnContents, unless returnAttached is true
 	C4Object *cobj;
-	while (cobj = pObj->Contents.GetObject(index))
+	while ((cobj = pObj->Contents.GetObject(index)))
 	{
 		if (cobj->GetProcedure() != DFA_ATTACH || returnAttached) return cobj;
 		index++;
@@ -2411,9 +2427,19 @@ static bool FnPlayerMessage(C4AulContext *cthr, C4ValueInt iPlayer, C4String *sz
 
 	// Text
 	if (!fSpoken)
+	{
 		if (SCopySegment(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6).c_str(), 0, buf, '$', MaxFnStringParLen))
-			if (pObj) GameMsgObjectPlayer(buf, pObj, iPlayer);
-			else GameMsgPlayer(buf, iPlayer);
+		{
+			if (pObj)
+			{
+				GameMsgObjectPlayer(buf, pObj, iPlayer);
+			}
+			else
+			{
+				GameMsgPlayer(buf, iPlayer);
+			}
+		}
+	}
 
 	return true;
 }
@@ -2431,9 +2457,19 @@ static bool FnMessage(C4AulContext *cthr, C4String *szMessage, C4Object *pObj, C
 
 	// Text
 	if (!fSpoken)
+	{
 		if (SCopySegment(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).c_str(), 0, buf, '$', MaxFnStringParLen))
-			if (pObj) GameMsgObject(buf, pObj);
-			else GameMsgGlobal(buf);
+		{
+			if (pObj)
+			{
+				GameMsgObject(buf, pObj);
+			}
+			else
+			{
+				GameMsgGlobal(buf);
+			}
+		}
+	}
 
 	return true;
 }
@@ -2461,11 +2497,21 @@ static bool FnPlrMessage(C4AulContext *cthr, C4String *szMessage, C4ValueInt iPl
 
 	// Text
 	if (!fSpoken)
+	{
 		if (SCopySegment(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).c_str(), 0, buf, '$', MaxFnStringParLen))
-			if (ValidPlr(iPlr)) GameMsgPlayer(buf, iPlr);
-			else GameMsgGlobal(buf);
+		{
+			if (ValidPlr(iPlr))
+			{
+				GameMsgPlayer(buf, iPlr);
+			}
+			else
+			{
+				GameMsgGlobal(buf);
+			}
+		}
+	}
 
-			return true;
+	return true;
 }
 
 static void FnScriptGo(C4AulContext *cthr, bool go)
@@ -2921,7 +2967,7 @@ static C4Object *FnGetCursor(C4AulContext *cthr, C4ValueInt iPlr, C4ValueInt iIn
 	C4Object *pCrew;
 	for (C4ObjectLink *pLnk = pPlr->Crew.First; pLnk; pLnk = pLnk->Next)
 		// get crew object
-		if (pCrew = pLnk->Obj)
+		if ((pCrew = pLnk->Obj))
 			// is it selected?
 			if (pCrew->Select)
 				// is it not the cursor? (which is always first)
@@ -3260,8 +3306,29 @@ static C4ValueInt FnAngle(C4AulContext *cthr, C4ValueInt iX1, C4ValueInt iY1, C4
 	if (!iPrec) iPrec = 1;
 
 	C4ValueInt dx = iX2 - iX1, dy = iY2 - iY1;
-	if (!dx) if (dy > 0) return 180 * iPrec; else return 0;
-	if (!dy) if (dx > 0) return 90 * iPrec; else return 270 * iPrec;
+	if (!dx)
+	{
+		if (dy > 0)
+		{
+			return 180 * iPrec;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
+	if (!dy)
+	{
+		if (dx > 0)
+		{
+			return 90 * iPrec;
+		}
+		else
+		{
+			return 270 * iPrec;
+		}
+	}
 
 	iAngle = static_cast<C4ValueInt>(180.0 * iPrec * atan2(static_cast<double>(Abs(dy)), static_cast<double>(Abs(dx))) * std::numbers::inv_pi);
 
@@ -4822,7 +4889,7 @@ static bool FnSetCrewEnabled(C4AulContext *cctx, bool fEnabled, C4Object *pObj)
 	{
 		pObj->Select = false;
 		C4Player *pOwner;
-		if (pOwner = Game.Players.Get(pObj->Owner))
+		if ((pOwner = Game.Players.Get(pObj->Owner)))
 		{
 			// if viewed player cursor gets deactivated and no new cursor is found, follow the old in target mode
 			bool fWasCursorMode = (pOwner->ViewMode == C4PVM_Cursor);
@@ -5363,9 +5430,17 @@ static C4Value FnGetPortrait(C4AulContext *ctx, C4Object *pObj, bool fGetID, boo
 		{
 			// custom portrait?
 			if (pObj->Info->pCustomPortrait)
-				if (fGetID) return C4VNull;
+			{
+				if (fGetID)
+				{
+					return C4VNull;
+				}
 				else
+				{
 					return C4VString(C4Portrait_Custom);
+				}
+			}
+
 			// portrait string from info?
 			const char *szPortrait = pObj->Info->PortraitFile;
 			// no portrait string: portrait undefined ("none" would mean no portrait)
@@ -5597,8 +5672,8 @@ static C4ValueInt FnModulateColor(C4AulContext *cthr, std::optional<C4ValueInt> 
 	C4ValueInt iA1 = dwClr1 >> 24, iA2 = dwClr2 >> 24;
 	// modulate color values; mod alpha upwards
 	uint32_t r = ((dwClr1 & 0xff) * (dwClr2 & 0xff)) >> 8 | // blue
-		((dwClr1 >> 8 & 0xff) * (dwClr2 >> 8 & 0xff)) & 0xff00 | // green
-		((dwClr1 >> 16 & 0xff) * (dwClr2 >> 8 & 0xff00)) & 0xff0000 | // red
+		(((dwClr1 >> 8 & 0xff) * (dwClr2 >> 8 & 0xff)) & 0xff00) | // green
+		(((dwClr1 >> 16 & 0xff) * (dwClr2 >> 8 & 0xff00)) & 0xff0000) | // red
 		std::min<C4ValueInt>(iA1 + iA2 - ((iA1 * iA2) >> 8), 255) << 24; // alpha
 	return r;
 }
@@ -5841,7 +5916,7 @@ static bool FnOnOwnerRemoved(C4AulContext *cthr)
 		// Do not ignore flags which might be StaticBack if being attached to castle parts
 		int32_t iNewOwner = NO_OWNER;
 		C4Team *pTeam;
-		if (pPlr->Team) if (pTeam = Game.Teams.GetTeamByID(pPlr->Team))
+		if (pPlr->Team) if ((pTeam = Game.Teams.GetTeamByID(pPlr->Team)))
 		{
 			for (int32_t i = 0; i < pTeam->GetPlayerCount(); ++i)
 			{

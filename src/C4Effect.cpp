@@ -80,8 +80,17 @@ C4Effect::C4Effect(C4Object *pForObj, const char *szName, int32_t iPrio, int32_t
 	pPrev = *ppEffectList;
 	if (pPrev && Abs(pPrev->iPriority) < iPrio)
 	{
-		while (pCheck = pPrev->pNext)
-			if (Abs(pCheck->iPriority) >= iPrio) break; else pPrev = pCheck;
+		while ((pCheck = pPrev->pNext))
+		{
+			if (Abs(pCheck->iPriority) >= iPrio)
+			{
+				break;
+			}
+			else
+			{
+				pPrev = pCheck;
+			}
+		}
 		// insert after previous
 		pNext = pPrev->pNext;
 		pPrev->pNext = this;
@@ -163,7 +172,7 @@ C4Effect::~C4Effect()
 {
 	// del following effects (not recursively)
 	C4Effect *pEffect;
-	while (pEffect = pNext)
+	while ((pEffect = pNext))
 	{
 		pNext = pEffect->pNext;
 		pEffect->pNext = nullptr;
@@ -180,7 +189,7 @@ void C4Effect::EnumeratePointers()
 		// command target
 		pEff->pCommandTarget.Enumerate();
 		// effect var denumeration: not necessary, because this is done while saving
-	} while (pEff = pEff->pNext);
+	} while ((pEff = pEff->pNext));
 }
 
 void C4Effect::DenumeratePointers()
@@ -195,7 +204,7 @@ void C4Effect::DenumeratePointers()
 		pEff->EffectVars.DenumeratePointers();
 		// assign any callback functions
 		pEff->AssignCallbackFunctions();
-	} while (pEff = pEff->pNext);
+	} while ((pEff = pEff->pNext));
 }
 
 void C4Effect::ClearPointers(C4Object *pObj)
@@ -209,7 +218,7 @@ void C4Effect::ClearPointers(C4Object *pObj)
 			pEff->SetDead();
 			pEff->pCommandTarget = nullptr;
 		}
-	while (pEff = pEff->pNext);
+	while ((pEff = pEff->pNext));
 }
 
 C4Effect *C4Effect::Get(const char *szName, int32_t iIndex, int32_t iMaxPriority)
@@ -232,7 +241,7 @@ C4Effect *C4Effect::Get(const char *szName, int32_t iIndex, int32_t iMaxPriority
 		if (iIndex--) continue;
 		// effect found
 		return pEff;
-	} while (pEff = pEff->pNext);
+	} while ((pEff = pEff->pNext));
 	// nothing found
 	return nullptr;
 }
@@ -250,7 +259,7 @@ C4Effect *C4Effect::Get(int32_t iNumber, bool fIncludeDead, int32_t iMaxPriority
 			// effect found but denied
 			return nullptr;
 		}
-	while (pEff = pEff->pNext);
+	while ((pEff = pEff->pNext));
 	// nothing found
 	return nullptr;
 }
@@ -263,7 +272,7 @@ int32_t C4Effect::GetCount(const char *szMask, int32_t iMaxPriority)
 		if (!szMask || SWildcardMatchEx(pEff->Name, szMask))
 			if (!iMaxPriority || pEff->iPriority <= iMaxPriority)
 				++iCnt;
-	while (pEff = pEff->pNext);
+	while ((pEff = pEff->pNext));
 	// return count
 	return iCnt;
 }
@@ -340,6 +349,7 @@ void C4Effect::Execute(C4Object *pObj)
 			++pEffect->iTime;
 			// check timer execution
 			if (pEffect->iIntervall && !(pEffect->iTime % pEffect->iIntervall))
+			{
 				if (pEffect->pFnTimer)
 				{
 					if (pEffect->pFnTimer->Exec(pEffect->pCommandTarget, {C4VObj(pObj), C4VInt(pEffect->iNumber), C4VInt(pEffect->iTime)}, false, true).getInt() == C4Fx_Execute_Kill)
@@ -353,8 +363,11 @@ void C4Effect::Execute(C4Object *pObj)
 					if (pObj && !pObj->Status) return;
 				}
 				else
+				{
 					// no timer function: mark dead after time elapsed
 					pEffect->Kill(pObj);
+				}
+			}
 			// next effect
 			ppPrevEffect = &pEffect->pNext;
 			pEffect = pEffect->pNext;
@@ -528,13 +541,17 @@ void C4Effect::CompileFunc(StdCompiler *pComp)
 	pComp->Separator(StdCompiler::SEP_END); // ')'
 	// read variables
 	if (pComp->isCompiler() || EffectVars.GetSize() > 0)
+	{
 		if (pComp->Separator(StdCompiler::SEP_START2)) // '['
 		{
 			pComp->Value(EffectVars);
 			pComp->Separator(StdCompiler::SEP_END2); // ']'
 		}
 		else
+		{
 			EffectVars.Reset();
+		}
+	}
 	// is there a next effect?
 	bool fNext = !!pNext;
 	if (pComp->hasNaming())
@@ -586,7 +603,7 @@ int32_t FnFxFireStart(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 	// eject contents
 	C4Object *cobj;
 	if (!pObj->Def->IncompleteActivity && !pObj->Def->NoBurnDecay)
-		while (cobj = pObj->Contents.GetObject())
+		while ((cobj = pObj->Contents.GetObject()))
 		{
 			cobj->Controller = iCausedBy; // update controller, so incinerating a hut full of flints attributes the damage to the incinerator
 			if (pObj->Contained) cobj->Enter(pObj->Contained);
@@ -595,7 +612,7 @@ int32_t FnFxFireStart(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 	// Detach attached objects
 	cobj = nullptr;
 	if (!pObj->Def->IncompleteActivity && !pObj->Def->NoBurnDecay)
-		while (cobj = Game.FindObject(0, 0, 0, 0, 0, OCF_All, nullptr, pObj, nullptr, nullptr, ANY_OWNER, cobj))
+		while ((cobj = Game.FindObject(0, 0, 0, 0, 0, OCF_All, nullptr, pObj, nullptr, nullptr, ANY_OWNER, cobj)))
 			if ((cobj->Action.Act > ActIdle) && (cobj->Def->ActMap[cobj->Action.Act].Procedure == DFA_ATTACH))
 				cobj->SetAction(ActIdle);
 	// fire caused?
@@ -647,8 +664,8 @@ int32_t FnFxFireTimer(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 
 	// get cause
 	int32_t iCausedByPlr = NO_OWNER; C4Effect *pEffect;
-	if (pEffect = pObj->pEffects)
-		if (pEffect = pEffect->Get(iNumber, true))
+	if ((pEffect = pObj->pEffects))
+		if ((pEffect = pEffect->Get(iNumber, true)))
 		{
 			iCausedByPlr = FxFireVarCausedBy(pEffect).getInt();
 			if (!ValidPlr(iCausedByPlr)) iCausedByPlr = NO_OWNER;
@@ -870,7 +887,7 @@ void Smoke(int32_t tx, int32_t ty, int32_t level, uint32_t dwClr)
 	// Create smoke
 	level = BoundBy<int32_t>(level, 3, 32);
 	C4Object *pObj;
-	if (pObj = Game.CreateObjectConstruction(C4Id("FXS1"), nullptr, NO_OWNER, tx, ty, FullCon * level / 32))
+	if ((pObj = Game.CreateObjectConstruction(C4Id("FXS1"), nullptr, NO_OWNER, tx, ty, FullCon * level / 32)))
 		pObj->Call(PSF_Activate);
 }
 
@@ -907,7 +924,7 @@ void Explosion(int32_t tx, int32_t ty, int32_t level, C4Object *inobj, int32_t i
 			if (SEqual2(pPrtDef->Name.getData(), "Blast"))
 				Game.Particles.Cast(Game.Particles.pFSpark, level / 5 + 1, static_cast<float>(tx), static_cast<float>(ty), level, level / 2 + 1.0f, 0x00ef0000, level + 1.0f, 0xffff1010);
 		}
-		else if (pBlast = Game.CreateObjectConstruction(idEffect ? idEffect : C4Id("FXB1"), pByObj, iCausedBy, tx, ty + level, FullCon * level / 20))
+		else if ((pBlast = Game.CreateObjectConstruction(idEffect ? idEffect : C4Id("FXB1"), pByObj, iCausedBy, tx, ty + level, FullCon * level / 20)))
 			pBlast->Call(PSF_Activate);
 	}
 	// Blast objects

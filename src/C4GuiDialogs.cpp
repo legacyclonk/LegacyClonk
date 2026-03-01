@@ -495,7 +495,7 @@ void Dialog::Draw(C4FacetEx &cgo)
 		// fade in
 		if ((iFade += 10) >= 100)
 		{
-			if (pScreen = GetScreen())
+			if ((pScreen = GetScreen()))
 			{
 				if (pScreen->GetTopDialog() == this)
 					pScreen->ActivateDialog(this);
@@ -508,7 +508,7 @@ void Dialog::Draw(C4FacetEx &cgo)
 		if ((iFade -= 10) <= 0)
 		{
 			fVisible = fShow = false;
-			if (pScreen = GetScreen())
+			if ((pScreen = GetScreen()))
 				pScreen->RecheckActiveDialog();
 			eFade = eFadeNone;
 		}
@@ -607,7 +607,7 @@ void Dialog::SetFocus(Control *pCtrl, bool fByMouse)
 		if (pActiveCtrl) return;
 	}
 	// set new
-	if (pActiveCtrl = pCtrl) pCtrl->OnGetFocus(fByMouse);
+	if ((pActiveCtrl = pCtrl)) pCtrl->OnGetFocus(fByMouse);
 }
 
 void Dialog::AdvanceFocus(bool fBackwards)
@@ -984,7 +984,7 @@ MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, uint3
 ConfirmationDialog::ConfirmationDialog(const char *szMessage, const char *szCaption, BaseCallbackHandler *pCB, uint32_t dwButtons, bool fSmall, Icons icoIcon)
 	: MessageDialog(szMessage, szCaption, dwButtons, icoIcon, fSmall ? MessageDialog::dsSmall : MessageDialog::dsRegular)
 {
-	if (this->pCB = pCB) pCB->Ref();
+	if ((this->pCB = pCB)) pCB->Ref();
 	// always log confirmation messages
 	spdlog::debug("[Cnf] {}: {}", szCaption, szMessage);
 	// confirmations always get deleted on close

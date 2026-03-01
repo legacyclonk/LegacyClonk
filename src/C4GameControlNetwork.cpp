@@ -321,7 +321,7 @@ void C4GameControlNetwork::CopyClientList(const C4ClientList &rClients)
 	// create local copy of activated client list
 	ClearClients();
 	C4Client *pClient = nullptr;
-	while (pClient = rClients.getClient(pClient))
+	while ((pClient = rClients.getClient(pClient)))
 		if (pClient->isActivated())
 			AddClient(pClient->getID(), pClient->getName());
 }
@@ -368,13 +368,13 @@ void C4GameControlNetwork::SetCtrlMode(C4GameControlNetworkMode enMode) // by ma
 	if (enMode == CNM_Decentral)
 	{
 		CStdLock CtrlLock(&CtrlCSec); C4GameControlPacket *pPkt;
-		for (int32_t iCtrlTick = Game.Control.ControlTick; pPkt = getCtrl(iClientID, iCtrlTick); iCtrlTick++)
+		for (int32_t iCtrlTick = Game.Control.ControlTick; (pPkt = getCtrl(iClientID, iCtrlTick)); iCtrlTick++)
 			Game.Network.Clients.BroadcastMsgToClients(MkC4NetIOPacket(PID_Control, *pPkt));
 	}
 	else if (enMode == CNM_Central && fHost)
 	{
 		CStdLock CtrlLock(&CtrlCSec); C4GameControlPacket *pPkt;
-		for (int32_t iCtrlTick = Game.Control.ControlTick; pPkt = getCtrl(C4ClientIDAll, iCtrlTick); iCtrlTick++)
+		for (int32_t iCtrlTick = Game.Control.ControlTick; (pPkt = getCtrl(C4ClientIDAll, iCtrlTick)); iCtrlTick++)
 			Game.Network.Clients.BroadcastMsgToClients(MkC4NetIOPacket(PID_Control, *pPkt));
 	}
 }

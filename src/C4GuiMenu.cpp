@@ -333,7 +333,7 @@ void ContextMenu::UpdateElementPositions()
 	int32_t iMinWdt = std::max<int32_t>(20, pCurr->GetBounds().Wdt);
 	int32_t iOverallHgt = pCurr->GetBounds().Hgt;
 	// others stacked under it
-	while (pCurr = pCurr->GetNext())
+	while ((pCurr = pCurr->GetNext()))
 	{
 		iMinWdt = (std::max)(iMinWdt, pCurr->GetBounds().Wdt);
 		int32_t iYSpace = pCurr->GetListItemTopSpacing();

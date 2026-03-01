@@ -682,7 +682,7 @@ void C4StartupPlrSelDlg::UpdatePlayerList()
 	// refill pPlrListBox with players in player folder or crew
 	// clear old items
 	C4GUI::Element *pEl;
-	while (pEl = pPlrListBox->GetFirst()) delete pEl;
+	while ((pEl = pPlrListBox->GetFirst())) delete pEl;
 	// update command buttons
 	UpdateBottomButtons();
 	// create new
@@ -695,7 +695,7 @@ void C4StartupPlrSelDlg::UpdatePlayerList()
 		const char *szFn;
 		const std::string searchPath{std::format("{}{}", +Config.General.ExePath, +Config.General.PlayerPath)};
 		PlayerListItem *pFirstActivatedPlrItem = nullptr, *pFirstDeactivatedPlrItem = nullptr, *pPlrItem = nullptr;
-		for (DirectoryIterator i(searchPath.c_str()); szFn = *i; i++)
+		for (DirectoryIterator i(searchPath.c_str()); (szFn = *i); i++)
 		{
 			szFn = Config.AtExeRelativePath(szFn);
 			if (*GetFilename(szFn) == '.') continue; // ignore ".", ".." and private files (".*")

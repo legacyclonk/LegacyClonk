@@ -285,24 +285,44 @@ C4Object *C4FindObject::Find(const C4ObjectList &Objs, const C4LSectors &Sct)
 		C4LArea Area(&Game.Objects.Sectors, *pBounds); C4LSector *pSct;
 		C4Object *pObj;
 		for (C4ObjectList *pLst = Area.FirstObjectShapes(&pSct); pLst; pLst = Area.NextObjectShapes(pLst, &pSct))
-			if (pObj = Find(*pLst))
+		{
+			if ((pObj = Find(*pLst)))
+			{
 				if (!pSort)
+				{
 					return pObj;
+				}
 				else if (!pBestResult || pSort->Compare(pObj, pBestResult) > 0)
+				{
 					if (pObj->Status)
+					{
 						pBestResult = pObj;
+					}
+				}
+			}
+		}
 	}
 	else
 	{
 		C4LArea Area(&Game.Objects.Sectors, *pBounds); C4LSector *pSct;
 		C4Object *pObj;
 		for (C4ObjectList *pLst = Area.FirstObjects(&pSct); pLst; pLst = Area.NextObjects(pLst, &pSct))
-			if (pObj = Find(*pLst))
+		{
+			if ((pObj = Find(*pLst)))
+			{
 				if (!pSort)
+				{
 					return pObj;
+				}
 				else if (!pBestResult || pSort->Compare(pObj, pBestResult) > 0)
+				{
 					if (pObj->Status)
+					{
 						pBestResult = pObj;
+					}
+				}
+			}
+		}
 	}
 	return pBestResult;
 }
@@ -879,7 +899,7 @@ int32_t C4SortObjectMultiple::Compare(C4Object *pObj1, C4Object *pObj2)
 	// return first comparison that's nonzero
 	int32_t iCmp;
 	for (int32_t i = 0; i < iCnt; ++i)
-		if (iCmp = ppSorts[i]->Compare(pObj1, pObj2))
+		if ((iCmp = ppSorts[i]->Compare(pObj1, pObj2)))
 			return iCmp;
 	// all comparisons equal
 	return 0;
@@ -899,7 +919,7 @@ int32_t C4SortObjectMultiple::CompareCache(int32_t iObj1, int32_t iObj2, C4Objec
 	// return first comparison that's nonzero
 	int32_t iCmp;
 	for (int32_t i = 0; i < iCnt; ++i)
-		if (iCmp = ppSorts[i]->CompareCache(iObj1, iObj2, pObj1, pObj2))
+		if ((iCmp = ppSorts[i]->CompareCache(iObj1, iObj2, pObj1, pObj2)))
 			return iCmp;
 	// all comparisons equal
 	return 0;

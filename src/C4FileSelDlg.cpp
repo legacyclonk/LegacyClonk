@@ -253,7 +253,7 @@ void C4FileSelDlg::UpdateFileList()
 	BeginFileListUpdate();
 	// reload files
 	C4GUI::Element *pEl;
-	while (pEl = pFileListBox->GetFirst()) delete pEl;
+	while ((pEl = pFileListBox->GetFirst())) delete pEl;
 	// file items
 	const char *szFileMask = GetFileMask();
 	for (DirectoryIterator iter(sPath.getData()); *iter; ++iter)
@@ -413,7 +413,7 @@ bool C4DefinitionSelDlg::SelectDefinitions(C4GUI::Screen *pOnScreen, std::vector
 	// let the user select definitions by showing a modal selection dialog
 	C4DefinitionSelDlg *pDlg = new C4DefinitionSelDlg(nullptr, selection);
 	bool fResult;
-	if (fResult = pOnScreen->ShowModalDlg(pDlg, false))
+	if ((fResult = pOnScreen->ShowModalDlg(pDlg, false)))
 	{
 		selection = pDlg->GetSelection(selection, true);
 	}

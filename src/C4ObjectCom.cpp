@@ -429,7 +429,7 @@ bool ObjectComLineConstruction(C4Object *cObj)
 	// Active construction
 
 	// Active line construction
-	if (cline = Game.FindObject(C4ID_None, 0, 0, 0, 0, OCF_All, "Connect", linekit))
+	if ((cline = Game.FindObject(C4ID_None, 0, 0, 0, 0, OCF_All, "Connect", linekit)))
 	{
 		// Check for structure connection
 		ocf = OCF_LineConstruct;
@@ -976,7 +976,7 @@ bool SellFromBase(int32_t iPlr, C4Object *pBaseObj, C4ID id, C4Object *pSellObj)
 		GameMsgPlayer(LoadResStr(C4ResStrTableKey::IDS_PLR_HOSTILE, Game.Players.Get(pBaseObj->Base)->GetName()).c_str(), iPlr); return false;
 	}
 	// check validity of sell object, if specified
-	if (pThing = pSellObj)
+	if ((pThing = pSellObj))
 		if (!pThing->Status || pThing->Contained != pBaseObj)
 			pThing = nullptr;
 	// Get object from home pBaseObj via selected id, if no or an anvalid thing has been specified

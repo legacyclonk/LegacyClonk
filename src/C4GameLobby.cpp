@@ -538,7 +538,7 @@ C4GUI::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool f
 					StdStrBuf sPlrName;
 					sPlrName.Copy(szPar, iSepPos);
 					szPar += iSepPos + 1; int32_t id = 0;
-					while (pNfo = Game.PlayerInfos.GetNextPlayerInfoByID(id))
+					while ((pNfo = Game.PlayerInfos.GetNextPlayerInfoByID(id)))
 					{
 						id = pNfo->GetID();
 						if (WildcardMatch(sPlrName.getData(), pNfo->GetName())) break;

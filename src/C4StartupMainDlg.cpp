@@ -135,7 +135,7 @@ C4GUI::ContextMenu *C4StartupMainDlg::OnPlayerSelContextAdd(C4GUI::Element *pBtn
 	C4GUI::ContextMenu *pCtx = new C4GUI::ContextMenu();
 	const char *szFn;
 	const std::string searchPath{std::format("{}{}", +Config.General.ExePath, +Config.General.PlayerPath)};
-	for (DirectoryIterator i(searchPath.c_str()); szFn = *i; i++)
+	for (DirectoryIterator i(searchPath.c_str()); (szFn = *i); i++)
 	{
 		szFn = Config.AtExeRelativePath(szFn);
 		if (*GetFilename(szFn) == '.') continue;
@@ -284,7 +284,7 @@ void C4StartupMainDlg::OnShown()
 	bool fHasPlayer = false;
 	const char *szFn;
 	const std::string searchPath{std::format("{}{}", +Config.General.ExePath, +Config.General.PlayerPath)};
-	for (DirectoryIterator i(searchPath.c_str()); szFn = *i; i++)
+	for (DirectoryIterator i(searchPath.c_str()); (szFn = *i); i++)
 	{
 		szFn = Config.AtExeRelativePath(szFn);
 		if (*GetFilename(szFn) == '.') continue; // ignore ".", ".." and private files (".*")

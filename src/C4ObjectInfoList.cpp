@@ -119,7 +119,7 @@ C4ObjectInfo *C4ObjectInfoList::GetIdle(C4ID c_id, C4DefList &rDefs)
 	// Search list
 	for (pInfo = First; pInfo; pInfo = pInfo->Next)
 		// Valid only
-		if (pDef = rDefs.ID2Def(pInfo->id))
+		if ((pDef = rDefs.ID2Def(pInfo->id)))
 			// Use standard crew or matching id
 			if ((!c_id && !pDef->NativeCrew) || (pInfo->id == c_id))
 				// Participating and not in action

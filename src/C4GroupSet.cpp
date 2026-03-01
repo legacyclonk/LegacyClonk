@@ -136,11 +136,16 @@ bool C4GroupSet::RegisterGroups(C4GroupSet &rCopy, int32_t Contents, const char 
 	// get all groups of rCopy
 	int32_t Contents2;
 	for (C4GroupSetNode *pNode = rCopy.pFirst; pNode; pNode = pNode->pNext)
-		if (Contents2 = pNode->Contents & Contents)
+	{
+		if ((Contents2 = pNode->Contents & Contents))
+		{
 			if (pNode->id > iMaxSkipID)
+			{
 				if (!szFilename)
+				{
 					// add group but don't check the content again!
 					RegisterGroup(*pNode->pGroup, false, pNode->Priority, Contents2, false);
+				}
 				else
 				{
 					// if a filename is given, open the child group
@@ -154,6 +159,9 @@ bool C4GroupSet::RegisterGroups(C4GroupSet &rCopy, int32_t Contents, const char 
 					if (!RegisterGroup(*pGroup, true, pNode->Priority, Contents2, false))
 						delete pGroup;
 				}
+			}
+		}
+	}
 	// done, success
 	return true;
 }
@@ -198,7 +206,7 @@ bool C4GroupSet::LoadEntryString(const char *szEntryName, StdStrBuf &rBuf)
 {
 	// Load the entry from the first group that has it
 	C4Group *pGroup;
-	if (pGroup = FindEntry(szEntryName))
+	if ((pGroup = FindEntry(szEntryName)))
 		return pGroup->LoadEntryString(szEntryName, rBuf);
 	// Didn't find it
 	return false;

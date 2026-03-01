@@ -412,9 +412,13 @@ bool C4Network2IO::BroadcastMsg(const C4NetIOPacket &rPkt) // by both
 	// select one connection per reachable client
 	CStdLock ConnListLock(&ConnListCSec);
 	for (C4Network2IOConnection *pConn = pConnList; pConn; pConn = pConn->pNext)
+	{
 		if (pConn->isAccepted())
+		{
 			if (pConn->getProtocol() == P_UDP)
+			{
 				pConn->SetBroadcastTarget(true);
+			}
 			else if (pConn->getProtocol() == P_TCP)
 			{
 				C4Network2IOConnection *pConn2 = GetMsgConnection(pConn->getClientID());
@@ -422,6 +426,8 @@ bool C4Network2IO::BroadcastMsg(const C4NetIOPacket &rPkt) // by both
 					pConn->SetBroadcastTarget(true);
 				pConn2->DelRef();
 			}
+		}
+	}
 	// send
 	bool fSuccess = Broadcast(rPkt);
 	// end broadcast
@@ -843,7 +849,9 @@ bool C4Network2IO::HandlePacket(const C4NetIOPacket &rPacket, C4Network2IOConnec
 	// search packet handling data
 	bool fSendToMainThread = false, fHandled = false;
 	for (const C4PktHandlingData *pHData = PktHandlingData; pHData->ID != PID_None; pHData++)
+	{
 		if (pHData->ID == rPacket.getStatus())
+		{
 			// correct thread?
 			if (!pHData->ProcByThread == !fThread)
 			{
@@ -870,6 +878,8 @@ bool C4Network2IO::HandlePacket(const C4NetIOPacket &rPacket, C4Network2IOConnec
 				fHandled = true;
 				fSendToMainThread = true;
 			}
+		}
+	}
 
 	// send to main thread?
 	if (fSendToMainThread)
@@ -1083,7 +1093,7 @@ void C4Network2IO::HandleFwdReq(const C4PacketFwd &rFwd, C4Network2IOConnection 
 		C4NetIOPacket Tmp = rFwd.getData();
 		C4NetIOPacket Pkt = Tmp.getRef();
 		for (int i = 0; i < nFwd.getClientCnt(); i++)
-			if (pConn = GetMsgConnection(nFwd.getClient(i)))
+			if ((pConn = GetMsgConnection(nFwd.getClient(i))))
 			{
 				pConn->Send(Pkt);
 				pConn->DelRef();
@@ -1101,7 +1111,7 @@ void C4Network2IO::HandleFwdReq(const C4PacketFwd &rFwd, C4Network2IOConnection 
 		// add all clients
 		CStdLock ConnListLock(&ConnListCSec);
 		for (int i = 0; i < nFwd.getClientCnt(); i++)
-			if (pConn = GetMsgConnection(nFwd.getClient(i)))
+			if ((pConn = GetMsgConnection(nFwd.getClient(i))))
 			{
 				pConn->SetBroadcastTarget(true);
 				pConn->DelRef();

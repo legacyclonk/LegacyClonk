@@ -48,10 +48,16 @@ void C4AulExecError::show() const
 	C4AulError::show();
 	// debug mode object message
 	if (Game.DebugMode)
+	{
 		if (cObj)
+		{
 			Game.Messages.New(C4GM_Target, StdStrBuf{message.c_str(), message.size(), false}, cObj, NO_OWNER);
+		}
 		else
+		{
 			Game.Messages.New(C4GM_Global, StdStrBuf{message.c_str(), message.size(), false}, nullptr, ANY_OWNER);
+		}
+	}
 }
 
 bool C4AulContext::CalledWithStrictNil() const noexcept
@@ -73,13 +79,19 @@ void C4AulScriptContext::dump(std::string Dump)
 		Dump += '(';
 		int iNullPars = 0;
 		for (int i = 0; i < C4AUL_MAX_Par; i++)
+		{
 			if (Pars + i < Vars)
+			{
 				if (!Pars[i].IsRef() && Pars[i].GetType() == C4V_Any)
+				{
 					iNullPars++;
+				}
 				else
 				{
 					if (i > iNullPars)
+					{
 						Dump += ',';
+					}
 					// Insert missing null parameters
 					while (iNullPars > 0)
 					{
@@ -89,10 +101,14 @@ void C4AulScriptContext::dump(std::string Dump)
 					// Insert parameter
 					Dump += Pars[i].GetDataString();
 				}
+			}
+		}
 		Dump += ')';
 	}
 	else
+	{
 		Dump += Func->Owner->ScriptName;
+	}
 	// Context
 	if (Obj)
 		Dump += std::format(" (obj {})", C4VObj(Obj).GetDataString());
@@ -1711,7 +1727,7 @@ void C4AulScript::ResetProfilerTimes()
 	// zero all profiler times of owned functions
 	C4AulScriptFunc *pSFunc;
 	for (C4AulFunc *pFn = Func0; pFn; pFn = pFn->Next)
-		if (pSFunc = pFn->SFunc())
+		if ((pSFunc = pFn->SFunc()))
 			pSFunc->tProfileTime = 0;
 	// reset sub-scripts
 	for (C4AulScript *pScript = Child0; pScript; pScript = pScript->Next)
@@ -1723,7 +1739,7 @@ void C4AulScript::CollectProfilerTimes(class C4AulProfiler &rProfiler)
 	// collect all profiler times of owned functions
 	C4AulScriptFunc *pSFunc;
 	for (C4AulFunc *pFn = Func0; pFn; pFn = pFn->Next)
-		if (pSFunc = pFn->SFunc())
+		if ((pSFunc = pFn->SFunc()))
 			rProfiler.CollectEntry(pSFunc, pSFunc->tProfileTime);
 	// collect sub-scripts
 	for (C4AulScript *pScript = Child0; pScript; pScript = pScript->Next)

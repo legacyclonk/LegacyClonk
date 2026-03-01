@@ -282,7 +282,7 @@ int32_t C4TextureMap::LoadTextures(C4Group &hGroup, C4Group *OverloadFile)
 		if (GetTexture(texname)) continue;
 		SAppend(".png", texname);
 		// load
-		if (ctex = GroupReadSurfacePNG(hGroup))
+		if ((ctex = GroupReadSurfacePNG(hGroup)))
 		{
 			SReplaceChar(texname, '.', 0);
 			if (AddTexture(texname, ctex)) texnum++;
@@ -298,7 +298,7 @@ int32_t C4TextureMap::LoadTextures(C4Group &hGroup, C4Group *OverloadFile)
 		SReplaceChar(texname, '.', 0);
 		if (GetTexture(texname)) continue;
 		SAppend(".bmp", texname);
-		if (ctex8 = GroupReadSurface8(hGroup))
+		if ((ctex8 = GroupReadSurface8(hGroup)))
 		{
 			ctex8->AllowColor(0, 2, true);
 			SReplaceChar(texname, '.', 0);
@@ -352,10 +352,10 @@ int32_t C4TextureMap::GetIndexMatTex(const char *szMaterialTexture, const char *
 	// texture not given or invalid?
 	int32_t iMatTex = 0;
 	if (Texture.getData())
-		if (iMatTex = GetIndex(Material.getData(), Texture.getData(), fAddIfNotExist))
+		if ((iMatTex = GetIndex(Material.getData(), Texture.getData(), fAddIfNotExist)))
 			return iMatTex;
 	if (szDefaultTexture)
-		if (iMatTex = GetIndex(Material.getData(), szDefaultTexture, fAddIfNotExist))
+		if ((iMatTex = GetIndex(Material.getData(), szDefaultTexture, fAddIfNotExist)))
 			return iMatTex;
 	// search material
 	const auto iMaterial = Game.Material.Get(szMaterialTexture);
