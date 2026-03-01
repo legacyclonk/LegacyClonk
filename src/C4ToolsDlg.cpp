@@ -972,7 +972,7 @@ void C4ToolsDlg::AssertValidTexture()
 	if (Game.TextureMap.GetIndex(Material, Texture, false)) return;
 	// Find valid material-texture
 	const char *szTexture;
-	for (int32_t iTexture = 0; szTexture = Game.TextureMap.GetTexture(iTexture); iTexture++)
+	for (int32_t iTexture = 0; (szTexture = Game.TextureMap.GetTexture(iTexture)); iTexture++)
 	{
 		if (Game.TextureMap.GetIndex(Material, szTexture, false))
 		{

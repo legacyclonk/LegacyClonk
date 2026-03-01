@@ -392,6 +392,7 @@ bool Edit::KeyCursorOp(C4KeyCodeEx key, CursorOperation op)
 	{
 		// evaluate move length? (not home+end)
 		if (iMoveDir)
+		{
 			if (fCtrl)
 			{
 				// move one word
@@ -415,7 +416,10 @@ bool Edit::KeyCursorOp(C4KeyCodeEx key, CursorOperation op)
 						iMoveLength += iMoveDir;
 					}
 			}
-			else iMoveLength = iMoveDir;
+			else
+			{
+				iMoveLength = iMoveDir;
+			}
 			// delete stuff
 			if (op == COP_BACK || op == COP_DELETE)
 			{
@@ -437,6 +441,7 @@ bool Edit::KeyCursorOp(C4KeyCodeEx key, CursorOperation op)
 				if (iSelectionStart != iSelectionEnd) Deselect();
 			// adjust cursor pos
 			iCursorPos += iMoveLength;
+		}
 	}
 	// show cursor
 	dwLastInputTime = timeGetTime();

@@ -71,7 +71,7 @@ void C4Network2ClientDlg::UpdateText()
 			Game.Network.isHost() && pNetClient && !pNetClient->isReady() ? " (!ack)" : "").c_str());
 		// show addresses
 		int iCnt;
-		if (iCnt = pNetClient->getAddrCnt())
+		if ((iCnt = pNetClient->getAddrCnt()))
 		{
 			AddLine(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_ADDRESSES));
 			for (int i = 0; i < iCnt; ++i)
@@ -416,7 +416,7 @@ void C4Network2ClientListBox::Update()
 	// sync with client list
 	ListItem *pItem = static_cast<ListItem *>(pClientWindow->GetFirst()), *pNext;
 	const C4Client *pClient = nullptr;
-	while (pClient = Game.Clients.getClient(pClient))
+	while ((pClient = Game.Clients.getClient(pClient)))
 	{
 		// skip host in startup board
 		if (IsStartup() && pClient->isHost()) continue;
@@ -888,7 +888,7 @@ void C4Chart::DrawElement(C4FacetEx &cgo)
 	{
 		int iSeries = 0; const C4Graph *pSeries;
 		int32_t iLegendWdt = 0, Q, W;
-		while (pSeries = pDisplayGraph->GetSeries(iSeries++))
+		while ((pSeries = pDisplayGraph->GetSeries(iSeries++)))
 		{
 			rFont.GetTextExtent(pSeries->GetTitle(), W, Q, true);
 			iLegendWdt = (std::max)(iLegendWdt, W);
@@ -896,7 +896,7 @@ void C4Chart::DrawElement(C4FacetEx &cgo)
 		tw -= iLegendWdt + 1;
 		iSeries = 0;
 		int iYLegendDraw = (th - iSeriesCount * Q) / 2 + ty;
-		while (pSeries = pDisplayGraph->GetSeries(iSeries++))
+		while ((pSeries = pDisplayGraph->GetSeries(iSeries++)))
 		{
 			lpDDraw->TextOut(pSeries->GetTitle(), rFont, 1.0f, cgo.Surface, tx + tw, iYLegendDraw, pSeries->GetColorDw() | 0xff000000, ALeft, true);
 			iYLegendDraw += Q;

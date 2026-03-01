@@ -55,8 +55,8 @@ void C4Network2Reference::InitLocal(C4Game *pGame)
 	// Add league performance (but only after game end)
 	C4ClientPlayerInfos *pClientInfos; C4PlayerInfo *pPlayerInfo;
 	int32_t i, j;
-	for (i = 0; pClientInfos = Parameters.PlayerInfos.GetIndexedInfo(i); i++)
-		for (j = 0; pPlayerInfo = pClientInfos->GetPlayerInfo(j); j++)
+	for (i = 0; (pClientInfos = Parameters.PlayerInfos.GetIndexedInfo(i)); i++)
+		for (j = 0; (pPlayerInfo = pClientInfos->GetPlayerInfo(j)); j++)
 		{
 			pPlayerInfo->DiscardResource();
 			if (pGame->GameOver)

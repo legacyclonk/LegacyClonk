@@ -822,6 +822,7 @@ void C4StartupNetDlg::OnBtnChat(C4GUI::Control *btn)
 {
 	// toggle chat / game list
 	if (pChatCtrl)
+	{
 		if (pMainTabular->GetActiveSheetIndex() == SNDM_GameList)
 		{
 			pMainTabular->SelectSheet(SNDM_Chat, true);
@@ -833,6 +834,7 @@ void C4StartupNetDlg::OnBtnChat(C4GUI::Control *btn)
 			pMainTabular->SelectSheet(SNDM_GameList, true);
 			UpdateDlgMode();
 		}
+	}
 }
 
 void C4StartupNetDlg::OnBtnInternet(C4GUI::Control *btn)
@@ -875,7 +877,7 @@ void C4StartupNetDlg::UpdateList(bool fGotReference)
 	// Update all child entries
 	bool fAnyRemoval = false;
 	C4GUI::Element *pElem, *pNextElem = pGameSelList->GetFirst();
-	while (pElem = pNextElem)
+	while ((pElem = pNextElem))
 	{
 		pNextElem = pElem->GetNext(); // determine next exec element now - execution
 		C4StartupNetListEntry *pEntry = static_cast<C4StartupNetListEntry *>(pElem);
@@ -1003,7 +1005,7 @@ bool C4StartupNetDlg::DoOK()
 	}
 	C4StartupNetListEntry *pRefEntry = static_cast<C4StartupNetListEntry *>(pSelection);
 	const char *szError;
-	if (szError = pRefEntry->GetError())
+	if ((szError = pRefEntry->GetError()))
 	{
 		// erroneous ref selected: Oh noes!
 		Game.pGUI->ShowMessageModal(

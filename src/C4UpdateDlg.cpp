@@ -383,10 +383,16 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 		// Prompt user, then apply update
 		const std::string message{LoadResStr(C4ResStrTableKey::IDS_MSG_ANUPDATETOVERSIONISAVAILA, UpdateVersion.GetString())};
 		if (pScreen->ShowMessageModal(message.c_str(), Config.Network.UpdateServerAddress, C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_Ex_Update))
+		{
 			if (!DoUpdate(UpdateVersion, pScreen))
+			{
 				pScreen->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_UPDATEFAILED), Config.Network.UpdateServerAddress, C4GUI::Ico_Ex_Update);
+			}
 			else
+			{
 				return true;
+			}
+		}
 	}
 	// No applicable update available
 	else

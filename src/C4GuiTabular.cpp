@@ -233,7 +233,17 @@ bool Tabular::KeySelDown()
 {
 	// keyboard callback: Select next sheet
 	int32_t iNewSel = GetActiveSheetIndex() + 1, iSheetCount = GetSheetCount();
-	if (iNewSel >= iSheetCount) if (!iSheetCount) return false; else iNewSel = 0;
+	if (iNewSel >= iSheetCount)
+	{
+		if (!iSheetCount)
+		{
+			return false;
+		}
+		else
+		{
+			iNewSel = 0;
+		}
+	}
 	SelectSheet(iNewSel, true);
 	return true;
 }
@@ -610,7 +620,7 @@ void Tabular::ClearSheets()
 {
 	// del all sheets
 	Sheet *pSheet;
-	while (pSheet = GetSheet(0)) delete pSheet;
+	while ((pSheet = GetSheet(0))) delete pSheet;
 	SheetsChanged();
 }
 
@@ -630,7 +640,7 @@ int32_t Tabular::GetActiveSheetIndex()
 {
 	int32_t i = -1;
 	Sheet *pSheet;
-	while (pSheet = GetSheet(++i)) if (pSheet == pActiveSheet) return i;
+	while ((pSheet = GetSheet(++i))) if (pSheet == pActiveSheet) return i;
 	return -1;
 }
 

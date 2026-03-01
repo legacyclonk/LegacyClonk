@@ -180,7 +180,7 @@ void StdCompilerBinRead::String(char *szString, size_t iMaxLength, RawCompileTyp
 	}
 	// Copy until no data left
 	char *pPos = szString;
-	while (*pPos++ = *Buf.getPtr<char>(iPos++))
+	while ((*pPos++ = *Buf.getPtr<char>(iPos++)))
 		if (iPos >= Buf.getSize())
 		{
 			excEOF(); return;

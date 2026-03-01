@@ -149,6 +149,7 @@ bool C4RankSystem::Load(C4Group &hGroup, const char *szFilenames, int DefRankBas
 		{
 			// zero-character found: content?
 			if (pPos - pRank0 > 0)
+			{
 				// extension?
 				if (*pRank0 == '*')
 				{
@@ -172,6 +173,8 @@ bool C4RankSystem::Load(C4Group &hGroup, const char *szFilenames, int DefRankBas
 						// yeeehaa! it's a name! store it, store it!
 						*pszCurrRank++ = pRank0;
 				}
+			}
+
 			// advance pos
 			pRank0 = pPos + 1;
 		}

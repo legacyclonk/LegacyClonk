@@ -198,8 +198,8 @@ struct CPNGFile::Impl
 		png_get_IHDR(png_ptr, info_ptr, nullptr, nullptr, &bitsPerChannel, &colorType,
 			nullptr, nullptr, nullptr);
 		// convert to bgra
-		if (colorType == PNG_COLOR_TYPE_PALETTE && bitsPerChannel <= 8 ||
-			colorType == PNG_COLOR_TYPE_GRAY && bitsPerChannel < 8)
+		if ((colorType == PNG_COLOR_TYPE_PALETTE && bitsPerChannel <= 8) ||
+			(colorType == PNG_COLOR_TYPE_GRAY && bitsPerChannel < 8))
 		{
 			png_set_expand(png_ptr);
 		}

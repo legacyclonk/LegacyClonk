@@ -1735,6 +1735,7 @@ bool C4NetIOSimpleUDP::Execute(int iMaxTime)
 		int iMsgSize = ::recvfrom(sock, Pkt.getMPtr<char>(), iMaxMsgSize, 0, &SrcAddr, &iSrcAddrLen);
 		// error?
 		if (iMsgSize == SOCKET_ERROR)
+		{
 			if (HaveConnResetError())
 			{
 				// this is actually some kind of notification: an ICMP msg (unreachable)
@@ -1748,6 +1749,7 @@ bool C4NetIOSimpleUDP::Execute(int iMaxTime)
 				SetError("could not receive data from socket", true);
 				return false;
 			}
+		}
 		// invalid address?
 		if ((iSrcAddrLen != sizeof(sockaddr_in) && iSrcAddrLen != sizeof(sockaddr_in6)) || SrcAddr.GetFamily() == addr_t::UnknownFamily)
 		{
@@ -3184,7 +3186,7 @@ void C4NetIOUDP::Peer::CheckCompleteIPackets()
 
 	// check for complete incoming packets
 	Packet *pPkt;
-	while (pPkt = IPackets.GetFirstPacketComplete())
+	while ((pPkt = IPackets.GetFirstPacketComplete()))
 	{
 		// missing packet?
 		if (pPkt->GetNr() != iIPacketCounter) break;
@@ -3198,7 +3200,7 @@ void C4NetIOUDP::Peer::CheckCompleteIPackets()
 		IPackets.DeletePacket(pPkt);
 		assert(!IPackets.GetPacketFrgm(iNr));
 	}
-	while (pPkt = IMCPackets.GetFirstPacketComplete())
+	while ((pPkt = IMCPackets.GetFirstPacketComplete()))
 	{
 		// missing packet?
 		if (pPkt->GetNr() != iIMCPacketCounter) break;

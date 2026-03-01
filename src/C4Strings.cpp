@@ -150,10 +150,21 @@ int SCharPos(char cTarget, const char *szInStr, size_t iIndex)
 	int ccpos;
 	if (!szInStr) return -1;
 	for (cpos = szInStr, ccpos = 0; *cpos; cpos++, ccpos++)
+	{
 		if (*cpos == cTarget)
-			if (iIndex == 0) return ccpos;
-			else --iIndex;
-			return -1;
+		{
+			if (iIndex == 0)
+			{
+				return ccpos;
+			}
+			else
+			{
+				--iIndex;
+			}
+		}
+	}
+
+	return -1;
 }
 
 int SCharLastPos(char cTarget, const char *szInStr)
@@ -570,7 +581,7 @@ const char *SGetParameter(const char *strCommandLine, size_t iParameter, char *s
 	while (c && *c)
 	{
 		// Quoted parameter
-		if (fQuoted = (*c == '"'))
+		if ((fQuoted = (*c == '"')))
 		{
 			SCopyUntil(++c, strParameter, '"', 2048);
 			c += SLen(strParameter);

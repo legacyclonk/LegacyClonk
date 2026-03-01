@@ -150,7 +150,7 @@ void C4MusicSystem::PlayScenarioMusic(C4Group &group)
 	}
 
 	// Check for music folders in group set
-	for (C4Group *group = nullptr; group = Game.GroupSet.FindGroup(C4GSCnt_Music, group); )
+	for (C4Group *group = nullptr; (group = Game.GroupSet.FindGroup(C4GSCnt_Music, group)); )
 	{
 		musicDirs.emplace_back(std::string() +
 			group->GetFullName().getData() + DirectorySeparator + C4CFN_Music);

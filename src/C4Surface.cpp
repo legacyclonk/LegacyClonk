@@ -180,7 +180,12 @@ bool C4Surface::CreateTextures()
 #endif
 		/* keep standard texture size */;
 	// get needed tex size - begin with smaller value of wdt/hgt, so there won't be too much space wasted
-	int iNeedSize = (std::min)(Wdt, Hgt); int n = 0; while ((1 << ++n) < iNeedSize); iNeedSize = 1 << n;
+	int iNeedSize = (std::min)(Wdt, Hgt);
+	int n = 0;
+	while ((1 << ++n) < iNeedSize)
+	{
+	}
+	iNeedSize = 1 << n;
 	// adjust to available texture size
 	iTexSize = (std::min)(iNeedSize, iMaxTexSize);
 	// get the number of textures needed for this size
@@ -201,7 +206,11 @@ bool C4Surface::CreateTextures()
 		{
 			// last texture might be smaller
 			iNeedSize = (std::max)(Wdt % iTexSize, Hgt % iTexSize);
-			int n = 0; while ((1 << ++n) < iNeedSize); iNeedSize = 1 << n;
+			int n = 0;
+			while ((1 << ++n) < iNeedSize)
+			{
+			}
+			iNeedSize = 1 << n;
 			*ppCTex = new C4TexRef(iNeedSize, fIsRenderTarget);
 		}
 		if (fIsBackground && ppCTex)(*ppCTex)->FillBlack();
@@ -854,7 +863,7 @@ bool C4Surface::LoadAny(C4Group &hGroup, const char *szName, bool fOwnPal, bool 
 		// no extension: Default to extension that is found as file in group
 		const char *const extensions[] = { "png", "bmp", "jpeg", "jpg", nullptr };
 		int i = 0; const char *szExt;
-		while (szExt = extensions[i++])
+		while ((szExt = extensions[i++]))
 		{
 			EnforceExtension(szFilename, szExt);
 			if (hGroup.FindEntry(szFilename)) break;
@@ -876,7 +885,7 @@ bool C4Surface::LoadAny(C4GroupSet &hGroupset, const char *szName, bool fOwnPal,
 		// no extension: Default to extension that is found as file in group
 		const char *const extensions[] = { "png", "bmp", "jpeg", "jpg", nullptr };
 		int i = 0; const char *szExt;
-		while (szExt = extensions[i++])
+		while ((szExt = extensions[i++]))
 		{
 			EnforceExtension(szFilename, szExt);
 			pGroup = hGroupset.FindEntry(szFilename);

@@ -1106,14 +1106,22 @@ void C4Network2::OnGameSynchronized()
 		bool fSuccess = CreateDynamic(false);
 		// check for clients that still need join-data
 		C4Network2Client *pClient = nullptr;
-		while (pClient = Clients.GetNextClient(pClient))
+		while ((pClient = Clients.GetNextClient(pClient)))
+		{
 			if (!pClient->hasJoinData())
+			{
 				if (fSuccess)
+				{
 					// now we can provide join data: send it
 					SendJoinData(pClient);
+				}
 				else
+				{
 					// join data could not be created: emergency kick
 					Game.Clients.CtrlRemove(pClient->getClient(), LoadResStr(C4ResStrTableKey::IDS_ERR_ERRORWHILECREATINGJOINDAT));
+				}
+			}
+		}
 	}
 }
 
@@ -2067,7 +2075,7 @@ void C4Network2::CheckStatusAck()
 	// status must be reached and not yet acknowledged
 	if (!fStatusReached || fStatusAck) return;
 	// all clients ready?
-	if (fStatusAck = Clients.AllClientsReady())
+	if ((fStatusAck = Clients.AllClientsReady()))
 	{
 		// pause/go: check for sync control that can be executed
 		if (Status.getState() == GS_Go || Status.getState() == GS_Pause)
@@ -2492,9 +2500,9 @@ bool C4Network2::LeagueUpdateProcessReply()
 	// Take round results
 	C4PlayerInfoList &TargetList = Game.PlayerInfos;
 	C4ClientPlayerInfos *pInfos; C4PlayerInfo *pInfo, *pResultInfo;
-	for (int iClient = 0; pInfos = TargetList.GetIndexedInfo(iClient); iClient++)
-		for (int iInfo = 0; pInfo = pInfos->GetPlayerInfo(iInfo); iInfo++)
-			if (pResultInfo = PlayerLeagueInfos.GetPlayerInfoByID(pInfo->GetID()))
+	for (int iClient = 0; (pInfos = TargetList.GetIndexedInfo(iClient)); iClient++)
+		for (int iInfo = 0; (pInfo = pInfos->GetPlayerInfo(iInfo)); iInfo++)
+			if ((pResultInfo = PlayerLeagueInfos.GetPlayerInfoByID(pInfo->GetID())))
 			{
 				int32_t iLeagueProjectedGain = pResultInfo->GetLeagueProjectedGain();
 				if (iLeagueProjectedGain != pInfo->GetLeagueProjectedGain())
@@ -2789,7 +2797,7 @@ void C4Network2::LeagueNotifyDisconnect(int32_t iClientID, C4LeagueDisconnectRea
 	const C4ClientPlayerInfos *pInfos = Game.PlayerInfos.GetInfoByClientID(iClientID);
 	if (!pInfos) return;
 	int32_t i = 0; C4PlayerInfo *pInfo;
-	while (pInfo = pInfos->GetPlayerInfo(i++)) if (pInfo->IsJoined() && !pInfo->IsRemoved()) break;
+	while ((pInfo = pInfos->GetPlayerInfo(i++))) if (pInfo->IsJoined() && !pInfo->IsRemoved()) break;
 	if (!pInfo) return;
 	// Make sure league client is avilable
 	LeagueWaitNotBusy();
@@ -2891,7 +2899,7 @@ C4IDPacket *C4Network2::GetVote(int32_t iClientID, C4ControlVoteType eType, int3
 	C4ControlVote *pVote;
 	for (C4IDPacket *pPkt = Votes.firstPkt(); pPkt; pPkt = Votes.nextPkt(pPkt))
 		if (pPkt->getPktType() == CID_Vote)
-			if (pVote = static_cast<C4ControlVote *>(pPkt->getPkt()))
+			if ((pVote = static_cast<C4ControlVote *>(pPkt->getPkt())))
 				if (iClientID == C4ClientIDUnknown || pVote->getByClient() == iClientID)
 					if (pVote->getType() == eType && pVote->getData() == iData)
 						return pPkt;
@@ -2902,7 +2910,7 @@ void C4Network2::EndVote(C4ControlVoteType eType, bool fApprove, int32_t iData)
 {
 	// Remove all vote packets
 	C4IDPacket *pPkt; int32_t iOrigin = C4ClientIDUnknown;
-	while (pPkt = GetVote(C4ClientIDAll, eType, iData))
+	while ((pPkt = GetVote(C4ClientIDAll, eType, iData)))
 	{
 		if (iOrigin == C4ClientIDUnknown)
 			iOrigin = static_cast<C4ControlVote *>(pPkt->getPkt())->getByClient();

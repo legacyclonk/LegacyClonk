@@ -245,7 +245,7 @@ bool C4ComponentHost::GetLanguageString(const char *szLanguage, StdStrBuf &rTarg
 	for (int clseg = 0; SCopySegment(szLanguage ? szLanguage : "", clseg, langindex, ',', 2); clseg++)
 	{
 		SAppend(":", langindex);
-		if (cptr = SSearch(Data.getData(), langindex))
+		if ((cptr = SSearch(Data.getData(), langindex)))
 		{
 			// Return the according string
 			auto iEndPos = SCharPos('\r', cptr);

@@ -386,7 +386,7 @@ bool C4AulParseState::AdvanceSpaces()
 	// defaultly, not in comment
 	int InComment = 0; // 0/1/2 = no comment/line comment/multi line comment
 	// don't go past end
-	while (C = *SPos)
+	while ((C = *SPos))
 	{
 		// loop until out of comment and non-whitespace is found
 		switch (InComment)
@@ -1401,7 +1401,7 @@ void C4AulScript::ParseFn(C4AulScriptFunc *Fn, bool fExprOnly)
 {
 	// check if fn overloads other fn (all func tables are built now)
 	// *MUST* check Fn->Owner-list, because it may be the engine (due to linked globals)
-	if (Fn->OwnerOverloaded = Fn->Owner->GetOverloadedFunc(Fn))
+	if ((Fn->OwnerOverloaded = Fn->Owner->GetOverloadedFunc(Fn)))
 		if (Fn->Owner == Fn->OwnerOverloaded->Owner)
 			Fn->OwnerOverloaded->OverloadedBy = Fn;
 	// reset pointer to next same-named func (will be set in AfterLink)
@@ -2316,7 +2316,7 @@ int C4AulParseState::Parse_Params(int iMaxCnt, const char *sWarn, C4AulFunc *pFu
 				// pFunc either was the return value from a GetFuncFast-Call or
 				// pFunc is the only function that could be called, so this loop is superflous
 				C4AulFunc *pFunc2 = pFunc;
-				while (pFunc2 = a->Engine->GetNextSNFunc(pFunc2))
+				while ((pFunc2 = a->Engine->GetNextSNFunc(pFunc2)))
 					if (pFunc2->GetParCount() > size && pFunc2->GetParType()[size] == C4V_pC4Value) anyfunctakesref = true;
 				// Change the bytecode to the equivalent that does not produce a reference.
 				if (!anyfunctakesref)
@@ -3657,7 +3657,7 @@ C4AulScript *C4AulScript::FindFirstNonStrictScript()
 	// search children
 	C4AulScript *pNonStrScr;
 	for (C4AulScript *pScr = Child0; pScr; pScr = pScr->Next)
-		if (pNonStrScr = pScr->FindFirstNonStrictScript())
+		if ((pNonStrScr = pScr->FindFirstNonStrictScript()))
 			return pNonStrScr;
 	// nothing found
 	return nullptr;

@@ -46,7 +46,7 @@ C4AulFunc::C4AulFunc(C4AulScript *pOwner, const char *pName, bool bAtEnd) :
 	Owner = pOwner;
 	if (bAtEnd)
 	{
-		if (Prev = Owner->FuncL)
+		if ((Prev = Owner->FuncL))
 		{
 			Prev->Next = this;
 			Owner->FuncL = this;
@@ -60,7 +60,7 @@ C4AulFunc::C4AulFunc(C4AulScript *pOwner, const char *pName, bool bAtEnd) :
 	}
 	else
 	{
-		if (Next = Owner->Func0)
+		if ((Next = Owner->Func0))
 		{
 			Next->Prev = this;
 			Owner->Func0 = this;
@@ -242,16 +242,24 @@ void C4AulScript::Reg2List(C4AulScriptEngine *pEngine, C4AulScript *pOwner)
 	if (Owner) return;
 	// reg to list
 	Engine = pEngine;
-	if (Owner = pOwner)
+	if ((Owner = pOwner))
 	{
-		if (Prev = Owner->ChildL)
+		if ((Prev = Owner->ChildL))
+		{
 			Prev->Next = this;
+		}
 		else
+		{
 			Owner->Child0 = this;
+		}
+
 		Owner->ChildL = this;
 	}
 	else
+	{
 		Prev = nullptr;
+	}
+
 	Next = nullptr;
 }
 
@@ -273,7 +281,7 @@ C4AulFunc *C4AulScript::GetOverloadedFunc(C4AulFunc *ByFunc)
 	// nothing found? then search owner, if existent
 	if (!f && Owner)
 	{
-		if (f = Owner->GetFuncRecursive(ByFunc->Name))
+		if ((f = Owner->GetFuncRecursive(ByFunc->Name)))
 			// just found the global link?
 			if (ByFunc && f->LinkedTo == ByFunc)
 				f = Owner->GetOverloadedFunc(f);

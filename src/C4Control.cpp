@@ -285,7 +285,7 @@ void C4ControlScript::Execute(const std::shared_ptr<spdlog::logger> &) const
 		pScript = &Game.Script;
 	else if (iTargetObj == SCOPE_Global)
 		pScript = &Game.ScriptEngine;
-	else if (pObj = Game.Objects.SafeObjectPointer(iTargetObj))
+	else if ((pObj = Game.Objects.SafeObjectPointer(iTargetObj)))
 		pScript = &(pObj->Def->Script);
 	else
 		// default: Fallback to global context
@@ -349,7 +349,7 @@ void C4ControlPlayerSelect::Execute(const std::shared_ptr<spdlog::logger> &) con
 	C4ObjectList SelectObjs;
 	int32_t iControlChecksum = 0;
 	for (int32_t i = 0; i < iObjCnt; i++)
-		if (pObj = Game.Objects.SafeObjectPointer(pObjNrs[i]))
+		if ((pObj = Game.Objects.SafeObjectPointer(pObjNrs[i])))
 		{
 			iControlChecksum += pObj->Number * (iControlChecksum + 4787821);
 			// user defined object selection: callback to object
@@ -889,7 +889,7 @@ void C4ControlEMMoveObject::Execute(const std::shared_ptr<spdlog::logger> &logge
 		// move all given objects
 		C4Object *pObj;
 		for (int i = 0; i < iObjectNum; ++i)
-			if (pObj = Game.Objects.SafeObjectPointer(pObjects[i])) if (pObj->Status)
+			if ((pObj = Game.Objects.SafeObjectPointer(pObjects[i]))) if (pObj->Status)
 			{
 				pObj->ForcePosition(pObj->x + tx, pObj->y + ty);
 				pObj->xdir = pObj->ydir = 0;
@@ -904,7 +904,7 @@ void C4ControlEMMoveObject::Execute(const std::shared_ptr<spdlog::logger> &logge
 		C4Object *pObj, *pTarget = Game.Objects.SafeObjectPointer(iTargetObj);
 		if (pTarget)
 			for (int i = 0; i < iObjectNum; ++i)
-				if (pObj = Game.Objects.SafeObjectPointer(pObjects[i]))
+				if ((pObj = Game.Objects.SafeObjectPointer(pObjects[i])))
 					pObj->Enter(pTarget);
 	}
 	break;
@@ -916,7 +916,7 @@ void C4ControlEMMoveObject::Execute(const std::shared_ptr<spdlog::logger> &logge
 		// perform duplication
 		C4Object *pObj;
 		for (int i = 0; i < iObjectNum; ++i)
-			if (pObj = Game.Objects.SafeObjectPointer(pObjects[i]))
+			if ((pObj = Game.Objects.SafeObjectPointer(pObjects[i])))
 			{
 				pObj = Game.CreateObject(pObj->id, pObj, pObj->Owner, pObj->x, pObj->y);
 				if (pObj && fLocalCall) Console.EditCursor.GetSelection().Add(pObj, C4ObjectList::stNone);
@@ -949,7 +949,7 @@ void C4ControlEMMoveObject::Execute(const std::shared_ptr<spdlog::logger> &logge
 		// remove all objects
 		C4Object *pObj;
 		for (int i = 0; i < iObjectNum; ++i)
-			if (pObj = Game.Objects.SafeObjectPointer(pObjects[i]))
+			if ((pObj = Game.Objects.SafeObjectPointer(pObjects[i])))
 				pObj->AssignRemoval();
 	}
 	break; // Here was fallthrough. Seemed wrong. ck.
@@ -959,7 +959,7 @@ void C4ControlEMMoveObject::Execute(const std::shared_ptr<spdlog::logger> &logge
 		// exit all objects
 		C4Object *pObj;
 		for (int i = 0; i < iObjectNum; ++i)
-			if (pObj = Game.Objects.SafeObjectPointer(pObjects[i]))
+			if ((pObj = Game.Objects.SafeObjectPointer(pObjects[i])))
 				pObj->Exit(pObj->x, pObj->y, pObj->r);
 	}
 	break; // Same. ck.
@@ -1162,7 +1162,7 @@ void C4ControlMessage::Execute(const std::shared_ptr<spdlog::logger> &) const
 		{
 			// for running game mode, check actual hostility
 			C4Player *pLocalPlr;
-			for (int cnt = 0; pLocalPlr = Game.Players.GetLocalByIndex(cnt); cnt++)
+			for (int cnt = 0; (pLocalPlr = Game.Players.GetLocalByIndex(cnt)); cnt++)
 				if (!Hostile(pLocalPlr->Number, iPlayer))
 					break;
 			if (pLocalPlr)
@@ -1197,7 +1197,7 @@ void C4ControlMessage::Execute(const std::shared_ptr<spdlog::logger> &) const
 		if (!pPlr) break;
 		// show only if the target player is local
 		C4Player *pLocalPlr;
-		for (int cnt = 0; pLocalPlr = Game.Players.GetLocalByIndex(cnt); cnt++)
+		for (int cnt = 0; (pLocalPlr = Game.Players.GetLocalByIndex(cnt)); cnt++)
 			if (pLocalPlr->Number == iToPlayer)
 				break;
 		if (pLocalPlr)
@@ -1411,12 +1411,20 @@ void C4ControlVote::Execute(const std::shared_ptr<spdlog::logger> &) const
 				iVotesTeam++;
 				// Search vote of this client on the subject
 				C4IDPacket *pPkt; C4ControlVote *pVote;
-				if (pPkt = Game.Network.GetVote(iClientID, eType, iData))
-					if (pVote = static_cast<C4ControlVote *>(pPkt->getPkt()))
+				if ((pPkt = Game.Network.GetVote(iClientID, eType, iData)))
+				{
+					if ((pVote = static_cast<C4ControlVote *>(pPkt->getPkt())))
+					{
 						if (pVote->isApprove())
+						{
 							iPositiveTeam++;
+						}
 						else
+						{
 							iNegativeTeam++;
+						}
+					}
+				}
 			}
 			// Any votes available?
 			if (iVotesTeam)
@@ -1472,8 +1480,8 @@ void C4ControlVoteEnd::Execute(const std::shared_ptr<spdlog::logger> &) const
 	case VT_Cancel:
 		// Flag players
 		if (!Game.GameOver)
-			for (iClient = 0; pInfos = Game.PlayerInfos.GetIndexedInfo(iClient); iClient++)
-				for (iInfo = 0; pInfo = pInfos->GetPlayerInfo(iInfo); iInfo++)
+			for (iClient = 0; (pInfos = Game.PlayerInfos.GetIndexedInfo(iClient)); iClient++)
+				for (iInfo = 0; (pInfo = pInfos->GetPlayerInfo(iInfo)); iInfo++)
 					if (!pInfo->IsRemoved())
 						pInfo->SetVotedOut();
 		// Abort the game
@@ -1484,7 +1492,7 @@ void C4ControlVoteEnd::Execute(const std::shared_ptr<spdlog::logger> &) const
 		pInfos = Game.PlayerInfos.GetInfoByClientID(getData());
 		if (!Game.GameOver)
 			if (pInfos)
-				for (iInfo = 0; pInfo = pInfos->GetPlayerInfo(iInfo); iInfo++)
+				for (iInfo = 0; (pInfo = pInfos->GetPlayerInfo(iInfo)); iInfo++)
 					if (!pInfo->IsRemoved())
 						pInfo->SetVotedOut();
 		// Remove the client
@@ -1555,7 +1563,7 @@ void C4ControlInternalScriptBase::Execute(const std::shared_ptr<spdlog::logger> 
 		pScript = &Game.Script;
 	else if (scope == C4ControlScript::SCOPE_Global)
 		pScript = &Game.ScriptEngine;
-	else if (pObj = Game.Objects.SafeObjectPointer(scope))
+	else if ((pObj = Game.Objects.SafeObjectPointer(scope)))
 		pScript = &pObj->Def->Script;
 	else
 		// default: Fallback to global context

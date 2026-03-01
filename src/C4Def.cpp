@@ -851,7 +851,7 @@ int32_t C4Def::GetValue(C4Object *pInBase, int32_t iBuyPlayer)
 	if (pInBase)
 	{
 		C4AulFunc *pFn;
-		if (pFn = pInBase->Def->Script.GetSFunc(PSF_CalcBuyValue, AA_PROTECTED))
+		if ((pFn = pInBase->Def->Script.GetSFunc(PSF_CalcBuyValue, AA_PROTECTED)))
 			iValue = pFn->Exec(pInBase, {C4VID(id), C4VInt(iValue)}).getInt();
 	}
 	return iValue;
@@ -996,7 +996,7 @@ int32_t C4DefList::Load(const char *szSearch,
 
 	// Segments
 	char szSegment[_MAX_PATH + 1]; int32_t iGroupCount;
-	if (iGroupCount = SCharCount(';', szSearch))
+	if ((iGroupCount = SCharCount(';', szSearch)))
 	{
 		++iGroupCount; int32_t iPrg = iMaxProgress - iMinProgress;
 		for (int32_t cseg = 0; SCopySegment(szSearch, cseg, szSegment, ';', _MAX_PATH); cseg++)

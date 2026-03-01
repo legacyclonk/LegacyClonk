@@ -135,7 +135,7 @@ void C4Application::DoInit()
 
 	// Language override by parameter
 	const char *pLanguage;
-	if (pLanguage = SSearchNoCase(GetCommandLine(), "/Language:"))
+	if ((pLanguage = SSearchNoCase(GetCommandLine(), "/Language:")))
 		SCopyUntil(pLanguage, Config.General.LanguageEx, ' ', CFG_MaxString);
 
 	// Init external language packs

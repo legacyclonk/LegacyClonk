@@ -186,11 +186,19 @@ void C4Object::SideBounds(int32_t &ctcox)
 {
 	// layer bounds
 	if (pLayer) if (pLayer->Def->BorderBound & C4D_Border_Layer)
+	{
 		if (Action.Act <= ActIdle || Def->ActMap[Action.Act].Procedure != DFA_ATTACH)
+		{
 			if (Category & C4D_StaticBack)
+			{
 				TargetBounds(ctcox, pLayer->x + pLayer->Shape.x, pLayer->x + pLayer->Shape.x + pLayer->Shape.Wdt, CNAT_Left, CNAT_Right);
+			}
 			else
+			{
 				TargetBounds(ctcox, pLayer->x + pLayer->Shape.x - Shape.x, pLayer->x + pLayer->Shape.x + pLayer->Shape.Wdt + Shape.x, CNAT_Left, CNAT_Right);
+			}
+		}
+	}
 	// landscape bounds
 	if (Def->BorderBound & C4D_Border_Sides)
 		TargetBounds(ctcox, 0 - Shape.x, GBackWdt + Shape.x, CNAT_Left, CNAT_Right);
@@ -200,11 +208,19 @@ void C4Object::VerticalBounds(int32_t &ctcoy)
 {
 	// layer bounds
 	if (pLayer) if (pLayer->Def->BorderBound & C4D_Border_Layer)
+	{
 		if (Action.Act <= ActIdle || Def->ActMap[Action.Act].Procedure != DFA_ATTACH)
+		{
 			if (Category & C4D_StaticBack)
+			{
 				TargetBounds(ctcoy, pLayer->y + pLayer->Shape.y, pLayer->y + pLayer->Shape.y + pLayer->Shape.Hgt, CNAT_Top, CNAT_Bottom);
+			}
 			else
+			{
 				TargetBounds(ctcoy, pLayer->y + pLayer->Shape.y - Shape.y, pLayer->y + pLayer->Shape.y + pLayer->Shape.Hgt + Shape.y, CNAT_Top, CNAT_Bottom);
+			}
+		}
+	}
 	// landscape bounds
 	if (Def->BorderBound & C4D_Border_Top)
 		TargetBounds(ctcoy, 0 - Shape.y, +1000000, CNAT_Top, CNAT_Bottom);
@@ -268,7 +284,7 @@ void C4Object::DoMovement()
 			// Next step
 			ctx = x + Sign(ctcox - x);
 
-			if (iContact = ContactCheck(ctx, y))
+			if ((iContact = ContactCheck(ctx, y)))
 			{
 				fAnyContact = true; iContacts |= t_contact;
 				// Abort horizontal movement
@@ -294,7 +310,7 @@ void C4Object::DoMovement()
 		{
 			// Next step
 			cty = y + Sign(ctcoy - y);
-			if (iContact = ContactCheck(x, cty))
+			if ((iContact = ContactCheck(x, cty)))
 			{
 				fAnyContact = true; iContacts |= t_contact;
 				ctcoy = y; fix_y = itofix(y);
@@ -353,7 +369,7 @@ void C4Object::DoMovement()
 			}
 
 			// Contact check & evaluation
-			if (iContact = ContactCheck(ctx, cty))
+			if ((iContact = ContactCheck(ctx, cty)))
 			{
 				fAnyContact = true; iContacts |= t_contact;
 				// Abort movement
@@ -408,7 +424,7 @@ void C4Object::DoMovement()
 				Shape.Attach(ctx, cty, Action.t_attach);
 			}
 			// check for contact
-			if (iContact = ContactCheck(ctx, cty)) // Contact
+			if ((iContact = ContactCheck(ctx, cty))) // Contact
 			{
 				fAnyContact = true; iContacts |= t_contact;
 				// Undo step and abort movement

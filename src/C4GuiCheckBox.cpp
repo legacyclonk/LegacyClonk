@@ -139,7 +139,7 @@ void CheckBox::DrawElement(C4FacetEx &cgo)
 void CheckBox::SetOnChecked(BaseCallbackHandler *pCB)
 {
 	if (pCBHandler) pCBHandler->DeRef();
-	if (pCBHandler = pCB) pCB->Ref();
+	if ((pCBHandler = pCB)) pCB->Ref();
 }
 
 void CheckBox::SetCaption(const std::string &caption)

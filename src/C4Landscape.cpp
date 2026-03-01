@@ -92,13 +92,20 @@ void C4Landscape::ExecuteScan()
 	// Check: Scan needed?
 	const int32_t iTemperature = Game.Weather.GetTemperature();
 	for (mat = 0; mat < Game.Material.Num; mat++)
+	{
 		if (MatCount[mat])
-			if (Game.Material.Map[mat].BelowTempConvertTo &&
-				iTemperature < Game.Material.Map[mat].BelowTempConvert)
+		{
+			if (Game.Material.Map[mat].BelowTempConvertTo && iTemperature < Game.Material.Map[mat].BelowTempConvert)
+			{
 				break;
-			else if (Game.Material.Map[mat].AboveTempConvertTo &&
-				iTemperature > Game.Material.Map[mat].AboveTempConvert)
+			}
+			else if (Game.Material.Map[mat].AboveTempConvertTo && iTemperature > Game.Material.Map[mat].AboveTempConvert)
+			{
 				break;
+			}
+		}
+	}
+
 	if (mat >= Game.Material.Num)
 		return;
 
@@ -591,13 +598,13 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 		CSurface8 *sfcMap = nullptr;
 		// Static map from scenario
 		if (hGroup.AccessEntry(C4CFN_Map))
-			if (sfcMap = GroupReadSurface8(hGroup))
+			if ((sfcMap = GroupReadSurface8(hGroup)))
 				if (!fLandscapeModeSet) Mode = C4LSC_Static;
 
 		// allow C4CFN_Landscape as map for downwards compatibility
 		if (!sfcMap)
 			if (hGroup.AccessEntry(C4CFN_Landscape))
-				if (sfcMap = GroupReadSurface8(hGroup))
+				if ((sfcMap = GroupReadSurface8(hGroup)))
 				{
 					if (!fLandscapeModeSet) Mode = C4LSC_Static;
 					fMapChanged = true;
@@ -605,12 +612,12 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 
 		// dynamic map from file
 		if (!sfcMap)
-			if (sfcMap = CreateMapS2(hGroup))
+			if ((sfcMap = CreateMapS2(hGroup)))
 				if (!fLandscapeModeSet) Mode = C4LSC_Dynamic;
 
 		// Dynamic map by scenario
 		if (!sfcMap && !fOverloadCurrent)
-			if (sfcMap = CreateMap())
+			if ((sfcMap = CreateMap()))
 				if (!fLandscapeModeSet) Mode = C4LSC_Dynamic;
 
 		// No map failure
@@ -1131,12 +1138,31 @@ void C4Landscape::FindMatTop(int32_t mat, int32_t &x, int32_t &y)
 		{
 			// Left
 			if (fLeft)
-				if (GetMat(x - cslide, y) != mat) fLeft = false;
-				else if (GetMat(x - cslide, y - 1) == mat) { tslide = 1; break; }
-				// Right
-				if (fRight)
-					if (GetMat(x + cslide, y) != mat) fRight = false;
-					else if (GetMat(x + cslide, y - 1) == mat) { tslide = 2; break; }
+			{
+				if (GetMat(x - cslide, y) != mat)
+				{
+					fLeft = false;
+				}
+				else if (GetMat(x - cslide, y - 1) == mat)
+				{
+					tslide = 1;
+					break;
+				}
+			}
+
+			// Right
+			if (fRight)
+			{
+				if (GetMat(x + cslide, y) != mat)
+				{
+					fRight = false;
+				}
+				else if (GetMat(x + cslide, y - 1) == mat)
+				{
+					tslide = 2;
+					break;
+				}
+			}
 		}
 
 		// Slide
@@ -1197,7 +1223,7 @@ bool C4Landscape::InsertMaterial(int32_t mat, int32_t tx, int32_t ty, int32_t vx
 
 	// Try reaction with material below
 	C4MaterialReaction *pReact; int32_t tmat;
-	if (pReact = Game.Material.GetReactionUnsafe(mat, tmat = GetMat(tx, ty + Sign(GravAccel))))
+	if ((pReact = Game.Material.GetReactionUnsafe(mat, tmat = GetMat(tx, ty + Sign(GravAccel)))))
 	{
 		C4Fixed fvx = FIXED10(vx), fvy = FIXED10(vy);
 		if ((*pReact->pFunc)(pReact, tx, ty, tx, ty + Sign(GravAccel), fvx, fvy, mat, tmat, meePXSPos, nullptr))
@@ -1236,20 +1262,31 @@ bool C4Landscape::FindMatPath(int32_t &fx, int32_t &fy, int32_t ydir, int32_t md
 	{
 		// Check left
 		if (fLeft)
+		{
 			if (GetDensity(fx - cslide, fy) >= mdens) // Left clogged
+			{
 				fLeft = false;
+			}
 			else if (GetDensity(fx - cslide, fy + ydir) < mdens) // Left slide okay
 			{
-				fx--; return true;
+				fx--;
+				return true;
 			}
+		}
+
 		// Check right
 		if (fRight)
+		{
 			if (GetDensity(fx + cslide, fy) >= mdens) // Right clogged
+			{
 				fRight = false;
+			}
 			else if (GetDensity(fx + cslide, fy + ydir) < mdens) // Right slide okay
 			{
-				fx++; return true;
+				fx++;
+				return true;
 			}
+		}
 	}
 
 	return false;
@@ -1270,20 +1307,35 @@ bool C4Landscape::FindMatSlide(int32_t &fx, int32_t &fy, int32_t ydir, int32_t m
 	{
 		// Check left
 		if (fLeft)
+		{
 			if (GetDensity(fx - cslide, fy) >= mdens && GetDensity(fx - cslide, fy + ydir) >= mdens) // Left clogged
+			{
 				fLeft = false;
+			}
 			else if (GetDensity(fx - cslide, fy + ydir) < mdens) // Left slide okay
 			{
-				fx -= cslide; fy += ydir; return true;
+				fx -= cslide;
+				fy += ydir;
+
+				return true;
 			}
+		}
+
 		// Check right
 		if (fRight)
+		{
 			if (GetDensity(fx + cslide, fy) >= mdens && GetDensity(fx + cslide, fy + ydir) >= mdens) // Right clogged
+			{
 				fRight = false;
+			}
 			else if (GetDensity(fx + cslide, fy + ydir) < mdens) // Right slide okay
 			{
-				fx += cslide; fy += ydir; return true;
+				fx += cslide;
+				fy += ydir;
+
+				return true;
 			}
+		}
 	}
 
 	return false;
@@ -1479,12 +1531,22 @@ bool C4Landscape::SaveDiff(C4Group &hGroup, bool fSyncSave)
 	// If it shouldn't be sync-save: Clear all bytes that have not changed
 	bool fChanged = false;
 	if (!fSyncSave)
+	{
 		for (int y = 0; y < Height; y++)
+		{
 			for (int x = 0; x < Width; x++)
+			{
 				if (pInitial[y * Width + x] == _GetPix(x, y))
+				{
 					Surface8->SetPix(x, y, 0xff);
+				}
 				else
+				{
 					fChanged = true;
+				}
+			}
+		}
+	}
 
 	if (fSyncSave || fChanged)
 	{
@@ -1742,14 +1804,34 @@ bool AboveSemiSolid(int32_t &rx, int32_t &ry) // Nearest free above semi solid
 	{
 		// Check upwards
 		if (cy1 >= 0)
-			if (GBackSemiSolid(rx, cy1)) UseUpwardsNextFree = true;
-			else if (UseUpwardsNextFree) { ry = cy1; return true; }
-			// Check downwards
-			if (cy2 < GBackHgt)
-				if (!GBackSemiSolid(rx, cy2)) UseDownwardsNextSolid = true;
-				else if (UseDownwardsNextSolid) { ry = cy2; return true; }
-				// Advance
-				cy1--; cy2++;
+		{
+			if (GBackSemiSolid(rx, cy1))
+			{
+				UseUpwardsNextFree = true;
+			}
+			else if (UseUpwardsNextFree)
+			{
+				ry = cy1;
+				return true;
+			}
+		}
+
+		// Check downwards
+		if (cy2 < GBackHgt)
+		{
+			if (!GBackSemiSolid(rx, cy2))
+			{
+				UseDownwardsNextSolid = true;
+			}
+			else if (UseDownwardsNextSolid)
+			{
+				ry = cy2;
+				return true;
+			}
+		}
+
+		// Advance
+		cy1--; cy2++;
 	}
 
 	return false;
@@ -1817,20 +1899,43 @@ bool FindLiquidHeight(int32_t cx, int32_t &ry, int32_t hgt)
 	{
 		// Check upwards
 		if (cy1 >= 0)
+		{
 			if (GBackLiquid(cx, cy1))
 			{
-				rl1++; if (rl1 >= hgt) { ry = cy1 + hgt / 2; return true; }
-			}
-			else rl1 = 0;
-			// Check downwards
-			if (cy2 + 1 < GBackHgt)
-				if (GBackLiquid(cx, cy2))
+				rl1++;
+
+				if (rl1 >= hgt)
 				{
-					rl2++; if (rl2 >= hgt) { ry = cy2 - hgt / 2; return true; }
+					ry = cy1 + hgt / 2;
+					return true;
 				}
-				else rl2 = 0;
-				// Advance
-				cy1--; cy2++;
+			}
+			else
+			{
+				rl1 = 0;
+			}
+		}
+
+		// Check downwards
+		if (cy2 + 1 < GBackHgt)
+		{
+			if (GBackLiquid(cx, cy2))
+			{
+				rl2++;
+				if (rl2 >= hgt)
+				{
+					ry = cy2 - hgt / 2;
+					return true;
+				}
+			}
+			else
+			{
+				rl2 = 0;
+			}
+		}
+
+		// Advance
+		cy1--; cy2++;
 	}
 
 	return false;
@@ -1880,25 +1985,76 @@ bool FindSurfaceLiquid(int32_t &rx, int32_t &ry, int32_t width, int32_t height)
 	{
 		// Left search
 		if (cx1 > 0) // Still going
-			if (!AboveSemiSolid(cx1, cy1)) cx1 = -1; // Abort left
+		{
+			if (!AboveSemiSolid(cx1, cy1))
+			{
+				cx1 = -1; // Abort left
+			}
 			else
 			{
-				for (lokay = true, cnt = 0; cnt < height; cnt++) if (!GBackLiquid(cx1, cy1 + 1 + cnt)) lokay = false;
-				if (lokay) rl1++; // Run okay
-				else rl1 = 0; // No run
+				for (lokay = true, cnt = 0; cnt < height; cnt++)
+				{
+					if (!GBackLiquid(cx1, cy1 + 1 + cnt))
+					{
+						lokay = false;
+					}
+				}
+
+				if (lokay)
+				{
+					rl1++; // Run okay
+				}
+				else
+				{
+					rl1 = 0; // No run
+				}
 			}
+		}
+
 		// Right search
 		if (cx2 < GBackWdt) // Still going
-			if (!AboveSemiSolid(cx2, cy2)) cx2 = GBackWdt; // Abort right
+		{
+			if (!AboveSemiSolid(cx2, cy2))
+			{
+				cx2 = GBackWdt; // Abort right
+			}
 			else
 			{
-				for (lokay = true, cnt = 0; cnt < height; cnt++) if (!GBackLiquid(cx2, cy2 + 1 + cnt)) lokay = false;
-				if (lokay) rl2++; // Run okay
-				else rl2 = 0; // No run
+				for (lokay = true, cnt = 0; cnt < height; cnt++)
+				{
+					if (!GBackLiquid(cx2, cy2 + 1 + cnt))
+					{
+						lokay = false;
+					}
+				}
+
+				if (lokay)
+				{
+					rl2++; // Run okay
+				}
+				else
+				{
+					rl2 = 0; // No run
+				}
 			}
+		}
+
 		// Check runs
-		if (rl1 >= width) { rx = cx1 + rl1 / 2; ry = cy1; fFound = true; break; }
-		if (rl2 >= width) { rx = cx2 - rl2 / 2; ry = cy2; fFound = true; break; }
+		if (rl1 >= width)
+		{
+			rx = cx1 + rl1 / 2;
+			ry = cy1;
+			fFound = true;
+			break;
+		}
+
+		if (rl2 >= width)
+		{
+			rx = cx2 - rl2 / 2;
+			ry = cy2;
+			fFound = true;
+			break;
+		}
 	}
 
 	if (fFound) AboveSemiSolid(rx, ry);
@@ -1914,15 +2070,44 @@ bool FindLiquid(int32_t &rx, int32_t &ry, int32_t width, int32_t height)
 	{
 		// Left search
 		if (cx1 > 0)
-			if (FindLiquidHeight(cx1, cy1, height)) rl1++;
-			else rl1 = 0;
+		{
+			if (FindLiquidHeight(cx1, cy1, height))
+			{
+				rl1++;
+			}
+			else
+			{
+				rl1 = 0;
+			}
+		}
+
 			// Right search
 			if (cx2 < GBackWdt)
-				if (FindLiquidHeight(cx2, cy2, height)) rl2++;
-				else rl2 = 0;
-				// Check runs
-				if (rl1 >= width) { rx = cx1 + rl1 / 2; ry = cy1; return true; }
-				if (rl2 >= width) { rx = cx2 - rl2 / 2; ry = cy2; return true; }
+			{
+				if (FindLiquidHeight(cx2, cy2, height))
+				{
+					rl2++;
+				}
+				else
+				{
+					rl2 = 0;
+				}
+			}
+
+		// Check runs
+		if (rl1 >= width)
+		{
+			rx = cx1 + rl1 / 2;
+			ry = cy1;
+			return true;
+		}
+
+		if (rl2 >= width)
+		{
+			rx = cx2 - rl2 / 2;
+			ry = cy2;
+			return true;
+		}
 	}
 
 	return false;
@@ -1947,30 +2132,60 @@ bool FindLevelGround(int32_t &rx, int32_t &ry, int32_t width, int32_t hrange)
 	{
 		// Left search
 		if (cx1 > 0) // Still going
-			if (!AboveSemiSolid(cx1, cy1)) cx1 = -1; // Abort left
+		{
+			if (!AboveSemiSolid(cx1, cy1))
+			{
+				cx1 = -1; // Abort left
+			}
 			else if (GBackSolid(cx1, cy1 + 1) && (Abs(cy1 - rh1) < hrange))
+			{
 				rl1++; // Run okay
+			}
 			else
 			{
 				rl1 = 0; rh1 = cy1;
 			} // No run
+		}
 
 		// Right search
 		if (cx2 < GBackWdt) // Still going
-			if (!AboveSemiSolid(cx2, cy2)) cx2 = GBackWdt; // Abort right
+		{
+			if (!AboveSemiSolid(cx2, cy2))
+			{
+				cx2 = GBackWdt; // Abort right
+			}
 			else if (GBackSolid(cx2, cy2 + 1) && (Abs(cy2 - rh2) < hrange))
+			{
 				rl2++; // Run okay
+			}
 			else
 			{
 				rl2 = 0; rh2 = cy2;
 			} // No run
+		}
 
 		// Check runs
-		if (rl1 >= width) { rx = cx1 + rl1 / 2; ry = cy1; fFound = true; break; }
-		if (rl2 >= width) { rx = cx2 - rl2 / 2; ry = cy2; fFound = true; break; }
+		if (rl1 >= width)
+		{
+			rx = cx1 + rl1 / 2;
+			ry = cy1;
+			fFound = true;
+			break;
+		}
+
+		if (rl2 >= width)
+		{
+			rx = cx2 - rl2 / 2;
+			ry = cy2;
+			fFound = true;
+			break;
+		}
 	}
 
-	if (fFound) AboveSemiSolid(rx, ry);
+	if (fFound)
+	{
+		AboveSemiSolid(rx, ry);
+	}
 
 	return fFound;
 }
@@ -2004,37 +2219,68 @@ bool FindConSiteSpot(int32_t &rx, int32_t &ry, int32_t wdt, int32_t hgt,
 	{
 		// Left search
 		if (cx1 > 0) // Still going
+		{
 			if (!AboveSemiSolid(cx1, cy1))
+			{
 				cx1 = -1; // Abort left
+			}
 			else if (GBackSolid(cx1, cy1 + 1) && (Abs(cy1 - rh1) < hrange))
+			{
 				rl1++; // Run okay
+			}
 			else
 			{
-				rl1 = 0; rh1 = cy1;
+				rl1 = 0;
+				rh1 = cy1;
 			} // No run
+		}
 
 		// Right search
 		if (cx2 < GBackWdt) // Still going
+		{
 			if (!AboveSemiSolid(cx2, cy2))
+			{
 				cx2 = GBackWdt; // Abort right
+			}
 			else if (GBackSolid(cx2, cy2 + 1) && (Abs(cy2 - rh2) < hrange))
+			{
 				rl2++; // Run okay
+			}
 			else
 			{
-				rl2 = 0; rh2 = cy2;
+				rl2 = 0;
+				rh2 = cy2;
 			} // No run
+		}
 
 		// Check runs & object overlap
-		if (rl1 >= wdt) if (cx1 > 0)
-			if (!Game.OverlapObject(cx1, cy1 - hgt - 10, wdt, hgt + 40, category))
+		if (rl1 >= wdt)
+		{
+			if (cx1 > 0)
 			{
-				rx = cx1 + wdt / 2; ry = cy1; fFound = true; break;
+				if (!Game.OverlapObject(cx1, cy1 - hgt - 10, wdt, hgt + 40, category))
+				{
+					rx = cx1 + wdt / 2;
+					ry = cy1;
+					fFound = true;
+					break;
+				}
 			}
-		if (rl2 >= wdt) if (cx2 < GBackWdt)
-			if (!Game.OverlapObject(cx2 - wdt, cy2 - hgt - 10, wdt, hgt + 40, category))
+		}
+
+		if (rl2 >= wdt)
+		{
+			if (cx2 < GBackWdt)
 			{
-				rx = cx2 - wdt / 2; ry = cy2; fFound = true; break;
+				if (!Game.OverlapObject(cx2 - wdt, cy2 - hgt - 10, wdt, hgt + 40, category))
+				{
+					rx = cx2 - wdt / 2;
+					ry = cy2;
+					fFound = true;
+					break;
+				}
 			}
+		}
 	}
 
 	if (fFound) AboveSemiSolid(rx, ry);
@@ -2172,7 +2418,7 @@ bool ConstructionCheck(C4ID id, int32_t iX, int32_t iY, C4Object *pByObj)
 
 	// Check other structures
 	C4Object *other;
-	if (other = Game.OverlapObject(rtx, rty, wdt, hgt, ndef->Category))
+	if ((other = Game.OverlapObject(rtx, rty, wdt, hgt, ndef->Category)))
 	{
 		if (pByObj) GameMsgObject(LoadResStr(C4ResStrTableKey::IDS_OBJ_NOOTHER, other->GetName()).c_str(), pByObj, FRed);
 		return false;

@@ -246,7 +246,7 @@ void MultilineLabel::DrawElement(C4FacetEx &cgo)
 	int32_t iIndex = 0; const char *szLine;
 	int32_t iY = rcBounds.y + cgo.TargetY;
 	CStdFont *pLineFont; uint32_t dwLineClr; bool fNewParagraph;
-	while (szLine = Lines.GetLine(iIndex, &pLineFont, &dwLineClr, &fNewParagraph))
+	while ((szLine = Lines.GetLine(iIndex, &pLineFont, &dwLineClr, &fNewParagraph)))
 	{
 		int32_t iFontLineHeight = pLineFont->GetLineHeight();
 		// indents between paragraphs
@@ -274,9 +274,9 @@ void MultilineLabel::UpdateSize()
 void MultilineLabel::UpdateHeight()
 {
 	// size by line count
-	int32_t iIndex = 0; const char *szLine; int32_t iHgt = 0;
+	int32_t iIndex = 0; int32_t iHgt = 0;
 	CStdFont *pLineFont; bool fNewPar;
-	while (szLine = Lines.GetLine(iIndex, &pLineFont, nullptr, &fNewPar))
+	while (Lines.GetLine(iIndex, &pLineFont, nullptr, &fNewPar))
 	{
 		int32_t iFontLineHeight = pLineFont->GetLineHeight();
 		// indents between separate messages
@@ -393,7 +393,7 @@ bool Picture::EnsureOwnSurface()
 
 void Picture::SetAnimated(bool fEnabled, int iDelay)
 {
-	if (fAnimate = fEnabled)
+	if ((fAnimate = fEnabled))
 	{
 		// starts cycling through all phases of the specified facet
 		iAnimationPhase = iPhaseTime = 0;
