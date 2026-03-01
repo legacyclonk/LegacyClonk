@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2026, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -384,8 +384,9 @@ struct DynBarFacet
 	C4Facet fctBegin, fctMiddle, fctEnd;
 
 	void SetHorizontal(C4Surface &rBySfc, int iHeight = 0, int iBorderWidth = 0);
-	void SetHorizontal(C4Facet &rByFct, int32_t iBorderWidth = 0);
+	void SetHorizontal(const C4Facet &rByFct, int32_t iBorderWidth = 0);
 	void Clear() { fctBegin.Default(); fctMiddle.Default(); fctEnd.Default(); }
+	void Draw(C4FacetEx &cgo);
 };
 
 // facets used to draw a scroll bar
@@ -655,17 +656,28 @@ public:
 	void SetAnimated(bool fEnabled, int iDelay); // starts/stops cycling through all phases of the specified facet
 };
 
+struct OverlayFrameSpec
+{
+	OverlayFrameSpec() noexcept = default;
+	OverlayFrameSpec(const C4Facet &texture, std::int32_t horizontalFrameSize, std::int32_t verticalFrameSize) noexcept;
+
+	DynBarFacet Top;
+	DynBarFacet Bottom;
+	C4Facet LeftTile;
+	C4Facet RightTile;
+};
+
 // picture displaying two facets
 class OverlayPicture : public Picture
 {
 protected:
 	int iBorderSize; // border of overlay image if not zoomed
-	C4Facet OverlayImage; // image to be displayed on top of the actual picture
+	OverlayFrameSpec OverlayImage; // image to be displayed on top of the actual picture
 
 	virtual void DrawElement(C4FacetEx &cgo) override; // draw the image
 
 public:
-	OverlayPicture(const C4Rect &rcBounds, bool fAspect, const C4Facet &rOverlayImage, int iBorderSize); // does not load image
+	OverlayPicture(const C4Rect &rcBounds, bool fAspect, const OverlayFrameSpec &rOverlayImage, int iBorderSize); // does not load image
 };
 
 // icon indices
@@ -1280,7 +1292,8 @@ protected:
 	Picture *pTitlePicture; // [optional]: Picture shown atop the text
 	MultilineLabel *pLogBuffer; // buffer holding text data
 	bool fDrawBackground, fDrawFrame; // whether dark background should be drawn (default true)
-	size_t iPicPadding;
+	size_t iPicPadding, iPicWdt, iPicHgt;
+	bool keepPictureAspectRatio;
 
 	virtual void DrawElement(C4FacetEx &cgo) override; // draw text window
 
@@ -1291,7 +1304,7 @@ protected:
 	virtual Control *IsFocusElement() override { return nullptr; } // no focus element for now, because there's nothing to do (2do: scroll?)
 
 public:
-	TextWindow(const C4Rect &rtBounds, size_t iPicWdt = 0, size_t iPicHgt = 0, size_t iPicPadding = 0, size_t iMaxLines = 100, size_t iMaxTextLen = 4096, const char *szIndentChars = "    ", bool fAutoGrow = false, const C4Facet *pOverlayPic = nullptr, int iOverlayBorder = 0, bool fMarkup = false);
+	TextWindow(const C4Rect &rtBounds, size_t iPicWdt = 0, size_t iPicHgt = 0, size_t iPicPadding = 0, size_t iMaxLines = 100, size_t iMaxTextLen = 4096, const char *szIndentChars = "    ", bool fAutoGrow = false, const OverlayFrameSpec *pOverlayPic = nullptr, int iOverlayBorder = 0, bool fMarkup = false, bool keepPictureAspectRatio = false);
 
 	void AddTextLine(const char *szText, CStdFont *pFont, uint32_t dwClr, bool fDoUpdate, bool fMakeReadableOnBlack, CStdFont *pCaptionFont = nullptr) // add text in a new line
 	{

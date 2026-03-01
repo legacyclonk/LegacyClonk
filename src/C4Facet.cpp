@@ -58,6 +58,16 @@ void C4Facet::Draw(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX
 		iX, iY, Wdt, Hgt, true);
 }
 
+void C4Facet::DrawLimited(C4Surface *sfcTarget, int32_t sourceWidth, int32_t sourceHeight, int32_t targetX, int32_t targetY, float scale) const
+{
+	if (!lpDDraw || !Surface || !sfcTarget || !sourceWidth || !sourceHeight) return;
+
+	lpDDraw->Blit(Surface,
+		float(X) * scale, float(Y) * scale, float(sourceWidth) * scale, float(sourceHeight) * scale,
+		sfcTarget,
+		targetX, targetY, sourceWidth, sourceHeight, true);
+}
+
 void C4Facet::DrawT(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection, const float scale)
 {
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
@@ -106,14 +116,13 @@ void C4Facet::Draw(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY,
 	// Adjust for fixed aspect ratio
 	if (fAspect)
 	{
-		// By height
-		if (100 * cgo.Wdt / Wdt < 100 * cgo.Hgt / Hgt)
+		const auto aspectRatioRelation = Wdt * cgo.Hgt <=> cgo.Wdt * Hgt;
+		if (std::is_gt(aspectRatioRelation))	 // Scale height
 		{
 			ccgo.Hgt = Hgt * cgo.Wdt / Wdt;
 			ccgo.Y += (cgo.Hgt - ccgo.Hgt) / 2;
 		}
-		// By width
-		else if (100 * cgo.Hgt / Hgt < 100 * cgo.Wdt / Wdt)
+		else //  Scale width
 		{
 			ccgo.Wdt = Wdt * cgo.Hgt / Hgt;
 			ccgo.X += (cgo.Wdt - ccgo.Wdt) / 2;
@@ -125,6 +134,45 @@ void C4Facet::Draw(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY,
 		ccgo.Surface,
 		ccgo.X, ccgo.Y, ccgo.Wdt, ccgo.Hgt,
 		fTransparent);
+}
+
+void C4Facet::DrawVTile(C4FacetEx &cgo) const
+{
+	const std::int32_t x0 = cgo.TargetX + cgo.X;
+	const std::int32_t y0 = cgo.TargetY + cgo.Y;
+	std::int32_t y{0};
+	if (cgo.Wdt == Wdt)
+	{
+		// exact bar
+		while (Hgt > 0 && y < cgo.Hgt)
+		{
+			const auto hgt = std::min(Hgt, cgo.Hgt - y);
+			DrawLimited(cgo.Surface, Wdt, hgt, x0, y0 + y);
+			y += hgt;
+		}
+	}
+	else
+	{
+		// zoomed bar
+		const auto zoom = static_cast<float>(cgo.Wdt) / Wdt;
+		const auto tileTargetHeight =	static_cast<std::int32_t>(Hgt * zoom);
+		while (y < cgo.Hgt)
+		{
+			const std::int32_t targetHeight = std::min(static_cast<std::int32_t>(Hgt * zoom), cgo.Hgt - y);
+			std::int32_t sourceHeight = Hgt;
+			if (targetHeight < tileTargetHeight)
+			{
+				sourceHeight = static_cast<std::int32_t>(targetHeight / zoom);
+			}
+			DrawXLimited(cgo.Surface, Wdt, sourceHeight, x0, y0 + y, cgo.Wdt, targetHeight);
+			y += targetHeight;
+
+			if (targetHeight <= 0)
+			{
+				break;
+			}
+		}
+	}
 }
 
 void C4Facet::DrawFullScreen(C4Facet &cgo)
@@ -300,6 +348,16 @@ void C4Facet::DrawX(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, 
 		float(X + Wdt * iSectionX) * scale, float(Y + Hgt * iSectionY) * scale, float(Wdt) * scale, float(Hgt) * scale,
 		sfcTarget,
 		iX, iY, iWdt, iHgt,
+		true);
+}
+
+void C4Facet::DrawXLimited(C4Surface *sfcTarget, int32_t sourceWidth, int32_t sourceHeight, int32_t targetX, int32_t targetY, int32_t targetWidth, int32_t targetHeight, float scale) const
+{
+	if (!lpDDraw || !Surface || !sfcTarget || !sourceWidth || !sourceHeight) return;
+	lpDDraw->Blit(Surface,
+		float(X) * scale, float(Y) * scale, float(sourceWidth) * scale, float(sourceHeight) * scale,
+		sfcTarget,
+		targetX, targetY, targetWidth, targetHeight,
 		true);
 }
 

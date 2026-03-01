@@ -62,6 +62,7 @@ public:
 	C4FacetExID fctScenSelIcons;
 	// scenario selection: Title overlay
 	C4FacetExID fctScenSelTitleOverlay;
+	C4GUI::OverlayFrameSpec scenSelTitleOverlayFrame;
 	// scenario selection and player selection book fonts
 	CStdFont BookFontCapt, BookFont, BookFontTitle, BookSmallFont;
 

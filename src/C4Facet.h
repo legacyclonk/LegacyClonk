@@ -129,6 +129,7 @@ public:
 	void Set(const C4Facet &cpy) { *this = cpy; }
 	void DrawEnergyLevelEx(int32_t iLevel, int32_t iRange, const C4Facet &gfx, int32_t bar_idx); // draw energy level using graphics
 	void DrawX(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX = 0, int32_t iPhaseY = 0, float scale = 1.0f) const;
+	void DrawXLimited(C4Surface *sfcTarget, int32_t sourceWidth, int32_t sourceHeight, int32_t targetX, int32_t targetY, int32_t targetWidth, int32_t targetHeight, float scale = 1.0f) const;
 	void DrawXFloat(C4Surface *sfcTarget, float fX, float fY, float fWdt, float fHgt) const;
 	void DrawValue(C4Facet &cgo, int32_t iValue, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t iAlign = C4FCT_Center);
 	void DrawValue2(C4Facet &cgo, int32_t iValue1, int32_t iValue2, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t iAlign = C4FCT_Center, int32_t *piUsedWidth = nullptr);
@@ -142,6 +143,8 @@ public:
 	void DrawXR(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t r = 0); // draw rotated
 	void DrawClrMod(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX = 0, int32_t iPhaseY = 0, uint32_t dwModClr = 0); // draw the facet modulated by given color
 	void Draw(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX = 0, int32_t iPhaseY = 0, float scale = 1.0f);
+	void DrawLimited(C4Surface *sfcTarget, int32_t sourceWidth, int32_t sourceHeight, int32_t targetX, int32_t targetY, float scale = 1.0f) const;
+	void DrawVTile(C4FacetEx &cgo) const;
 	bool GetPhaseNum(int32_t &rX, int32_t &rY); // return number of phases in this graphic
 	C4Facet GetSection(int32_t iSection);
 	C4Facet GetFraction(int32_t percentWdt, int32_t percentHgt = 0, int32_t alignX = C4FCT_Left, int32_t alignY = C4FCT_Top);

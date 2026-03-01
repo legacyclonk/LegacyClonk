@@ -98,12 +98,73 @@ void DynBarFacet::SetHorizontal(C4Surface &rBySfc, int iHeight, int iBorderWidth
 	fctEnd.Set(&rBySfc, rBySfc.Wdt - iBorderWidth, 0, iBorderWidth, iHeight);
 }
 
-void DynBarFacet::SetHorizontal(C4Facet &rByFct, int32_t iBorderWidth)
+void DynBarFacet::SetHorizontal(const C4Facet &rByFct, int32_t iBorderWidth)
 {
 	if (!iBorderWidth) iBorderWidth = rByFct.Hgt;
 	fctBegin.Set(rByFct.Surface, rByFct.X, rByFct.Y, iBorderWidth, rByFct.Hgt);
-	fctMiddle.Set(rByFct.Surface, rByFct.Hgt, rByFct.X, rByFct.Y + rByFct.Wdt - 2 * iBorderWidth, rByFct.Hgt);
+	fctMiddle.Set(rByFct.Surface, iBorderWidth, rByFct.Y, rByFct.X + rByFct.Wdt - 2 * iBorderWidth, rByFct.Hgt);
 	fctEnd.Set(rByFct.Surface, rByFct.X + rByFct.Wdt - iBorderWidth, rByFct.Y, iBorderWidth, rByFct.Hgt);
+}
+
+void DynBarFacet::Draw(C4FacetEx &cgo)
+{
+	if (cgo.Hgt == fctMiddle.Hgt)
+	{
+		// exact bar
+		int32_t x0 = cgo.TargetX + cgo.X, y0 = cgo.TargetY + cgo.Y;
+		int32_t iX = fctBegin.Wdt, w = fctMiddle.Wdt, wLeft = fctBegin.Wdt, wRight = fctEnd.Wdt;
+		int32_t iRightShowLength = wRight;
+		bool fOverflow = (wLeft > cgo.Wdt);
+		if (fOverflow) fctBegin.Wdt = cgo.Wdt;
+		fctBegin.Draw(cgo.Surface, x0, y0);
+		if (fOverflow) fctBegin.Wdt = wLeft;
+		while (iX < cgo.Wdt - iRightShowLength)
+		{
+			int32_t w2 = (std::min)(w, cgo.Wdt - iRightShowLength - iX); fctMiddle.Wdt = w2;
+			fctMiddle.Draw(cgo.Surface, x0 + iX, y0);
+			iX += w2;
+
+			if (w2 <= 0)
+			{
+				break;
+			}
+		}
+		fctMiddle.Wdt = w;
+		fOverflow = (wRight > cgo.Wdt);
+		if (fOverflow)
+		{
+			fctEnd.X += wRight - cgo.Wdt;
+			fctEnd.Wdt = cgo.Wdt;
+		}
+		fctEnd.Draw(cgo.Surface, x0 + cgo.Wdt - fctEnd.Wdt, y0);
+		if (fOverflow)
+		{
+			fctEnd.X -= wRight - cgo.Wdt;
+			fctEnd.Wdt = wRight;
+		}
+	}
+	else
+	{
+		// zoomed bar
+		float fZoom = static_cast<float>(cgo.Hgt) / fctMiddle.Hgt;
+		int32_t x0 = cgo.TargetX + cgo.X, y0 = cgo.TargetY + cgo.Y;
+		int32_t iX = int32_t(fZoom * fctBegin.Wdt), w = int32_t(fZoom * fctMiddle.Wdt), wOld = fctMiddle.Wdt;
+		int32_t iRightShowLength = fctEnd.Wdt;
+		fctBegin.DrawX(cgo.Surface, x0, y0, int32_t(fZoom * fctBegin.Wdt), cgo.Hgt);
+		while (iX < cgo.Wdt - (fZoom * iRightShowLength))
+		{
+			int32_t w2 = std::min<int32_t>(w, cgo.Wdt - int32_t(fZoom * iRightShowLength) - iX); fctMiddle.Wdt = long(float(w2) / fZoom);
+			fctMiddle.DrawX(cgo.Surface, x0 + iX, y0, w2, cgo.Hgt);
+			iX += w2;
+
+			if (w2 <= 0)
+			{
+				break;
+			}
+		}
+		fctMiddle.Wdt = wOld;
+		fctEnd.DrawX(cgo.Surface, x0 + cgo.Wdt - int32_t(fZoom * fctEnd.Wdt), y0, int32_t(fZoom * fctEnd.Wdt), cgo.Hgt);
+	}
 }
 
 void ScrollBarFacets::Set(const C4Facet &rByFct, int32_t iPinIndex)
