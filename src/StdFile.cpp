@@ -351,7 +351,7 @@ bool WildcardMatch(const char *szWildcard, const char *szString)
 		else if (!*pPos)
 			break;
 		// equal or one-character-wildcard? proceed
-		else if (*pWild == '?' || tolower(*pWild) == tolower(*pPos))
+		else if (*pWild == '?' || C4Strings::ToLower(*pWild) == C4Strings::ToLower(*pPos))
 		{
 			pWild++; pPos++;
 		}

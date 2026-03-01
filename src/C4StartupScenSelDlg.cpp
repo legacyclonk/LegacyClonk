@@ -1261,7 +1261,7 @@ bool C4StartupScenSelDlg::ScenListItem::CheckNameHotkey(const char *c)
 	// FIXME: make unicode-ready
 	if (!pScenListEntry) return false;
 	const char *szName = pScenListEntry->GetName().getData();
-	return szName && (toupper(*szName) == toupper(c[0]));
+	return szName && (C4Strings::ToUpper(*szName) == C4Strings::ToUpper(c[0]));
 }
 
 bool C4StartupScenSelDlg::ScenListItem::KeyRename()

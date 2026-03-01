@@ -205,7 +205,7 @@ bool C4StartupPlrSelDlg::ListItem::CheckNameHotkey(const char *c)
 	// FIXME: Unicode
 	if (!pNameLabel) return false;
 	const char *szName = pNameLabel->GetText();
-	return szName && (toupper(*szName) == toupper(c[0]));
+	return szName && (C4Strings::ToUpper(*szName) == C4Strings::ToUpper(c[0]));
 }
 
 // C4StartupPlrSelDlg::PlayerListItem

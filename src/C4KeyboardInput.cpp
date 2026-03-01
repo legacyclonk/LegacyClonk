@@ -442,6 +442,23 @@ void C4KeyCodeEx::CompileFunc(StdCompiler *pComp)
 	}
 }
 
+bool C4KeyCodeEx::IsStandardAlphaNumeric() const noexcept
+{
+#ifdef USE_SDL_MAINLOOP
+	const auto key = SDL_GetKeyName(SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(key.Key)))[0];
+#else
+	const auto key = Key;
+#endif
+
+	if (!std::in_range<unsigned char>(key))
+	{
+		return false;
+	}
+
+	const auto keyChar = static_cast<unsigned char>(Key);
+	return Inside<unsigned char>(TOUPPERIFX11(keyChar), 'A', 'Z') || Inside<unsigned char>(TOUPPERIFX11(keyChar), '0', '9');
+}
+
 // C4CustomKey
 
 C4CustomKey::C4CustomKey(C4KeyCodeEx DefCode, const char *szName, C4KeyScope Scope, C4KeyboardCallbackInterface *pCallback, unsigned int uiPriority)

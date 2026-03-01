@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "C4Strings.h"
 #include "StdBuf.h"
 
 #include <assert.h>
@@ -712,7 +713,7 @@ protected:
 		SkipWhitespace();
 		// Read number. If this breaks, Günther is to blame!
 		const char *pnPos = pPos;
-		T iNum = function(pPos, const_cast<char **>(&pnPos), *pPos == '0' && std::toupper(pPos[1]) == 'X' ? 16 : 10);
+		T iNum = function(pPos, const_cast<char **>(&pnPos), *pPos == '0' && C4Strings::ToUpper(pPos[1]) == 'X' ? 16 : 10);
 		// Could not read?
 		if (!iNum && pnPos == pPos)
 		{

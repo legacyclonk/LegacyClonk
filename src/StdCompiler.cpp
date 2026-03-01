@@ -91,7 +91,7 @@ char StdCompiler::SeparatorToChar(Sep eSep)
 
 bool StdCompiler::IsIdentifierChar(char c) noexcept
 {
-	return std::isalnum(static_cast<unsigned char>(c)) || c == '_' || c == '-';
+	return C4Strings::IsAlphanumeric(c) || c == '_' || c == '-';
 }
 
 bool StdCompiler::IsIdentifier(std::string_view str)

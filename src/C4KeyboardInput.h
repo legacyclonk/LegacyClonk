@@ -20,6 +20,7 @@
 #pragma once
 
 #include "C4ForwardDeclarations.h"
+#include "C4Strings.h"
 #include "Standard.h"
 #include "StdBuf.h"
 
@@ -127,7 +128,7 @@ inline bool Key_IsGamepadAxisHigh(C4KeyCode key)
 #ifdef _WIN32
 #define TOUPPERIFX11(key) (key)
 #else
-#define TOUPPERIFX11(key) toupper(key)
+#define TOUPPERIFX11(key) C4Strings::ToUpper(key)
 #endif
 
 enum C4KeyShiftState
@@ -175,6 +176,7 @@ struct C4KeyCodeEx
 		: Key(Key), dwShift(Shift), fRepeated(fIsRepeated) {}
 
 	bool IsRepeated() { return fRepeated; }
+	bool IsStandardAlphaNumeric() const noexcept;
 };
 
 // callback interface

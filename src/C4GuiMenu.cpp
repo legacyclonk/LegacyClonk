@@ -304,11 +304,11 @@ bool ContextMenu::KeyHotkey(C4KeyCodeEx key)
 	// not if focus is in submenu
 	if (pSubmenu) return false;
 	Element *pPrevSelectedItem = pSelectedItem;
-	C4KeyCode wKey = TOUPPERIFX11(key.Key);
-	if (Inside<C4KeyCode>(wKey, 'A', 'Z') || Inside<C4KeyCode>(wKey, '0', '9'))
+	if (key.IsStandardAlphaNumeric())
 	{
+		const auto ch = static_cast<char>(TOUPPERIFX11(static_cast<unsigned char>(key.Key)));
+
 		// process hotkeys
-		char ch = char(wKey);
 		for (Element *pCurr = GetFirst(); pCurr; pCurr = pCurr->GetNext())
 			if (pCurr->OnHotkey(ch))
 			{

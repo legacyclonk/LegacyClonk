@@ -595,7 +595,7 @@ bool CStdApp::ReadStdInCommand()
 			CmdBuf.Clear();
 		}
 	}
-	else if (std::isprint(c))
+	else if (C4Strings::IsPrint(c))
 	{
 		CmdBuf.AppendChar(c);
 	}
