@@ -965,7 +965,10 @@ void C4ControlEMMoveObject::Execute(const std::shared_ptr<spdlog::logger> &logge
 	break; // Same. ck.
 	}
 	// update property dlg & status bar. Skip for move since it introduces lag.
-	if (fLocalCall && eAction != EMMO_Move)	Console.EditCursor.OnSelectionChanged();
+	if (fLocalCall && eAction != EMMO_Move)
+	{
+		Console.EditCursor.OnSelectionChanged();
+	}
 }
 
 void C4ControlEMMoveObject::CompileFunc(StdCompiler *pComp)
