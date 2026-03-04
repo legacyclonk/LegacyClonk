@@ -731,15 +731,22 @@ void C4ToolsDlg::InitGradeCtrl()
 
 bool C4ToolsDlg::SetGrade(int32_t iGrade)
 {
-	Grade = BoundBy(iGrade, C4TLS_GradeMin, C4TLS_GradeMax);
+	if(Game.Landscape.Mode == C4LSC_Exact)
+	{
+		Grade = BoundBy(iGrade, C4TLS_GradeMin, C4TLS_GradeMax);
+	}
+	else
+	{
+		Grade = BoundBy(iGrade - ((iGrade) % (Game.Landscape.MapZoom / 2)), Game.Landscape.MapZoom / 2, C4TLS_GradeMax);
+	}
 	UpdatePreview();
 	return true;
 }
 
 bool C4ToolsDlg::ChangeGrade(int32_t iChange)
 {
-	Grade = BoundBy(Grade + iChange, C4TLS_GradeMin, C4TLS_GradeMax);
-	UpdatePreview();
+	std::int32_t iGrade {Grade + iChange};
+	SetGrade(iGrade);
 	InitGradeCtrl();
 	return true;
 }

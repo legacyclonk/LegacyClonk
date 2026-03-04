@@ -20,6 +20,7 @@
 
 #include "C4ObjectList.h"
 #include "C4Control.h"
+#include "C4ForwardDeclarations.h"
 
 #ifdef WITH_DEVELOPER_MODE
 #include <gtk/gtk.h>
@@ -35,8 +36,10 @@ protected:
 	bool fAltWasDown;
 	bool fSelectionChanged;
 	int32_t Mode;
-	int32_t X, Y, X2, Y2;
-	bool Hold, DragFrame, DragLine;
+	int32_t X, Y, X2, Y2; // Cursor position in map space
+	int32_t ViewSpaceX, ViewSpaceY; // Cursor position in viewport space
+	bool HoldLeft, DragFrame, DragLine;
+	bool HoldRight, DragViewport;
 	C4Object *Target, *DropTarget;
 #ifdef _WIN32
 	HMENU hMenu;
@@ -69,14 +72,15 @@ public:
 	bool RightButtonUp();
 	bool RightButtonDown(bool fControl);
 	void MiddleButtonUp();
-	bool Move(int32_t iX, int32_t iY, uint16_t wKeyFlags);
+	bool Move(C4Viewport *const cvp, int32_t iX, int32_t iY, uint16_t wKeyFlags);
 	bool Init();
 	bool EditingOK();
 	C4ObjectList &GetSelection() { return Selection; }
-	void SetHold(bool fToState) { Hold = fToState; }
+	void SetHold(bool fToState) { HoldLeft = fToState; }
 	void OnSelectionChanged();
 	bool AltDown();
 	bool AltUp();
+	void MoveSelection(int32_t iXOff, int32_t iYOff);
 
 protected:
 	bool UpdateStatusBar();
@@ -91,7 +95,6 @@ protected:
 	void ApplyToolBrush();
 	void DrawSelectMark(C4Facet &cgo);
 	void FrameSelection();
-	void MoveSelection(int32_t iXOff, int32_t iYOff);
 	void EMMoveObject(enum C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj, const C4ObjectList *pObjs = nullptr, const char *szScript = nullptr);
 	void EMControl(enum C4PacketType eCtrlType, class C4ControlPacket *pCtrl);
 

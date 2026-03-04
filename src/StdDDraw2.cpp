@@ -1186,6 +1186,37 @@ void CStdDDraw::DrawFrameDw(C4Surface *sfcDest, int x1, int y1, int x2, int y2, 
 	DrawLineDw(sfcDest, static_cast<float>(x1), static_cast<float>(y2), static_cast<float>(x1), static_cast<float>(y1), dwClr);
 }
 
+void CStdDDraw::DrawCircleOutline(C4Surface *sfcDest, int32_t x1, int32_t y1, int32_t r, uint8_t byCol, bool half, float additionalAngleRad)
+{
+	std::int32_t resolution {static_cast<std::int32_t>(std::round(6.0f * static_cast<float>(r) / 4.0f))};
+	std::int32_t resolutionClamped {std::clamp(resolution, 12, 32)};
+
+	for (std::int32_t index {0}; index < static_cast<std::int32_t>(std::round(static_cast<float>(resolutionClamped) / (half ? 2.0f : 1.0f))); ++index)
+	{
+		const float angle1 {(2.0f * static_cast<float>(std::numbers::pi) / static_cast<float>(resolutionClamped)) * static_cast<float>(index) + additionalAngleRad};
+		const float angle2 {(2.0f * static_cast<float>(std::numbers::pi) / static_cast<float>(resolutionClamped)) * static_cast<float>(index + 1) + additionalAngleRad};
+
+		const float posX1 {static_cast<float>(x1) + sinf(angle1) * static_cast<float>(r)};
+		const float posY1 {static_cast<float>(y1) + cosf(angle1) * static_cast<float>(r)};
+		const float posX2 {static_cast<float>(x1) + sinf(angle2) * static_cast<float>(r)};
+		const float posY2 {static_cast<float>(y1) + cosf(angle2) * static_cast<float>(r)};
+		DrawLineDw(sfcDest, posX1, posY1, posX2, posY2, Pal.GetClr(byCol));
+	}
+}
+
+void CStdDDraw::DrawCapsuleOutline(C4Surface *sfcDest, int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t r, uint8_t byCol)
+{
+	const float angleRad {-atan2f(static_cast<float>(y1-y2), static_cast<float>(x1-x2))};
+	DrawCircleOutline(sfcDest, x1, y1, r, byCol, true, angleRad);
+	DrawCircleOutline(sfcDest, x2, y2, r, byCol, true, angleRad + std::numbers::pi);
+
+	const float offsetX {sinf(angleRad) * static_cast<float>(r)};
+	const float offsetY {cosf(angleRad) * static_cast<float>(r)};
+
+	DrawLineDw(sfcDest, static_cast<float>(x1) + offsetX, static_cast<float>(y1) + offsetY, static_cast<float>(x2) + offsetX, static_cast<float>(y2) + offsetY, Pal.GetClr(byCol));
+	DrawLineDw(sfcDest, static_cast<float>(x1) - offsetX, static_cast<float>(y1) - offsetY, static_cast<float>(x2) - offsetX, static_cast<float>(y2) - offsetY, Pal.GetClr(byCol));
+}
+
 // Globally locked surface variables - for DrawLine callback crap
 
 void CStdDDraw::DrawPatternedCircle(C4Surface *sfcDest, int x, int y, int r, uint8_t col, CPattern &Pattern1, CPattern &Pattern2, CStdPalette &rPal)

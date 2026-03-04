@@ -22,6 +22,7 @@
 #include <C4Object.h>
 #include <C4Application.h>
 #include <C4Random.h>
+#include "C4Viewport.h"
 #include <C4Wrappers.h>
 
 #ifdef _WIN32
@@ -53,7 +54,7 @@ void C4EditCursor::Execute()
 	{
 	case C4CNS_ModeEdit:
 		// Hold selection
-		if (Hold)
+		if (HoldLeft)
 			EMMoveObject(EMMO_Move, 0, 0, nullptr, &Selection);
 		break;
 
@@ -61,7 +62,7 @@ void C4EditCursor::Execute()
 		switch (Console.ToolsDlg.Tool)
 		{
 		case C4TLS_Fill:
-			if (Hold) if (!Game.HaltCount) if (Console.Editing) ApplyToolFill();
+			if (HoldLeft) if (!Game.HaltCount) if (Console.Editing) ApplyToolFill();
 			break;
 		}
 		break;
@@ -116,18 +117,42 @@ void C4EditCursor::ClearPointers(C4Object *pObj)
 		OnSelectionChanged();
 }
 
-bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
+bool C4EditCursor::Move(C4Viewport *const cvp, int32_t iX, int32_t iY, uint16_t wKeyFlags)
 {
-	// Offset movement
-	int32_t xoff = iX - X; int32_t yoff = iY - Y; X = iX; Y = iY;
+	// Viewport Space
+	const std::int32_t viewOffsetX {iX - ViewSpaceX};
+	const std::int32_t viewOffsetY {iY - ViewSpaceY};
+	ViewSpaceX = iX;
+	ViewSpaceY = iY;
+	// Map space
+	const std::int32_t offsetX {cvp->ViewX + iX - X};
+	const std::int32_t offsetY {cvp->ViewY + iY - Y};
+	X = cvp->ViewX + iX;
+	Y = cvp->ViewY + iY;
+
+	if(HoldRight)
+	{
+		if(cvp->fIsNoOwnerViewport)
+		{
+			cvp->ViewX -= viewOffsetX;
+			cvp->ViewY -= viewOffsetY;
+			cvp->UpdateViewPosition();
+			cvp->ScrollBarsByViewPosition();
+			// Allow the context menu on right click to be opened when we didn't drag the viewport.
+			if(std::abs(viewOffsetX) > 1 || std::abs(viewOffsetY) > 1)
+			{
+				DragViewport = true;
+			}
+		}
+	}
 
 	switch (Mode)
 	{
 	case C4CNS_ModeEdit:
 		// Hold
-		if (!DragFrame && Hold)
+		if (!DragFrame && HoldLeft)
 		{
-			MoveSelection(xoff, yoff);
+			MoveSelection(offsetX, offsetY);
 			UpdateDropTarget(wKeyFlags);
 		}
 		// Update target
@@ -146,7 +171,7 @@ bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
 		switch (Console.ToolsDlg.Tool)
 		{
 		case C4TLS_Brush:
-			if (Hold) ApplyToolBrush();
+			if (HoldLeft) ApplyToolBrush();
 			break;
 		case C4TLS_Line: case C4TLS_Rect:
 			break;
@@ -191,7 +216,7 @@ void C4EditCursor::OnSelectionChanged()
 bool C4EditCursor::LeftButtonDown(bool fControl)
 {
 	// Hold
-	Hold = true;
+	HoldLeft = true;
 
 	switch (Mode)
 	{
@@ -200,20 +225,38 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 		{
 			// Toggle target
 			if (Target)
+			{
 				if (!Selection.Remove(Target))
+				{
 					Selection.Add(Target, C4ObjectList::stNone);
+					OnSelectionChanged();
+				}
+			}
 		}
 		else
 		{
 			// Click on unselected: select single
 			if (Target && !Selection.GetLink(Target))
 			{
-				Selection.Clear(); Selection.Add(Target, C4ObjectList::stNone);
+				if(!Application.IsShiftDown())
+				{
+					Selection.Clear();
+				}
+
+				Selection.Add(Target, C4ObjectList::stNone);
+				OnSelectionChanged();
 			}
 			// Click on nothing: drag frame
 			if (!Target)
 			{
-				Selection.Clear(); DragFrame = true; X2 = X; Y2 = Y;
+				if(!Application.IsShiftDown())
+				{
+					Selection.Clear();
+					OnSelectionChanged();
+				}
+				DragFrame = true;
+				X2 = X;
+				Y2 = Y;
 			}
 		}
 		break;
@@ -227,7 +270,7 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 		case C4TLS_Fill:
 			if (Game.HaltCount)
 			{
-				Hold = false; Console.Message(LoadResStr(C4ResStrTableKey::IDS_CNS_FILLNOHALT)); return false;
+				HoldLeft = false; Console.Message(LoadResStr(C4ResStrTableKey::IDS_CNS_FILLNOHALT)); return false;
 			}
 			break;
 		case C4TLS_Picker: ApplyToolPicker(); break;
@@ -237,40 +280,27 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 
 	DropTarget = nullptr;
 
-	OnSelectionChanged();
 	return true;
 }
 
 bool C4EditCursor::RightButtonDown(bool fControl)
 {
+	HoldRight = true;
+
 	switch (Mode)
 	{
 	case C4CNS_ModeEdit:
 		if (!fControl)
 		{
-			// Check whether cursor is on anything in the selection
-			bool fCursorIsOnSelection = false;
-			for (C4ObjectLink *pLnk = Selection.First; pLnk; pLnk = pLnk->Next)
-				if (pLnk->Obj->At(X, Y))
-				{
-					fCursorIsOnSelection = true;
-					break;
-				}
-			if (!fCursorIsOnSelection)
+			if (Target && Selection.IsClear())
 			{
-				// Click on unselected
-				if (Target && !Selection.GetLink(Target))
-				{
-					Selection.Clear(); Selection.Add(Target, C4ObjectList::stNone);
-				}
-				// Click on nothing
-				if (!Target) Selection.Clear();
+				Selection.Add(Target, C4ObjectList::stNone);
+				OnSelectionChanged();
 			}
 		}
 		break;
 	}
 
-	OnSelectionChanged();
 	return true;
 }
 
@@ -298,7 +328,7 @@ bool C4EditCursor::LeftButtonUp()
 	}
 
 	// Release
-	Hold = false;
+	HoldLeft = false;
 	DragFrame = false;
 	DragLine = false;
 	DropTarget = nullptr;
@@ -333,16 +363,25 @@ bool C4EditCursor::RightButtonUp()
 {
 	Target = nullptr;
 
-	DoContextMenu();
+	if(DragViewport)
+	{
+		DragViewport = false;
+	}
+	else if(!HoldLeft)
+	{
+		DoContextMenu();
+	}
 
 	// Update
 	UpdateStatusBar();
+	// Release
+	HoldRight = false;
 	return true;
 }
 
 void C4EditCursor::MiddleButtonUp()
 {
-	if (Hold) return;
+	if (HoldLeft) return;
 
 	ApplyToolPicker();
 }
@@ -406,17 +445,107 @@ void C4EditCursor::Draw(C4FacetEx &cgo)
 			cobj->BlitMode = dwOldBlitMode;
 		}
 	}
+	// Highlight target on hover.
+	if(Target)
+	{
+		const std::uint32_t dwOldMod {Target->ColorMod};
+		const std::uint32_t dwOldBlitMode {Target->BlitMode};
+		Target->ColorMod = 0x5555aa;
+		Target->BlitMode = C4GFXBLIT_CLRSFC_MOD2 | C4GFXBLIT_ADDITIVE;
+		Target->Draw(cgo, -1);
+		Target->DrawTopFace(cgo, -1);
+		Target->ColorMod = dwOldMod;
+		Target->BlitMode = dwOldBlitMode;
+	}
 	// Draw drag frame
-	if (DragFrame)
+	if (DragFrame && Mode != C4CNS_ModeDraw)
+	{
 		Application.DDraw->DrawFrame(cgo.Surface, (std::min)(X, X2) + cgo.X - cgo.TargetX, (std::min)(Y, Y2) + cgo.Y - cgo.TargetY, (std::max)(X, X2) + cgo.X - cgo.TargetX, (std::max)(Y, Y2) + cgo.Y - cgo.TargetY, CWhite);
-	// Draw drag line
-	if (DragLine)
-		Application.DDraw->DrawLine(cgo.Surface, X + cgo.X - cgo.TargetX, Y + cgo.Y - cgo.TargetY, X2 + cgo.X - cgo.TargetX, Y2 + cgo.Y - cgo.TargetY, CWhite);
+	}
 	// Draw drop target
 	if (DropTarget)
+	{
 		Game.GraphicsResource.fctDropTarget.Draw(cgo.Surface,
 			DropTarget->x +                       cgo.X - cgo.TargetX - Game.GraphicsResource.fctDropTarget.Wdt / 2,
 			DropTarget->y + DropTarget->Shape.y + cgo.Y - cgo.TargetY - Game.GraphicsResource.fctDropTarget.Hgt);
+	}
+	if(Mode == C4CNS_ModeDraw)
+	{
+		// Draw cursor outline for Brush and Line
+		C4ToolsDlg *pTools = &Console.ToolsDlg;
+		if(pTools)
+		{
+			std::int32_t screenPosX1 {ViewSpaceX};
+			std::int32_t screenPosY1 {ViewSpaceY};
+			std::int32_t radius {pTools->Grade};
+			const std::int32_t viewportOffsetX {X - ViewSpaceX};
+			const std::int32_t viewportOffsetY {Y - ViewSpaceY};
+			std::int32_t screenPosX2 {X2 - viewportOffsetX};
+			std::int32_t screenPosY2 {Y2 - viewportOffsetY};
+			const std::int32_t zoom {Game.Landscape.MapZoom};
+			if(Game.Landscape.Mode != C4LSC_Exact)
+			{
+				// Snap circle to map grid.
+				screenPosX1 = std::round(X / zoom) * zoom - (viewportOffsetX);
+				screenPosY1 = std::round(Y / zoom) * zoom - (viewportOffsetY);
+
+				screenPosX2 = std::round(X2 / zoom) * zoom - (viewportOffsetX);
+				screenPosY2 = std::round(Y2 / zoom) * zoom - (viewportOffsetY);
+
+				radius = pTools->Grade + ((pTools->Grade / (zoom / 2)) - 1) * (zoom / 2);
+
+				if(Console.ToolsDlg.SelectedTool == C4TLS_Brush || Console.ToolsDlg.SelectedTool == C4TLS_Line)
+				{
+					// Drawn circles are offset to the left when the radius is greater than one grid unit.
+					screenPosX1 += (radius > zoom / 2 ? 0 : zoom / 2);
+					screenPosX2 += (radius > zoom / 2 ? 0 : zoom / 2);
+
+					// Circles always use the center of the grid on the Y axis.
+					screenPosY1 += zoom / 2;
+					screenPosY2 += zoom / 2;
+				}
+			}
+			switch (Console.ToolsDlg.SelectedTool)
+			{
+			case C4TLS_Brush:
+				Application.DDraw->DrawCircleOutline(cgo.Surface, screenPosX1, screenPosY1, radius, CWhite);
+				break;
+			case C4TLS_Line:
+				if(DragLine)
+				{
+					Application.DDraw->DrawCapsuleOutline(cgo.Surface, screenPosX1, screenPosY1, screenPosX2, screenPosY2, radius, CWhite);
+				}
+				else
+				{
+					Application.DDraw->DrawCircleOutline(cgo.Surface, screenPosX1, screenPosY1, radius, CWhite);
+				}
+				break;
+			case C4TLS_Rect:
+				if(DragFrame)
+				{
+					if(Game.Landscape.Mode != C4LSC_Exact)
+					{
+						screenPosX1 = std::round((X < X2 ? X : X2) / zoom) * zoom - (viewportOffsetX);
+						screenPosY1 = std::round((Y < Y2 ? Y : Y2) / zoom) * zoom - (viewportOffsetY);
+						screenPosX2 = std::round((X > X2 ? X : X2) / zoom + 1) * zoom - (viewportOffsetX);
+						screenPosY2 = std::round((Y > Y2 ? Y : Y2) / zoom + 1) * zoom - (viewportOffsetY);
+					}
+					Application.DDraw->DrawFrame(cgo.Surface, screenPosX1, screenPosY1, screenPosX2, screenPosY2, CWhite);
+				}
+				else
+				{
+					std::int32_t boxSize {1};
+					if(Game.Landscape.Mode != C4LSC_Exact)
+					{
+						boxSize = zoom;
+					}
+					Application.DDraw->DrawFrame(cgo.Surface, screenPosX1, screenPosY1, screenPosX1 + boxSize, screenPosY1 + boxSize, CWhite);
+				}
+			default:
+				break;
+			}
+		}
+	}
 }
 
 void C4EditCursor::DrawSelectMark(C4Facet &cgo)
@@ -449,11 +578,15 @@ void C4EditCursor::MoveSelection(int32_t iXOff, int32_t iYOff)
 
 void C4EditCursor::FrameSelection()
 {
-	Selection.Clear();
 	C4Object *cobj; C4ObjectLink *clnk;
 	for (clnk = Game.Objects.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
 		if (cobj->Status) if (cobj->OCF & OCF_NotContained)
 		{
+			// Contained as in: "Part of selection"
+			if(Selection.IsContained(cobj))
+			{
+				continue;
+			}
 			if (Inside(cobj->x, (std::min)(X, X2), (std::max)(X, X2)) && Inside(cobj->y, (std::min)(Y, Y2), (std::max)(Y, Y2)))
 				Selection.Add(cobj, C4ObjectList::stNone);
 		}
@@ -470,12 +603,12 @@ void C4EditCursor::Default()
 {
 	fAltWasDown = false;
 	Mode = C4CNS_ModePlay;
-	X = Y = X2 = Y2 = 0;
+	X = Y = X2 = Y2 = ViewSpaceX = ViewSpaceY = 0;
 	Target = DropTarget = nullptr;
 #ifdef _WIN32
 	hMenu = nullptr;
 #endif
-	Hold = DragFrame = DragLine = false;
+	HoldLeft = HoldRight = DragFrame = DragLine = false;
 	Selection.Default();
 	fSelectionChanged = false;
 }
@@ -501,19 +634,26 @@ bool C4EditCursor::SetMode(int32_t iMode)
 	// Set mode
 	Mode = iMode;
 	// Update prop tools by mode
-	bool fOpenPropTools = false;
 	switch (Mode)
 	{
-	case C4CNS_ModeEdit: case C4CNS_ModePlay:
-		if (Console.ToolsDlg.Active || Console.PropertyDlg.Active) fOpenPropTools = true;
+	case C4CNS_ModePlay:
+		if (Console.ToolsDlg.Active)
+		{
+			Console.ToolsDlg.Clear();
+		}
+		if(Console.PropertyDlg.Active)
+		{
+			Console.PropertyDlg.Clear();
+		}
+	case C4CNS_ModeEdit:
 		Console.ToolsDlg.Clear();
-		if (fOpenPropTools) OpenPropTools();
+		OpenPropTools();
 		break;
 
 	case C4CNS_ModeDraw:
-		if (Console.ToolsDlg.Active || Console.PropertyDlg.Active) fOpenPropTools = true;
 		Console.PropertyDlg.Clear();
-		if (fOpenPropTools) OpenPropTools();
+		OpenPropTools();
+		Console.ToolsDlg.ChangeGrade(0); // Refresh Grade to account for map zoom.
 		break;
 	}
 	// Update cursor
@@ -634,7 +774,7 @@ void C4EditCursor::GrabContents()
 	if (!(pFrom = Selection.GetObject())) return;
 	Selection.Copy(pFrom->Contents);
 	Console.PropertyDlg.Update(Selection);
-	Hold = true;
+	HoldLeft = true;
 
 	// Exit all objects
 	EMMoveObject(EMMO_Exit, 0, 0, nullptr, &Selection);
@@ -674,7 +814,7 @@ bool C4EditCursor::EditingOK()
 {
 	if (!Console.Editing)
 	{
-		Hold = false;
+		HoldLeft = false;
 		Console.Message(LoadResStr(C4ResStrTableKey::IDS_CNS_NONETEDIT));
 		return false;
 	}
@@ -718,7 +858,7 @@ void C4EditCursor::ApplyToolPicker()
 			Console.ToolsDlg.SelectMaterial(C4TLS_MatSky);
 		break;
 	}
-	Hold = false;
+	HoldLeft = false;
 }
 
 void C4EditCursor::EMMoveObject(C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj, const C4ObjectList *pObjs, const char *szScript)
