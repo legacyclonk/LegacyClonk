@@ -59,7 +59,7 @@
 #include <sstream>
 #include <utility>
 
-constexpr unsigned int defaultIngameGameTickDelay = 28;
+constexpr unsigned int defaultIngameGameTickDelayMS = 28;
 
 C4Game::C4Game()
 	: Input(Control.Input), KeyboardInput(C4KeyboardInput_Init()), fQuitWithError(false), fPreinited(false),
@@ -439,7 +439,7 @@ bool C4Game::Init()
 		SetInitProgress(7);
 	}
 
-	Application.SetGameTickDelay(defaultIngameGameTickDelay);
+	Application.SetGameTickDelay(defaultIngameGameTickDelayMS);
 	// now free all startup gfx to make room for game gfx
 	C4Startup::Unload();
 

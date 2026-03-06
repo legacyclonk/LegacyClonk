@@ -52,7 +52,7 @@ C4Sec1TimerCallbackBase::C4Sec1TimerCallbackBase() : pNext(nullptr), iRefs(2)
 C4Application::C4Application() :
 	isFullScreen(true), UseStartupDialog(true), launchEditor(false), restartAtEnd(false),
 	DDraw(nullptr), AppState(C4AS_None),
-	iLastGameTick(0), iGameTickDelay(defaultGameTickDelay), iExtraGameTickDelay(0), pGamePadControl(nullptr),
+	iLastGameTick(0), iGameTickDelayMS(defaultGameTickDelay), iExtraGameTickDelay(0), pGamePadControl(nullptr),
 	CheckForUpdates(false) {}
 
 C4Application::~C4Application()
@@ -470,7 +470,7 @@ void C4Application::Execute()
 			else
 				Console.Execute();
 			// Automatic frame skip if graphics are slowing down the game (skip max. every 2nd frame)
-			Game.DoSkipFrame = Game.Parameters.AutoFrameSkip && ((iPreGfxTime + iGameTickDelay) < timeGetTime());
+			Game.DoSkipFrame = Game.Parameters.AutoFrameSkip && ((iPreGfxTime + iGameTickDelayMS) < timeGetTime());
 		}
 		else
 			Game.DoSkipFrame = false;
@@ -507,27 +507,27 @@ void C4Application::DoSec1Timers()
 	}
 }
 
-void C4Application::SetGameTickDelay(int iDelay)
+void C4Application::SetGameTickDelay(int iDelayMS)
 {
 	// Remember delay
-	iGameTickDelay = iDelay;
+	iGameTickDelayMS = iDelayMS;
 	// Smaller than minimum refresh delay?
-	if (iDelay < Config.Graphics.MaxRefreshDelay)
+	if (iDelayMS < Config.Graphics.MaxRefreshDelayMS)
 	{
 		// Set critical timer
-		ResetTimer(iDelay);
+		ResetTimer(iDelayMS);
 		// No additional breaking needed
 		iExtraGameTickDelay = 0;
 	}
 	else
 	{
 		// Do some magic to get as near as possible to the requested delay
-		int iGraphDelay = (std::max)(1, iDelay);
-		iGraphDelay /= (iGraphDelay + Config.Graphics.MaxRefreshDelay - 1) / Config.Graphics.MaxRefreshDelay;
+		int iGraphDelay = (std::max)(1, iDelayMS);
+		iGraphDelay /= (iGraphDelay + Config.Graphics.MaxRefreshDelayMS - 1) / Config.Graphics.MaxRefreshDelayMS;
 		// Set critical timer
 		ResetTimer(iGraphDelay);
 		// Slow down game tick
-		iExtraGameTickDelay = iDelay - iGraphDelay / 2;
+		iExtraGameTickDelay = iDelayMS - iGraphDelay / 2;
 	}
 }
 

@@ -24,6 +24,7 @@
 
 #include <poll.h>
 #include <sys/time.h>
+#include <chrono>
 
 #ifdef USE_X11
 #include <string_view>
@@ -214,7 +215,7 @@ void CStdApp::Init(const int argc, char **const argv)
 
 bool CStdApp::InitTimer()
 {
-	gettimeofday(&LastExecute, nullptr);
+	std::timespec_get(&LastExecute, TIME_UTC);
 	return true;
 }
 
@@ -261,8 +262,8 @@ void CStdApp::Quit()
 void CStdApp::Execute()
 {
 	const time_t seconds{LastExecute.tv_sec};
-	timeval tv;
-	gettimeofday(&tv, nullptr);
+	std::timespec tv;
+	std:timespec_get(&tv, TIME_UTC);
 
 	if (DoNotDelay)
 	{
@@ -275,11 +276,11 @@ void CStdApp::Execute()
 	}
 	else
 	{
-		LastExecute.tv_usec += Delay;
-		if (LastExecute.tv_usec > 1000000)
+		LastExecute.tv_nsec += DelayNS;
+		if (LastExecute.tv_nsec > 1000000000)
 		{
 			++LastExecute.tv_sec;
-			LastExecute.tv_usec -= 1000000;
+			LastExecute.tv_nsec -= 1000000000;
 		}
 	}
 
@@ -303,9 +304,9 @@ void CStdApp::Run()
 	}
 }
 
-void CStdApp::ResetTimer(const unsigned int d)
+void CStdApp::ResetTimer(const unsigned int delayMS)
 {
-	Delay = d * 1000;
+	DelayNS = delayMS * 1000000;
 }
 
 C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool checkTimer)
@@ -315,32 +316,32 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 
 	bool doExecute{checkTimer};
 
-	timeval tv;
+	std::timespec tv;
 	if (DoNotDelay)
 	{
 		tv = {0, 0};
 	}
 	else if (checkTimer)
 	{
-		gettimeofday(&tv, nullptr);
-		tv.tv_usec = LastExecute.tv_usec - tv.tv_usec + Delay - 1000000 * (tv.tv_sec - LastExecute.tv_sec);
+		std::timespec_get(&tv, TIME_UTC);
+		tv.tv_nsec = LastExecute.tv_nsec - tv.tv_nsec + DelayNS - 1000000000 * (tv.tv_sec - LastExecute.tv_sec);
 
 		// Check if the given timeout comes first
 		// (don't call Execute then, because it assumes it has been called because of a timer event!)
-		if (timeout != StdSync::Infinite && timeout * 1000 < tv.tv_usec)
+		if (timeout != StdSync::Infinite && timeout * 1000000 < tv.tv_nsec)
 		{
-			tv.tv_usec = timeout * 1000;
+			tv.tv_nsec = timeout * 1000000;
 			doExecute = false;
 		}
 
-		if (tv.tv_usec < 0)
+		if (tv.tv_nsec < 0)
 		{
-			tv.tv_usec = 0;
+			tv.tv_nsec = 0;
 		}
 	}
 	else
 	{
-		tv.tv_usec = timeout * 1000;
+		tv.tv_nsec = timeout * 1000000;
 	}
 
 	tv.tv_sec = 0;
@@ -414,7 +415,7 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 	fds[2].fd = STDIN_FILENO;
 #endif
 
-	switch (StdSync::Poll(fds, (checkTimer || timeout != StdSync::Infinite) ? tv.tv_usec / 1000 : StdSync::Infinite))
+	switch (StdSync::Poll(fds, (checkTimer || timeout != StdSync::Infinite) ? tv.tv_nsec / 1000000 : StdSync::Infinite))
 	{
 	case -1:
 		LogNTr(spdlog::level::err, "poll error: {}", std::strerror(errno));

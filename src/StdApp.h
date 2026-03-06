@@ -265,7 +265,7 @@ public:
 	virtual float GetScale() = 0;
 	C4AppHandleResult HandleMessage(unsigned int iTimeout = StdSync::Infinite, bool fCheckTimer = true);
 	void SetDisplayMode(DisplayMode mode) { pWindow->SetDisplayMode(mode); }
-	void ResetTimer(unsigned int uDelay);
+	void ResetTimer(unsigned int uDelayMS);
 	CStdWindow *pWindow;
 	bool fQuitMsgReceived{false}; // if true, a quit message has been received and the application should terminate
 	const char *GetCommandLine() { return szCmdLine; }
@@ -345,9 +345,10 @@ protected:
 #endif
 
 protected:
-#ifndef _WIN32
-	unsigned int Delay{27777}; // 36 FPS
-	timeval LastExecute;
+// TODO: Remove unused code
+#if TRUE// ndef _WIN32
+	std::uint32_t DelayNS{27777000}; // 36 FPS
+	std::timespec LastExecute;
 	int argc;
 	char **argv;
 	int Pipe[2];
