@@ -165,7 +165,7 @@ public:
 	bool AutoFrameSkip; // if true, gfx frames are skipped when they would slow down the game
 	int32_t CacheTexturesInRAM; // -1 for disabled; otherwise after CacheTexturesInRAM times of Locking, Unlock(true) keeps the texture in RAM
 	DisplayMode UseDisplayMode;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	bool Maximized;
 	int PositionX;
 	int PositionY;

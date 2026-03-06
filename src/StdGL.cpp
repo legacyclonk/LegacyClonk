@@ -809,7 +809,8 @@ CStdGLCtx *CStdGL::CreateContext(CStdWindow *const pWindow, CStdApp *const pApp)
 	return pCtx;
 }
 
-#ifdef _WIN32
+// TODO: Removed unused code.
+#if FALSE //def _WIN32
 CStdGLCtx *CStdGL::CreateContext(const HWND hWindow, CStdApp *const pApp)
 {
 	// safety

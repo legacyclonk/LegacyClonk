@@ -217,7 +217,9 @@ public:
 	~CStdGLCtx() { Clear(); }
 
 	void Clear(); // clear objects
-#ifdef _WIN32
+
+// TODO: Remove unused code
+#if FALSE //def _WIN32
 	bool Init(CStdWindow *pWindow, CStdApp *pApp, HWND hWindow = nullptr);
 #else
 	bool Init(CStdWindow *pWindow, CStdApp *pApp);
@@ -234,7 +236,9 @@ protected:
 	void DoDeselect();
 	// this handles are declared as pointers to structs
 	CStdWindow *pWindow; // window to draw in
-#ifdef _WIN32
+
+// TODO: Remove unused code
+#if FALSE //def _WIN32
 	HGLRC hrc; // rendering context
 	HWND hWindow; // used if pWindow==nullptr
 	HDC hDC; // device context handle
@@ -286,7 +290,9 @@ public:
 	bool PrepareRendering(C4Surface *sfcToSurface) override; // check if/make rendering possible to given surface
 	CStdGLCtx &GetMainCtx() { return MainCtx; }
 	virtual CStdGLCtx *CreateContext(CStdWindow *pWindow, CStdApp *pApp) override;
-#ifdef _WIN32
+
+// TODO: Remove unused code
+#if FALSE //def _WIN32
 	virtual CStdGLCtx *CreateContext(HWND hWindow, CStdApp *pApp) override;
 #endif
 
@@ -312,7 +318,9 @@ public:
 	bool InvalidateDeviceObjects() override; // free device dependent objects
 	void SetTexture() override;
 	void ResetTexture() override;
-#ifdef _WIN32
+
+// TODO: Remove unused code
+#if FALSE //def _WIN32
 	bool DeviceReady() override { return !!MainCtx.hrc; }
 #elif defined(USE_X11)
 	bool DeviceReady() override { return !!MainCtx.ctx; }

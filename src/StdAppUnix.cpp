@@ -22,15 +22,18 @@
 #include <array>
 #include <string>
 
+#if !defined(_WIN32)
 #include <poll.h>
-#include <sys/time.h>
+#endif
+
+// TODO: Rename file from unix to something more general since it is now also used by windows.
+
 #include <chrono>
 
 #ifdef USE_X11
 #include <string_view>
 
 #include <X11/Xmd.h>
-
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -117,7 +120,7 @@ void CStdApp::Init(const int argc, char **const argv)
 	this->argc = argc;
 	this->argv = argv;
 
-	static char dir[PATH_MAX];
+	static char dir[_MAX_PATH];
 	SCopy(argv[0], dir);
 
 #ifndef USE_SDL_MAINLOOP
@@ -193,10 +196,12 @@ void CStdApp::Init(const int argc, char **const argv)
 	}
 #endif
 
+#if !defined(_WIN32)
 	if (pipe(Pipe) != 0)
 	{
 		throw StartupException{"Error creating Pipe"};
 	}
+#endif
 
 #ifdef WITH_GLIB
 	pipeChannel = g_io_channel_unix_new(Pipe[0]);
@@ -229,8 +234,10 @@ void CStdApp::Clear()
 	}
 #endif
 
+#if !defined(_WIN32)
 	close(Pipe[0]);
 	close(Pipe[1]);
+#endif
 
 #ifdef WITH_GLIB
 	g_main_loop_unref(loop);
@@ -400,10 +407,13 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 
 	return timeoutElapsed ? (doExecute ? HR_Timer : HR_Timeout) : HR_Message;
 #else
+
+#if !defined(_WIN32)
 	std::array<pollfd, 3> fds;
 	fds.fill({.fd = -1, .events = POLLIN});
 
 	fds[0].fd = Pipe[0];
+#endif
 
 #ifdef USE_X11
 	// Stop waiting for the next frame when more events arrive
@@ -414,6 +424,17 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 #ifdef USE_CONSOLE
 	fds[2].fd = STDIN_FILENO;
 #endif
+
+#if defined(_WIN32)
+	if (doExecute && tv.tv_nsec == 0)
+	{
+		Execute();
+		return HR_Timer;
+	}
+
+	return HR_Timeout;
+
+#else
 
 	switch (StdSync::Poll(fds, (checkTimer || timeout != StdSync::Infinite) ? tv.tv_nsec / 1000000 : StdSync::Infinite))
 	{
@@ -456,6 +477,9 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 
 		return HR_Message;
 	}
+#endif
+
+	return HR_Message;
 #endif
 }
 
@@ -582,6 +606,8 @@ void CStdApp::OnPipeInput()
 bool CStdApp::ReadStdInCommand()
 {
 	// Surely not the most efficient way to do it, but we won't have to read much data anyway.
+// TODO: Reinvestigate whether this is something we need for windows when switching to SDL
+#if !defined(_WIN32)
 	char c;
 	if (read(STDIN_FILENO, &c, 1) != 1)
 	{
@@ -600,6 +626,7 @@ bool CStdApp::ReadStdInCommand()
 	{
 		CmdBuf.AppendChar(c);
 	}
+#endif
 
 	return true;
 }

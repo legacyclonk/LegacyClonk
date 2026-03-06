@@ -16,6 +16,8 @@
 
 /* A viewport to each player */
 
+// TODO: Fix developer mode
+
 #include <C4Include.h>
 #include <C4Viewport.h>
 
@@ -57,7 +59,7 @@ namespace
 	const int32_t ViewportScrollSpeed = 10;
 }
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 
 #include <shellapi.h>
 

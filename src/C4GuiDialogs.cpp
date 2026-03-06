@@ -59,7 +59,8 @@ public:
 	DialogWindow(Dialog &dialog) : dialog{dialog} {}
 	virtual void Close() override;
 
-#ifdef _WIN32
+// TODO: Remove unused code
+#if FALSE //def _WIN32
 	bool Init(CStdApp *app, const char *title, const class C4Rect &bounds, CStdWindow *parent = nullptr) override;
 
 	std::pair<DWORD, DWORD> GetWindowStyle() const override { return {WindowStyle, 0}; }
@@ -198,7 +199,7 @@ void FrameDecoration::Draw(C4FacetEx &cgo, C4Rect &rcBounds)
 
 // DialogWindow
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 
 bool DialogWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
 {

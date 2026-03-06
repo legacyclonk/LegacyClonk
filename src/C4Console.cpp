@@ -96,7 +96,7 @@ C4Console::C4Console()
 	FrameCounter = 0;
 	fGameOpen = false;
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	hWindow = nullptr;
 	hbmCursor = nullptr;
 	hbmCursor2 = nullptr;
@@ -124,7 +124,7 @@ C4Console::C4Console()
 
 C4Console::~C4Console()
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	if (hbmCursor)  DeleteObject(hbmCursor);
 	if (hbmCursor2) DeleteObject(hbmCursor2);
 	if (hbmBrush)   DeleteObject(hbmBrush);
@@ -139,7 +139,7 @@ C4Console::~C4Console()
 #endif // WITH_DEVELOPER_MODE / _WIN32
 }
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 
 INT_PTR CALLBACK ConsoleDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
@@ -285,7 +285,7 @@ bool C4Console::Init(CStdApp *const app, const char *const title, const C4Rect &
 	Active = true;
 	// Editing (enable even if network)
 	Editing = true;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	// Init common controls
 	INITCOMMONCONTROLSEX controls{.dwSize = sizeof(controls), .dwICC = ICC_STANDARD_CLASSES};
 	if (!InitCommonControlsEx(&controls))
@@ -584,7 +584,7 @@ bool C4Console::In(const char *szText)
 
 bool C4Console::Out(std::string_view text)
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	if (!Active) return false;
 	if (text.empty()) return true;
 
@@ -640,7 +640,7 @@ bool C4Console::Out(std::string_view text)
 
 bool C4Console::ClearLog()
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	SetDlgItemText(hWindow, IDC_EDITOUTPUT, L"");
 	SendDlgItemMessage(hWindow, IDC_EDITOUTPUT, EM_LINESCROLL, 0, 0);
 	UpdateWindow(hWindow);
@@ -667,7 +667,7 @@ bool C4Console::UpdateStatusBars()
 	if (Game.FrameCounter != FrameCounter)
 	{
 		FrameCounter = Game.FrameCounter;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 		const std::wstring text{std::format(L"Frame: {}", FrameCounter)};
 		SetDlgItemText(hWindow, IDC_STATICFRAME, text.c_str());
 		UpdateWindow(GetDlgItem(hWindow, IDC_STATICFRAME));
@@ -680,7 +680,7 @@ bool C4Console::UpdateStatusBars()
 	if (Game.Script.Counter != ScriptCounter)
 	{
 		ScriptCounter = Game.Script.Counter;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 		const std::wstring text{std::format(L"Script: {}", ScriptCounter)};
 		SetDlgItemText(hWindow, IDC_STATICSCRIPT, text.c_str());
 		UpdateWindow(GetDlgItem(hWindow, IDC_STATICSCRIPT));
@@ -694,7 +694,7 @@ bool C4Console::UpdateStatusBars()
 	{
 		Time = Game.Time;
 		FPS = Game.FPS;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 		const std::wstring text{std::format(L"{:02}:{:02}:{:02} ({} FPS)", Time / 3600, (Time % 3600) / 60, Time % 60, FPS)};
 		SetDlgItemText(hWindow, IDC_STATICTIME, text.c_str());
 		UpdateWindow(GetDlgItem(hWindow, IDC_STATICTIME));
@@ -709,7 +709,7 @@ bool C4Console::UpdateStatusBars()
 bool C4Console::UpdateHaltCtrls(bool fHalt)
 {
 	if (!Active) return false;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	SendDlgItemMessage(hWindow, IDC_BUTTONPLAY, BM_SETSTATE, !fHalt, 0);
 	UpdateWindow(GetDlgItem(hWindow, IDC_BUTTONPLAY));
 	SendDlgItemMessage(hWindow, IDC_BUTTONHALT, BM_SETSTATE, fHalt, 0);
@@ -841,7 +841,7 @@ bool C4Console::FileSaveAs(bool fSaveGame)
 bool C4Console::Message(const char *szMessage, bool fQuery)
 {
 	if (!Active) return false;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	return (IDOK == MessageBox(hWindow, StdStringEncodingConverter::WinAcpToUtf16(szMessage).c_str(), _CRT_WIDE(C4ENGINECAPTION), fQuery ? (MB_OKCANCEL | MB_ICONEXCLAMATION) : MB_ICONEXCLAMATION));
 #elif WITH_DEVELOPER_MODE
 	GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, fQuery ? (GTK_BUTTONS_OK_CANCEL) : (GTK_BUTTONS_OK), "%s", szMessage);
@@ -858,7 +858,7 @@ void C4Console::EnableControls(bool fEnable)
 	// disable Editing if no input allowed
 	Editing &= !Game.Control.NoInput();
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	// Set button images (edit modes & halt controls)
 	SendDlgItemMessage(hWindow, IDC_BUTTONMODEPLAY, BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>(fEnable ? hbmMouse : hbmMouse2));
 	SendDlgItemMessage(hWindow, IDC_BUTTONMODEEDIT, BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>((fEnable && Editing) ? hbmCursor : hbmCursor2));
@@ -998,7 +998,7 @@ bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, DWO
 bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, uint32_t dwFlags, bool fSave)
 #endif
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	OPENFILENAMEA ofn{};
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hWindow;
@@ -1140,7 +1140,7 @@ bool C4Console::FileRecord()
 	// start record!
 	Game.Control.RequestRuntimeRecord();
 	// disable menuitem
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	EnableMenuItem(GetMenu(hWindow), IDM_FILE_RECORD, MF_BYCOMMAND | MF_GRAYED);
 #elif WITH_DEVELOPER_MODE
 	gtk_widget_set_sensitive(fileRecord, false);
@@ -1208,7 +1208,7 @@ void C4Console::ViewportNew()
 bool C4Console::UpdateCursorBar(const char *szCursor)
 {
 	if (!Active) return false;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	// Cursor
 	SetDlgItemText(hWindow, IDC_STATICCURSOR, StdStringEncodingConverter::WinAcpToUtf16(szCursor).c_str());
 	UpdateWindow(GetDlgItem(hWindow, IDC_STATICCURSOR));
@@ -1222,13 +1222,13 @@ bool C4Console::UpdateViewportMenu()
 {
 	if (!Active) return false;
 	ClearViewportMenu();
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	HMENU hMenu = GetSubMenu(GetMenu(hWindow), MenuIndexViewport);
 #endif
 	for (C4Player *pPlr = Game.Players.First; pPlr; pPlr = pPlr->Next)
 	{
 		const std::string text{LoadResStr(C4ResStrTableKey::IDS_CNS_NEWPLRVIEWPORT, pPlr->GetName())};
-#ifdef _WIN32
+#if FALSE //def _WIN32
 		AddMenuItem(hMenu, IDM_VIEWPORT_NEW1 + pPlr->Number, text.c_str());
 #elif WITH_DEVELOPER_MODE
 		GtkWidget *menuItem = gtk_menu_item_new_with_label(ClonkToGtk(text).c_str());
@@ -1243,7 +1243,7 @@ bool C4Console::UpdateViewportMenu()
 void C4Console::ClearViewportMenu()
 {
 	if (!Active) return;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	HMENU hMenu = GetSubMenu(GetMenu(hWindow), MenuIndexViewport);
 	while (DeleteMenu(hMenu, 1, MF_BYPOSITION));
 #elif WITH_DEVELOPER_MODE
@@ -1257,7 +1257,7 @@ void C4Console::ClearViewportMenu()
 #endif // WITH_DEVELOPER_MODE / _WIN32
 }
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 bool C4Console::AddMenuItem(HMENU hMenu, DWORD dwID, const char *szString, bool fEnabled)
 {
 	if (!Active) return false;
@@ -1301,7 +1301,7 @@ bool C4Console::UpdateModeCtrls(int iMode)
 {
 	if (!Active) return false;
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	SendDlgItemMessage(hWindow, IDC_BUTTONMODEPLAY, BM_SETSTATE, (iMode == C4CNS_ModePlay), 0);
 	UpdateWindow(GetDlgItem(hWindow, IDC_BUTTONMODEPLAY));
 	SendDlgItemMessage(hWindow, IDC_BUTTONMODEEDIT, BM_SETSTATE, (iMode == C4CNS_ModeEdit), 0);
@@ -1328,7 +1328,7 @@ bool C4Console::UpdateModeCtrls(int iMode)
 void C4Console::EditTitle()
 {
 	if (Game.Network.isEnabled()) return;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	Game.Title.ShowDialog(hWindow);
 #endif
 }
@@ -1336,7 +1336,7 @@ void C4Console::EditTitle()
 void C4Console::EditScript()
 {
 	if (Game.Network.isEnabled()) return;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	Game.Script.ShowDialog(hWindow);
 #endif
 	Game.ScriptEngine.ReLink(&Game.Defs);
@@ -1345,7 +1345,7 @@ void C4Console::EditScript()
 void C4Console::EditInfo()
 {
 	if (Game.Network.isEnabled()) return;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	Game.Info.ShowDialog(hWindow);
 #endif
 }
@@ -1359,7 +1359,7 @@ void C4Console::UpdateInputCtrl()
 {
 	int cnt;
 	C4AulScriptFunc *pRef;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	HWND hCombo = GetDlgItem(hWindow, IDC_COMBOINPUT);
 	// Clear
 	SendMessage(hCombo, CB_RESETCONTENT, 0, 0);
@@ -1384,7 +1384,7 @@ void C4Console::UpdateInputCtrl()
 	for (C4AulFunc *pFn = Game.ScriptEngine.GetFirstFunc(); pFn; pFn = Game.ScriptEngine.GetNextFunc(pFn))
 		if (pFn->GetPublic())
 		{
-#ifdef _WIN32
+#if FALSE //def _WIN32
 			SendMessage(hCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(std::format(L"{}()", StdStringEncodingConverter::WinAcpToUtf16(pFn->Name)).c_str()));
 #elif WITH_DEVELOPER_MODE
 			gtk_list_store_append(store, &iter);
@@ -1392,13 +1392,13 @@ void C4Console::UpdateInputCtrl()
 #endif
 		}
 	// Add scenario script functions
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	if (pRef = Game.Script.GetSFunc(0))
 		SendMessage(hCombo, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(L"----------"));
 #endif
 	for (cnt = 0; pRef = Game.Script.GetSFunc(cnt); cnt++)
 	{
-#ifdef _WIN32
+#if FALSE //def _WIN32
 		SendMessage(hCombo, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(std::format(L"{}()", StdStringEncodingConverter::WinAcpToUtf16(pRef->Name)).c_str()));
 #elif WITH_DEVELOPER_MODE
 		gtk_list_store_append(store, &iter);
@@ -1411,7 +1411,7 @@ bool C4Console::UpdatePlayerMenu()
 {
 	if (!Active) return false;
 	ClearPlayerMenu();
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	HMENU hMenu = GetSubMenu(GetMenu(hWindow), MenuIndexPlayer);
 #endif
 	for (C4Player *pPlr = Game.Players.First; pPlr; pPlr = pPlr->Next)
@@ -1421,7 +1421,7 @@ bool C4Console::UpdatePlayerMenu()
 					? LoadResStr(C4ResStrTableKey::IDS_CNS_PLRQUITNET, pPlr->GetName(), pPlr->AtClientName)
 					: LoadResStr(C4ResStrTableKey::IDS_CNS_PLRQUIT, pPlr->GetName())
 		};
-#ifdef _WIN32
+#if FALSE //def _WIN32
 		AddMenuItem(hMenu, IDM_PLAYER_QUIT1 + pPlr->Number, text.c_str(), (!Game.Network.isEnabled() || Game.Network.isHost()) && Editing);
 #elif WITH_DEVELOPER_MODE
 		// TODO: Implement AddMenuItem...
@@ -1439,7 +1439,7 @@ bool C4Console::UpdatePlayerMenu()
 void C4Console::ClearPlayerMenu()
 {
 	if (!Active) return;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	HMENU hMenu = GetSubMenu(GetMenu(hWindow), MenuIndexPlayer);
 	while (DeleteMenu(hMenu, 1, MF_BYPOSITION));
 #elif WITH_DEVELOPER_MODE
@@ -1500,7 +1500,7 @@ void C4Console::PlayerJoin()
 				Game.Players.CtrlJoinLocalNoNetwork(szPlayerFilename, Game.Clients.getLocalID(), Game.Clients.getLocalName());
 }
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 void C4Console::UpdateMenuText(HMENU hMenu)
 {
 	HMENU hSubMenu;
@@ -1545,7 +1545,7 @@ void C4Console::UpdateNetMenu()
 	// Clear old
 	ClearNetMenu();
 	// Insert menu
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	if (!InsertMenu(GetMenu(hWindow), MenuIndexHelp, MF_BYPOSITION | MF_POPUP, reinterpret_cast<UINT_PTR>(CreateMenu()), StdStringEncodingConverter::WinAcpToUtf16(LoadResStr(C4ResStrTableKey::IDS_MNU_NET)).c_str())) return;
 #elif WITH_DEVELOPER_MODE
 	itemNet = gtk_menu_item_new_with_label(LoadResStrGtk(C4ResStrTableKey::IDS_MNU_NET).c_str());
@@ -1556,7 +1556,7 @@ void C4Console::UpdateNetMenu()
 	MenuIndexNet = MenuIndexHelp;
 	MenuIndexHelp++;
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	DrawMenuBar(hWindow);
 	// Update menu
 	HMENU hMenu = GetSubMenu(GetMenu(hWindow), MenuIndexNet);
@@ -1564,7 +1564,7 @@ void C4Console::UpdateNetMenu()
 
 	// Host
 	const auto text = LoadResStr(C4ResStrTableKey::IDS_MNU_NETHOST, Game.Clients.getLocalName(), Game.Clients.getLocalID());
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	AddMenuItem(hMenu, IDM_NET_CLIENT1 + Game.Clients.getLocalID(), text.c_str());
 #elif WITH_DEVELOPER_MODE
 	GtkWidget *item = gtk_menu_item_new_with_label(text.c_str());
@@ -1576,7 +1576,7 @@ void C4Console::UpdateNetMenu()
 	{
 		const auto text = LoadResStrChoice(pClient->isActivated(), C4ResStrTableKey::IDS_MNU_NETCLIENT, C4ResStrTableKey::IDS_MNU_NETCLIENTDE,
 			pClient->getName(), pClient->getID());
-#ifdef _WIN32
+#if FALSE //def _WIN32
 		AddMenuItem(hMenu, IDM_NET_CLIENT1 + pClient->getID(), text.c_str());
 #elif WITH_DEVELOPER_MODE
 		item = gtk_menu_item_new_with_label(text.c_str());
@@ -1594,7 +1594,7 @@ void C4Console::ClearNetMenu()
 {
 	if (!Active) return;
 	if (MenuIndexNet < 0) return;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	DeleteMenu(GetMenu(hWindow), MenuIndexNet, MF_BYPOSITION);
 #elif WITH_DEVELOPER_MODE
 	gtk_container_remove(GTK_CONTAINER(menuBar), itemNet);
@@ -1602,7 +1602,7 @@ void C4Console::ClearNetMenu()
 #endif
 	MenuIndexNet = -1;
 	MenuIndexHelp--;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	DrawMenuBar(hWindow);
 #endif
 }

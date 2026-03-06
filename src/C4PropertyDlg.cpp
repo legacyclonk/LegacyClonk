@@ -26,6 +26,8 @@
 
 #include <format>
 
+// TODO: Implement developer mode so it works cross platform
+
 #ifdef _WIN32
 #include "StdRegistry.h"
 #include "StdStringEncodingConverter.h"
@@ -38,7 +40,7 @@
 #include <gtk/gtk.h>
 #endif
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 INT_PTR CALLBACK PropertyDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (Msg)
@@ -102,7 +104,7 @@ C4PropertyDlg::~C4PropertyDlg()
 
 bool C4PropertyDlg::Open()
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	if (hDialog) return true;
 	hDialog = CreateDialog(Application.hInstance,
 		MAKEINTRESOURCE(IDD_PROPERTIES),
@@ -255,7 +257,7 @@ bool C4PropertyDlg::Update()
 		break;
 	}
 	// Update info edit control
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	const auto iLine = SendDlgItemMessage(hDialog, IDC_EDITOUTPUT, EM_GETFIRSTVISIBLELINE, 0, 0);
 	SetDlgItemText(hDialog, IDC_EDITOUTPUT, StdStringEncodingConverter::WinAcpToUtf16(output).c_str());
 	SendDlgItemMessage(hDialog, IDC_EDITOUTPUT, EM_LINESCROLL, 0, iLine);
@@ -269,7 +271,7 @@ bool C4PropertyDlg::Update()
 
 void C4PropertyDlg::Default()
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	hDialog = nullptr;
 #elif defined(WITH_DEVELOPER_MODE)
 	vbox = nullptr;
@@ -282,7 +284,7 @@ void C4PropertyDlg::Default()
 void C4PropertyDlg::Clear()
 {
 	Selection.Clear();
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	if (hDialog) DestroyWindow(hDialog); hDialog = nullptr;
 #endif
 	Active = false;
@@ -291,7 +293,7 @@ void C4PropertyDlg::Clear()
 void C4PropertyDlg::UpdateInputCtrl(C4Object *pObj)
 {
 	int cnt;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	HWND hCombo = GetDlgItem(hDialog, IDC_COMBOINPUT);
 	// Remember old window text
 	std::wstring lastText;
@@ -338,7 +340,7 @@ void C4PropertyDlg::UpdateInputCtrl(C4Object *pObj)
 	for (C4AulFunc *pFn = Game.ScriptEngine.GetFirstFunc(); pFn; pFn = Game.ScriptEngine.GetNextFunc(pFn))
 		if (pFn->GetPublic())
 		{
-#ifdef _WIN32
+#if FALSE def _WIN32
 			SendMessage(hCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(std::format(L"{}()", StdStringEncodingConverter::WinAcpToUtf16(pFn->Name)).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 			gtk_list_store_append(store, &iter);
@@ -346,7 +348,7 @@ void C4PropertyDlg::UpdateInputCtrl(C4Object *pObj)
 #endif
 		}
 	// Add object script functions
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	bool fDivider = false;
 #endif
 	C4AulScriptFunc *pRef;
@@ -357,12 +359,12 @@ void C4PropertyDlg::UpdateInputCtrl(C4Object *pObj)
 			// Public functions only
 			if (pRef->Access == AA_PUBLIC)
 			{
-#ifdef _WIN32
+#if FALSE //def _WIN32
 				// Insert divider if necessary
 				if (!fDivider) { SendMessage(hCombo, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(L"----------")); fDivider = true; }
 #endif
 				// Add function
-#ifdef _WIN32
+#if FALSE //def _WIN32
 				SendMessage(hCombo, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(std::format(L"{}()", StdStringEncodingConverter::WinAcpToUtf16(pRef->Name)).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 				gtk_list_store_append(store, &iter);
@@ -370,7 +372,7 @@ void C4PropertyDlg::UpdateInputCtrl(C4Object *pObj)
 #endif
 			}
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	// Restore old text
 	SetWindowText(hCombo, lastText.c_str());
 #elif WITH_DEVELOPER_MODE

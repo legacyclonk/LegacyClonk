@@ -18,6 +18,8 @@
 
 #pragma once
 
+// TODO: See cpp
+
 #include "C4ObjectList.h"
 
 #ifdef WITH_DEVELOPER_MODE
@@ -38,7 +40,7 @@ public:
 	bool Update();
 	bool Update(C4ObjectList &rSelection);
 	bool Active;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	HWND hDialog;
 	friend INT_PTR CALLBACK PropertyDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
 #elif defined(WITH_DEVELOPER_MODE)

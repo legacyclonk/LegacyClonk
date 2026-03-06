@@ -16,6 +16,8 @@
 
 /* Drawing tools dialog for landscape editing in console mode */
 
+// TODO: Implement cross platform developer mode
+
 #include <C4ToolsDlg.h>
 #include <C4Console.h>
 #include <C4Application.h>
@@ -94,7 +96,7 @@ namespace
 
 #endif
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 
 #include <commctrl.h>
 
@@ -262,7 +264,7 @@ C4ToolsDlg::~C4ToolsDlg()
 bool C4ToolsDlg::Open()
 {
 	// Create dialog window
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	if (hDialog) return true;
 	hDialog = CreateDialog(Application.hInstance,
 		MAKEINTRESOURCE(IDD_TOOLS),
@@ -409,7 +411,7 @@ bool C4ToolsDlg::Open()
 
 void C4ToolsDlg::Default()
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	hDialog = nullptr;
 #ifndef USE_CONSOLE
 	pGLCtx = nullptr;
@@ -427,7 +429,7 @@ void C4ToolsDlg::Default()
 
 void C4ToolsDlg::Clear()
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 #ifndef USE_CONSOLE
 	delete pGLCtx; pGLCtx = nullptr;
 #endif
@@ -447,7 +449,7 @@ bool C4ToolsDlg::SetTool(int32_t iTool, bool fTemp)
 
 void C4ToolsDlg::UpdateToolCtrls()
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	SendDlgItemMessage(hDialog, IDC_BUTTONBRUSH,  BM_SETSTATE, (Tool == C4TLS_Brush),  0);
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONBRUSH));
 	SendDlgItemMessage(hDialog, IDC_BUTTONLINE,   BM_SETSTATE, (Tool == C4TLS_Line),   0);
@@ -482,7 +484,7 @@ void C4ToolsDlg::UpdateToolCtrls()
 void C4ToolsDlg::InitMaterialCtrls()
 {
 	// Materials
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(_CRT_WIDE(C4TLS_MatSky)));
 	for (int32_t cnt = 0; cnt < Game.Material.Num; cnt++)
 		SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(Game.Material.Map[cnt].Name).c_str()));
@@ -508,7 +510,7 @@ void C4ToolsDlg::InitMaterialCtrls()
 void C4ToolsDlg::UpdateTextures()
 {
 	// Refill dlg
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_RESETCONTENT, 0, 0);
 #elif defined(WITH_DEVELOPER_MODE)
 	GtkListStore *list = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(textures)));
@@ -522,7 +524,7 @@ void C4ToolsDlg::UpdateTextures()
 			if (!Game.TextureMap.GetIndex(Material, szTexture, false))
 			{
 				fAnyEntry = true;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 				SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(szTexture).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 				gtk_combo_box_text_prepend_text(GTK_COMBO_BOX_TEXT(textures), szTexture);
@@ -532,7 +534,7 @@ void C4ToolsDlg::UpdateTextures()
 	// separator
 	if (fAnyEntry)
 	{
-#ifdef _WIN32
+#if FALSE //def _WIN32
 		SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(L"-------"));
 #elif defined(WITH_DEVELOPER_MODE)
 		gtk_combo_box_text_prepend_text(GTK_COMBO_BOX_TEXT(textures), "-------");
@@ -545,7 +547,7 @@ void C4ToolsDlg::UpdateTextures()
 		// Current material-texture valid? Always valid for exact mode
 		if (Game.TextureMap.GetIndex(Material, szTexture, false) || Game.Landscape.Mode == C4LSC_Exact)
 		{
-#ifdef _WIN32
+#if FALSE //def _WIN32
 			SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(szTexture).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 			gtk_combo_box_text_prepend_text(GTK_COMBO_BOX_TEXT(textures), szTexture);
@@ -553,7 +555,7 @@ void C4ToolsDlg::UpdateTextures()
 		}
 	}
 	// reselect current
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(Texture).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 	g_signal_handler_block(textures, handlerTextures);
@@ -577,7 +579,7 @@ void C4ToolsDlg::SetTexture(const char *szTexture)
 	if (!Game.TextureMap.GetTexture(szTexture))
 	{
 		// ensure correct texture is in dlg
-#ifdef _WIN32
+#if FALSE //def _WIN32
 		SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(Texture).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 		g_signal_handler_block(textures, handlerTextures);
@@ -603,7 +605,7 @@ void C4ToolsDlg::UpdatePreview()
 	// TODO: Set size request for image to read size from image's size request?
 	std::int32_t left{0}, top{0}, previewWidth{64}, previewHeight{64};
 
-#ifdef _WIN32
+#if FALSE // def _WIN32
 	if (!hDialog) return;
 	const auto previewHandle = GetDlgItem(hDialog, IDC_PREVIEW);
 	if (!previewHandle) return;
@@ -630,7 +632,7 @@ void C4ToolsDlg::UpdatePreview()
 	const auto surfacePreview = std::make_unique<C4Surface>(previewWidth, previewHeight);
 
 	// fill bg
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	Application.DDraw->DrawBox(surfacePreview.get(), 0, 0, previewWidth - 1, previewHeight - 1, CGray4);
 #endif
 	uint8_t bCol = 0;
@@ -666,7 +668,7 @@ void C4ToolsDlg::UpdatePreview()
 			}
 		}
 	}
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	if (IsWindowEnabled(GetDlgItem(hDialog, IDC_PREVIEW)))
 #elif defined(WITH_DEVELOPER_MODE)
 	if (gtk_widget_get_sensitive(preview))
@@ -678,7 +680,7 @@ void C4ToolsDlg::UpdatePreview()
 
 	Application.DDraw->AttachPrimaryPalette(surfacePreview.get());
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 #ifndef USE_CONSOLE
 	if (pGL && pGLCtx)
 	{
@@ -709,7 +711,7 @@ void C4ToolsDlg::UpdatePreview()
 
 void C4ToolsDlg::InitGradeCtrl()
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	if (!hDialog) return;
 	HWND hwndTrack = GetDlgItem(hDialog, IDC_SLIDERGRADE);
 	SendMessage(hwndTrack, TBM_SETPAGESIZE, 0, 5);
@@ -746,7 +748,7 @@ bool C4ToolsDlg::ChangeGrade(int32_t iChange)
 
 bool C4ToolsDlg::PopMaterial()
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	if (!hDialog) return false;
 	SetFocus(GetDlgItem(hDialog, IDC_COMBOMATERIAL));
 	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_SHOWDROPDOWN, TRUE, 0);
@@ -760,7 +762,7 @@ bool C4ToolsDlg::PopMaterial()
 
 bool C4ToolsDlg::PopTextures()
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	if (!hDialog) return false;
 	SetFocus(GetDlgItem(hDialog, IDC_COMBOTEXTURE));
 	SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SHOWDROPDOWN, TRUE, 0);
@@ -774,7 +776,7 @@ bool C4ToolsDlg::PopTextures()
 
 void C4ToolsDlg::UpdateIFTControls()
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	if (!hDialog) return;
 	SendDlgItemMessage(hDialog, IDC_BUTTONNOIFT, BM_SETSTATE, (ModeIFT == 0), 0);
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONNOIFT));
@@ -796,7 +798,7 @@ void C4ToolsDlg::UpdateIFTControls()
 void C4ToolsDlg::UpdateLandscapeModeCtrls()
 {
 	int32_t iMode = Game.Landscape.Mode;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	// Dynamic: enable only if dynamic anyway
 	SendDlgItemMessage(hDialog, IDC_BUTTONMODEDYNAMIC, BM_SETSTATE, (iMode == C4LSC_Dynamic), 0);
 	EnableWindow(GetDlgItem(hDialog, IDC_BUTTONMODEDYNAMIC), (iMode == C4LSC_Dynamic));
@@ -898,7 +900,7 @@ bool C4ToolsDlg::SetLandscapeMode(int32_t iMode, bool fThroughControl)
 void C4ToolsDlg::EnableControls()
 {
 	int32_t iLandscapeMode = Game.Landscape.Mode;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	// Set bitmap buttons
 	SendDlgItemMessage(hDialog, IDC_BUTTONBRUSH,       BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>((iLandscapeMode >= C4LSC_Static) ? hbmBrush  : hbmBrush2));
 	SendDlgItemMessage(hDialog, IDC_BUTTONLINE,        BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>((iLandscapeMode >= C4LSC_Static) ? hbmLine   : hbmLine2));
@@ -940,7 +942,7 @@ void C4ToolsDlg::EnableControls()
 	UpdatePreview();
 }
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 void C4ToolsDlg::LoadBitmaps()
 {
 	HINSTANCE hInst = Application.hInstance;
@@ -984,7 +986,7 @@ void C4ToolsDlg::AssertValidTexture()
 
 bool C4ToolsDlg::SelectTexture(const char *szTexture)
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(szTexture).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 	g_signal_handler_block(textures, handlerTextures);
@@ -997,7 +999,7 @@ bool C4ToolsDlg::SelectTexture(const char *szTexture)
 
 bool C4ToolsDlg::SelectMaterial(const char *szMaterial)
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(szMaterial).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 	g_signal_handler_block(materials, handlerMaterials);

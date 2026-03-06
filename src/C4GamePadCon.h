@@ -18,7 +18,7 @@
 
 #pragma once
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 #include "C4Windows.h"
 #include <mmsystem.h>
 
@@ -39,7 +39,8 @@ typedef struct _SDL_Joystick SDL_Joystick;
 union SDL_Event;
 typedef union SDL_Event SDL_Event;
 
-#ifdef _WIN32
+// TODO: See cpp
+#if FALSE //def _WIN32
 
 class C4GamePad
 {
@@ -84,7 +85,7 @@ private:
 
 class C4GamePadControl
 {
-#ifdef _WIN32
+#if FALSE//def _WIN32
 
 private:
 	std::array<C4GamePad *, C4GamePad::MaxGamePad> Gamepads{};
@@ -116,7 +117,7 @@ public:
 
 class C4GamePadOpener
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	int iGamePad;
 #endif
 

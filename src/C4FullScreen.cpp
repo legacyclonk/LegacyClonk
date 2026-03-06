@@ -32,7 +32,7 @@
 
 #include <format>
 
-#ifdef _WIN32
+#if FALSE // def _WIN32
 #include "res/engine_resource.h"
 
 #include <windowsx.h>
@@ -451,7 +451,8 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 
 #endif // _WIN32, USE_X11, USE_SDL_MAINLOOP
 
-#ifndef _WIN32
+// TODO: Remove unused code
+#if TRUE // ndef _WIN32
 void C4FullScreen::CharIn(const char *c)
 {
 	if (Game.pGUI)
@@ -473,7 +474,8 @@ C4FullScreen::~C4FullScreen()
 
 bool C4FullScreen::Init(CStdApp *const app)
 {
-#ifdef _WIN32
+// TODO: Remove unused code
+#if FALSE //def _WIN32
 	return Init(app, STD_PRODUCT);
 #else
 	return CStdWindow::Init(app, STD_PRODUCT);

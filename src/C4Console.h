@@ -140,7 +140,8 @@ protected:
 	int MenuIndexNet;
 	int MenuIndexHelp;
 
-#ifdef _WIN32
+	// TODO:
+#if FALSE //def _WIN32
 
 	void UpdateMenuText(HMENU hMenu);
 	bool AddMenuItem(HMENU hMenu, DWORD dwID, const char *szString, bool fEnabled = true);

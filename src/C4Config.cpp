@@ -202,7 +202,7 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	};
 	pComp->Value(mkNamingAdapt(mkEnumAdaptT<int>(UseDisplayMode, DisplayModes), "DisplayMode", DisplayMode::Fullscreen, false, true));
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	pComp->Value(mkNamingAdapt(Maximized,   "Maximized",   false, false, true));
 	pComp->Value(mkNamingAdapt(PositionX,   "PositionX",   0,     false, true));
 	pComp->Value(mkNamingAdapt(PositionY,   "PositionY",   0,     false, true));
@@ -319,7 +319,7 @@ void C4ConfigGamepad::Reset()
 void C4ConfigControls::CompileFunc(StdCompiler *pComp, bool fKeysOnly)
 {
 #ifndef USE_CONSOLE
-#ifdef _WIN32
+#if FALSE //def _WIN32
 #define KEY(win, x, sdl) win
 #elif defined(USE_X11)
 #define KEY(win, x, sdl) x
@@ -329,13 +329,14 @@ void C4ConfigControls::CompileFunc(StdCompiler *pComp, bool fKeysOnly)
 
 	bool fGer = isGermanSystem();
 
+	// TODO: Remove Key macro and just keep sdl scancode
 	pComp->Value(mkNamingAdapt(Keyboard[0][ 0], "Kbd1Key1",  KEY('Q', XK_q, SDL_SCANCODE_Q)));
 	pComp->Value(mkNamingAdapt(Keyboard[0][ 1], "Kbd1Key2",  KEY('W', XK_w, SDL_SCANCODE_W)));
 	pComp->Value(mkNamingAdapt(Keyboard[0][ 2], "Kbd1Key3",  KEY('E', XK_e, SDL_SCANCODE_E)));
 	pComp->Value(mkNamingAdapt(Keyboard[0][ 3], "Kbd1Key4",  KEY('A', XK_a, SDL_SCANCODE_A)));
 	pComp->Value(mkNamingAdapt(Keyboard[0][ 4], "Kbd1Key5",  KEY('S', XK_s, SDL_SCANCODE_S)));
 	pComp->Value(mkNamingAdapt(Keyboard[0][ 5], "Kbd1Key6",  KEY('D', XK_d, SDL_SCANCODE_D)));
-	pComp->Value(mkNamingAdapt(Keyboard[0][ 6], "Kbd1Key7",  fGer ? KEY('Y', XK_y,    SDL_SCANCODE_Z)    : KEY('Z', XK_z, SDL_SCANCODE_Z)));
+	pComp->Value(mkNamingAdapt(Keyboard[0][ 6], "Kbd1Key7",  SDL_SCANCODE_Z)); // Scancode determines the location of a key, which is Y on a german keyboard layout.
 	pComp->Value(mkNamingAdapt(Keyboard[0][ 7], "Kbd1Key8",  KEY('X', XK_x, SDL_SCANCODE_X)));
 	pComp->Value(mkNamingAdapt(Keyboard[0][ 8], "Kbd1Key9",  KEY('C', XK_c, SDL_SCANCODE_C)));
 	pComp->Value(mkNamingAdapt(Keyboard[0][ 9], "Kbd1Key10", fGer ? KEY(226, XK_less, SDL_SCANCODE_NONUSBACKSLASH) : KEY('R', XK_r, SDL_SCANCODE_R)));

@@ -22,7 +22,8 @@
 
 #include <cstdint>
 
-#ifdef _WIN32
+// TODO: See cpp
+#if FALSE //def _WIN32
 #include "C4Windows.h"
 #endif
 
@@ -44,7 +45,7 @@ const int32_t C4TLS_GradeMax     = 50,
 
 class C4ToolsDlg
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	friend INT_PTR CALLBACK ToolsDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
 #endif
 

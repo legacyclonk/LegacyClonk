@@ -33,6 +33,8 @@
 #include <gtk/gtk.h>
 #endif
 
+// TODO: Make developer mode work on windows with sdl
+
 C4EditCursor::C4EditCursor()
 {
 	Default();
@@ -78,7 +80,7 @@ void C4EditCursor::Execute()
 
 bool C4EditCursor::Init()
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	if (!(hMenu = LoadMenu(Application.hInstance, MAKEINTRESOURCE(IDR_CONTEXTMENUS))))
 		return false;
 #else // _WIN32
@@ -582,7 +584,7 @@ void C4EditCursor::ApplyToolFill()
 bool C4EditCursor::DoContextMenu()
 {
 	bool fObjectSelected = Selection.ObjectCount();
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	POINT point; GetCursorPos(&point);
 	HMENU hContext = GetSubMenu(hMenu, 0);
 	SetMenuItemEnable(hContext, IDM_VIEWPORT_DELETE,     fObjectSelected && Console.Editing);

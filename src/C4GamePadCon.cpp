@@ -23,7 +23,8 @@
 #include <C4Log.h>
 #include <C4Game.h>
 
-#ifdef _WIN32
+// TODO: Do we need parts of the inactive code in the sdl implementation? Otherwise it could also be removed.
+#if FALSE //def _WIN32
 #include "C4Windows.h"
 #include <numbers>
 #include <windowsx.h>

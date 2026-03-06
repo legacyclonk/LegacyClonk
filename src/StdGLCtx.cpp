@@ -51,7 +51,8 @@ void CStdGLCtx::Finish()
 	glFinish();
 }
 
-#ifdef _WIN32
+// TODO: Remove unused code
+#if FALSE //def _WIN32
 
 CStdGLCtx::CStdGLCtx() : hrc(nullptr), pWindow(nullptr), hDC(nullptr), cx(0), cy(0) {}
 

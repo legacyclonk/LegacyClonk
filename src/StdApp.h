@@ -22,7 +22,8 @@
 #include "StdSync.h"
 #include "StdWindow.h"
 
-#ifdef _WIN32
+// TODO: Remove unused code
+#if FALSE //def _WIN32
 
 const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
 #elif defined(USE_X11)
@@ -39,7 +40,8 @@ struct _GIOChannel;
 #include <thread>
 #include <stdexcept>
 
-#ifdef _WIN32
+// TODO: Remove unused code
+#if FALSE //def _WIN32
 #define K_ALT VK_MENU
 #define K_ESCAPE VK_ESCAPE
 #define K_PAUSE VK_PAUSE
@@ -302,7 +304,8 @@ public:
 		return true;
 	}
 
-#ifdef _WIN32
+// TODO: Remove unused code
+#if FALSE //def _WIN32
 	HINSTANCE hInstance;
 	int iLastExecute, iTimerOffset;
 	CStdEvent TimerEvent{CStdEvent::AutoReset()}; // set periodically by critical timer (C4Engine)
@@ -339,7 +342,6 @@ protected:
 	// These must be public to be callable from callback functions from
 	// the glib main loop that are in an anonymous namespace in
 	// StdXApp.cpp.
-	void OnXInput();
 	void OnPipeInput();
 	void OnStdInInput();
 #endif

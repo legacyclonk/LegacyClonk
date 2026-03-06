@@ -81,16 +81,12 @@ CMAKE_DEPENDENT_OPTION(ENABLE_SOUND "Compile with sound support" ON
 CMAKE_DEPENDENT_OPTION(USE_SDL_MIXER "Whether SDL2_mixer shall be used for sound" ON
 	"ENABLE_SOUND" OFF)
 # USE_SDL_MAINLOOP
-if (APPLE)
-	set(USE_SDL_MAINLOOP_DEFAULT ON)
-else ()
-	set(USE_SDL_MAINLOOP_DEFAULT OFF)
-endif ()
-CMAKE_DEPENDENT_OPTION(USE_SDL_MAINLOOP "Use SDL instead of X11 or Win32" ${USE_SDL_MAINLOOP_DEFAULT}
-	"NOT USE_CONSOLE AND NOT WIN32" OFF)
+set(USE_SDL_MAINLOOP_DEFAULT ON)
+CMAKE_DEPENDENT_OPTION(USE_SDL_MAINLOOP "Use SDL when we're not a console application" ${USE_SDL_MAINLOOP_DEFAULT}
+	"NOT USE_CONSOLE" OFF)
 # USE_X11
-CMAKE_DEPENDENT_OPTION(USE_X11 "Use X11" ON
-	"NOT USE_CONSOLE AND NOT USE_SDL_MAINLOOP AND NOT APPLE AND NOT WIN32" OFF)
+set(USE_X11 OFF)
+
 # USE_WIC
 CMAKE_DEPENDENT_OPTION(USE_WIC "Use WIC instead of libjpeg and libpng" ON
 	"WIN32" OFF)
@@ -213,9 +209,9 @@ else ()
 	if (APPLE)
 		append_filelist(CLONK_SOURCES EngineApple)
 	endif ()
-
-	list(APPEND CLONK_SOURCES src/StdAppUnix.cpp)
 endif ()
+# Also use for windows ( TODO: Rename file and maybe move to some cmake filelist )
+list(APPEND CLONK_SOURCES src/StdAppUnix.cpp)
 
 if (USE_SDL_MAINLOOP OR USE_SDL_MIXER)
 	append_filelist(CLONK_SOURCES EngineSdl)

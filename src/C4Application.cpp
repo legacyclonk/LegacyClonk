@@ -183,7 +183,8 @@ void C4Application::DoInit()
 		pWindow->SetSize(static_cast<int32_t>(Config.Graphics.ResX * GetScale()), static_cast<int32_t>(Config.Graphics.ResY * GetScale()));
 		SetDisplayMode(Config.Graphics.UseDisplayMode);
 
-#ifdef _WIN32
+// TODO: Remove unused code
+#if FALSE //def _WIN32
 		if (Config.Graphics.UseDisplayMode == DisplayMode::Window)
 		{
 			if (Config.Graphics.Maximized) pWindow->Maximize();
@@ -352,7 +353,7 @@ void C4Application::Quit()
 {
 	// Clear definitions passed by frontend for this round
 	Config.General.Definitions[0] = 0;
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	if (pWindow)
 	{
 		// store if window is maximized and where it is positioned

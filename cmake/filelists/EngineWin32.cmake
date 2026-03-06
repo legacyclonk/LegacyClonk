@@ -7,8 +7,8 @@ src/C4WinRT.h
 src/res/engine.rc
 src/res/engine_resource.h
 
-src/StdAppWin32.cpp
+
 src/StdStringEncodingConverter.cpp
 src/StdStringEncodingConverter.h
-src/StdWindow.cpp
+
 )

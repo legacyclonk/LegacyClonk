@@ -66,7 +66,8 @@ public:
 	void RestorePosition();
 	bool GetSize(C4Rect &rect);
 
-#ifdef _WIN32
+// TODO: Remove unused code
+#if FALSE//def _WIN32
 	virtual
 #endif
 	void SetSize(unsigned int cx, unsigned int cy); // resiz
@@ -78,7 +79,8 @@ public:
 protected:
 	virtual void Sec1Timer() {}
 
-#ifdef _WIN32
+// TODO: Remove unused code
+#if FALSE //def _WIN32
 
 public:
 	static constexpr C4Rect DefaultBounds{CW_USEDEFAULT, CW_USEDEFAULT, 0, 0};

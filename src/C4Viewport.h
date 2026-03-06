@@ -16,6 +16,8 @@
 
 /* A viewport to each player */
 
+// TODO: See cpp
+
 #pragma once
 
 #include "C4ForwardDeclarations.h"
@@ -36,14 +38,14 @@ class C4Viewport;
 
 class C4ViewportWindow : public C4ViewportBase
 {
-#ifdef _WIN32
+#if FALSE //def _WIN32
 public:
 	static constexpr auto WindowStyle = WS_VISIBLE | WS_POPUP | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX;
 #endif
 public:
 	C4Viewport *cvp;
 	C4ViewportWindow(C4Viewport *cvp) : cvp(cvp) {}
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	std::pair<DWORD, DWORD> GetWindowStyle() const override { return {WindowStyle, WS_EX_ACCEPTFILES}; }
 	WNDCLASSEX GetWindowClass(HINSTANCE instance) const override;
 	bool GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const override;
@@ -75,7 +77,7 @@ public:
 #endif
 	virtual void Close() override;
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	static LRESULT APIENTRY WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 #endif
 };

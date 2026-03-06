@@ -72,7 +72,7 @@ struct C4KeyCodeMapEntry
 	const char *szShortName;
 };
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 const C4KeyCodeMapEntry KeyCodeMap[] =
 {
 	{ VK_CANCEL, "Cancel", nullptr },
@@ -298,7 +298,7 @@ C4KeyCode C4KeyCodeEx::String2KeyCode(const StdStrBuf &sName)
 		uint32_t dwRVal;
 		if (sscanf(sName.getData(), "\\x%x", &dwRVal) == 1) return dwRVal;
 		// direct gamepad code
-#ifdef _WIN32
+#ifdef _WIN32 // KEEP
 		if (!strnicmp(sName.getData(), "Joy", 3))
 #else
 		if (!strncasecmp(sName.getData(), "Joy", 3))
@@ -314,7 +314,7 @@ C4KeyCode C4KeyCodeEx::String2KeyCode(const StdStrBuf &sName)
 			if (sscanf(sName.getData(), "Joy%dAxis%dMax", &iGamepad, &iAxis) == 1) return KEY_Gamepad(iGamepad - 1, KEY_JOY_Axis(iAxis, true));
 		}
 	}
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	// query map
 	const C4KeyCodeMapEntry *pCheck = KeyCodeMap;
 	while (pCheck->szName)
@@ -363,7 +363,8 @@ std::string C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bo
 			}
 		}
 	}
-#ifdef _WIN32
+// TODO: Remove unused code
+#if FALSE //def _WIN32
 	// query map
 	const C4KeyCodeMapEntry *pCheck = KeyCodeMap;
 	while (pCheck->szName)
