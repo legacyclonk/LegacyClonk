@@ -1042,7 +1042,6 @@ C4ChatDlg::C4ChatDlg() : C4GUI::Dialog(100, 100, "IRC", false)
 	pChatCtrl = new C4ChatControl(&Application.IRCClient);
 	pChatCtrl->SetTitleChangeCB(new C4GUI::InputCallback<C4ChatDlg>(this, &C4ChatDlg::OnChatTitleChange));
 	AddElement(pChatCtrl);
-	C4Rect rcDefault(0, 0, 10, 10);
 	// del dlg when closed
 	SetDelOnClose();
 	// set initial element positions

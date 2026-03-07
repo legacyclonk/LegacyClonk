@@ -652,7 +652,7 @@ uint32_t C4Surface::GetPixDw(int iX, int iY, bool fApplyModulation, float scale)
 	{
 #ifndef USE_CONSOLE
 		// OpenGL?
-		if (pGL)
+		if (pGL) [[likely]]
 		{
 			int hgt = static_cast<int32_t>(ceilf(Hgt * scale));
 			if (!PrimarySurfaceLockBits)
@@ -664,6 +664,10 @@ uint32_t C4Surface::GetPixDw(int iX, int iY, bool fApplyModulation, float scale)
 				PrimarySurfaceLockPitch = wdt * 3;
 			}
 			return *reinterpret_cast<uint32_t *>(PrimarySurfaceLockBits + (hgt - iY - 1) * PrimarySurfaceLockPitch + iX * 3);
+		}
+		else
+		{
+			std::abort();
 		}
 #endif
 	}

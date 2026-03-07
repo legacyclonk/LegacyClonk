@@ -227,7 +227,6 @@ void C4LogBuffer::AppendLines(const char *szLine, CStdFont *pFont, uint32_t dwCl
 	}
 	else
 	{
-		int iLineIndex = 0;
 		// get line width of this line
 		int iBreakWdt = iLineBreakWidth;
 		int32_t iIndentWdt = 0;
@@ -245,7 +244,6 @@ void C4LogBuffer::AppendLines(const char *szLine, CStdFont *pFont, uint32_t dwCl
 		else ++breakPos;
 
 		AppendSingleLine(szBroken, breakPos - szBroken, nullptr, pFont, dwClr, true);
-		++iLineIndex;
 
 		// then with indentation
 		StdStrBuf rest;
@@ -257,7 +255,6 @@ void C4LogBuffer::AppendLines(const char *szLine, CStdFont *pFont, uint32_t dwCl
 			else ++breakPos;
 			AppendSingleLine(szBroken, breakPos - szBroken, szIndent, pFont, dwClr, false);
 			szBroken = breakPos;
-			++iLineIndex;
 		}
 	}
 }

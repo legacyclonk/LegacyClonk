@@ -178,7 +178,7 @@ public:
 
 	void Shift(HoldStringsPolicy HoldStrings = Hold, bool bOperator = true);
 	void Match(C4AulTokenType TokenType, const char *Message = nullptr);
-	void UnexpectedToken(const char *Expected);
+	[[noreturn]] void UnexpectedToken(const char *Expected);
 	const char *GetTokenName(C4AulTokenType TokenType);
 
 	void Warn(std::string_view msg, const char *pIdtf = nullptr);
@@ -819,7 +819,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, std::intptr_t *pInt, 
 	}
 }
 
-static const char *GetTTName(C4AulBCCType e)
+[[maybe_unused]] static const char *GetTTName(C4AulBCCType e)
 {
 	switch (e)
 	{

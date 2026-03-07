@@ -583,9 +583,6 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 	std::vector<pollfd> fds;
 	GetFDs(fds);
 
-	// build timeout value
-	timeval to = { iMaxTime / 1000, (iMaxTime % 1000) * 1000 };
-
 	// wait for something to happen
 	int ret = StdSync::Poll(fds, iMaxTime);
 

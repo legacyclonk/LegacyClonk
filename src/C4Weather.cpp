@@ -107,13 +107,12 @@ void C4Weather::Execute()
 		if (!Random(60))
 			if (Random(100) < MeteoriteLevel)
 			{
-				C4Object *meto;
 				// In cave landscapes, meteors must be created a bit lower so they don't hit the ceiling
 				// (who activates meteors in cave landscapes anyway?)
 				// force argument evaluation order
 				const auto r2 = Random(100 + 1);
 				const auto r1 = Random(GBackWdt);
-				meto = Game.CreateObject(C4ID_Meteor, nullptr, NO_OWNER,
+				Game.CreateObject(C4ID_Meteor, nullptr, NO_OWNER,
 					r1, Game.Landscape.TopOpen ? -20 : 5, 0,
 					itofix(r2 - 50) / 10,
 					Game.Landscape.TopOpen ? Fix0 : itofix(2), itofix(1) / 5);
