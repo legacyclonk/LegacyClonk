@@ -390,7 +390,7 @@ public:
 #ifdef _WIN32
 	HANDLE GetEvent() override { return C4NetIOTCP::GetEvent(); }
 #else
-	void GetFDs(std::vector<pollfd> &fds) { C4NetIOTCP::GetFDs(fds); }
+	void GetFDs(std::vector<pollfd> &fds) override { C4NetIOTCP::GetFDs(fds); }
 #endif
 
 protected:
