@@ -17,6 +17,7 @@
 
 // Keyboard input mapping to engine functions
 
+#include "C4TextEncoding.h"
 #include <C4Include.h>
 #include <C4KeyboardInput.h>
 
@@ -374,8 +375,18 @@ std::string C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bo
 	const auto name = XKeysymToString(wCode);
 	return name ? name : "invalid";
 #elif defined(USE_SDL_MAINLOOP)
-	const auto name = SDL_GetScancodeName(static_cast<SDL_Scancode>(wCode));
-	if (!name)
+	std::string name;
+	if (fHumanReadable)
+	{
+		const auto key = SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(wCode));
+		name = TextEncodingConverter.Utf8ToClonk(SDL_GetKeyName(key));
+	}
+	else
+	{
+		name = SDL_GetScancodeName(static_cast<SDL_Scancode>(wCode));
+	}
+
+	if (name.empty())
 	{
 		return "invalid";
 	}
