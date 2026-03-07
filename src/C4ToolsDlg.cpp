@@ -601,7 +601,7 @@ bool C4ToolsDlg::SetIFT(bool fIFT)
 void C4ToolsDlg::UpdatePreview()
 {
 	// TODO: Set size request for image to read size from image's size request?
-	std::int32_t left{0}, top{0}, previewWidth{64}, previewHeight{64};
+	std::int32_t previewWidth{64}, previewHeight{64};
 
 #ifdef _WIN32
 	if (!hDialog) return;
@@ -609,8 +609,8 @@ void C4ToolsDlg::UpdatePreview()
 	if (!previewHandle) return;
 	RECT clientRect;
 	if (!GetClientRect(previewHandle, &clientRect)) return;
-	left = clientRect.left;
-	top = clientRect.top;
+	const std::int32_t left{clientRect.left};
+	const std::int32_t top{clientRect.top};
 	previewWidth = clientRect.right - clientRect.left;
 	previewHeight = clientRect.bottom - clientRect.top;
 

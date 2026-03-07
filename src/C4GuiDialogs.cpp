@@ -56,7 +56,12 @@ private:
 	static constexpr auto WindowStyle = WS_VISIBLE | WS_POPUP | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX;
 #endif
 public:
+#ifdef _WIN32
 	DialogWindow(Dialog &dialog) : dialog{dialog} {}
+#else
+	DialogWindow(Dialog &) {}
+#endif
+
 	virtual void Close() override;
 
 #ifdef _WIN32
@@ -68,9 +73,9 @@ public:
 #endif
 
 private:
+#ifdef _WIN32
 	Dialog &dialog;
 
-#ifdef _WIN32
 	friend LRESULT APIENTRY DialogWinProc(HWND, UINT, WPARAM, LPARAM);
 #endif
 };
