@@ -348,7 +348,7 @@ protected:
 
 protected:
 // TODO: Remove unused code
-#if TRUE// ndef _WIN32
+#if 1// ndef _WIN32
 	std::uint32_t DelayNS{27777000}; // 36 FPS
 	std::timespec LastExecute;
 	int argc;

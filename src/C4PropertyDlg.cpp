@@ -340,7 +340,7 @@ void C4PropertyDlg::UpdateInputCtrl(C4Object *pObj)
 	for (C4AulFunc *pFn = Game.ScriptEngine.GetFirstFunc(); pFn; pFn = Game.ScriptEngine.GetNextFunc(pFn))
 		if (pFn->GetPublic())
 		{
-#if FALSE def _WIN32
+#if FALSE //def _WIN32
 			SendMessage(hCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(std::format(L"{}()", StdStringEncodingConverter::WinAcpToUtf16(pFn->Name)).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 			gtk_list_store_append(store, &iter);
