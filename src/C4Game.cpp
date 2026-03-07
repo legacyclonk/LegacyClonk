@@ -62,11 +62,11 @@
 constexpr unsigned int defaultIngameGameTickDelay = 28;
 
 C4Game::C4Game()
-	: Input(Control.Input), KeyboardInput(C4KeyboardInput_Init()), fQuitWithError(false), fPreinited(false),
-	Teams(Parameters.Teams),
-	PlayerInfos(Parameters.PlayerInfos),
-	RestorePlayerInfos(Parameters.RestorePlayerInfos),
-	Clients(Parameters.Clients)
+	: Clients(Parameters.Clients), Teams(Parameters.Teams), PlayerInfos(Parameters.PlayerInfos), RestorePlayerInfos(Parameters.RestorePlayerInfos),
+	Input(Control.Input),
+	KeyboardInput(C4KeyboardInput_Init()),
+	fPreinited(false),
+	fQuitWithError(false)
 {
 	Default();
 }

@@ -1108,7 +1108,7 @@ void LobbyError(const char *szErrorMsg)
 
 /* Countdown */
 
-Countdown::Countdown(int32_t iStartTimer) : iStartTimer(iStartTimer), pSec1Timer(nullptr)
+Countdown::Countdown(int32_t iStartTimer) : pSec1Timer(nullptr), iStartTimer(iStartTimer)
 {
 	// only on network hosts
 	assert(Game.Network.isHost());

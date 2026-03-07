@@ -168,8 +168,8 @@ bool Tabular::Sheet::IsActiveSheet()
 // Tabular
 
 Tabular::Tabular(const C4Rect &rtBounds, TabPosition eTabPos) : Control(rtBounds), pActiveSheet(nullptr), eTabPos(eTabPos), iMaxTabWidth(0),
-	pfctBack(nullptr), pfctClip(nullptr), pfctIcons(nullptr), pSheetCaptionFont(nullptr), iSheetMargin(4), fDrawSelf(true),
-	iCaptionLengthTotal(0), iCaptionScrollPos(0), fScrollingLeft(false), fScrollingRight(false), fScrollingLeftDown(false), fScrollingRightDown(false)
+	iCaptionLengthTotal(0), iCaptionScrollPos(0), fScrollingLeft(false), fScrollingRight(false), fScrollingLeftDown(false), fScrollingRightDown(false),
+	iSheetMargin(4), fDrawSelf(true), pfctBack(nullptr), pfctClip(nullptr), pfctIcons(nullptr), pSheetCaptionFont(nullptr)
 {
 	// calc client rect
 	UpdateOwnPos();

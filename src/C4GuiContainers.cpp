@@ -308,7 +308,7 @@ void Window::UpdateOwnPos()
 
 // ScrollBar
 
-ScrollBar::ScrollBar(C4Rect &rcBounds, ScrollWindow *pWin) : fAutoHide(false), pCustomGfx(nullptr), fHorizontal(false), pScrollCallback(nullptr), iCBMaxRange(100)
+ScrollBar::ScrollBar(C4Rect &rcBounds, ScrollWindow *pWin) : fAutoHide(false), fHorizontal(false), iCBMaxRange(100), pScrollCallback(nullptr), pCustomGfx(nullptr)
 {
 	// set bounds
 	this->rcBounds = rcBounds;
@@ -322,7 +322,7 @@ ScrollBar::ScrollBar(C4Rect &rcBounds, ScrollWindow *pWin) : fAutoHide(false), p
 	Update();
 }
 
-ScrollBar::ScrollBar(C4Rect &rcBounds, bool fHorizontal, BaseParCallbackHandler<int32_t> *pCB, int32_t iCBMaxRange) : fAutoHide(false), pCustomGfx(nullptr), fHorizontal(fHorizontal), pScrollWindow(nullptr), iCBMaxRange(iCBMaxRange)
+ScrollBar::ScrollBar(C4Rect &rcBounds, bool fHorizontal, BaseParCallbackHandler<int32_t> *pCB, int32_t iCBMaxRange) : fAutoHide(false), fHorizontal(fHorizontal), iCBMaxRange(iCBMaxRange), pScrollWindow(nullptr), pCustomGfx(nullptr)
 {
 	// set bounds
 	this->rcBounds = rcBounds;

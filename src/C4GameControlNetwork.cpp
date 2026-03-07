@@ -874,7 +874,7 @@ void C4GameControlPacket::CompileFunc(StdCompiler *pComp)
 // *** C4GameControlClient
 
 C4GameControlClient::C4GameControlClient()
-	: iClientID(C4ClientIDUnknown), iPerformance(0), iNextControl(0)
+	: iClientID(C4ClientIDUnknown), iNextControl(0), iPerformance(0)
 {
 	szName[0] = '\0';
 }

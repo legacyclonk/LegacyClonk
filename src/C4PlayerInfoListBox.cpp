@@ -71,9 +71,9 @@ void C4PlayerInfoListBox::ListItem::DrawElement(C4FacetEx &cgo)
 
 C4PlayerInfoListBox::PlayerListItem::PlayerListItem(C4PlayerInfoListBox *pForListBox, int32_t idClient,
 	int32_t idPlayer, bool fSavegamePlayer, C4GUI::Element *pInsertBeforeElement)
-	: ListItem(pForListBox), pTeamCombo(nullptr), fIconSet(false), fJoinedInfoSet(false), dwJoinClr(0), dwPlrClr(0),
-	idClient(idClient), idPlayer(idPlayer), fFreeSavegamePlayer(fSavegamePlayer),
-	pScoreLabel(nullptr), pRankIcon(nullptr), pTimeLabel(nullptr), pTeamPic(nullptr), pExtraLabel(nullptr)
+	: ListItem(pForListBox), pScoreLabel(nullptr), pTimeLabel(nullptr), pExtraLabel(nullptr), pRankIcon(nullptr), pTeamCombo(nullptr),
+	pTeamPic(nullptr), fIconSet(false), fJoinedInfoSet(false),
+	dwJoinClr(0), dwPlrClr(0), idClient(idClient), idPlayer(idPlayer), fFreeSavegamePlayer(fSavegamePlayer)
 
 {
 	bool fIsEvaluation = pForListBox->IsEvaluation(), fIsLobby = pForListBox->IsLobby();
@@ -1244,7 +1244,7 @@ C4PlayerInfoListBox::ReplayPlayersListItem::ReplayPlayersListItem(C4PlayerInfoLi
 // C4PlayerInfoListBox
 
 C4PlayerInfoListBox::C4PlayerInfoListBox(const C4Rect &rcBounds, Mode eMode, int32_t iTeamFilter)
-	: C4GUI::ListBox(rcBounds), fIsCollapsed(false), iMaxUncollapsedPlayers(10), eMode(eMode), iTeamFilter(iTeamFilter), dwTextColor(C4GUI_MessageFontClr), pCustomFont(nullptr)
+	: C4GUI::ListBox(rcBounds), eMode(eMode), iMaxUncollapsedPlayers(10), fIsCollapsed(false), iTeamFilter(iTeamFilter), dwTextColor(C4GUI_MessageFontClr), pCustomFont(nullptr)
 {
 	// update if client listbox selection changes
 	SetSelectionChangeCallbackFn(new C4GUI::CallbackHandler<C4PlayerInfoListBox>(this, &C4PlayerInfoListBox::OnPlrListSelChange));

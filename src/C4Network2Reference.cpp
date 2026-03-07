@@ -587,7 +587,7 @@ C4Task::Hot<void> C4Network2HTTPClientImplCurl::QueryAsync(C4Task::Hot<C4HTTPCli
 }
 
 C4Network2HTTPClientImplNetIO::C4Network2HTTPClientImplNetIO(std::shared_ptr<spdlog::logger> logger)
-	: logger{std::move(logger)}, fBusy(false), fSuccess(false), fConnected(false), iDownloadedSize(0), iTotalSize(0), fBinary(false), iDataOffset(0),
+	: logger{std::move(logger)}, fBinary(false), fBusy(false), fSuccess(false), fConnected(false), iDataOffset(0), iDownloadedSize(0), iTotalSize(0),
 	pNotify(nullptr)
 {
 	C4NetIOTCP::SetCallback(this);

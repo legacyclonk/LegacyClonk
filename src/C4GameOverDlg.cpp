@@ -32,7 +32,7 @@
 // C4GoalDisplay
 
 C4GoalDisplay::GoalPicture::GoalPicture(const C4Rect &rcBounds, C4ID idGoal, bool fFulfilled)
-	: idGoal(idGoal), fFulfilled(fFulfilled), C4GUI::Window()
+	: C4GUI::Window(), idGoal(idGoal), fFulfilled(fFulfilled)
 {
 	// bounds
 	SetBounds(rcBounds);

@@ -367,7 +367,7 @@ void C4Network2Client::ClearGraphs()
 // *** C4Network2ClientList
 
 C4Network2ClientList::C4Network2ClientList(C4Network2IO *pIO)
-	: pFirst(nullptr), pLocal(nullptr), pIO(pIO) {}
+	: pIO(pIO), pFirst(nullptr), pLocal(nullptr) {}
 
 C4Network2ClientList::~C4Network2ClientList()
 {

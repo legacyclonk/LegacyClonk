@@ -50,10 +50,10 @@ C4Sec1TimerCallbackBase::C4Sec1TimerCallbackBase() : pNext(nullptr), iRefs(2)
 }
 
 C4Application::C4Application() :
-	isFullScreen(true), UseStartupDialog(true), launchEditor(false), restartAtEnd(false),
-	DDraw(nullptr), AppState(C4AS_None),
-	iLastGameTick(0), iGameTickDelay(defaultGameTickDelay), iExtraGameTickDelay(0), pGamePadControl(nullptr),
-	CheckForUpdates(false) {}
+	isFullScreen(true), UseStartupDialog(true), CheckForUpdates(false), launchEditor(false),
+	restartAtEnd(false), pGamePadControl(nullptr),
+	iLastGameTick(0), iGameTickDelay(defaultGameTickDelay), iExtraGameTickDelay(0), DDraw(nullptr),
+	AppState(C4AS_None) {}
 
 C4Application::~C4Application()
 {

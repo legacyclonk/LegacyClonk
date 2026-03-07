@@ -456,13 +456,13 @@ void C4NetIOPacket::Clear()
 // construction / destruction
 
 C4NetIOTCP::C4NetIOTCP()
-	: pPeerList(nullptr), fInit(false),
-	pConnectWaits(nullptr),
+	: pPeerList(nullptr), pConnectWaits(nullptr),
+	PeerListCSec(this),
+	fInit(false),
+	iListenPort(~0), lsock(INVALID_SOCKET),
 #ifdef _WIN32
 	Event(nullptr),
 #endif
-	PeerListCSec(this),
-	iListenPort(~0), lsock(INVALID_SOCKET),
 	pCB(nullptr) {}
 
 C4NetIOTCP::~C4NetIOTCP()
@@ -1334,8 +1334,8 @@ const unsigned int C4NetIOTCP::Peer::iMinIBufSize = 8192; // (bytes)
 C4NetIOTCP::Peer::Peer(const C4NetIO::addr_t &naddr, SOCKET nsock, C4NetIOTCP *pnParent)
 	: pParent(pnParent),
 	addr(naddr), sock(nsock),
-	Next(nullptr), iIBufUsage(0), iIRate(0), iORate(0),
-	fOpen(true), fDoBroadcast(false) {}
+	iIBufUsage(0), iIRate(0), iORate(0), fOpen(true),
+	fDoBroadcast(false), Next(nullptr) {}
 
 C4NetIOTCP::Peer::~Peer()
 {
@@ -2051,15 +2051,15 @@ struct C4NetIOUDP::TestPacket : public PacketHdr
 // construction / destruction
 
 C4NetIOUDP::C4NetIOUDP()
-	: fInit(false), fMultiCast(false), iPort(~0),
+	: PeerListCSec(this), fInit(false), fMultiCast(false),
+	iPort(~0),
 	pPeerList(nullptr),
-	iNextCheck(0),
-	iOPacketCounter(0),
+	fSavePacket(false),
 	fDelayedLoopbackTest(false),
-	iBroadcastRate(0),
-	PeerListCSec(this),
+	iNextCheck(0),
 	OPackets(iMaxOPacketBacklog),
-	fSavePacket(false) {}
+	iOPacketCounter(0),
+	iBroadcastRate(0) {}
 
 C4NetIOUDP::~C4NetIOUDP()
 {
@@ -2650,9 +2650,9 @@ size_t C4NetIOUDP::Packet::FragmentSize(nr_t iFNr) const
 
 C4NetIOUDP::PacketList::PacketList(unsigned int inMaxPacketCnt)
 	: pFront(nullptr),
-	iMaxPacketCnt(inMaxPacketCnt),
+	pBack(nullptr),
 	iPacketCnt(0),
-	pBack(nullptr) {}
+	iMaxPacketCnt(inMaxPacketCnt) {}
 
 C4NetIOUDP::PacketList::~PacketList()
 {
@@ -2765,10 +2765,10 @@ C4NetIOUDP::Peer::Peer(const addr_t &naddr, C4NetIOUDP *pnParent)
 	: pParent(pnParent), addr(naddr),
 	eStatus(CS_None),
 	fMultiCast(false), fDoBroadcast(false),
-	iOPacketCounter(0),
-	iIPacketCounter(0), iRIPacketCounter(0),
-	iIMCPacketCounter(0), iRIMCPacketCounter(0),
 	OPackets(iMaxOPacketBacklog),
+	iOPacketCounter(0), iIPacketCounter(0),
+	iRIPacketCounter(0), iIMCPacketCounter(0),
+	iRIMCPacketCounter(0),
 	iMCAckPacketCounter(0),
 	iNextReCheck(0),
 	iIRate(0), iORate(0), iLoss(0)

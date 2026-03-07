@@ -46,7 +46,7 @@ C4Texture::~C4Texture()
 }
 
 C4TexMapEntry::C4TexMapEntry()
-	: pMaterial(nullptr), iMaterialIndex(MNone) {}
+	: iMaterialIndex(MNone), pMaterial(nullptr) {}
 
 void C4TexMapEntry::Clear()
 {

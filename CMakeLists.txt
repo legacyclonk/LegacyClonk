@@ -149,8 +149,15 @@ endif ()
 
 # Mark some warnings as error
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-	add_compile_options(-Wall -Wextra -Wno-unused-parameter)
-	add_compile_options(-Werror=dangling-else -Werror=inconsistent-missing-override -Werror=parentheses)
+	add_compile_options(-Wall -Wextra)
+	add_compile_options(
+		-Werror=dangling-else
+		-Werror=inconsistent-missing-override
+		-Werror=parentheses
+		-Werror=reorder-ctor
+	)
+
+	add_compile_options(-Wno-unused-parameter -Wno-missing-designated-field-initializers)
 endif ()
 
 # Adds the lines of file LIST_FILE to variable TARGET_LIST

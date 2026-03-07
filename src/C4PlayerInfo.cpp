@@ -355,7 +355,7 @@ bool C4PlayerInfo::LoadBigIcon(C4FacetExSurface &fctTarget)
 // *** C4ClientPlayerInfos
 
 C4ClientPlayerInfos::C4ClientPlayerInfos(const char *szJoinFilenames, bool fAdd, C4PlayerInfo *pAddInfo)
-	: iPlayerCount(0), iClientID(-1), iPlayerCapacity(0), ppPlayers(nullptr), dwFlags(0)
+	: iPlayerCount(0), iPlayerCapacity(0), ppPlayers(nullptr), iClientID(-1), dwFlags(0)
 {
 	// init for local client?
 	if (szJoinFilenames || pAddInfo)

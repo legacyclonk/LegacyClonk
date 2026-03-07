@@ -74,7 +74,7 @@ static bool GetPortrait(char **ppBytes, size_t *ipSize)
 // C4StartupPlrSelDlg::ListItem
 
 C4StartupPlrSelDlg::ListItem::ListItem(C4StartupPlrSelDlg *pForDlg, C4GUI::ListBox *pForListBox, C4GUI::Element *pInsertBeforeElement, bool fActivated)
-	: Control(C4Rect(0, 0, 0, 0)), pCheck(nullptr), pIcon(nullptr), pNameLabel(nullptr), pPlrSelDlg(pForDlg)
+	: Control(C4Rect(0, 0, 0, 0)), pCheck(nullptr), pNameLabel(nullptr), pPlrSelDlg(pForDlg), pIcon(nullptr)
 {
 	CStdFont &rUseFont = C4Startup::Get()->Graphics.BookFont;
 	// calc height
@@ -1091,7 +1091,7 @@ void C4StartupPlrSelDlg::ResortCrew()
 // Player property dlg
 
 C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerListItem *pForPlayer, C4StartupPlrSelDlg *pParentDlg)
-	: Dialog(C4Startup::Get()->Graphics.fctPlrPropBG.Wdt, C4Startup::Get()->Graphics.fctPlrPropBG.Hgt, "", false), pForPlayer(pForPlayer), pMainDlg(pParentDlg),
+	: Dialog(C4Startup::Get()->Graphics.fctPlrPropBG.Wdt, C4Startup::Get()->Graphics.fctPlrPropBG.Hgt, "", false), pMainDlg(pParentDlg), pForPlayer(pForPlayer),
 	fClearPicture(false), fClearBigIcon(false)
 {
 	if (pForPlayer)

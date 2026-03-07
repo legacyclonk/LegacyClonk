@@ -59,7 +59,7 @@ C4ParticleDefCore::C4ParticleDefCore() :
 	MaxCount(C4Px_MaxParticle),
 	MinLifetime(0), MaxLifetime(0),
 	YOff(0),
-	Reverse(0), Repeats(0), Delay(0),
+	Delay(0), Repeats(0), Reverse(0),
 	FadeOutLen(0), FadeOutDelay(0),
 	RByV(0),
 	Placement(0),
@@ -83,8 +83,8 @@ C4ParticleDef::C4ParticleDef() :
 	C4ParticleDefCore(),
 	InitProc(&fxStdInit),
 	ExecProc(&fxStdExec),
-	DrawProc(&fxStdDraw),
 	CollisionProc(nullptr),
+	DrawProc(&fxStdDraw),
 	Count(0)
 {
 	// zero fields

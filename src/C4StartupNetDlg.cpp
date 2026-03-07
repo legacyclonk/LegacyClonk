@@ -37,7 +37,7 @@
 // C4StartupNetListEntry
 
 C4StartupNetListEntry::C4StartupNetListEntry(C4GUI::ListBox *pForListBox, C4GUI::Element *pInsertBefore, C4StartupNetDlg *pNetDlg)
-	: pList(pForListBox), pRefClient(nullptr), pRef(nullptr), iTimeout(0), eQueryType(NRQT_Unknown), fError(false), fIsCollapsed(false), pNetDlg(pNetDlg), fIsSmall(false), fIsEnabled(true), iInfoIconCount(0), fIsImportant(false), iSortOrder(0), iNumFails(0), iInfoLink(-1)
+	: pNetDlg(pNetDlg), pList(pForListBox), pRefClient(nullptr), pRef(nullptr), fError(false), eQueryType(NRQT_Unknown), iTimeout(0), iNumFails(0), iInfoLink(-1), iInfoIconCount(0), iSortOrder(0), fIsSmall(false), fIsCollapsed(false), fIsEnabled(true), fIsImportant(false)
 {
 	// calc height
 	int32_t iLineHgt = C4GUI::GetRes()->TextFont.GetLineHeight(), iHeight = iLineHgt * 2 + 4;
@@ -618,7 +618,7 @@ C4Network2Reference *C4StartupNetListEntry::GrabReference()
 
 // C4StartupNetDlg
 
-C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr(C4ResStrTableKey::IDS_DLG_NETSTART)), iGameDiscoverInterval(0), pMasterserverClient(nullptr), fIsCollapsed(false), fUpdatingList(false), tLastRefresh(0), pChatTitleLabel(nullptr), fIgnoreUpdate(false)
+C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr(C4ResStrTableKey::IDS_DLG_NETSTART)), pChatTitleLabel(nullptr), pMasterserverClient(nullptr), fIsCollapsed(false), fUpdatingList(false), iGameDiscoverInterval(0), tLastRefresh(0), fIgnoreUpdate(false)
 {
 	// key bindings
 	C4CustomKey::CodeList keys;
