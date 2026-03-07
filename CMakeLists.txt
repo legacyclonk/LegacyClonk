@@ -151,6 +151,7 @@ endif ()
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
 	add_compile_options(-Wall -Wextra)
 	add_compile_options(
+		-Werror=cast-function-type-mismatch
 		-Werror=dangling-else
 		-Werror=inconsistent-missing-override
 		-Werror=parentheses
