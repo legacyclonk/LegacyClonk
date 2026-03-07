@@ -461,10 +461,10 @@ gboolean C4ViewportWindow::OnKeyPressStatic(GtkWidget *widget, GdkEventKey *even
 #ifndef NDEBUG
 	switch (event->keyval)
 	{
-	case GDK_KEY_1: Config.Graphics.BlitOffset -= 0.05; printf("%f\n", Config.Graphics.BlitOffset); break;
-	case GDK_KEY_2: Config.Graphics.BlitOffset += 0.05; printf("%f\n", Config.Graphics.BlitOffset); break;
-	case GDK_KEY_3: Config.Graphics.TexIndent  -= 0.05; printf("%f\n", Config.Graphics.TexIndent);  break;
-	case GDK_KEY_4: Config.Graphics.TexIndent  += 0.05; printf("%f\n", Config.Graphics.TexIndent);  break;
+	case GDK_KEY_1: Config.Graphics.BlitOffset -= 5; printf("%d\n", Config.Graphics.BlitOffset); break;
+	case GDK_KEY_2: Config.Graphics.BlitOffset += 5; printf("%d\n", Config.Graphics.BlitOffset); break;
+	case GDK_KEY_3: Config.Graphics.TexIndent  -= 5; printf("%d\n", Config.Graphics.TexIndent);  break;
+	case GDK_KEY_4: Config.Graphics.TexIndent  += 5; printf("%d\n", Config.Graphics.TexIndent);  break;
 	}
 #endif
 	uint32_t key = XkbKeycodeToKeysym(GDK_WINDOW_XDISPLAY(event->window), event->hardware_keycode, 0, 0);
