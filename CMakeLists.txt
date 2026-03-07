@@ -147,6 +147,12 @@ if (APPLE)
 	add_compile_options(-Wno-elaborated-enum-base)
 endif ()
 
+# Mark some warnings as error
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+	add_compile_options(-Wall -Wextra -Wno-unused-parameter)
+	add_compile_options(-Werror=dangling-else -Werror=inconsistent-missing-override -Werror=parentheses)
+endif ()
+
 # Adds the lines of file LIST_FILE to variable TARGET_LIST
 function(append_filelist TARGET_LIST LIST_FILE)
 	include("cmake/filelists/${LIST_FILE}.cmake")
