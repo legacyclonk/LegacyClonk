@@ -720,7 +720,7 @@ void C4GraphicsSystem::DrawHelp()
 			   "<c ffff00>{}</c> - {}\n",
 
 			   GetKeyboardInputName("GameSpeedUp"), LoadResStr(C4ResStrTableKey::IDS_CTL_GAMESPEEDUP),
-			   GetKeyboardInputName("GameSpeedDown"), LoadResStr(C4ResStrTableKey::IDS_CTL_GAMESPEEDDOWN),
+			   GetKeyboardInputName("GameSlowDown"), LoadResStr(C4ResStrTableKey::IDS_CTL_GAMESPEEDDOWN),
 			   GetKeyboardInputName("DbgModeToggle"), LoadResStr(C4ResStrTableKey::IDS_CTL_DEBUGMODE),
 			   GetKeyboardInputName("DbgShowVtxToggle"), "Entrance+Vertices",
 			   GetKeyboardInputName("DbgShowActionToggle"), "Actions/Commands/Pathfinder",
