@@ -40,7 +40,7 @@
 // C4Network2ClientDlg
 
 C4Network2ClientDlg::C4Network2ClientDlg(int iForClientID)
-	: iClientID(iForClientID), C4GUI::InfoDialog(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO), 10)
+	: C4GUI::InfoDialog(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO), 10), iClientID(iForClientID)
 {
 	// initial text update
 	UpdateText();
@@ -586,7 +586,7 @@ void C4Network2StartWaitDlg::OnBtnRestart(C4GUI::Control *)
 // C4GameOptionButtons
 
 C4GameOptionButtons::C4GameOptionButtons(const C4Rect &rcBounds, bool fNetwork, bool fHost, bool fLobby)
-	: C4GUI::Window(), fNetwork(fNetwork), fHost(fHost), fLobby(fLobby), eForceFairCrewState(C4SFairCrew_Free), fCountdown(false)
+	: C4GUI::Window(), eForceFairCrewState(C4SFairCrew_Free), fNetwork(fNetwork), fHost(fHost), fLobby(fLobby), fCountdown(false)
 {
 	SetBounds(rcBounds);
 	// calculate button size from area

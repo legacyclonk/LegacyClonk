@@ -53,9 +53,9 @@ C4Network2IO::C4Network2IO()
 	pConnList(nullptr),
 	iNextConnID(0),
 	fAllowConnect(false),
-	fExclusiveConn(false),
 	pAutoAcceptList(nullptr),
-	iLastPing(0), iLastExecute(0), iLastStatistic(0),
+	fExclusiveConn(false),
+	iLastExecute(0), iLastPing(0), iLastStatistic(0),
 	iTCPIRate(0), iTCPORate(0), iTCPBCRate(0),
 	iUDPIRate(0), iUDPORate(0), iUDPBCRate(0)
 {
@@ -1266,12 +1266,12 @@ C4Network2IOConnection::C4Network2IOConnection()
 	iTimestamp(0),
 	iPingTime(-1),
 	iLastPing(~0), iLastPong(~0),
-	iOutPacketCounter(0), iInPacketCounter(0),
+	fConnSent(false), fPostMortemSent(false),
+	iOutPacketCounter(0),
+	iInPacketCounter(0),
 	pPacketLog(nullptr),
 	pNext(nullptr),
-	iRefCnt(0),
-	fConnSent(false),
-	fPostMortemSent(false) {}
+	iRefCnt(0) {}
 
 C4Network2IOConnection::~C4Network2IOConnection()
 {

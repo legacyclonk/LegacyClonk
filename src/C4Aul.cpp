@@ -531,7 +531,7 @@ void C4AulScriptEngine::CompileFunc(StdCompiler *pComp)
 
 static const size_t CapacityInc = 1024;
 
-C4AulFuncMap::C4AulFuncMap() : Capacity(CapacityInc), FuncCnt(0), Funcs(new C4AulFunc *[CapacityInc])
+C4AulFuncMap::C4AulFuncMap() : Funcs(new C4AulFunc *[CapacityInc]), FuncCnt(0), Capacity(CapacityInc)
 {
 	memset(Funcs, 0, sizeof(C4AulFunc *) * Capacity);
 }

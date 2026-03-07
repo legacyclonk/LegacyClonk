@@ -624,7 +624,7 @@ class SortCompareElements
 	ListBox::SortFunction SortFunc;
 
 public:
-	SortCompareElements(ListBox::SortFunction SortFunc, void *par) : SortFunc(SortFunc), par(par) {}
+	SortCompareElements(ListBox::SortFunction SortFunc, void *par) : par(par), SortFunc(SortFunc) {}
 
 	int operator()(const Element *pEl1, const Element *pEl2)
 	{

@@ -415,7 +415,7 @@ bool C4FindObjectNot::Check(C4Object *pObj)
 // *** C4FindObjectAnd
 
 C4FindObjectAnd::C4FindObjectAnd(int32_t inCnt, C4FindObject **ppConds, bool fFreeArray)
-	: iCnt(inCnt), ppConds(ppConds), fHasBounds(false), fUseShapes(false), fFreeArray(fFreeArray)
+	: iCnt(inCnt), ppConds(ppConds), fFreeArray(fFreeArray), fUseShapes(false), fHasBounds(false)
 {
 	// Filter ensured entries
 	for (int32_t i = 0; i < iCnt;)

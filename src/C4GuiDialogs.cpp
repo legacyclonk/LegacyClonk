@@ -1100,7 +1100,7 @@ bool Screen::ShowRemoveDlg(Dialog *pDlg)
 // InputDialog
 
 InputDialog::InputDialog(const char *szMessage, const char *szCaption, Icons icoIcon, BaseInputCallback *pCB, bool fChatLayout)
-	: Dialog(fChatLayout ? Config.Graphics.ResX * 4 / 5 : C4GUI_InputDlgWdt, fChatLayout ? C4GUI::Edit::GetDefaultEditHeight() + 2 : 100, szCaption, false), pEdit(nullptr), pChatLbl(nullptr), pCB(pCB), fChatLayout(fChatLayout)
+	: Dialog(fChatLayout ? Config.Graphics.ResX * 4 / 5 : C4GUI_InputDlgWdt, fChatLayout ? C4GUI::Edit::GetDefaultEditHeight() + 2 : 100, szCaption, false), pEdit(nullptr), pCB(pCB), fChatLayout(fChatLayout), pChatLbl(nullptr)
 {
 	if (fChatLayout)
 	{

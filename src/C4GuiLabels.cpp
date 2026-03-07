@@ -50,7 +50,7 @@ void Label::DrawElement(C4FacetEx &cgo)
 }
 
 Label::Label(std::string_view lblText, int32_t iX0, int32_t iTop, int32_t iAlign, uint32_t dwFClr, CStdFont *pFont, bool fMakeReadableOnBlack, bool fMarkup)
-	: Element(), dwFgClr(dwFClr), x0(iX0), iAlign(iAlign), pFont(pFont), cHotkey(0), pClickFocusControl(nullptr), fAutosize(true), fMarkup(fMarkup)
+	: Element(), dwFgClr(dwFClr), x0(iX0), iAlign(iAlign), pFont(pFont), cHotkey(0), fAutosize(true), fMarkup(fMarkup), pClickFocusControl(nullptr)
 {
 	// make color readable
 	if (fMakeReadableOnBlack) MakeColorReadableOnBlack(dwFgClr);
@@ -63,7 +63,7 @@ Label::Label(std::string_view lblText, int32_t iX0, int32_t iTop, int32_t iAlign
 }
 
 Label::Label(std::string_view lblText, const C4Rect &rcBounds, int32_t iAlign, uint32_t dwFClr, CStdFont *pFont, bool fMakeReadableOnBlack, bool fAutosize, bool fMarkup)
-	: Element(), dwFgClr(dwFClr), iAlign(iAlign), pFont(pFont), cHotkey(0), pClickFocusControl(nullptr), fAutosize(fAutosize), fMarkup(fMarkup)
+	: Element(), dwFgClr(dwFClr), iAlign(iAlign), pFont(pFont), cHotkey(0), fAutosize(fAutosize), fMarkup(fMarkup), pClickFocusControl(nullptr)
 {
 	// make color readable
 	if (fMakeReadableOnBlack) MakeColorReadableOnBlack(dwFgClr);
@@ -452,7 +452,7 @@ C4FacetEx Icon::GetIconFacet(Icons icoIconIndex)
 // TextWindow
 
 TextWindow::TextWindow(const C4Rect &rtBounds, size_t iPicWdt, size_t iPicHgt, size_t iPicPadding, size_t iMaxLines, size_t iMaxTextLen, const char *szIndentChars, bool fAutoGrow, const C4Facet *pOverlayPic, int iOverlayBorder, bool fMarkup)
-	: Control(rtBounds), fDrawBackground(true), fDrawFrame(true), iPicPadding(iPicPadding), pLogBuffer(nullptr)
+	: Control(rtBounds), pLogBuffer(nullptr), fDrawBackground(true), fDrawFrame(true), iPicPadding(iPicPadding)
 {
 	// calc client rect
 	UpdateOwnPos();

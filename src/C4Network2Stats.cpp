@@ -29,9 +29,9 @@ C4Graph::C4Graph()
 	: szTitle(LoadResStr(C4ResStrTableKey::IDS_NET_GRAPH), false), dwColor(0x7fff0000) {}
 
 C4TableGraph::C4TableGraph(int iBackLogLength, int iStartTime)
-	: iBackLogLength(iBackLogLength), pValues(nullptr), iBackLogPos(0), fWrapped(false)
-	, iTime(iStartTime), iInitialStartTime(iStartTime), pAveragedValues(nullptr), iAveragedTime(iStartTime), iAvgRange(1)
-	, fMultiplier(1)
+	: iBackLogLength(iBackLogLength), pValues(nullptr), fMultiplier(1), pAveragedValues(nullptr)
+	, iBackLogPos(0), fWrapped(false), iInitialStartTime(iStartTime), iTime(iStartTime), iAveragedTime(iStartTime)
+	, iAvgRange(1)
 {
 	// create value buffer
 	assert(iBackLogLength);

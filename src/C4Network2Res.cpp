@@ -77,8 +77,8 @@ C4Network2ResCore::C4Network2ResCore()
 	iID(-1), iDerID(-1),
 	fLoadable(false),
 	iFileSize(~0u), iFileCRC(~0u), iContentsCRC(~0u),
-	iChunkSize(C4NetResChunkSize),
-	fHasFileSHA(false) {}
+	fHasFileSHA(false),
+	iChunkSize(C4NetResChunkSize) {}
 
 void C4Network2ResCore::Set(C4Network2ResType enType, int32_t iResID, const char *strFileName, uint32_t inContentsCRC, const char *strAuthor)
 {
@@ -145,7 +145,7 @@ void C4Network2ResCore::CompileFunc(StdCompiler *pComp)
 // *** C4Network2ResLoad
 
 C4Network2ResLoad::C4Network2ResLoad(int32_t inChunk, int32_t inByClient)
-	: iChunk(inChunk), iByClient(inByClient), Timestamp(time(nullptr)), pNext(nullptr) {}
+	: iChunk(inChunk), Timestamp(time(nullptr)), iByClient(inByClient), pNext(nullptr) {}
 
 C4Network2ResLoad::~C4Network2ResLoad() {}
 
@@ -1330,10 +1330,10 @@ void C4Network2ResChunk::CompileFunc(StdCompiler *pComp)
 // *** C4Network2ResList
 
 C4Network2ResList::C4Network2ResList()
-	: iClientID(-1),
-	iNextResID((-1) << 16),
-	pFirst(nullptr),
+	: pFirst(nullptr),
 	ResListCSec(this),
+	iClientID(-1),
+	iNextResID((-1) << 16),
 	iLastDiscover(0), iLastStatus(0),
 	pIO(nullptr) {}
 

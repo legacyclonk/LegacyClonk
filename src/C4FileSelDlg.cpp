@@ -112,7 +112,7 @@ bool C4FileSelDlg::DefaultListItem::UserToggleCheck()
 
 C4FileSelDlg::C4FileSelDlg(const char *szRootPath, const char *szTitle, C4FileSel_BaseCB *pSelCallback, bool fInitElements)
 	: C4GUI::Dialog(BoundBy(C4GUI::GetScreenWdt() * 2 / 3 + 10, 300, 600), BoundBy(C4GUI::GetScreenHgt() * 2 / 3 + 10, 220, 500), szTitle, false),
-	pFileListBox(nullptr), pSelectionInfoBox(nullptr), btnOK(nullptr), pSelection(nullptr), pSelCallback(pSelCallback), pLocations(nullptr), iLocationCount(0), pLocationComboBox(nullptr)
+	pLocationComboBox(nullptr), pFileListBox(nullptr), pSelectionInfoBox(nullptr), btnOK(nullptr), pLocations(nullptr), iLocationCount(0), pSelection(nullptr), pSelCallback(pSelCallback)
 {
 	sTitle.Copy(szTitle);
 	// key bindings

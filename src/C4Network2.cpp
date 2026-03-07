@@ -200,15 +200,15 @@ C4Network2::C4Network2()
 	iDynamicTick(-1), fDynamicNeeded(false),
 	fStatusAck(false), fStatusReached(false),
 	fChasing(false),
-	pLobby(nullptr), fLobbyRunning(false), pLobbyCountdown(nullptr),
+	pControl(nullptr), pLobby(nullptr), fLobbyRunning(false),
 #ifndef USE_CONSOLE
-	readyCheckDialog{nullptr},
+	pLobbyCountdown(nullptr),
 #endif
+	readyCheckDialog{nullptr},
 	pSec1Timer(nullptr),
-	pControl(nullptr),
 	iNextClientID(0),
-	iLastActivateRequest(0),
 	iLastChaseTargetUpdate(0),
+	iLastActivateRequest(0),
 	iLastReferenceUpdate(0),
 	iLastLeagueUpdate(0),
 	pLeagueClient(nullptr),
@@ -2999,8 +2999,8 @@ void C4Network2::OnVoteDialogClosed()
 // *** C4VoteDialog
 
 C4VoteDialog::C4VoteDialog(const char *szText, C4ControlVoteType eVoteType, int32_t iVoteData, bool fSurrender)
-	: eVoteType(eVoteType), iVoteData(iVoteData), fSurrender(fSurrender),
-	MessageDialog(szText, LoadResStr(C4ResStrTableKey::IDS_DLG_VOTING), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_Confirm, C4GUI::MessageDialog::dsRegular, nullptr, true) {}
+	: MessageDialog(szText, LoadResStr(C4ResStrTableKey::IDS_DLG_VOTING), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_Confirm, C4GUI::MessageDialog::dsRegular, nullptr, true), eVoteType(eVoteType), iVoteData(iVoteData),
+	fSurrender(fSurrender) {}
 
 void C4VoteDialog::OnClosed(bool fOK)
 {

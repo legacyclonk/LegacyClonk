@@ -1298,7 +1298,7 @@ C4GUI::RenameResult C4StartupScenSelDlg::ScenListItem::DoRenaming(RenameParams p
 
 // C4StartupScenSelDlg
 
-C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResStrNoAmpChoice(fNetwork, C4ResStrTableKey::IDS_DLG_NETSTART, C4ResStrTableKey::IDS_DLG_STARTGAME).c_str()), pScenLoader(nullptr), fIsInitialLoading(false), fStartNetworkGame(fNetwork), pMapData(nullptr), pRenameEdit(nullptr), pfctBackground(nullptr), btnAllowUserChange{nullptr}
+C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResStrNoAmpChoice(fNetwork, C4ResStrTableKey::IDS_DLG_NETSTART, C4ResStrTableKey::IDS_DLG_STARTGAME).c_str()), pScenLoader(nullptr), pMapData(nullptr), pfctBackground(nullptr), fIsInitialLoading(false), fStartNetworkGame(fNetwork), pRenameEdit(nullptr), btnAllowUserChange{nullptr}
 {
 	// assign singleton
 	pInstance = this;

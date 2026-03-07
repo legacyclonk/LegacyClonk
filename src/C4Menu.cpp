@@ -76,9 +76,9 @@ void DrawMenuSymbol(int32_t iMenu, C4Facet &cgo, int32_t iOwner, C4Object *cObj)
 C4MenuItem::C4MenuItem(C4Menu *pMenu, int32_t iIndex, const char *szCaption,
 	const char *szCommand, int32_t iCount, C4Object *pObject, const char *szInfoCaption,
 	C4ID idID, const char *szCommand2, bool fOwnValue, int32_t iValue, int32_t iStyle, bool fIsSelectable)
-	: C4GUI::Element(), Count(iCount), id(idID), Object(pObject), fOwnValue(fOwnValue),
-	iValue(iValue), fSelected(false), iStyle(iStyle), pMenu(pMenu), iIndex(iIndex),
-	IsSelectable(fIsSelectable), TextDisplayProgress(-1), dwSymbolClr(0u)
+	: C4GUI::Element(), Count(iCount), id(idID), Object(pObject), dwSymbolClr(0u),
+	fOwnValue(fOwnValue), iValue(iValue), fSelected(false), iStyle(iStyle), pMenu(pMenu),
+	iIndex(iIndex), IsSelectable(fIsSelectable), TextDisplayProgress(-1)
 {
 	*Caption = *Command = *Command2 = *InfoCaption = 0;
 	Symbol.Default();

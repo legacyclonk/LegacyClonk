@@ -646,10 +646,10 @@ void C4ObjectListDlg::Update(C4ObjectList &rSelection)
 }
 
 C4ObjectListDlg::C4ObjectListDlg() :
-	updating_selection(false),
 	window(nullptr),
 	treeview(nullptr),
-	model(nullptr) {}
+	model(nullptr),
+	updating_selection(false) {}
 
 C4ObjectListDlg::~C4ObjectListDlg() {}
 
