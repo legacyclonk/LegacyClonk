@@ -474,7 +474,11 @@ C4ScriptOpDef C4ScriptOpMap[] =
 	{ 2, "&=",   AB_AndIt,            1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
 	{ 2, "|=",   AB_OrIt,             1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
 	{ 2, "^=",   AB_XOrIt,            1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
-	{ 2, "??=",  AB_NilCoalescingIt,  1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Any },
+
+#define AB_OP "??" "=" // ??=, but that triggers a trigraph warning...
+	{ 2, AB_OP, AB_NilCoalescingIt,  1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Any },
+#undef AB_OP
+
 	{ 2, "=",    AB_Set,              1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Any },
 
 	{ 0, nullptr,  AB_ERR,            0, 0, 0, C4V_Any,    C4V_Any,      C4V_Any }
