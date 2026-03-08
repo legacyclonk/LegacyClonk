@@ -88,9 +88,38 @@ bool C4FacetExSurface::Create(int iWdt, int iHgt, int iWdt2, int iHgt2)
 	// Create surface
 	Face.Default();
 	if (!Face.Create(iWdt, iHgt)) return false;
+
 	// Set facet
-	if (iWdt2 == C4FCT_Full) iWdt2 = Face.Wdt; if (iWdt2 == C4FCT_Height) iWdt2 = Face.Hgt; if (iWdt2 == C4FCT_Width) iWdt2 = Face.Wdt;
-	if (iHgt2 == C4FCT_Full) iHgt2 = Face.Hgt; if (iHgt2 == C4FCT_Height) iHgt2 = Face.Hgt; if (iHgt2 == C4FCT_Width) iHgt2 = Face.Wdt;
+	if (iWdt2 == C4FCT_Full)
+	{
+		iWdt2 = Face.Wdt;
+	}
+
+	if (iWdt2 == C4FCT_Height)
+	{
+		iWdt2 = Face.Hgt;
+	}
+
+	if (iWdt2 == C4FCT_Width)
+	{
+		iWdt2 = Face.Wdt;
+	}
+
+	if (iHgt2 == C4FCT_Full)
+	{
+		iHgt2 = Face.Hgt;
+	}
+
+	if (iHgt2 == C4FCT_Height)
+	{
+		iHgt2 = Face.Hgt;
+	}
+
+	if (iHgt2 == C4FCT_Width)
+	{
+		iHgt2 = Face.Wdt;
+	}
+
 	Set(&Face, 0, 0, iWdt2, iHgt2, 0, 0);
 	return true;
 }
