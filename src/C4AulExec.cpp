@@ -999,6 +999,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 
 			case AB_DEREF:
 				pCurVal[0].Deref();
+				[[fallthrough]];
 
 			case AB_STACK:
 				if (pCPos->bccX < 0)

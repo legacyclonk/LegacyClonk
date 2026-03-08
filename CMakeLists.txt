@@ -145,6 +145,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	add_compile_options(
 		-Werror=cast-function-type
 		-Werror=dangling-else
+		-Werror=implicit-fallthrough
 		-Werror=suggest-override
 		-Werror=parentheses
 		-Werror=reorder
@@ -156,6 +157,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	add_compile_options(
 		-Werror=cast-function-type-mismatch
 		-Werror=dangling-else
+		-Werror=implicit-fallthrough
 		-Werror=inconsistent-missing-override
 		-Werror=parentheses
 		-Werror=reorder

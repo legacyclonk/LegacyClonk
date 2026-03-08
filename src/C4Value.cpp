@@ -769,6 +769,7 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 	case C4V_C4Object:
 		if (!fCompiler)
 			iTmp = Game.Objects.ObjectNumber(getObj());
+		[[fallthrough]];
 	case C4V_C4ObjectEnum:
 		if (!fCompiler) if (Type == C4V_C4ObjectEnum)
 			iTmp = Data.Int;

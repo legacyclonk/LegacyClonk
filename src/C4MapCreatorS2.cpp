@@ -1093,6 +1093,8 @@ void C4MCParser::ParseTo(C4MCNode *pToNode)
 				throw C4MCParserErr(this, C4MCErr_UnnamedNoGlbl);
 			}
 			// in local scope, allow unnamed; so continue
+			[[fallthrough]];
+
 		case PS_KEYWD1N:
 			// do expect a block opening
 			if (CurrToken != MCT_BLOPEN)
@@ -1172,6 +1174,8 @@ void C4MCParser::ParseTo(C4MCNode *pToNode)
 			}
 			// fall through to next case, if it was a named node reinstanciation
 			if (State != PS_AFTERNODE) break;
+			[[fallthrough]];
+
 		case PS_AFTERNODE:
 			// expect operator or semicolon
 			switch (CurrToken)

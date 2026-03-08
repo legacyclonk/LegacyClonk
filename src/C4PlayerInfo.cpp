@@ -1104,7 +1104,8 @@ C4PlayerInfo *C4PlayerInfoList::FindSavegameResumePlayerInfo(const C4PlayerInfo 
 					case PML_PlrFileName: // file name and player name must match
 						if (!pMatchInfo->GetFilename() || !pInfo->GetFilename()) break;
 						if (!SEqualNoCase(GetFilename(pMatchInfo->GetFilename()), GetFilename(pInfo->GetFilename()))) break;
-						// nobreak: Check player name as well
+						// Check player name as well
+						[[fallthrough]];
 					case PML_PlrName: // match player name
 						if (SEqualNoCase(pMatchInfo->GetName(), pInfo->GetName()))
 							return pInfo;

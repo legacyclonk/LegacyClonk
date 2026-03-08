@@ -627,6 +627,7 @@ bool C4MaterialMap::mrfConvert(C4MaterialReaction *pReaction, int32_t &iX, int32
 		// for hardcoded stuff: only InMatConvert is Snow in Water, which does not have any collision proc
 		if (!pReaction->fUserDefined) break;
 		// user-defined conversions may also convert upon hitting materials
+		[[fallthrough]];
 
 	case meePXSPos: // PXS check before movement
 	{

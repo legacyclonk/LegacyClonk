@@ -2956,7 +2956,8 @@ void C4NetIOUDP::Peer::OnRecv(const C4NetIOPacket &rPacket) // (mt-safe)
 				fMultiCast = true; DoConn(true);
 				break;
 			}
-			// fallthru
+			[[fallthrough]];
+
 		case ConnOKPacket::MCM_NoMC:
 			// Connection is established (no multicast support)
 			fMultiCast = false; OnConn();
