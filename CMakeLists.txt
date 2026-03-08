@@ -136,19 +136,23 @@ if (WIN32)
 	endif ()
 endif ()
 
-# Disable some Visual C++ warnings
 if (MSVC)
 	# "multiple copy constructors specified"
 	add_compile_options(/wd4521)
-endif ()
-
-# Incompatible with CF_ENUM
-if (APPLE)
-	add_compile_options(-Wno-elaborated-enum-base)
-endif ()
-
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNUC")
 	add_compile_options(-Wall -Wextra)
+
+	add_compile_options(
+		-Werror=cast-function-type
+		-Werror=dangling-else
+		-Werror=suggest-override
+		-Werror=parentheses
+		-Werror=reorder
+	)
+	add_compile_options(-Wno-unused-parameter -Wno-missing-field-initializers)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	add_compile_options(-Wall -Wextra)
+
 	add_compile_options(
 		-Werror=cast-function-type-mismatch
 		-Werror=dangling-else
@@ -158,6 +162,11 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
 	)
 
 	add_compile_options(-Wno-unused-parameter -Wno-missing-designated-field-initializers -Wno-missing-field-initializers)
+endif ()
+
+# Incompatible with CF_ENUM
+if (APPLE)
+	add_compile_options(-Wno-elaborated-enum-base)
 endif ()
 
 # Adds the lines of file LIST_FILE to variable TARGET_LIST
