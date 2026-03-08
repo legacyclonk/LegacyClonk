@@ -58,7 +58,7 @@ void C4Team::AddPlayer(C4PlayerInfo &rInfo, bool fAdjustPlayer)
 	// add player; grow vector if necessary
 	if (iPlayerCount >= iPlayerCapacity)
 	{
-		int32_t *piNewPlayers = new int32_t[iPlayerCapacity = iPlayerCount + 4 & ~3];
+		int32_t *piNewPlayers = new int32_t[iPlayerCapacity = (iPlayerCount + 4) & ~3];
 		if (iPlayerCount) memcpy(piNewPlayers, piPlayers, iPlayerCount * sizeof(int32_t));
 		delete[] piPlayers; piPlayers = piNewPlayers;
 	}
@@ -354,7 +354,7 @@ void C4TeamList::AddTeam(C4Team *pNewTeam)
 	// add team; grow vector if necessary
 	if (iTeamCount >= iTeamCapacity)
 	{
-		C4Team **ppNewTeams = new C4Team *[iTeamCapacity = iTeamCount + 4 & ~3];
+		C4Team **ppNewTeams = new C4Team *[iTeamCapacity = (iTeamCount + 4) & ~3];
 		if (iTeamCount) memcpy(ppNewTeams, ppList, iTeamCount * sizeof(C4Team *));
 		delete[] ppList; ppList = ppNewTeams;
 	}

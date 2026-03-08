@@ -28,7 +28,8 @@
 static bool SurfaceEnsureSize(C4Surface **ppSfc, int iMinWdt, int iMinHgt)
 {
 	// safety
-	if (!ppSfc) return false; if (!*ppSfc) return false;
+	if (!ppSfc) return false;
+	if (!*ppSfc) return false;
 	// get size
 	int iWdt = (*ppSfc)->Wdt, iHgt = (*ppSfc)->Hgt;
 	int iDstWdt = iWdt, iDstHgt = iHgt;

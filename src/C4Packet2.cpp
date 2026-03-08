@@ -186,7 +186,8 @@ void C4IDPacket::Default()
 
 void C4IDPacket::Clear()
 {
-	if (fOwnPkt) delete pPkt; pPkt = nullptr;
+	if (fOwnPkt) delete pPkt;
+	pPkt = nullptr;
 	eID = PID_None;
 }
 
@@ -203,7 +204,8 @@ void C4IDPacket::CompileFunc(StdCompiler *pComp)
 			pComp->excCorrupt("C4IDPacket: Data value needed! Packet data missing!"); return;
 		}
 		// Delete old packet
-		if (fOwnPkt) delete pPkt; pPkt = nullptr;
+		if (fOwnPkt) delete pPkt;
+		pPkt = nullptr;
 		if (eID == PID_None) return;
 		// Search unpacking function
 		for (const C4PktHandlingData *pPData = PktHandlingData; pPData->ID != PID_None; pPData++)

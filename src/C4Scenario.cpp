@@ -521,11 +521,24 @@ void C4SGame::ConvertGoals(C4SRealism &rRealism)
 	// CreateObjects,ClearObjects,ClearMaterials are still valid but invisible
 
 	// Convert realism to rules
-	if (rRealism.ConstructionNeedsMaterial) Rules.SetIDCount(C4Id("CNMT"), 1, true); rRealism.ConstructionNeedsMaterial = false;
-	if (rRealism.StructuresNeedEnergy) Rules.SetIDCount(C4Id("ENRG"), 1, true); rRealism.StructuresNeedEnergy = false;
+	if (rRealism.ConstructionNeedsMaterial)
+	{
+		Rules.SetIDCount(C4Id("CNMT"), 1, true);
+		rRealism.ConstructionNeedsMaterial = false;
+	}
+
+	if (rRealism.StructuresNeedEnergy)
+	{
+		Rules.SetIDCount(C4Id("ENRG"), 1, true);
+		rRealism.StructuresNeedEnergy = false;
+	}
 
 	// Convert rules
-	if (EnableRemoveFlag) Rules.SetIDCount(C4Id("FGRV"), 1, true); EnableRemoveFlag = false;
+	if (EnableRemoveFlag)
+	{
+		Rules.SetIDCount(C4Id("FGRV"), 1, true);
+		EnableRemoveFlag = false;
+	}
 
 	// Convert eliminiation to rules
 	switch (Elimination)

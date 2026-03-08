@@ -425,11 +425,13 @@ C4Network2::InitResult C4Network2::InitClient(const std::vector<class C4Network2
 	{
 		if (Application.HandleMessage(100) == HR_Failure)
 		{
-			if (Game.pGUI) delete pDlg; return IR_Fatal;
+			if (Game.pGUI) delete pDlg;
+			return IR_Fatal;
 		}
 		if (pDlg && pDlg->IsAborted())
 		{
-			if (Game.pGUI) delete pDlg; return IR_Fatal;
+			if (Game.pGUI) delete pDlg;
+			return IR_Fatal;
 		}
 	}
 	// Close dialog
@@ -746,7 +748,11 @@ void C4Network2::Execute()
 void C4Network2::Clear()
 {
 	// stop timer
-	if (pSec1Timer) pSec1Timer->Release(); pSec1Timer = nullptr;
+	if (pSec1Timer)
+	{
+		pSec1Timer->Release();
+	}
+	pSec1Timer = nullptr;
 	// stop streaming
 	StopStreaming();
 	// clear league
@@ -781,7 +787,8 @@ void C4Network2::Clear()
 	iDynamicTick = -1; fDynamicNeeded = false;
 	iLastActivateRequest = iLastChaseTargetUpdate = iLastReferenceUpdate = iLastLeagueUpdate = 0;
 	fDelayedActivateReq = false;
-	if (Game.pGUI) delete pVoteDialog; pVoteDialog = nullptr;
+	if (Game.pGUI) delete pVoteDialog;
+	pVoteDialog = nullptr;
 	fPausedForVote = false;
 	iLastOwnVoting = 0;
 	NetpuncherGameID = {};

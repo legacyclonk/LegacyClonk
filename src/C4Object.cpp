@@ -2261,7 +2261,8 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 			if (!Inside(cox + Action.FacetX, 1 - Action.Facet.Wdt, cgo.Wdt)
 				|| (!Inside(coy + Action.FacetY, 1 - Action.Facet.Hgt, cgo.Hgt)))
 			{
-				if (FrontParticles && !Contained) FrontParticles.Draw(cgo, this); return;
+				if (FrontParticles && !Contained) FrontParticles.Draw(cgo, this);
+				return;
 			}
 		}
 		else
@@ -2270,7 +2271,8 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 			if (!Inside(cox, 1 - Shape.Wdt, cgo.Wdt)
 				|| (!Inside(coy, 1 - Shape.Hgt, cgo.Hgt)))
 			{
-				if (FrontParticles && !Contained) FrontParticles.Draw(cgo, this); return;
+				if (FrontParticles && !Contained) FrontParticles.Draw(cgo, this);
+				return;
 			}
 		}
 	}
@@ -2299,7 +2301,8 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 				x2 = pCom->Tx._getInt() - cotx; y2 = pCom->Ty - coty;
 				Application.DDraw->DrawLine(cgo.Surface, cgo.X + x1, cgo.Y + y1, cgo.X + x2, cgo.Y + y2, CRed);
 				Application.DDraw->DrawFrame(cgo.Surface, cgo.X + x2 - 1, cgo.Y + y2 - 1, cgo.X + x2 + 1, cgo.Y + y2 + 1, CRed);
-				if (x1 > x2) std::swap(x1, x2); if (y1 > y2) std::swap(y1, y2);
+				if (x1 > x2) std::swap(x1, x2);
+				if (y1 > y2) std::swap(y1, y2);
 				ccx = pCom->Tx._getInt(); ccy = pCom->Ty;
 				// Message
 				iMoveTos++;
@@ -2330,7 +2333,8 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 				x2 = pCom->Tx._getInt() - cotx; y2 = pCom->Ty - coty;
 				Application.DDraw->DrawLine(cgo.Surface, cgo.X + x1, cgo.Y + y1, cgo.X + x2, cgo.Y + y2, CGreen);
 				Application.DDraw->DrawFrame(cgo.Surface, cgo.X + x2 - 1, cgo.Y + y2 - 1, cgo.X + x2 + 1, cgo.Y + y2 + 1, CGreen);
-				if (x1 > x2) std::swap(x1, x2); if (y1 > y2) std::swap(y1, y2);
+				if (x1 > x2) std::swap(x1, x2);
+				if (y1 > y2) std::swap(y1, y2);
 				ccx = pCom->Tx._getInt(); ccy = pCom->Ty;
 				// Message
 				command = std::format("{} {}", CommandName(pCom->Command), pCom->Target ? pCom->Target->GetName() : "");
@@ -3100,7 +3104,8 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 	for (cnt = 6; cnt < ComOrderNum; cnt++)
 	{
 		// Hardcoded com order indexes for COM_Specials
-		if (cnt == 8) cnt = 14; if (cnt == 16) cnt = 22;
+		if (cnt == 8) cnt = 14;
+		if (cnt == 16) cnt = 22;
 		// Control in control flag?
 		if (DrawCommandQuery(Controller, Def->Script, Def->Script.ControlMethod, cnt))
 			DrawCommand(cgoSide, C4FCT_Bottom | C4FCT_Half, PSF_Control, ComOrder(cnt), pRegions, Owner);
@@ -4982,8 +4987,11 @@ void C4Object::ExecAction()
 		}
 
 		// xdir/ydir bounds
-		if (ydir < -lLimit) ydir = -lLimit; if (ydir > +lLimit) ydir = +lLimit;
-		if (xdir > +lLimit) xdir = +lLimit; if (xdir < -lLimit) xdir = -lLimit;
+		if (ydir < -lLimit) ydir = -lLimit;
+		if (ydir > +lLimit) ydir = +lLimit;
+
+		if (xdir > +lLimit) xdir = +lLimit;
+		if (xdir < -lLimit) xdir = -lLimit;
 		// Surface dir bound
 		if (!GBackLiquid(x, y - 1 + Def->Float * Con / FullCon - 1)) if (ydir < 0) ydir = 0;
 		// Dir, Phase, Attach
@@ -5307,8 +5315,11 @@ void C4Object::ExecAction()
 		case COMD_UpLeft:    ydir -= FloatAccel; xdir -= FloatAccel; break;
 		}
 		// xdir/ydir bounds
-		if (ydir < -lLimit) ydir = -lLimit; if (ydir > +lLimit) ydir = +lLimit;
-		if (xdir > +lLimit) xdir = +lLimit; if (xdir < -lLimit) xdir = -lLimit;
+		if (ydir < -lLimit) ydir = -lLimit;
+		if (ydir > +lLimit) ydir = +lLimit;
+
+		if (xdir > +lLimit) xdir = +lLimit;
+		if (xdir < -lLimit) xdir = -lLimit;
 		Mobile = 1;
 		break;
 
@@ -5639,7 +5650,8 @@ bool C4Object::IsInLiquidCheck()
 
 void C4Object::SetRotation(int32_t nr)
 {
-	while (nr < 0) nr += 360; nr %= 360;
+	while (nr < 0) nr += 360;
+	nr %= 360;
 	// remove solid mask
 	if (pSolidMaskData) pSolidMaskData->Remove(true, false);
 	// set rotation
@@ -5722,7 +5734,8 @@ bool C4Object::Collect(C4Object *pObj)
 bool C4Object::GrabInfo(C4Object *pFrom)
 {
 	// safety
-	if (!pFrom) return false; if (!Status || !pFrom->Status) return false;
+	if (!pFrom) return false;
+	if (!Status || !pFrom->Status) return false;
 	// even more safety (own info: success)
 	if (pFrom == this) return true;
 	// only if other object has info

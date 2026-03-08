@@ -276,7 +276,12 @@ void SReplaceChar(char *str, char fc, char tc)
 {
 	while (str && *str)
 	{
-		if (*str == fc) *str = tc; str++;
+		if (*str == fc)
+		{
+			*str = tc;
+		}
+
+		str++;
 	}
 }
 
