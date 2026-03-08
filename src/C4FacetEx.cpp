@@ -183,9 +183,38 @@ bool C4FacetExSurface::Load(C4Group &hGroup, const char *szName, int iWdt, int i
 	}
 	// Load surface
 	if (!Face.Load(hGroup, szFilename, fOwnPal, fNoErrIfNotFound)) return false;
+
 	// Set facet
-	if (iWdt == C4FCT_Full) iWdt = Face.Wdt; if (iWdt == C4FCT_Height) iWdt = Face.Hgt; if (iWdt == C4FCT_Width) iWdt = Face.Wdt;
-	if (iHgt == C4FCT_Full) iHgt = Face.Hgt; if (iHgt == C4FCT_Height) iHgt = Face.Hgt; if (iHgt == C4FCT_Width) iHgt = Face.Wdt;
+	if (iWdt == C4FCT_Full)
+	{
+		iWdt = Face.Wdt;
+	}
+
+	if (iWdt == C4FCT_Height)
+	{
+		iWdt = Face.Hgt;
+	}
+
+	if (iWdt == C4FCT_Width)
+	{
+		iWdt = Face.Wdt;
+	}
+
+	if (iHgt == C4FCT_Full)
+	{
+		iHgt = Face.Hgt;
+	}
+
+	if (iHgt == C4FCT_Height)
+	{
+		iHgt = Face.Hgt;
+	}
+
+	if (iHgt == C4FCT_Width)
+	{
+		iHgt = Face.Wdt;
+	}
+
 	Set(&Face, 0, 0, iWdt, iHgt, 0, 0);
 	return true;
 }

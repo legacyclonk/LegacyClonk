@@ -461,9 +461,11 @@ bool ObjectComLineConstruction(C4Object *cObj)
 			if (tstruct->Def->LineConnect & C4D_Power_Output) connect_okay = true;
 			break;
 		case C4D_Line_Source:
-			if (tstruct->Def->LineConnect & C4D_Liquid_Output) connect_okay = true; break;
+			if (tstruct->Def->LineConnect & C4D_Liquid_Output) connect_okay = true;
+			break;
 		case C4D_Line_Drain:
-			if (tstruct->Def->LineConnect & C4D_Liquid_Input)  connect_okay = true; break;
+			if (tstruct->Def->LineConnect & C4D_Liquid_Input)  connect_okay = true;
+			break;
 		default: return false; // Undefined line type
 		}
 		if (!connect_okay)

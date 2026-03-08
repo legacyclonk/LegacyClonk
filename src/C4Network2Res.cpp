@@ -383,7 +383,8 @@ bool C4Network2Res::SetByFile(const char *strFilePath, bool fTemp, C4Network2Res
 	// so it needs to be a file
 	if (!FileExists(szFile))
 	{
-		if (!fSilent) pParent->logger->error("SetByFile: file {} not found!", strFilePath); return false;
+		if (!fSilent) pParent->logger->error("SetByFile: file {} not found!", strFilePath);
+		return false;
 	}
 	// calc checksum
 	uint32_t iCRC32;
@@ -595,11 +596,15 @@ bool C4Network2Res::GetStandalone(char *pTo, int32_t iMaxL, bool fSetOfficial, b
 			uint32_t iDirSize;
 			if (!DirSizeHelper::GetDirSize(szFile, &iDirSize, Config.Network.MaxLoadFileSize))
 			{
-				if (!fSilent) pParent->logger->error("could not get directory size of {}!", szFile); szStandalone[0] = '\0'; return false;
+				if (!fSilent) pParent->logger->error("could not get directory size of {}!", szFile);
+				szStandalone[0] = '\0';
+				return false;
 			}
 			if (iDirSize > uint32_t(Config.Network.MaxLoadFileSize))
 			{
-				if (!fSilent) pParent->logger->error("{} over size limit, will be marked unloadable!", szFile); szStandalone[0] = '\0'; return false;
+				if (!fSilent) pParent->logger->error("{} over size limit, will be marked unloadable!", szFile);
+				szStandalone[0] = '\0';
+				return false;
 			}
 		}
 		// log - this may take a few seconds
@@ -609,21 +614,31 @@ bool C4Network2Res::GetStandalone(char *pTo, int32_t iMaxL, bool fSetOfficial, b
 		{
 			if (!pParent->FindTempResFileName(szFile, szStandalone))
 			{
-				if (!fSilent) pParent->logger->error("GetStandalone: could not find free name for temporary file!"); szStandalone[0] = '\0'; return false;
+				if (!fSilent) pParent->logger->error("GetStandalone: could not find free name for temporary file!");
+				szStandalone[0] = '\0';
+				return false;
 			}
 			if (!C4Group_PackDirectoryTo(szFile, szStandalone, true))
 			{
-				if (!fSilent) pParent->logger->error("GetStandalone: could not pack directory!"); szStandalone[0] = '\0'; return false;
+				if (!fSilent) pParent->logger->error("GetStandalone: could not pack directory!");
+				szStandalone[0] = '\0';
+				return false;
 			}
 		}
 		else if (!C4Group_PackDirectory(szStandalone))
 		{
-			if (!fSilent) pParent->logger->error("GetStandalone: could not pack directory!"); if (!SEqual(szFile, szStandalone)) EraseDirectory(szStandalone); szStandalone[0] = '\0'; return false;
+			if (!fSilent) pParent->logger->error("GetStandalone: could not pack directory!");
+			if (!SEqual(szFile, szStandalone)) EraseDirectory(szStandalone);
+			szStandalone[0] = '\0';
+			return false;
 		}
 		// make sure directory is packed
 		if (DirectoryExists(szStandalone))
 		{
-			if (!fSilent) pParent->logger->error("GetStandalone: directory hasn't been packed!"); if (!SEqual(szFile, szStandalone)) EraseDirectory(szStandalone); szStandalone[0] = '\0'; return false;
+			if (!fSilent) pParent->logger->error("GetStandalone: directory hasn't been packed!");
+			if (!SEqual(szFile, szStandalone)) EraseDirectory(szStandalone);
+			szStandalone[0] = '\0';
+			return false;
 		}
 		strcpy(szFile, szStandalone);
 		fTempFile = true;
@@ -636,24 +651,32 @@ bool C4Network2Res::GetStandalone(char *pTo, int32_t iMaxL, bool fSetOfficial, b
 		// try C4Group (might be packed)
 		if (!pParent->FindTempResFileName(szFile, szStandalone))
 		{
-			if (!fSilent) pParent->logger->error("GetStandalone: could not find free name for temporary file!"); szStandalone[0] = '\0'; return false;
+			if (!fSilent) pParent->logger->error("GetStandalone: could not find free name for temporary file!");
+			szStandalone[0] = '\0';
+			return false;
 		}
 		if (!C4Group_CopyItem(szFile, szStandalone))
 		{
-			if (!fSilent) pParent->logger->error("GetStandalone: could not copy to temporary file!"); szStandalone[0] = '\0'; return false;
+			if (!fSilent) pParent->logger->error("GetStandalone: could not copy to temporary file!");
+			szStandalone[0] = '\0';
+			return false;
 		}
 	}
 
 	// remains missing? give up.
 	if (!FileExists(szStandalone))
 	{
-		if (!fSilent) pParent->logger->error("GetStandalone: file not found!"); szStandalone[0] = '\0'; return false;
+		if (!fSilent) pParent->logger->error("GetStandalone: file not found!");
+		szStandalone[0] = '\0';
+		return false;
 	}
 
 	// do optimizations (delete unneeded entries)
 	if (!OptimizeStandalone(fSilent))
 	{
-		if (!SEqual(szFile, szStandalone)) remove(szStandalone); szStandalone[0] = '\0'; return false;
+		if (!SEqual(szFile, szStandalone)) remove(szStandalone);
+		szStandalone[0] = '\0';
+		return false;
 	}
 
 	// get file size
@@ -662,13 +685,16 @@ bool C4Network2Res::GetStandalone(char *pTo, int32_t iMaxL, bool fSetOfficial, b
 	if (fAllowUnloadable)
 		if (iSize > uint32_t(Config.Network.MaxLoadFileSize))
 		{
-			if (!fSilent) pParent->logger->info("{} over size limit, will be marked unloadable!", szFile); szStandalone[0] = '\0'; return false;
+			if (!fSilent) pParent->logger->info("{} over size limit, will be marked unloadable!", szFile);
+			szStandalone[0] = '\0';
+			return false;
 		}
 	// check
 	if (!fSetOfficial && iSize != Core.getFileSize())
 	{
 		// remove file
-		if (!SEqual(szFile, szStandalone)) remove(szStandalone); szStandalone[0] = '\0';
+		if (!SEqual(szFile, szStandalone)) remove(szStandalone);
+		szStandalone[0] = '\0';
 		// sorry, this version isn't good enough :(
 		return false;
 	}
@@ -677,13 +703,15 @@ bool C4Network2Res::GetStandalone(char *pTo, int32_t iMaxL, bool fSetOfficial, b
 	uint32_t iCRC32;
 	if (!C4Group_GetFileCRC(szStandalone, &iCRC32))
 	{
-		if (!fSilent) pParent->logger->error("GetStandalone: could not calculate checksum!"); return false;
+		if (!fSilent) pParent->logger->error("GetStandalone: could not calculate checksum!");
+		return false;
 	}
 	// set / check
 	if (!fSetOfficial && iCRC32 != Core.getFileCRC())
 	{
 		// remove file, return
-		if (!SEqual(szFile, szStandalone)) remove(szStandalone); szStandalone[0] = '\0';
+		if (!SEqual(szFile, szStandalone)) remove(szStandalone);
+		szStandalone[0] = '\0';
 		return false;
 	}
 
@@ -1179,11 +1207,13 @@ bool C4Network2Res::OptimizeStandalone(bool fSilent)
 			char szNewStandalone[_MAX_PATH + 1];
 			if (!pParent->FindTempResFileName(szStandalone, szNewStandalone))
 			{
-				if (!fSilent) pParent->logger->error("OptimizeStandalone: could not find free name for temporary file!"); return false;
+				if (!fSilent) pParent->logger->error("OptimizeStandalone: could not find free name for temporary file!");
+				return false;
 			}
 			if (!C4Group_CopyItem(szStandalone, szNewStandalone))
 			{
-				if (!fSilent) pParent->logger->error("OptimizeStandalone: could not copy to temporary file!"); return false;
+				if (!fSilent) pParent->logger->error("OptimizeStandalone: could not copy to temporary file!");
+				return false;
 			} /* TODO: Test failure */
 			SCopy(szNewStandalone, szStandalone, sizeof(szStandalone) - 1);
 		}
@@ -1191,7 +1221,8 @@ bool C4Network2Res::OptimizeStandalone(bool fSilent)
 		C4Group Grp;
 		if (!Grp.Open(szStandalone))
 		{
-			if (!fSilent) pParent->logger->error("OptimizeStandalone: could not open player file!"); return false;
+			if (!fSilent) pParent->logger->error("OptimizeStandalone: could not open player file!");
+			return false;
 		}
 		// remove portrais
 		Grp.Delete(C4CFN_Portraits, true);

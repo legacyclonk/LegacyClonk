@@ -1138,7 +1138,8 @@ C4TexRef::~C4TexRef()
 		glDeleteTextures(1, &texName);
 	}
 #endif
-	if (lpDDraw) delete[] texLock.pBits; texLock.pBits = nullptr;
+	if (lpDDraw) delete[] texLock.pBits;
+	texLock.pBits = nullptr;
 	// remove from texture manager
 	pTexMgr->UnregTex(this);
 }
