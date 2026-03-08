@@ -151,6 +151,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 		-Werror=suggest-override
 		-Werror=parentheses
 		-Werror=reorder
+		-Werror=type-limits
 	)
 	add_compile_options(-Wno-overloaded-virtual -Wno-unused-parameter -Wno-missing-field-initializers)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -165,6 +166,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 		-Werror=misleading-indentation
 		-Werror=parentheses
 		-Werror=reorder
+		-Werror=type-limits
 	)
 
 	add_compile_options(-Wno-overloaded-virtual -Wno-unused-parameter -Wno-missing-designated-field-initializers -Wno-missing-field-initializers)

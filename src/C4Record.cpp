@@ -635,7 +635,7 @@ StdBuf C4Playback::ReWriteBinary()
 	for (chunks_t::const_iterator i = chunks.begin(); !fFinished && i != chunks.end(); i++)
 	{
 		// Check frame difference
-		if (i->Frame - iFrame < 0 || i->Frame - iFrame > 0xff)
+		if (iFrame > i->Frame || i->Frame - iFrame > 0xff)
 			logger->error("Invalid frame difference between chunks (0-255 allowed)! Data will be invalid!");
 		// Pack data
 		StdBuf Chunk;
