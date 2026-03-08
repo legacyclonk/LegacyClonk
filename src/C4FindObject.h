@@ -454,7 +454,7 @@ class C4SortObjectMultiple : public C4SortObject // apply next sort if previous 
 {
 public:
 	C4SortObjectMultiple(int32_t iCnt, C4SortObject **ppSorts, bool fFreeArray = true)
-		: C4SortObject(), iCnt(iCnt), ppSorts(ppSorts), fFreeArray(fFreeArray) {}
+		: C4SortObject(), fFreeArray(fFreeArray), iCnt(iCnt), ppSorts(ppSorts) {}
 	virtual ~C4SortObjectMultiple();
 
 private:

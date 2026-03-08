@@ -305,7 +305,7 @@ private:
 	class C4StartupScenSelDlg *pMainDlg;
 
 public:
-	C4MapFolderData() : fCoordinatesAdjusted(false), iScenCount(0), ppScenList(nullptr), iAccessGfxCount(0), ppAccessGfxList(nullptr), pMainDlg(nullptr) {}
+	C4MapFolderData() : fCoordinatesAdjusted(false), ppScenList(nullptr), iScenCount(0), ppAccessGfxList(nullptr), iAccessGfxCount(0), pMainDlg(nullptr) {}
 	~C4MapFolderData() { Clear(); }
 
 private:

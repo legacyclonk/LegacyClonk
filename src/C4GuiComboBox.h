@@ -74,7 +74,7 @@ public:
 	void SetComboCB(ComboBox_FillCB *pNewFillCallback);
 	static int32_t GetDefaultHeight();
 	void SetText(const char *szToText);
-	void SetReadOnly(bool fToVal) { if (fReadOnly = fToVal) AbortDropdown(false); }
+	void SetReadOnly(bool fToVal) { if ((fReadOnly = fToVal)) AbortDropdown(false); }
 	void SetSimple(bool fToVal) { fSimple = fToVal; }
 	const StdStrBuf GetText() { return StdStrBuf(Text, false); }
 	void SetFont(CStdFont *pToFont) { pUseFont = pToFont; }
