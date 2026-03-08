@@ -147,7 +147,6 @@ if (APPLE)
 	add_compile_options(-Wno-elaborated-enum-base)
 endif ()
 
-# Mark some warnings as error
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
 	add_compile_options(-Wall -Wextra)
 	add_compile_options(
@@ -158,7 +157,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
 		-Werror=reorder-ctor
 	)
 
-	add_compile_options(-Wno-unused-parameter -Wno-missing-designated-field-initializers)
+	add_compile_options(-Wno-unused-parameter -Wno-missing-designated-field-initializers -Wno-missing-field-initializers)
 endif ()
 
 # Adds the lines of file LIST_FILE to variable TARGET_LIST
