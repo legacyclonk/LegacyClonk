@@ -828,8 +828,18 @@ EntrySortFunc(const void *pEl1, const void *pEl2)
 {
 	C4ScenarioListLoader::Entry *pEntry1 = *static_cast<C4ScenarioListLoader::Entry * const *>(pEl1), *pEntry2 = *static_cast<C4ScenarioListLoader::Entry * const *>(pEl2);
 	// sort folders before scenarios
-	bool fS1, fS2;
-	if (!(fS1 = !pEntry1->GetIsFolder()) != !true != !(fS2 = !pEntry2->GetIsFolder())) return fS1 - fS2;
+	const bool entry1IsFolder{pEntry1->GetIsFolder() != nullptr};
+	const bool entry2IsFolder{pEntry2->GetIsFolder() != nullptr};
+
+	if (entry1IsFolder && !entry2IsFolder)
+	{
+		return -1;
+	}
+	else if (!entry1IsFolder && entry2IsFolder)
+	{
+		return 1;
+	}
+
 	// sort by folder index (undefined index 0 goes to the end)
 	if (!Config.Startup.AlphabeticalSorting) if (pEntry1->GetFolderIndex() || pEntry2->GetFolderIndex())
 	{
