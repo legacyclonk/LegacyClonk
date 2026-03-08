@@ -430,8 +430,8 @@ private:
 	PacketLink *pPackets;
 
 public:
-	const uint32_t getConnID() const { return iConnID; }
-	const uint32_t getPacketCount() const { return iPacketCount; }
+	uint32_t getConnID() const { return iConnID; }
+	uint32_t getPacketCount() const { return iPacketCount; }
 	void SetConnID(uint32_t inConnID) { iConnID = inConnID; }
 
 	const C4NetIOPacket *getPacket(uint32_t iNumber) const;
