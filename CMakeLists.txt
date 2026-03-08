@@ -139,7 +139,7 @@ endif ()
 if (MSVC)
 	# "multiple copy constructors specified"
 	add_compile_options(/wd4521)
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNUC")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	add_compile_options(-Wall -Wextra)
 
 	add_compile_options(
