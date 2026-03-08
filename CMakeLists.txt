@@ -151,7 +151,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 		-Werror=parentheses
 		-Werror=reorder
 	)
-	add_compile_options(-Wno-unused-parameter -Wno-missing-field-initializers)
+	add_compile_options(-Wno-overloaded-virtual -Wno-unused-parameter -Wno-missing-field-initializers)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	add_compile_options(-Wall -Wextra)
 
@@ -165,7 +165,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 		-Werror=reorder
 	)
 
-	add_compile_options(-Wno-unused-parameter -Wno-missing-designated-field-initializers -Wno-missing-field-initializers)
+	add_compile_options(-Wno-overloaded-virtual -Wno-unused-parameter -Wno-missing-designated-field-initializers -Wno-missing-field-initializers)
 endif ()
 
 # Incompatible with CF_ENUM
