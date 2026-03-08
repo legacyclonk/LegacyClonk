@@ -158,7 +158,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 		-Werror=dangling-else
 		-Werror=inconsistent-missing-override
 		-Werror=parentheses
-		-Werror=reorder-ctor
+		-Werror=reorder
 	)
 
 	add_compile_options(-Wno-unused-parameter -Wno-missing-designated-field-initializers -Wno-missing-field-initializers)
