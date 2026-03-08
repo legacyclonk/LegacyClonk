@@ -673,7 +673,7 @@ protected:
 		const char *Pos;
 
 		NameNode(NameNode *pParent = nullptr)
-			: Parent(pParent), PrevChild(nullptr), FirstChild(nullptr), NextChild(nullptr), LastChild(nullptr),
+			: Parent(pParent), FirstChild(nullptr), PrevChild(nullptr), NextChild(nullptr), LastChild(nullptr),
 			Indent(-1) {}
 	};
 	NameNode *pNameRoot, *pName;
