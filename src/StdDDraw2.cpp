@@ -88,6 +88,34 @@ void CBltTransform::TransformPoint(float &rX, float &rY)
 	rX = fX; // apply temp
 }
 
+CPattern::CPattern(const CPattern &nPattern)
+	: sfcPattern32{nPattern.sfcPattern32},
+	  sfcPattern8{nPattern.sfcPattern8},
+	  Wdt{nPattern.Wdt},
+	  Hgt{nPattern.Hgt},
+	  Zoom{nPattern.Zoom},
+	  Monochrome{nPattern.Monochrome},
+	  pClrs{nPattern.pClrs},
+	  pAlpha{nPattern.pAlpha}
+{
+	if (sfcPattern32) sfcPattern32->Lock();
+
+	if (nPattern.CachedPattern)
+	{
+		if (!sfcPattern32)
+		{
+			throw std::runtime_error{"Cached pattern without surface to back it"};
+		}
+
+		CachedPattern = new uint32_t[sfcPattern32->Wdt * sfcPattern32->Hgt];
+		memcpy(CachedPattern, nPattern.CachedPattern, sfcPattern32->Wdt * sfcPattern32->Hgt * 4);
+	}
+	else
+	{
+		CachedPattern = nullptr;
+	}
+}
+
 CPattern &CPattern::operator=(const CPattern &nPattern)
 {
 	pClrs        = nPattern.pClrs;

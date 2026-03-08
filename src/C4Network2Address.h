@@ -118,6 +118,12 @@ public:
 	C4Network2EndpointAddress(const C4Network2HostAddress::SpecialAddress addr, const std::uint16_t port = IPPORT_NONE) : C4Network2HostAddress{addr} { SetPort(port); }
 	explicit C4Network2EndpointAddress(const StdStrBuf &addr) { SetAddress(addr); }
 
+	C4Network2EndpointAddress &operator=(const C4Network2EndpointAddress &other)
+	{
+		SetAddress(other);
+		return *this;
+	}
+
 public:
 	std::string ToString(int flags = 0) const;
 
