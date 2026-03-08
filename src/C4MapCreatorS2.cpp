@@ -1518,7 +1518,7 @@ bool AlgoPolygon(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 				else
 				{
 					// if edge intersects line
-					if ((uY < iY == iY < cY) && (lX >= iX)) count++;
+					if (((uY < iY) == (iY < cY)) && (lX >= iX)) count++;
 					ignore = false;
 					uX = cX;
 					uY = cY;
@@ -1538,7 +1538,7 @@ bool AlgoPolygon(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 				else
 				{
 					// if edge intersects line
-					if (uY < iY == iY <= cY)
+					if ((uY < iY) == (iY <= cY))
 					{
 						// and edge intersects ray, because both points are right of iX
 						if (iX < (std::min)(uX, cX))
