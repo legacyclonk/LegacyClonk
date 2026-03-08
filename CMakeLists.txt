@@ -146,6 +146,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 		-Werror=cast-function-type
 		-Werror=dangling-else
 		-Werror=implicit-fallthrough
+		-Werror=misleading-indentation
 		-Werror=suggest-override
 		-Werror=parentheses
 		-Werror=reorder
@@ -159,6 +160,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 		-Werror=dangling-else
 		-Werror=implicit-fallthrough
 		-Werror=inconsistent-missing-override
+		-Werror=misleading-indentation
 		-Werror=parentheses
 		-Werror=reorder
 	)

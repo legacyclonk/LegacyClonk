@@ -504,9 +504,28 @@ void C4Def::Clear()
 
 	Script.Clear();
 	StringTable.Clear();
-	if (fClonkNamesOwned)  delete pClonkNames;  pClonkNames  = nullptr;
-	if (fRankNamesOwned)   delete pRankNames;   pRankNames   = nullptr;
-	if (fRankSymbolsOwned) delete pRankSymbols; pRankSymbols = nullptr;
+
+	if (fClonkNamesOwned)
+	{
+		delete pClonkNames;
+	}
+
+	pClonkNames = nullptr;
+
+	if (fRankNamesOwned)
+	{
+		delete pRankNames;
+	}
+
+	pRankNames = nullptr;
+
+	if (fRankSymbolsOwned)
+	{
+		delete pRankSymbols;
+	}
+
+	pRankSymbols = nullptr;
+
 	delete pFairCrewPhysical; pFairCrewPhysical = nullptr;
 	fClonkNamesOwned = fRankNamesOwned = fRankSymbolsOwned = false;
 
