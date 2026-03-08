@@ -62,12 +62,16 @@ bool ValidateString(StdStrBuf &rsString, ValidationOption eOption)
 		if (rsString.ReplaceChar('\\', '_')) fValid = false;
 
 		// fallthrough to general file name validation
+		[[fallthrough]];
+
 	case VAL_SubPathFilename: // filenames and optional subpath
 		// do not traverse upwards in file hierarchy
 		if (rsString.Replace("..", "__")) fValid = false;
 		if (*rsString.getData() == '/' || *rsString.getData() == '\\') { *rsString.getMData() = '_'; fValid = false; }
 
 		// fallthrough to general file name validation
+		[[fallthrough]];
+
 	case VAL_FullPath: // full filename paths
 		// some characters are prohibited in filenames in general
 		if (rsString.ReplaceChar('*', '_')) fValid = false;

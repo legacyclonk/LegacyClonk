@@ -1597,6 +1597,8 @@ void C4AulParseState::Parse_FuncHead()
 			if (a->Def)
 				break;
 			// func in global context: fallthru
+			[[fallthrough]];
+
 		case AA_GLOBAL:
 			if (a->Engine->GlobalNamedNames.GetItemNr(Idtf) != -1)
 				throw C4AulParseError(this, "function definition: name already in use (global variable)");
@@ -1730,6 +1732,8 @@ void C4AulParseState::Parse_FuncHead()
 		if (a->Def)
 			break;
 		// func in global context: fallthru
+		[[fallthrough]];
+
 	case AA_GLOBAL:
 		if (a->Engine->GlobalNamedNames.GetItemNr(Idtf) != -1)
 			throw C4AulParseError(this, "function definition: name already in use (global variable)");
@@ -1933,7 +1937,9 @@ void C4AulParseState::Parse_Statement()
 		}
 
 		// fall through
+		[[fallthrough]];
 	}
+
 	case ATT_BOPEN:
 	case ATT_BOPEN2:
 	case ATT_OPERATOR:
