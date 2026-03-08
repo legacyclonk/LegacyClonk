@@ -879,7 +879,7 @@ void C4Playback::Clear()
 	fLoadSequential = false;
 #ifdef DEBUGREC
 	C4IDPacket *pkt;
-	while (pkt = DebugRec.firstPkt()) DebugRec.Delete(pkt);
+	while ((pkt = DebugRec.firstPkt())) DebugRec.Delete(pkt);
 #ifdef DEBUGREC_EXTFILE
 	DbgRecFile.Close();
 #endif
@@ -987,7 +987,7 @@ void C4Playback::Check(C4RecordChunkType eType, const uint8_t *pData, int iSize)
 #else
 	// check debug rec in list
 	C4IDPacket *pkt;
-	if (pkt = DebugRec.firstPkt())
+	if ((pkt = DebugRec.firstPkt()))
 	{
 		// copy from list
 		PktInReplay = *static_cast<C4PktDebugRec *>(pkt->getPkt());
