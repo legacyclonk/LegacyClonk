@@ -145,6 +145,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	add_compile_options(
 		-Werror=cast-function-type
 		-Werror=dangling-else
+		-Werror=ignored-qualifiers
 		-Werror=implicit-fallthrough
 		-Werror=misleading-indentation
 		-Werror=suggest-override
@@ -158,6 +159,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	add_compile_options(
 		-Werror=cast-function-type-mismatch
 		-Werror=dangling-else
+		-Werror=ignored-qualifiers
 		-Werror=implicit-fallthrough
 		-Werror=inconsistent-missing-override
 		-Werror=misleading-indentation

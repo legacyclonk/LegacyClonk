@@ -77,9 +77,9 @@ public:
 		const C4Facet &GetIconFacet() const { return fctIcon; }
 		const C4Facet &GetTitlePicture() const { return fctTitle; }
 		const StdStrBuf &GetDesc() const { return sDesc; }
-		const int GetIconIndex() { return iIconIndex; }
-		const int GetDifficulty() { return iDifficulty; }
-		const int GetFolderIndex() { return iFolderIndex; }
+		int GetIconIndex() { return iIconIndex; }
+		int GetDifficulty() { return iDifficulty; }
+		int GetFolderIndex() { return iFolderIndex; }
 		Entry *GetNext() const { return pNext; }
 		class Folder *GetParent() const { return pParent; }
 		virtual StdStrBuf GetTypeName() = 0;
