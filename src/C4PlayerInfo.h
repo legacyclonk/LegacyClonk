@@ -107,10 +107,10 @@ private:
 
 public:
 	C4PlayerInfo() // construct empty
-		: dwFlags(0), iID(0), pRes(nullptr), dwColor(0xffffff), sLeagueAccount(""),
+		: dwFlags(0), eType(C4PT_User), iID(0), pRes(nullptr), dwColor(0xffffff),
 		dwOriginalColor(0xffffff), dwAlternateColor(0), idSavegamePlayer(0), idTeam(0),
-		iLeagueScore(0), iLeagueRank(0), iLeagueRankSymbol(0), iLeagueProjectedGain(-1), iLeaguePerformance(0),
-		iInGameNumber(-1), iInGameJoinFrame(-1), iInGamePartFrame(-1), eType(C4PT_User), idExtraData(C4ID_None) {}
+		iInGameNumber(-1), iInGameJoinFrame(-1), iInGamePartFrame(-1), idExtraData(C4ID_None), sLeagueAccount(""),
+		iLeagueScore(0), iLeagueRank(0), iLeagueRankSymbol(0), iLeagueProjectedGain(-1), iLeaguePerformance(0) {}
 
 	void Clear(); // clear fields
 

@@ -339,8 +339,8 @@ public:
 
 private:
 	CB *pCBClass;
-	ParType par;
 	Func CBFunc;
+	ParType par;
 
 public:
 	virtual void DoCall(class Element *pElement) override
@@ -1190,13 +1190,13 @@ protected:
 
 public:
 	CallbackButton(ArrowButton::ArrowFct eDir, const C4Rect &rtBounds, typename DlgCallback<CallbackDlg>::Func pFn, CallbackDlg *pCB = nullptr)
-		: Base(eDir, rtBounds, 0), pCallbackFn(pFn), pCB(pCB) {}
+		: Base(eDir, rtBounds, 0), pCB(pCB), pCallbackFn(pFn) {}
 	CallbackButton(const char *szBtnText, const C4Rect &rtBounds, typename DlgCallback<CallbackDlg>::Func pFn, CallbackDlg *pCB = nullptr)
-		: Base(szBtnText, rtBounds), pCallbackFn(pFn), pCB(pCB) {}
+		: Base(szBtnText, rtBounds), pCB(pCB), pCallbackFn(pFn) {}
 	CallbackButton(Icons eUseIcon, const C4Rect &rtBounds, char cHotkey, typename DlgCallback<CallbackDlg>::Func pFn, CallbackDlg *pCB = nullptr)
-		: Base(eUseIcon, rtBounds, cHotkey), pCallbackFn(pFn), pCB(pCB) {}
+		: Base(eUseIcon, rtBounds, cHotkey), pCB(pCB), pCallbackFn(pFn) {}
 	CallbackButton(int32_t iID, const C4Rect &rtBounds, char cHotkey, typename DlgCallback<CallbackDlg>::Func pFn, CallbackDlg *pCB = nullptr)
-		: Base(iID, rtBounds, cHotkey), pCallbackFn(pFn), pCB(pCB) {}
+		: Base(iID, rtBounds, cHotkey), pCB(pCB), pCallbackFn(pFn) {}
 };
 
 // a button doing some callback to any class

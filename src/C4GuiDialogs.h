@@ -145,13 +145,14 @@ public:
 	void SetFrameDeco(FrameDecoration *pNewDeco) // change border decoration
 	{
 		if (pFrameDeco) pFrameDeco->Deref();
-		if (pFrameDeco = pNewDeco) pNewDeco->Ref();
+		if ((pFrameDeco = pNewDeco)) pNewDeco->Ref();
 		UpdateOwnPos(); // margin may have changed; might need to reposition stuff
 	}
 
 	void ClearFrameDeco() // clear border decoration; no own pos update!
 	{
-		if (pFrameDeco) pFrameDeco->Deref(); pFrameDeco = nullptr;
+		if (pFrameDeco) pFrameDeco->Deref();
+		pFrameDeco = nullptr;
 	}
 
 	FrameDecoration *GetFrameDecoration() const { return pFrameDeco; }

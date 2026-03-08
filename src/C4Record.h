@@ -240,9 +240,9 @@ protected:
 
 public:
 	C4PktDebugRec() : eType(RCT_Undefined) {}
-	C4PktDebugRec(const C4PktDebugRec &rCopy) : Data(rCopy.Data), eType(rCopy.eType) {}
+	C4PktDebugRec(const C4PktDebugRec &rCopy) : eType(rCopy.eType), Data(rCopy.Data) {}
 	C4PktDebugRec(C4RecordChunkType eType, const StdBuf &rCpyData)
-		: Data(rCpyData), eType(eType) {}
+		: eType(eType), Data(rCpyData) {}
 
 	C4RecordChunkType getType() const { return eType; }
 	size_t getSize() const { return Data.getSize(); }

@@ -574,7 +574,7 @@ class StdPlainPtrAdapt : public StdPtrAdapt<PlainPtrRef<T>>
 
 public:
 	StdPlainPtrAdapt(T *&rpObj, bool fAllowNull = true, const char *szNaming = "Data")
-	: ptr{rpObj}, StdPtrAdapt<PlainPtrRef<T>>{ptr, fAllowNull, szNaming} {}
+	: StdPtrAdapt<PlainPtrRef<T>>{ptr, fAllowNull, szNaming}, ptr{rpObj} {}
 };
 
 template <class T>

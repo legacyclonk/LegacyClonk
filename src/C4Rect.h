@@ -111,7 +111,8 @@ public:
 
 	void RemoveIndexedRect(size_t idx)
 	{
-		if (idx < GetCount() - 1) Get(idx) = Get(GetCount() - 1); pop_back();
+		if (idx < GetCount() - 1) Get(idx) = Get(GetCount() - 1);
+		pop_back();
 	}
 
 	void Clear() { clear(); }

@@ -178,7 +178,7 @@ class C4Network2RefClient : public C4Network2HTTPClient
 	bool fVerSet;
 
 public:
-	C4Network2RefClient() : fVerSet(false), C4Network2HTTPClient() {}
+	C4Network2RefClient() : C4Network2HTTPClient(), fVerSet(false) {}
 
 	bool QueryReferences();
 	bool GetReferences(C4Network2Reference ** &rpReferences, int32_t &rRefCount);
