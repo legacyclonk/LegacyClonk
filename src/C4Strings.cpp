@@ -506,8 +506,8 @@ bool SRemoveModule(char *szList, const char *szModule, bool fCaseSensitive)
 	iPos = 0;
 	if (iMod > 0) iPos = SCharPos(';', szList, iMod - 1) + 1;
 	// Get module length
-	iLen = SCharPos(';', szList + iPos);
-	if (iLen < 0) iLen = SLen(szList); else iLen += 1;
+	iLen = static_cast<std::size_t>(SCharPos(';', szList + iPos));
+	if (iLen == SizeMax) iLen = SLen(szList); else iLen += 1;
 	// Delete module
 	SDelete(szList, iLen, iPos);
 	// Success
