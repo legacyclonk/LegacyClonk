@@ -178,18 +178,43 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 		{
 		case WM_LBUTTONDOWN:
 			// movement update needed before, so target is always up-to-date
-			Console.EditCursor.Move(cvp->ViewX + static_cast<int32_t>(LOWORD(lParam) / scale), cvp->ViewY + static_cast<int32_t>(HIWORD(lParam) / scale), wParam);
+			Console.EditCursor.Move(cvp, static_cast<int32_t>(LOWORD(lParam) / scale), static_cast<int32_t>(HIWORD(lParam) / scale), wParam);
 			Console.EditCursor.LeftButtonDown(wParam & MK_CONTROL); break;
 
 		case WM_LBUTTONUP: Console.EditCursor.LeftButtonUp(); break;
 
-		case WM_RBUTTONDOWN: Console.EditCursor.RightButtonDown(wParam & MK_CONTROL); break;
+		case WM_RBUTTONDOWN:
+			Console.EditCursor.Move(cvp, static_cast<int32_t>(LOWORD(lParam) / scale), static_cast<int32_t>(HIWORD(lParam) / scale), wParam);
+			Console.EditCursor.RightButtonDown(wParam & MK_CONTROL); break;
 
 		case WM_RBUTTONUP: Console.EditCursor.RightButtonUp(); break;
 
 		case WM_MBUTTONUP: Console.EditCursor.MiddleButtonUp(); break;
 
-		case WM_MOUSEMOVE: Console.EditCursor.Move(cvp->ViewX + static_cast<int32_t>(LOWORD(lParam) / scale), cvp->ViewY + static_cast<int32_t>(HIWORD(lParam) / scale), wParam); break;
+		case WM_MOUSEMOVE: Console.EditCursor.Move(cvp, static_cast<int32_t>(LOWORD(lParam) / scale), static_cast<int32_t>(HIWORD(lParam) / scale), wParam); break;
+
+		case WM_KEYDOWN:
+			if (wParam == VK_UP)
+			{
+				Console.EditCursor.MoveSelection(0, -1);
+			}
+			if (wParam == VK_DOWN)
+			{
+				Console.EditCursor.MoveSelection(0, 1);
+			}
+			if (wParam == VK_RIGHT)
+			{
+				Console.EditCursor.MoveSelection(1, 0);
+			}
+			if (wParam == VK_LEFT)
+			{
+				Console.EditCursor.MoveSelection(-1, 0);
+			}
+
+		case WM_MOUSEWHEEL:
+			const std::int32_t Direction {static_cast<short>(wParam >> 16) > 0 ? 1 : -1};
+			cvp->IncrementBrushSize(Direction);
+			break;
 		}
 	}
 
@@ -340,7 +365,7 @@ GtkWidget *C4ViewportWindow::InitGUI()
 
 	gtk_container_add(GTK_CONTAINER(window), table);
 
-	gtk_widget_add_events(window, GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK | GDK_POINTER_MOTION_MASK);
+	gtk_widget_add_events(window, GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_SCROLL_MASK |  GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK | GDK_POINTER_MOTION_MASK);
 
 	gtk_drag_dest_set(drawing_area, GTK_DEST_DEFAULT_ALL, drag_drop_entries, 1, GDK_ACTION_COPY);
 	g_signal_connect(G_OBJECT(drawing_area), "drag-data-received", G_CALLBACK(OnDragDataReceivedStatic), this);
@@ -456,8 +481,16 @@ void C4ViewportWindow::OnRealizeStatic(GtkWidget *widget, gpointer user_data)
 
 gboolean C4ViewportWindow::OnKeyPressStatic(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
+	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
+	if (!window)
+	{
+		return TRUE;
+	}
+
 	if (event->keyval == GDK_KEY_Scroll_Lock)
+	{
 		static_cast<C4ViewportWindow *>(user_data)->cvp->TogglePlayerLock();
+	}
 #ifndef NDEBUG
 	switch (event->keyval)
 	{
@@ -467,22 +500,51 @@ gboolean C4ViewportWindow::OnKeyPressStatic(GtkWidget *widget, GdkEventKey *even
 	case GDK_KEY_4: Config.Graphics.TexIndent  += 5; printf("%d\n", Config.Graphics.TexIndent);  break;
 	}
 #endif
-	uint32_t key = XkbKeycodeToKeysym(GDK_WINDOW_XDISPLAY(event->window), event->hardware_keycode, 0, 0);
+	std::uint32_t key = XkbKeycodeToKeysym(GDK_WINDOW_XDISPLAY(event->window), event->hardware_keycode, 0, 0);
 	Game.DoKeyboardInput(key, KEYEV_Down, !!(event->state & GDK_MOD1_MASK), !!(event->state & GDK_CONTROL_MASK), !!(event->state & GDK_SHIFT_MASK), false, nullptr);
-	return TRUE;
+
+	if (Console.EditCursor.GetMode() != C4CNS_ModePlay)
+	{
+		switch (event->keyval)
+		{
+		case GDK_KEY_Up:
+			Console.EditCursor.MoveSelection(0, -1);
+			break;
+		case GDK_KEY_Down:
+			Console.EditCursor.MoveSelection(0, 1);
+			break;
+		case GDK_KEY_Right:
+			Console.EditCursor.MoveSelection(1, 0);
+			break;
+		case GDK_KEY_Left:
+			Console.EditCursor.MoveSelection(-1, 0);
+			break;
+		}
+	}
+		return TRUE;
 }
 
 gboolean C4ViewportWindow::OnKeyReleaseStatic(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
+	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
+	if (!window)
+	{
+		return TRUE;
+	}
+
 	uint32_t key = XkbKeycodeToKeysym(GDK_WINDOW_XDISPLAY(event->window), event->hardware_keycode, 0, 0);
 	Game.DoKeyboardInput(key, KEYEV_Up, !!(event->state & GDK_MOD1_MASK), !!(event->state & GDK_CONTROL_MASK), !!(event->state & GDK_SHIFT_MASK), false, nullptr);
+
 	return TRUE;
 }
 
 gboolean C4ViewportWindow::OnScrollStatic(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
 	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
-
+	if (!window)
+	{
+		return TRUE;
+	}
 	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
 	{
 		switch (event->direction)
@@ -495,6 +557,18 @@ gboolean C4ViewportWindow::OnScrollStatic(GtkWidget *widget, GdkEventScroll *eve
 			break;
 		case GDK_SCROLL_LEFT: case GDK_SCROLL_RIGHT:
 			// no horizontal scrolling implemented so far
+			break;
+		}
+	}
+	else if (window->cvp)
+	{
+		switch (event->direction)
+		{
+		case GDK_SCROLL_UP:
+			window->cvp->IncrementBrushSize(1);
+			break;
+		case GDK_SCROLL_DOWN:
+			window->cvp->IncrementBrushSize(-1);
 			break;
 		}
 	}
@@ -593,7 +667,7 @@ gboolean C4ViewportWindow::OnMotionNotifyStatic(GtkWidget *widget, GdkEventMotio
 	{
 		const auto scale = Application.GetScale();
 
-		Console.EditCursor.Move(window->cvp->ViewX + static_cast<int32_t>(event->x / scale), window->cvp->ViewY + static_cast<int32_t>(event->y / scale), event->state);
+		Console.EditCursor.Move(window->cvp, static_cast<int32_t>(event->x / scale), static_cast<int32_t>(event->y / scale), event->state);
 	}
 
 	return TRUE;
@@ -715,6 +789,12 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 			case Button3:
 				Console.EditCursor.RightButtonDown(e.xbutton.state & MK_CONTROL);
 				break;
+			case Button4:
+				cvp->IncrementBrushSize(1);
+				break;
+			case Button5:
+				cvp->IncrementBrushSize(-1);
+				break;
 			}
 		}
 	}
@@ -759,7 +839,7 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 		{
 			const auto scale = Application.GetScale();
 
-			Console.EditCursor.Move(cvp->ViewX + static_cast<int32_t>(e.xbutton.x / scale), cvp->ViewY + static_cast<int32_t>(e.xbutton.y / scale), e.xbutton.state);
+			Console.EditCursor.Move(cvp, static_cast<int32_t>(e.xbutton.x / scale), static_cast<int32_t>(e.xbutton.y / scale), e.xbutton.state);
 		}
 		break;
 	case ConfigureNotify:
@@ -771,6 +851,26 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 #endif // USE_X11
 
 #endif // WITH_DEVELOPER_MODE/_WIN32
+
+void C4Viewport::IncrementBrushSize(std::int32_t Direction)
+{
+	const std::int32_t PreviousBrushSize {Console.ToolsDlg.Grade};
+	if (Game.Landscape.Mode == C4LSC_Exact)
+	{
+		Console.ToolsDlg.ChangeGrade(Direction);
+	}
+	else
+	{
+		const std::int32_t ZoomHalf {Game.Landscape.MapZoom / 2};
+		// Snap to grid for static landscapes.
+		const std::int32_t BrushSizeIncrements {Direction * ZoomHalf};
+		Console.ToolsDlg.ChangeGrade(BrushSizeIncrements);
+	}
+	if(PreviousBrushSize != Console.ToolsDlg.Grade)
+	{
+		DebugLog(spdlog::level::info, "Current brush size: {}", Console.ToolsDlg.Grade);
+	}
+}
 
 void C4ViewportWindow::Close()
 {
