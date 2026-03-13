@@ -306,7 +306,8 @@ public:
 	virtual void Clear();
 	virtual void Default();
 	virtual CStdGLCtx *CreateContext(CStdWindow *, CStdApp *) { return nullptr; }
-#ifdef _WIN32
+// TODO: Remove
+#if FALSE //def _WIN32
 	virtual CStdGLCtx *CreateContext(HWND, CStdApp *) { return nullptr; }
 #endif
 	virtual void PageFlip() = 0;

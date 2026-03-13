@@ -216,6 +216,9 @@ void CStdApp::Init(const int argc, char **const argv)
 	static constexpr auto allLevels = static_cast<GLogLevelFlags>(G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION);
 	glibLogHandlerId = g_log_set_handler(nullptr, allLevels, gtkLogFunction, &glibLogger);
 #endif
+
+
+
 }
 
 bool CStdApp::InitTimer()
@@ -362,12 +365,13 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
 	{
+		ImGui_ImplSDL2_ProcessEvent(&event);
 		HandleSDLEvent(event);
 	}
 #endif
 
 #ifdef WITH_GLIB
-	const auto tvTimeout = static_cast<unsigned int>(tv.tv_sec * 1000 + tv.tv_usec / 1000);
+	const auto tvTimeout = static_cast<unsigned int>(tv.tv_sec * 1000000 + tv.tv_nsec / 1000000);
 	bool timeoutElapsed{false};
 	guint timeoutHandle{0};
 

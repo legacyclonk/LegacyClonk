@@ -213,6 +213,9 @@ endif ()
 # Also use for windows ( TODO: Rename file and maybe move to some cmake filelist )
 list(APPEND CLONK_SOURCES src/StdAppUnix.cpp)
 
+file(GLOB IMGUI_FILES "src/imgui/*")
+list(APPEND CLONK_SOURCES ${IMGUI_FILES})
+
 if (USE_SDL_MAINLOOP OR USE_SDL_MIXER)
 	append_filelist(CLONK_SOURCES EngineSdl)
 endif ()

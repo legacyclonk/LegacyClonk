@@ -17,6 +17,8 @@
 /* Operates viewports, message board and draws the game */
 
 #include <C4GraphicsSystem.h>
+#include "imgui/imgui_impl_opengl2.h"
+#include "imgui/imgui_impl_sdl2.h"
 
 #include <C4Viewport.h>
 #include <C4Application.h>
@@ -114,6 +116,41 @@ void C4GraphicsSystem::FinishDrawing()
 	if (Application.isFullScreen) Application.DDraw->PageFlip();
 }
 
+void C4GraphicsSystem::DrawImGUI()
+{
+	// IMGUI extras
+	ImGui_ImplOpenGL2_NewFrame();
+	ImGui_ImplSDL2_NewFrame();
+	ImGui::NewFrame();
+
+	// New GUI comes here
+	ImGui::ShowDemoWindow();
+
+	ImGui::Begin("Another Window");
+	ImGui::Text("Hello from another window!");
+	ImGui::End();
+	ImGui::ShowMetricsWindow();
+	ImGui::ShowDebugLogWindow();
+
+	ImGui::SetCurrentContext(Application.DDraw->CurrentImguiContext);
+	ImGui::Render();
+
+	std::array<GLfloat, 4 * 4> textureMatrix;
+	glGetFloatv(GL_TEXTURE_MATRIX, textureMatrix.data());
+	glMatrixMode(GL_TEXTURE);
+	glLoadIdentity();
+
+	//GLint last_program;
+	//glGetIntegerv(GL_CURRENT_PROGRAM, &last_program);
+	//glUseProgram(0);
+	CStdGLShaderProgram::GetCurrentShaderProgram()->Deselect();
+	ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+	//glUseProgram(last_program);
+
+	glLoadMatrixf(textureMatrix.data());
+
+}
+
 void C4GraphicsSystem::Execute()
 {
 	// activity check
@@ -141,6 +178,7 @@ void C4GraphicsSystem::Execute()
 	{
 		if (!fBGDrawn && iRedrawBackground) ClearFullscreenBackground();
 		Game.pGUI->Render(!fBGDrawn);
+		DrawImGUI();
 		FinishDrawing();
 		return;
 	}
@@ -154,7 +192,11 @@ void C4GraphicsSystem::Execute()
 			DrawFullscreenBackground();
 
 	// Screen rate skip frame draw
-	ScreenTick++; if (ScreenTick >= ScreenRate) ScreenTick = 0;
+	ScreenTick++;
+	if (ScreenTick >= ScreenRate)
+	{
+		ScreenTick = 0;
+	}
 
 	// Reset object audibility
 	Game.Objects.ResetAudibility();
@@ -197,6 +239,8 @@ void C4GraphicsSystem::Execute()
 		ApplyGamma();
 		fSetGamma = false;
 	}
+
+	DrawImGUI();
 
 	// done
 	FinishDrawing();

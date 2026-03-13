@@ -38,6 +38,9 @@
 #include "StdRegistry.h" // For DDraw emulation warning
 #endif
 
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_sdl2.h"
+#include "imgui/imgui_impl_opengl2.h"
 #include <cassert>
 #include <stdexcept>
 
@@ -213,7 +216,7 @@ void C4Application::DoInit()
 	spdlog::info(C4ENGINEINFOLONG);
 	spdlog::info("Version: " C4VERSION " " C4_OS);
 
-	// Initialize OpenGL
+	// Initialize OpenGL 2.1
 	DDraw = DDrawInit(this, LogSystem, Config.Graphics.Engine);
 	if (!DDraw) { LogFatal(C4ResStrTableKey::IDS_ERR_DDRAW); Clear(); throw StartupException{LogSystem.GetFatalErrorString()}; }
 
@@ -226,6 +229,26 @@ void C4Application::DoInit()
 	// Initialize gamepad
 	if (!pGamePadControl && Config.General.GamepadEnabled)
 		pGamePadControl = new C4GamePadControl();
+
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	dynamic_cast<CStdGL*>(DDraw)->CurrentImguiContext = ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	//ImFont* vecfont = io.Fonts->AddFontDefaultVector();
+	//IM_ASSERT(vecfont != nullptr);
+
+	float main_scale = ImGui_ImplSDL2_GetContentScaleForDisplay(0);
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.ScaleAllSizes(1.5);
+	//style.FontScaleDpi = main_scale;
+	//ImFont* font = io.Fonts->AddFontFromFileTTF("/fonts/DroidSans.ttf");
+	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\arial.ttf");
+	//IM_ASSERT(font != nullptr);
+	// Setup Platform/Renderer backends
+	ImGui_ImplSDL2_InitForOpenGL(pWindow->GetSDLWindow(), dynamic_cast<CStdGL*>(DDraw)->GetMainCtx().GetGLContext());
+	ImGui_ImplOpenGL2_Init();
 
 	AppState = C4AS_PreInit;
 }
@@ -323,6 +346,11 @@ void C4Application::Clear()
 	MusicSystem.reset();
 	AudioSystem.reset();
 	ToastSystem.reset();
+
+	ImGui_ImplOpenGL2_Shutdown();
+	ImGui_ImplSDL2_Shutdown();
+	ImGui::DestroyContext();
+
 	// Clear direct draw (late, because it's needed for e.g. Log)
 	delete DDraw; DDraw = nullptr;
 	// Close window
@@ -478,6 +506,7 @@ void C4Application::Execute()
 		// Sound
 		SoundSystem->Execute();
 		// Gamepad
+		// TODO: Not used with sdl since it is handled in FeedEvent
 		if (pGamePadControl) pGamePadControl->Execute();
 		break;
 	}
