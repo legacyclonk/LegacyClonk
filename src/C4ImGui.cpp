@@ -53,8 +53,8 @@ C4ImGui::C4ImGui(SDL_Window* window)
 	ImGuiIO& io{ImGui::GetIO()};
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+	ImFont* vecfont = io.Fonts->AddFontDefaultVector();
 
-	ImGui::StyleColorsDark();
 	SetStyle();
 
 	ThrowIfFailed(ImGui_ImplSDL2_InitForOpenGL(window, nullptr), "ImGui SDL2 init");
