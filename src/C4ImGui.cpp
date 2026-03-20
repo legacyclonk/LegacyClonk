@@ -107,11 +107,18 @@ void C4ImGui::SetVisible(bool visible)
 	ShowCursor(visible);
 }
 
-void C4ImGui::NewFrame()
+bool C4ImGui::NewFrame()
 {
+	if(!context)
+	{
+		return false;
+	}
 	Select();
+
 	ImGui_ImplOpenGL2_NewFrame();
+	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
+	return true;
 }
 
 void C4ImGui::Render()

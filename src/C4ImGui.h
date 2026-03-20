@@ -41,7 +41,7 @@ public:
 	void Select();
 	[[nodiscard]] Selected SelectTemporary();
 	void SetVisible(bool visible);
-	void NewFrame();
+	bool NewFrame();
 	void Render();
 
 /*
