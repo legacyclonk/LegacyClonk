@@ -47,8 +47,9 @@ static void ThrowIfFailed(const bool result, const char *const message)
 
 C4ImGui::C4ImGui(SDL_Window* window)
 {
+	ImGuiContext* prev_ctx = ImGui::GetCurrentContext();
 	context = ImGui::CreateContext();
-	Select();
+	Select(); // Set explicitly since ImGui::CreateContext won't change the global context if there was already one assigned.
 	ImGuiIO& io{ImGui::GetIO()};
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
@@ -58,6 +59,12 @@ C4ImGui::C4ImGui(SDL_Window* window)
 
 	ThrowIfFailed(ImGui_ImplSDL2_InitForOpenGL(window, nullptr), "ImGui SDL2 init");
 	ThrowIfFailed(ImGui_ImplOpenGL2_Init(), "ImGui OpenGL2 init");
+
+	// Reset outside context so we don't run into errors if this constructor was called via another ImGui UI (e.g When creating a new viewport).
+	if(prev_ctx)
+	{
+		ImGui::SetCurrentContext(prev_ctx);
+	}
 }
 
 C4ImGui::~C4ImGui()
