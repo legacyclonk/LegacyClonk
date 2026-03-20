@@ -178,12 +178,12 @@ void C4Application::DoInit()
 	// Init carrier window
 	if (isFullScreen)
 	{
-		if (!FullScreen.Init(this))
+		C4Rect Bounds{0,0, static_cast<int32_t>(Config.Graphics.ResX * GetScale()), static_cast<int32_t>(Config.Graphics.ResY * GetScale())};
+		if (!FullScreen.Init(this, STD_PRODUCT, Bounds))
 		{
 			Clear(); return;
 		}
 		pWindow = &FullScreen;
-		pWindow->SetSize(static_cast<int32_t>(Config.Graphics.ResX * GetScale()), static_cast<int32_t>(Config.Graphics.ResY * GetScale()));
 		SetDisplayMode(Config.Graphics.UseDisplayMode);
 
 // TODO: Remove unused code
@@ -197,7 +197,9 @@ void C4Application::DoInit()
 	}
 	else
 	{
-		if (!Console.Init(this))
+		std::int32_t MinWidth = 450;
+		C4Rect Bounds{25,200, MinWidth, 450};
+		if (!Console.Init(this, LoadResStr(C4ResStrTableKey::IDS_CNS_CONSOLE), Bounds, nullptr, SDL_WINDOW_ALWAYS_ON_TOP, MinWidth, 250))
 		{
 			Clear(); return;
 		}
@@ -220,6 +222,11 @@ void C4Application::DoInit()
 	DDraw = DDrawInit(this, LogSystem, Config.Graphics.Engine);
 	if (!DDraw) { LogFatal(C4ResStrTableKey::IDS_ERR_DDRAW); Clear(); throw StartupException{LogSystem.GetFatalErrorString()}; }
 
+	if (!isFullScreen)
+	{
+		Console.InitGUI();
+	}
+
 #if defined(_WIN32) && !defined(USE_CONSOLE)
 	// Register clonk file classes - notice: this will only work if we have administrator rights
 	char szModule[_MAX_PATH + 1]; GetModuleFileNameA(nullptr, szModule, _MAX_PATH);
@@ -230,6 +237,7 @@ void C4Application::DoInit()
 	if (!pGamePadControl && Config.General.GamepadEnabled)
 		pGamePadControl = new C4GamePadControl();
 
+	/*
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	dynamic_cast<CStdGL*>(DDraw)->CurrentImguiContext = ImGui::CreateContext();
@@ -249,7 +257,7 @@ void C4Application::DoInit()
 	// Setup Platform/Renderer backends
 	ImGui_ImplSDL2_InitForOpenGL(pWindow->GetSDLWindow(), dynamic_cast<CStdGL*>(DDraw)->GetMainCtx().GetGLContext());
 	ImGui_ImplOpenGL2_Init();
-
+	*/
 	AppState = C4AS_PreInit;
 }
 
@@ -346,10 +354,6 @@ void C4Application::Clear()
 	MusicSystem.reset();
 	AudioSystem.reset();
 	ToastSystem.reset();
-
-	ImGui_ImplOpenGL2_Shutdown();
-	ImGui_ImplSDL2_Shutdown();
-	ImGui::DestroyContext();
 
 	// Clear direct draw (late, because it's needed for e.g. Log)
 	delete DDraw; DDraw = nullptr;

@@ -22,8 +22,14 @@
 #include "C4Control.h"
 
 #ifdef WITH_DEVELOPER_MODE
-#include <gtk/gtk.h>
 #endif
+
+enum class ConsoleMode
+{
+	Play,
+	Edit,
+	Draw
+};
 
 class C4EditCursor
 {
@@ -34,7 +40,7 @@ public:
 protected:
 	bool fAltWasDown;
 	bool fSelectionChanged;
-	int32_t Mode;
+	ConsoleMode Mode;
 	int32_t X, Y, X2, Y2;
 	bool Hold, DragFrame, DragLine;
 	C4Object *Target, *DropTarget;
@@ -57,9 +63,9 @@ public:
 	void ClearPointers(C4Object *pObj);
 	bool ToggleMode();
 	void Draw(C4FacetEx &cgo);
-	int32_t GetMode();
+	ConsoleMode GetMode() const;
 	C4Object *GetTarget();
-	bool SetMode(int32_t iMode);
+	bool SetMode(ConsoleMode mode);
 	bool In(const char *szText);
 	bool Duplicate();
 	bool OpenPropTools();
@@ -77,9 +83,9 @@ public:
 	void OnSelectionChanged();
 	bool AltDown();
 	bool AltUp();
+	StdStrBuf GetStatusBarText() const;
 
 protected:
-	bool UpdateStatusBar();
 	void ApplyToolPicker();
 	void PutContents();
 	void UpdateDropTarget(uint16_t wKeyFlags);

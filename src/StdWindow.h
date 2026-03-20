@@ -33,6 +33,9 @@
 #include <shobjidl.h>
 #endif
 
+#include "C4ImGui.h"
+#include <optional>
+
 class CStdApp;
 #ifdef USE_X11
 // Forward declarations because xlib.h is evil
@@ -41,6 +44,7 @@ typedef struct _XDisplay Display;
 #elif defined(USE_SDL_MAINLOOP)
 struct SDL_Window;
 union SDL_Event;
+struct SDL_MouseButtonEvent;
 #endif
 
 enum class DisplayMode
@@ -61,16 +65,19 @@ public:
 	virtual void Close() = 0;
 	// Keypress(es) translated to a char
 	virtual void CharIn(const char *c) {}
-	virtual bool Init(CStdApp *app, const char *title, const C4Rect &bounds = DefaultBounds, CStdWindow *parent = nullptr);
+	virtual bool Init(CStdApp *app, const char *title, const C4Rect &bounds = DefaultBounds, CStdWindow *parent = nullptr, std::uint32_t AdditionalFlags = 0, std::int32_t MinWidth = 250, std::int32_t MinHeight = 250);
 	void StorePosition();
 	void RestorePosition();
 	bool GetSize(C4Rect &rect);
+
+	void InitImGui();
+	std::optional<C4ImGui> ImGui;
 
 // TODO: Remove unused code
 #if FALSE//def _WIN32
 	virtual
 #endif
-	void SetSize(unsigned int cx, unsigned int cy); // resiz
+	void SetSize(unsigned int cx, unsigned int cy); // resize
 	void SetTitle(const char *Title);
 	void FlashWindow();
 	void SetDisplayMode(DisplayMode mode);
@@ -127,7 +134,7 @@ protected:
 #elif defined(USE_SDL_MAINLOOP)
 public:
 	static constexpr C4Rect DefaultBounds{0, 0, 100, 100};
-
+	static void sdlToC4MCBtn(const SDL_MouseButtonEvent &e, int32_t &button);
 public:
 	float GetInputScale();
 

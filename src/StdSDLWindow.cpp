@@ -40,6 +40,53 @@ namespace
 	}
 }
 
+void CStdWindow::sdlToC4MCBtn(const SDL_MouseButtonEvent &e,
+	int32_t &button)
+{
+	static int lastLeftClick = 0, lastRightClick = 0;
+
+	button = C4MC_Button_None;
+
+	switch (e.button)
+	{
+	case SDL_BUTTON_LEFT:
+		if (e.state == SDL_PRESSED)
+			if (timeGetTime() - lastLeftClick < 400) // TODO: This leads to missed input when clicking to fast. Other implementations seem to handle it differently.
+			{
+				lastLeftClick = 0;
+				button = C4MC_Button_LeftDouble;
+			}
+			else
+			{
+				lastLeftClick = timeGetTime();
+				button = C4MC_Button_LeftDown;
+			}
+		else
+			button = C4MC_Button_LeftUp;
+		break;
+	case SDL_BUTTON_RIGHT:
+		if (e.state == SDL_PRESSED)
+			if (timeGetTime() - lastRightClick < 400) // TODO: This leads to missed input when clicking to fast. Other implementations seem to handle it differently.
+			{
+				lastRightClick = 0;
+				button = C4MC_Button_RightDouble;
+			}
+			else
+			{
+				lastRightClick = timeGetTime();
+				button = C4MC_Button_RightDown;
+			}
+		else
+			button = C4MC_Button_RightUp;
+		break;
+	case SDL_BUTTON_MIDDLE:
+		if (e.state == SDL_PRESSED)
+			button = C4MC_Button_MiddleDown;
+		else
+			button = C4MC_Button_MiddleUp;
+		break;
+	}
+}
 /* CStdWindow */
 
 CStdWindow::~CStdWindow()
@@ -49,21 +96,30 @@ CStdWindow::~CStdWindow()
 
 // Only set title.
 // FIXME: Read from application bundle on the Mac.
-bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
+bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent, std::uint32_t AdditionalFlags, std::int32_t MinWidth, std::int32_t MinHeight)
 {
 	Active = true;
-	SetTitle(title);
+	//SetTitle(title);
 
 	width = bounds.Wdt;
 	height = bounds.Hgt;
 	displayMode = DisplayMode::Window;
 	this->app = app;
 
-	sdlWindow = SDL_CreateWindow(title, bounds.x, bounds.y, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+	std::uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+	flags |= AdditionalFlags;
+	sdlWindow = SDL_CreateWindow(title, bounds.x, bounds.y, width, height, flags);
+	SDL_SetWindowMinimumSize(sdlWindow, MinWidth, MinHeight);
 	ThrowIfFailed("SDL_CreateWindow", !sdlWindow);
 
 	return true;
 }
+
+void CStdWindow::InitImGui()
+{
+	ImGui.emplace(sdlWindow);
+}
+
 
 void CStdWindow::Clear() {}
 
@@ -91,10 +147,7 @@ void CStdWindow::SetTitle(const char *const Title)
 
 void CStdWindow::FlashWindow()
 {
-#ifdef __APPLE__
-	void requestUserAttention();
-	requestUserAttention();
-#endif
+	SDL_FlashWindow(sdlWindow, SDL_FlashOperation::SDL_FLASH_BRIEFLY);
 }
 
 void CStdWindow::SetDisplayMode(const DisplayMode mode)

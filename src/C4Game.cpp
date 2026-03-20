@@ -485,7 +485,7 @@ bool C4Game::Init()
 	// Color palette
 	if (Application.isFullScreen) Application.DDraw->WipeSurface(Application.DDraw->lpPrimary);
 	GraphicsSystem.SetPalette();
-	GraphicsSystem.ApplyGamma();
+	//GraphicsSystem.ApplyGamma();
 
 	// Message board and upper board
 	if (Application.isFullScreen)
@@ -3410,8 +3410,8 @@ bool C4Game::InitKeyboard()
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_SPACE),             "EditCursorModeToggle", KEYSCOPE_Console, new C4KeyCB  <C4EditCursor>       (Console.EditCursor,   &C4EditCursor::ToggleMode)));
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_ADD),               "ToolsDlgGradeUp",      KEYSCOPE_Console, new C4KeyCBEx<C4ToolsDlg, int32_t>(Console.ToolsDlg, +5, &C4ToolsDlg::ChangeGrade)));
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_SUBTRACT),          "ToolsDlgGradeDown",    KEYSCOPE_Console, new C4KeyCBEx<C4ToolsDlg, int32_t>(Console.ToolsDlg, -5, &C4ToolsDlg::ChangeGrade)));
-	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(KEY_M, KEYS_Control), "ToolsDlgPopMaterial",  KEYSCOPE_Console, new C4KeyCB  <C4ToolsDlg>         (Console.ToolsDlg,     &C4ToolsDlg::PopMaterial)));
-	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(KEY_T, KEYS_Control), "ToolsDlgPopTextures",  KEYSCOPE_Console, new C4KeyCB  <C4ToolsDlg>         (Console.ToolsDlg,     &C4ToolsDlg::PopTextures)));
+	//KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(KEY_M, KEYS_Control), "ToolsDlgPopMaterial",  KEYSCOPE_Console, new C4KeyCB  <C4ToolsDlg>         (Console.ToolsDlg,     &C4ToolsDlg::PopMaterial)));
+	//KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(KEY_T, KEYS_Control), "ToolsDlgPopTextures",  KEYSCOPE_Console, new C4KeyCB  <C4ToolsDlg>         (Console.ToolsDlg,     &C4ToolsDlg::PopTextures)));
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(KEY_I, KEYS_Control), "ToolsDlgIFTToggle",    KEYSCOPE_Console, new C4KeyCB  <C4ToolsDlg>         (Console.ToolsDlg,     &C4ToolsDlg::ToggleIFT)));
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(KEY_W, KEYS_Control), "ToolsDlgToolToggle",   KEYSCOPE_Console, new C4KeyCB  <C4ToolsDlg>         (Console.ToolsDlg,     &C4ToolsDlg::ToggleTool)));
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_DELETE),            "EditCursorDelete",     KEYSCOPE_Console, new C4KeyCB  <C4EditCursor>       (Console.EditCursor,   &C4EditCursor::Delete)));
@@ -3516,8 +3516,11 @@ C4Player *C4Game::JoinPlayer(const char *szFilename, int32_t iAtClient, const ch
 	if (pPlr->LocalControl) CreateViewport(pPlr->Number);
 	// Check fullscreen viewports
 	FullScreen.ViewportCheck();
+
+	// TODO
 	// Update menus
-	Console.UpdateMenus();
+	//Console.UpdateMenus();
+
 	// Append player name to list of session player names (no duplicates)
 	if (!SIsModule(PlayerNames.getData(), pPlr->GetName()))
 	{

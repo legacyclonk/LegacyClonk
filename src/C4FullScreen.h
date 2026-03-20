@@ -41,7 +41,6 @@ public:
 	// User requests close
 	virtual void Close() override;
 	virtual void CharIn(const char *c) override;
-	bool Init(CStdApp *app);
 #ifdef USE_X11
 	bool HideCursor() const override { return true; }
 	virtual void HandleMessage(XEvent &e) override;

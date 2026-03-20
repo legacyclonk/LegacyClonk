@@ -322,56 +322,7 @@ void C4FullScreen::HandleMessage(XEvent &e)
 #elif defined(USE_SDL_MAINLOOP)
 // SDL version
 
-namespace
-{
-	void sdlToC4MCBtn(const SDL_MouseButtonEvent &e,
-		int32_t &button)
-	{
-		static int lastLeftClick = 0, lastRightClick = 0;
 
-		button = C4MC_Button_None;
-
-		switch (e.button)
-		{
-		case SDL_BUTTON_LEFT:
-			if (e.state == SDL_PRESSED)
-				if (timeGetTime() - lastLeftClick < 400)
-				{
-					lastLeftClick = 0;
-					button = C4MC_Button_LeftDouble;
-				}
-				else
-				{
-					lastLeftClick = timeGetTime();
-					button = C4MC_Button_LeftDown;
-				}
-			else
-				button = C4MC_Button_LeftUp;
-			break;
-		case SDL_BUTTON_RIGHT:
-			if (e.state == SDL_PRESSED)
-				if (timeGetTime() - lastRightClick < 400)
-				{
-					lastRightClick = 0;
-					button = C4MC_Button_RightDouble;
-				}
-				else
-				{
-					lastRightClick = timeGetTime();
-					button = C4MC_Button_RightDown;
-				}
-			else
-				button = C4MC_Button_RightUp;
-			break;
-		case SDL_BUTTON_MIDDLE:
-			if (e.state == SDL_PRESSED)
-				button = C4MC_Button_MiddleDown;
-			else
-				button = C4MC_Button_MiddleUp;
-			break;
-		}
-	}
-}
 
 #include "StdGL.h"
 
@@ -418,7 +369,7 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 	{
 		const auto scale = GetInputScale();
 		int32_t button;
-		sdlToC4MCBtn(e.button, button);
+		C4ViewportWindow::sdlToC4MCBtn(e.button, button);
 		Game.GraphicsSystem.MouseMove(button, e.button.x * scale, e.button.y * scale, Application.GetModifiers(), nullptr);
 		break;
 	}
@@ -470,16 +421,6 @@ C4FullScreen::C4FullScreen()
 C4FullScreen::~C4FullScreen()
 {
 	delete pMenu;
-}
-
-bool C4FullScreen::Init(CStdApp *const app)
-{
-// TODO: Remove unused code
-#if FALSE //def _WIN32
-	return Init(app, STD_PRODUCT);
-#else
-	return CStdWindow::Init(app, STD_PRODUCT);
-#endif
 }
 
 void C4FullScreen::Close()

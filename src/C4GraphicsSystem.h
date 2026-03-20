@@ -82,8 +82,6 @@ public:
 	void SetGamma(uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, int32_t iRampIndex); // set gamma ramp
 	void ApplyGamma(); // apply gamma ramp to ddraw
 	bool CloseViewport(C4Viewport *cvp);
-	void DrawImGUI();
-
 
 protected:
 	std::vector<std::unique_ptr<C4Viewport>> Viewports;

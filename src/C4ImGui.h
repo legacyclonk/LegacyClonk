@@ -44,11 +44,6 @@ public:
 	bool NewFrame();
 	void Render();
 
-/*
-#ifdef _WIN32
-	bool HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-#endif
-*/
 private:
 	struct ImGuiContext *context{nullptr};
 	bool isVisible{false};
