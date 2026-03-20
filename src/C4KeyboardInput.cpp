@@ -28,7 +28,7 @@
 #endif
 
 #ifdef USE_SDL_MAINLOOP
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #endif
 
 // Key maps
@@ -375,7 +375,7 @@ std::string C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bo
 	const auto name = XKeysymToString(wCode);
 	return name ? name : "invalid";
 #elif defined(USE_SDL_MAINLOOP)
-	const auto name = SDL_GetKeyName(SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(wCode)));
+	const auto name = SDL_GetKeyName(SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(wCode), SDL_KMOD_NONE, true));
 	if (!name)
 	{
 		return "invalid";

@@ -18,7 +18,7 @@
 
 #include <C4GraphicsSystem.h>
 #include "imgui/imgui_impl_opengl2.h"
-#include "imgui/imgui_impl_sdl2.h"
+#include "imgui/imgui_impl_sdl3.h"
 
 #include <C4Viewport.h>
 #include <C4Application.h>

@@ -997,7 +997,8 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool force)
 		return true;
 	}
 
-	return ApplyGammaRampToMonitor(ramp, force);
+	// TODO: Remove
+	//return ApplyGammaRampToMonitor(ramp, force);
 }
 
 bool CStdGL::SaveDefaultGammaRamp(CStdWindow *window)

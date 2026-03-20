@@ -367,7 +367,7 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 	{
 		if (ImGui::GetCurrentContext())
 		{
-			ImGui_ImplSDL2_ProcessEvent(&event);
+			ImGui_ImplSDL3_ProcessEvent(&event);
 		}
 		HandleSDLEvent(event);
 	}
@@ -597,7 +597,7 @@ bool CStdApp::IsClipboardFull(const bool clipboard)
 #ifdef USE_X11
 	return XGetSelectionOwner(dpy, clipboard ? ClipboardAtoms[0] : XA_PRIMARY) != None;
 #elif defined(USE_SDL_MAINLOOP)
-	return SDL_HasClipboardText() == SDL_TRUE;
+	return SDL_HasClipboardText() == true;
 #elif defined(USE_CONSOLE)
 	return false;
 #endif
@@ -845,14 +845,14 @@ void CStdApp::HandleSDLEvent(SDL_Event &event)
 {
 	switch (event.type)
 	{
-	case SDL_QUIT:
+	case SDL_EVENT_QUIT :
 		Quit();
 		return;
 
-	case SDL_KEYDOWN:
-	case SDL_KEYUP:
+	case SDL_EVENT_KEY_DOWN :
+	case SDL_EVENT_KEY_UP :
 	{
-		KeyMask = event.key.keysym.mod;
+		KeyMask = event.key.mod;
 		break;
 	}
 	}

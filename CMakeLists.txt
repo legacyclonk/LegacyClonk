@@ -405,13 +405,13 @@ if (NOT USE_WIC)
 	target_link_libraries(clonk PNG::PNG)
 endif ()
 
-# Link SDL2
+# Link SDL3
 if (USE_SDL_MAINLOOP OR USE_SDL_MIXER)
-	find_package(SDL2 REQUIRED)
-	if (SDL2_FOUND AND USE_SDL_MAINLOOP)
+	find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
+	if (SDL3_FOUND AND USE_SDL_MAINLOOP)
 		set(USE_SDL_FOR_GAMEPAD ON)
 	endif ()
-	target_link_libraries(clonk SDL2::SDL2)
+	target_link_libraries(clonk SDL3::SDL3)
 endif ()
 
 # Link SDL2_mixer

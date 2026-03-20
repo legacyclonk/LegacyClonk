@@ -569,11 +569,8 @@ bool Dialog::CharIn(const char *c)
 
 bool Dialog::KeyHotkey(C4KeyCodeEx key)
 {
-#ifdef USE_SDL_MAINLOOP
-	const auto wKey = SDL_GetKeyName(SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(key.Key)))[0];
-#else
-	uint16_t wKey = uint16_t(key.Key);
-#endif
+	// TODO: Check if SDL3 migration conversion is correct.
+	const auto wKey = SDL_GetKeyName(SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(key.Key), SDL_KMOD_NONE, true))[0];
 
 	// do hotkey procs for standard alphanumerics only
 	if (Inside<uint16_t>(TOUPPERIFX11(wKey), 'A', 'Z')) if (OnHotkey(char(TOUPPERIFX11(wKey)))) return true;

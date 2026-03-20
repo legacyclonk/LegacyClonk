@@ -50,7 +50,7 @@ void CStdWindow::sdlToC4MCBtn(const SDL_MouseButtonEvent &e,
 	switch (e.button)
 	{
 	case SDL_BUTTON_LEFT:
-		if (e.state == SDL_PRESSED)
+		if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
 			if (timeGetTime() - lastLeftClick < 400) // TODO: This leads to missed input when clicking to fast. Other implementations seem to handle it differently.
 			{
 				lastLeftClick = 0;
@@ -65,7 +65,7 @@ void CStdWindow::sdlToC4MCBtn(const SDL_MouseButtonEvent &e,
 			button = C4MC_Button_LeftUp;
 		break;
 	case SDL_BUTTON_RIGHT:
-		if (e.state == SDL_PRESSED)
+		if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
 			if (timeGetTime() - lastRightClick < 400) // TODO: This leads to missed input when clicking to fast. Other implementations seem to handle it differently.
 			{
 				lastRightClick = 0;
@@ -77,13 +77,19 @@ void CStdWindow::sdlToC4MCBtn(const SDL_MouseButtonEvent &e,
 				button = C4MC_Button_RightDown;
 			}
 		else
+		{
 			button = C4MC_Button_RightUp;
+		}
 		break;
 	case SDL_BUTTON_MIDDLE:
-		if (e.state == SDL_PRESSED)
+		if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+		{
 			button = C4MC_Button_MiddleDown;
+		}
 		else
+		{
 			button = C4MC_Button_MiddleUp;
+		}
 		break;
 	}
 }
@@ -106,11 +112,15 @@ bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect 
 	displayMode = DisplayMode::Window;
 	this->app = app;
 
-	std::uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	std::uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 	flags |= AdditionalFlags;
-	sdlWindow = SDL_CreateWindow(title, bounds.x, bounds.y, width, height, flags);
-	SDL_SetWindowMinimumSize(sdlWindow, MinWidth, MinHeight);
+	sdlWindow = SDL_CreateWindow(title, width, height, flags);
 	ThrowIfFailed("SDL_CreateWindow", !sdlWindow);
+	SDL_SetWindowMinimumSize(sdlWindow, MinWidth, MinHeight);
+	SDL_SetWindowPosition(sdlWindow, bounds.x, bounds.y);
 
 	return true;
 }
@@ -128,7 +138,7 @@ void CStdWindow::Clear() {}
 
 bool CStdWindow::GetSize(C4Rect &rect)
 {
-	SDL_GL_GetDrawableSize(sdlWindow, &width, &height);
+	SDL_GetWindowSizeInPixels(sdlWindow, &width, &height);
 	rect = {0, 0, width, height};
 	return true;
 }
@@ -154,19 +164,22 @@ void CStdWindow::SetDisplayMode(const DisplayMode mode)
 {
 	if (mode == DisplayMode::Fullscreen)
 	{
-		ThrowIfFailed("SDL_SetWindowFullscreen", SDL_SetWindowFullscreen(sdlWindow, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0);
+		const SDL_DisplayMode *DisplayMode = SDL_GetWindowFullscreenMode(sdlWindow);
+		ThrowIfFailed("SDL_SetWindowFullscreen", SDL_SetWindowFullscreen(sdlWindow, DisplayMode != nullptr) == false);
 	}
 	else
 	{
 		if (displayMode == DisplayMode::Fullscreen)
 		{
-			const auto currentDisplay = SDL_GetWindowDisplayIndex(sdlWindow);
-			ThrowIfFailed("SDL_GetWindowDisplayIndex", currentDisplay < 0);
-			SDL_DisplayMode mode;
-			ThrowIfFailed("SDL_GetCurrentDisplayMode", SDL_GetCurrentDisplayMode(currentDisplay, &mode) != 0);
-
-			width = mode.w - 100;
-			height = mode.h - 100;
+			const auto currentDisplay = SDL_GetDisplayForWindow(sdlWindow);
+			ThrowIfFailed("SDL_GetWindowDisplayIndex", currentDisplay <= 0);
+			const SDL_DisplayMode *mode = SDL_GetCurrentDisplayMode(currentDisplay);
+			ThrowIfFailed("SDL_GetCurrentDisplayMode", mode == nullptr);
+			if(mode)
+			{
+				width = mode->w - 100;
+				height = mode->h - 100;
+			}
 		}
 
 		ThrowIfFailed("SDL_SetWindowFullscreen", SDL_SetWindowFullscreen(sdlWindow, 0) != 0);
@@ -174,7 +187,7 @@ void CStdWindow::SetDisplayMode(const DisplayMode mode)
 	}
 
 	displayMode = mode;
-	ThrowIfFailed("SDL_ShowCursor", SDL_ShowCursor(SDL_DISABLE) < 0);
+	ThrowIfFailed("SDL_ShowCursor", SDL_ShowCursor() == false);
 }
 
 void CStdWindow::SetProgress(uint32_t) {} // stub
@@ -185,7 +198,7 @@ float CStdWindow::GetInputScale()
 	SDL_GetWindowSize(sdlWindow, &width, &height);
 
 	int drawableWidth, drawableHeight;
-	SDL_GL_GetDrawableSize(sdlWindow, &drawableWidth, &drawableHeight);
+	SDL_GetWindowSizeInPixels(sdlWindow, &drawableWidth, &drawableHeight);
 
 	return static_cast<float>(drawableWidth) / static_cast<float>(width);
 }

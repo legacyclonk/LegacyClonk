@@ -330,42 +330,43 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 {
 	switch (e.type)
 	{
-	case SDL_TEXTINPUT:
+	case SDL_EVENT_TEXT_INPUT :
 	{
 		CharIn(e.text.text);
 		break;
 	}
-	case SDL_KEYDOWN:
+	case SDL_EVENT_KEY_DOWN :
 	{
-		Game.DoKeyboardInput(e.key.keysym.scancode, KEYEV_Down,
+		Game.DoKeyboardInput(e.key.scancode, KEYEV_Down,
 			Application.IsAltDown(),
 			Application.IsControlDown(),
 			Application.IsShiftDown(),
 			false, nullptr);
 		break;
 	}
-	case SDL_KEYUP:
-		Game.DoKeyboardInput(e.key.keysym.scancode, KEYEV_Up,
+	case SDL_EVENT_KEY_UP :
+		Game.DoKeyboardInput(e.key.scancode, KEYEV_Up,
 			Application.IsAltDown(),
 			Application.IsControlDown(),
 			Application.IsShiftDown(), false, nullptr);
 		break;
-	case SDL_MOUSEMOTION:
+	case SDL_EVENT_MOUSE_MOTION :
 	{
 		const auto scale = GetInputScale();
 		Game.GraphicsSystem.MouseMove(C4MC_Button_None, e.motion.x * scale, e.motion.y * scale, Application.GetModifiers(), nullptr);
 		break;
 	}
-	case SDL_MOUSEWHEEL:
+	case SDL_EVENT_MOUSE_WHEEL :
 	{
 		const auto scale = GetInputScale();
-		int x, y;
+		float x, y;
+			// TODO: Check if change from int (SDL2) pos to float (SDL3: subpixel mouse position change) might break things.
 		SDL_GetMouseState(&x, &y);
-		Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, x * scale, y * scale, (e.wheel.y * 60) << 16, nullptr);
+		Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, x * scale, y * scale, static_cast<std::int32_t>(e.wheel.y * 60) << 16, nullptr);
 		break;
 	}
-	case SDL_MOUSEBUTTONUP:
-	case SDL_MOUSEBUTTONDOWN:
+	case SDL_EVENT_MOUSE_BUTTON_UP :
+	case SDL_EVENT_MOUSE_BUTTON_DOWN :
 	{
 		const auto scale = GetInputScale();
 		int32_t button;
@@ -373,30 +374,28 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 		Game.GraphicsSystem.MouseMove(button, e.button.x * scale, e.button.y * scale, Application.GetModifiers(), nullptr);
 		break;
 	}
-	case SDL_JOYAXISMOTION:
-	case SDL_JOYHATMOTION:
-	case SDL_JOYBALLMOTION:
-	case SDL_JOYBUTTONDOWN:
-	case SDL_JOYBUTTONUP:
+	case SDL_EVENT_JOYSTICK_AXIS_MOTION :
+	case SDL_EVENT_JOYSTICK_HAT_MOTION :
+	case SDL_EVENT_JOYSTICK_BALL_MOTION :
+	case SDL_EVENT_JOYSTICK_BUTTON_DOWN :
+	case SDL_EVENT_JOYSTICK_BUTTON_UP :
 		Application.pGamePadControl->FeedEvent(e);
 		break;
-	case SDL_WINDOWEVENT:
-		switch (e.window.event)
-		{
-		case SDL_WINDOWEVENT_RESIZED:
-			int width, height;
-			SDL_GL_GetDrawableSize(sdlWindow, &width, &height);
-			Application.SetResolution(width, height);
-			break;
-		case SDL_WINDOWEVENT_MINIMIZED:
-		case SDL_WINDOWEVENT_HIDDEN:
-			Application.Active = false;
-			break;
-		case SDL_WINDOWEVENT_SHOWN:
-		case SDL_WINDOWEVENT_EXPOSED:
-			Application.Active = true;
-		}
+
+	case SDL_EVENT_WINDOW_RESIZED :
+		int width, height;
+		SDL_GetWindowSizeInPixels(sdlWindow, &width, &height);
+		Application.SetResolution(width, height);
 		break;
+	case SDL_EVENT_WINDOW_MINIMIZED :
+	case SDL_EVENT_WINDOW_HIDDEN :
+		Application.Active = false;
+		break;
+	case SDL_EVENT_WINDOW_SHOWN :
+	case SDL_EVENT_WINDOW_EXPOSED :
+		Application.Active = true;
+		break;
+
 	}
 }
 

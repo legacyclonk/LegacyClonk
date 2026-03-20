@@ -277,7 +277,7 @@ void C4GamePadOpener::SetGamePad(int iNewGamePad)
 
 #elif defined(USE_SDL_FOR_GAMEPAD)
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <stdexcept>
 
 C4GamePadControl::C4GamePadControl()
@@ -293,8 +293,8 @@ C4GamePadControl::C4GamePadControl()
 		// TODO: Handle
 		throw;
 	}
-	SDL_JoystickEventState(SDL_ENABLE);
-	if (!SDL_NumJoysticks()) LogNTr("No Gamepad found");
+	SDL_JoystickEventsEnabled();
+	if (!SDL_HasJoystick()) LogNTr("No Gamepad found");
 }
 
 C4GamePadControl::~C4GamePadControl() {}
@@ -307,11 +307,11 @@ void C4GamePadControl::Execute()
 	{
 		switch (event.type)
 		{
-		case SDL_JOYAXISMOTION:
-		case SDL_JOYBALLMOTION:
-		case SDL_JOYHATMOTION:
-		case SDL_JOYBUTTONDOWN:
-		case SDL_JOYBUTTONUP:
+		case SDL_EVENT_JOYSTICK_AXIS_MOTION :
+		case SDL_EVENT_JOYSTICK_BALL_MOTION :
+		case SDL_EVENT_JOYSTICK_HAT_MOTION :
+		case SDL_EVENT_JOYSTICK_BUTTON_DOWN :
+		case SDL_EVENT_JOYSTICK_BUTTON_UP :
 			FeedEvent(event);
 			break;
 		}
@@ -337,10 +337,10 @@ void C4GamePadControl::FeedEvent(SDL_Event &event)
 {
 	switch (event.type)
 	{
-	case SDL_JOYHATMOTION:
+	case SDL_EVENT_JOYSTICK_HAT_MOTION :
 	{
 		SDL_Event fakeX;
-		fakeX.jaxis.type = SDL_JOYAXISMOTION;
+		fakeX.jaxis.type = SDL_EVENT_JOYSTICK_AXIS_MOTION;
 		fakeX.jaxis.which = event.jhat.which;
 		fakeX.jaxis.axis = event.jhat.hat * 2 + 6; /* *magic*number* */
 		fakeX.jaxis.value = 0;
@@ -361,10 +361,10 @@ void C4GamePadControl::FeedEvent(SDL_Event &event)
 		FeedEvent(fakeY);
 		return;
 	}
-	case SDL_JOYBALLMOTION:
+	case SDL_EVENT_JOYSTICK_BALL_MOTION :
 	{
 		SDL_Event fake;
-		fake.jaxis.type = SDL_JOYAXISMOTION;
+		fake.jaxis.type = SDL_EVENT_JOYSTICK_AXIS_MOTION;
 		fake.jaxis.which = event.jball.which;
 		fake.jaxis.axis = event.jball.ball * 2 + 12; /* *magic*number* */
 		fake.jaxis.value = amplify(event.jball.xrel);
@@ -374,7 +374,7 @@ void C4GamePadControl::FeedEvent(SDL_Event &event)
 		FeedEvent(event);
 		return;
 	}
-	case SDL_JOYAXISMOTION:
+	case SDL_EVENT_JOYSTICK_AXIS_MOTION :
 	{
 		C4KeyCode minCode = KEY_Gamepad(event.jaxis.which, KEY_JOY_Axis(event.jaxis.axis, false));
 		C4KeyCode maxCode = KEY_Gamepad(event.jaxis.which, KEY_JOY_Axis(event.jaxis.axis, true));
@@ -422,12 +422,12 @@ void C4GamePadControl::FeedEvent(SDL_Event &event)
 		}
 		break;
 	}
-	case SDL_JOYBUTTONDOWN:
+	case SDL_EVENT_JOYSTICK_BUTTON_DOWN :
 		Game.DoKeyboardInput(
 			KEY_Gamepad(event.jbutton.which, KEY_JOY_Button(event.jbutton.button)),
 			KEYEV_Down, false, false, false, false);
 		break;
-	case SDL_JOYBUTTONUP:
+	case SDL_EVENT_JOYSTICK_BUTTON_UP :
 		Game.DoKeyboardInput(
 			KEY_Gamepad(event.jbutton.which, KEY_JOY_Button(event.jbutton.button)),
 			KEYEV_Up, false, false, false, false);
@@ -437,25 +437,27 @@ void C4GamePadControl::FeedEvent(SDL_Event &event)
 
 int C4GamePadControl::GetGamePadCount()
 {
-	return (SDL_NumJoysticks());
+	std::int32_t JoystickNum = 0;
+	SDL_GetJoysticks(&JoystickNum);
+	return JoystickNum;
 }
 
 C4GamePadOpener::C4GamePadOpener(int iGamepad)
 {
-	Joy = SDL_JoystickOpen(iGamepad);
+	Joy = SDL_OpenJoystick(iGamepad);
 	if (!Joy) LogNTr(spdlog::level::err, "SDL: {}", SDL_GetError());
 }
 
 C4GamePadOpener::~C4GamePadOpener()
 {
-	if (Joy) SDL_JoystickClose(Joy);
+	if (Joy) SDL_CloseJoystick(Joy);
 }
 
 void C4GamePadOpener::SetGamePad(int iGamepad)
 {
 	if (Joy)
-		SDL_JoystickClose(Joy);
-	Joy = SDL_JoystickOpen(iGamepad);
+		SDL_CloseJoystick(Joy);
+	Joy = SDL_OpenJoystick(iGamepad);
 	if (!Joy)
 		LogNTr(spdlog::level::err, "SDL: {}", SDL_GetError());
 }

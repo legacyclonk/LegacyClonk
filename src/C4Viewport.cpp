@@ -823,7 +823,7 @@ void C4ViewportWindow::HandleMessage(SDL_Event& sdl_event)
 	if (ImGui)
 	{
 		ImGui->Select();
-		ImGui_ImplSDL2_ProcessEvent(&sdl_event);
+		ImGui_ImplSDL3_ProcessEvent(&sdl_event);
 	}
 
 	// TODO: Some inputs still slip through when we interact with ImGui. (Left Click aka JustPressed)
@@ -836,38 +836,35 @@ void C4ViewportWindow::HandleMessage(SDL_Event& sdl_event)
 	switch (sdl_event.type)
 	{
 
-	case SDL_KEYDOWN:
+	case SDL_EVENT_KEY_DOWN :
 	{
-		Game.DoKeyboardInput(sdl_event.key.keysym.scancode, KEYEV_Down,
+		Game.DoKeyboardInput(sdl_event.key.scancode, KEYEV_Down,
 			Application.IsAltDown(),
 			Application.IsControlDown(),
 			Application.IsShiftDown(),
 			false, nullptr);
 		break;
 	}
-	case SDL_KEYUP:
-		Game.DoKeyboardInput(sdl_event.key.keysym.scancode, KEYEV_Up,
+	case SDL_EVENT_KEY_UP :
+		Game.DoKeyboardInput(sdl_event.key.scancode, KEYEV_Up,
 			Application.IsAltDown(),
 			Application.IsControlDown(),
 			Application.IsShiftDown(), false, nullptr);
 		break;
 
 
-	case SDL_DROPFILE:
+	case SDL_EVENT_DROP_FILE :
 		// TODO
 		//cvp->DropFiles(sdl_event.drop.file);
 		break;
 	// TODO: Drop Def custom message or alternative implementation
 	// TODO: Reload File custom message or alternative implementation
 	// TODO: Scrolling (Scrollbars) probably needs to be done via ImGUI
-	case SDL_WINDOWEVENT:
-		switch (sdl_event.window.event)
-		{
 
-		case SDL_WINDOWEVENT_RESIZED:
-			cvp->UpdateOutputSize();
-			break;
-		}
+	case SDL_EVENT_WINDOW_RESIZED :
+		cvp->UpdateOutputSize();
+		break;
+
 	}
 
 	const auto scale = Application.GetScale();
@@ -875,23 +872,23 @@ void C4ViewportWindow::HandleMessage(SDL_Event& sdl_event)
 	{
 		switch (sdl_event.type)
 		{
-		case SDL_MOUSEMOTION:
+		case SDL_EVENT_MOUSE_MOTION :
 		{
 			// TODO: Hide Cursor when inside viewport and in play mode.
 			const auto InputScale = GetInputScale();
 			Game.GraphicsSystem.MouseMove(C4MC_Button_None, sdl_event.motion.x, sdl_event.motion.y, Application.GetModifiers(), nullptr);
 			break;
 		}
-		case SDL_MOUSEWHEEL:
+		case SDL_EVENT_MOUSE_WHEEL :
 		{
 			const auto InputScale = GetInputScale();
-			int x, y;
+			float x, y;
 			SDL_GetMouseState(&x, &y);
-			Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, sdl_event.button.x, sdl_event.button.y, (sdl_event.wheel.y * 60) << 16, nullptr);
+			Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, sdl_event.button.x, sdl_event.button.y, static_cast<std::int32_t>(sdl_event.wheel.y * 60) << 16, nullptr);
 			break;
 		}
-		case SDL_MOUSEBUTTONUP:
-		case SDL_MOUSEBUTTONDOWN:
+		case SDL_EVENT_MOUSE_BUTTON_UP :
+		case SDL_EVENT_MOUSE_BUTTON_DOWN :
 		{
 			const auto InputScale = GetInputScale();
 			int32_t button;
@@ -905,23 +902,23 @@ void C4ViewportWindow::HandleMessage(SDL_Event& sdl_event)
 	{
 		switch (sdl_event.type)
 		{
-		case SDL_MOUSEMOTION:
+		case SDL_EVENT_MOUSE_MOTION :
 		{
-			int x, y;
+			float x, y;
 			SDL_GetMouseState(&x, &y);
 			const auto InputScale = GetInputScale();
 			Console.EditCursor.Move(cvp->ViewX + x / scale, cvp->ViewY + y / scale, Application.GetModifiers());
 			break;
 		}
-		case SDL_MOUSEWHEEL:
+		case SDL_EVENT_MOUSE_WHEEL :
 		{
 			// TODO: Grade (Brush size) change
 			break;
 		}
-		case SDL_MOUSEBUTTONUP:
-		case SDL_MOUSEBUTTONDOWN:
+		case SDL_EVENT_MOUSE_BUTTON_UP :
+		case SDL_EVENT_MOUSE_BUTTON_DOWN :
 		{
-			int x, y;
+			float x, y;
 			SDL_GetMouseState(&x, &y);
 			const auto InputScale = GetInputScale();
 			int32_t button;
@@ -1529,10 +1526,14 @@ bool C4Viewport::Init(CStdWindow *pParent, CStdApp *pApp, int32_t iPlayer)
 	fIsNoOwnerViewport = (Player == NO_OWNER);
 	// Create window
 	pWindow = new C4ViewportWindow(this);
-	SDL_DisplayMode DM;
-	SDL_GetCurrentDisplayMode(0, &DM);
-	auto Width = DM.w;
-	auto Height = DM.h;
+	const SDL_DisplayMode* DM = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
+	std::int32_t Width = 512;
+	std::int32_t Height = 512;
+	if(DM)
+	{
+		Width = DM->w;
+		Height = DM->h;
+	}
 	if (!pWindow->Init(pApp, (Player == NO_OWNER) ? LoadResStrV(C4ResStrTableKey::IDS_CNS_VIEWPORT) : Game.Players.Get(Player)->GetName(), C4Rect{500, 200, Width - 1000, Height - 400}, pParent))
 	{
 		return false;

@@ -33,8 +33,6 @@
 #include <set>
 #endif
 
-struct _SDL_Joystick;
-typedef struct _SDL_Joystick SDL_Joystick;
 
 union SDL_Event;
 typedef union SDL_Event SDL_Event;
@@ -126,6 +124,6 @@ public:
 	~C4GamePadOpener();
 	void SetGamePad(int iNewGamePad);
 #ifdef USE_SDL_FOR_GAMEPAD
-	SDL_Joystick *Joy;
+	struct SDL_Joystick *Joy;
 #endif
 };

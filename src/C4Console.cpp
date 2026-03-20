@@ -504,7 +504,7 @@ bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, DWO
 bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, uint32_t dwFlags, bool fSave)
 #endif
 {
-	sdl
+
 	// TODO: Use SDL for file handling
 #if 0 //def _WIN32
 	OPENFILENAME ofn{};
@@ -800,7 +800,7 @@ void C4Console::Draw()
 
 	ImGui::SetNextWindowPos({0, 0});
 	std::int32_t x,y;
-	SDL_GL_GetDrawableSize(sdlWindow, &x, &y);
+	SDL_GetWindowSizeInPixels(sdlWindow, &x, &y);
 	ImGui::SetNextWindowSize({float(x), float(y)});
 	ImGui::Begin("Konsolenmodus", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar);
 

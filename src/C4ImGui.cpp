@@ -20,9 +20,9 @@
 
 #include "imgui/imgui.h"
 
-#include "imgui/imgui_impl_sdl2.h"
+#include "imgui/imgui_impl_sdl3.h"
 #include "imgui/imgui_impl_opengl2.h"
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 #include <gl/gl.h>
 
@@ -57,7 +57,7 @@ C4ImGui::C4ImGui(SDL_Window* window)
 
 	SetStyle();
 
-	ThrowIfFailed(ImGui_ImplSDL2_InitForOpenGL(window, nullptr), "ImGui SDL2 init");
+	ThrowIfFailed(ImGui_ImplSDL3_InitForOpenGL(window, nullptr), "ImGui SDL3 init");
 	ThrowIfFailed(ImGui_ImplOpenGL2_Init(), "ImGui OpenGL2 init");
 
 	// Reset outside context so we don't run into errors if this constructor was called via another ImGui UI (e.g When creating a new viewport).
@@ -71,7 +71,7 @@ C4ImGui::~C4ImGui()
 {
 	Select();
 	ImGui_ImplOpenGL2_Shutdown();
-	ImGui_ImplSDL2_Shutdown();
+	ImGui_ImplSDL3_Shutdown();
 
 	ImGui::DestroyContext(context);
 }
@@ -116,7 +116,7 @@ bool C4ImGui::NewFrame()
 	Select();
 
 	ImGui_ImplOpenGL2_NewFrame();
-	ImGui_ImplSDL2_NewFrame();
+	ImGui_ImplSDL3_NewFrame();
 	ImGui::NewFrame();
 	return true;
 }

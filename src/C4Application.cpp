@@ -39,7 +39,7 @@
 #endif
 
 #include "imgui/imgui.h"
-#include "imgui/imgui_impl_sdl2.h"
+#include "imgui/imgui_impl_sdl3.h"
 #include "imgui/imgui_impl_opengl2.h"
 #include <cassert>
 #include <stdexcept>
@@ -237,27 +237,6 @@ void C4Application::DoInit()
 	if (!pGamePadControl && Config.General.GamepadEnabled)
 		pGamePadControl = new C4GamePadControl();
 
-	/*
-	// Setup Dear ImGui context
-	IMGUI_CHECKVERSION();
-	dynamic_cast<CStdGL*>(DDraw)->CurrentImguiContext = ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-	//ImFont* vecfont = io.Fonts->AddFontDefaultVector();
-	//IM_ASSERT(vecfont != nullptr);
-
-	float main_scale = ImGui_ImplSDL2_GetContentScaleForDisplay(0);
-	ImGuiStyle& style = ImGui::GetStyle();
-	style.ScaleAllSizes(1.5);
-	//style.FontScaleDpi = main_scale;
-	//ImFont* font = io.Fonts->AddFontFromFileTTF("/fonts/DroidSans.ttf");
-	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\arial.ttf");
-	//IM_ASSERT(font != nullptr);
-	// Setup Platform/Renderer backends
-	ImGui_ImplSDL2_InitForOpenGL(pWindow->GetSDLWindow(), dynamic_cast<CStdGL*>(DDraw)->GetMainCtx().GetGLContext());
-	ImGui_ImplOpenGL2_Init();
-	*/
 	AppState = C4AS_PreInit;
 }
 
