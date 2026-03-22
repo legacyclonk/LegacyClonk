@@ -839,7 +839,7 @@ void C4Console::Draw()
 
 			ImGui::EndMenu();
 		}
-		ImGui::PopStyleVar(1);
+
 
 		ImGui::BeginDisabled(controlsDisabled || !Editing);
 
@@ -930,6 +930,8 @@ void C4Console::Draw()
 		}
 		ImGui::EndMenuBar();
 	}
+
+	ImGui::PopStyleVar(1);
 
 	ImGui::BeginChild("##log", ImVec2(0.0f, y-150.0), ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NoMove);
 	ImGuiListClipper LogClipper;
@@ -1063,10 +1065,12 @@ void C4Console::Draw()
 	}
 	ImGui::EndDisabled();
 
+	ImGui::PopStyleVar();
 	ImGui::Spacing();
 	ImGui::Separator();
 
-	ImGui::BeginColumns("##meta", 4);
+	ImGuiOldColumnFlags ColumnFlags = ImGuiOldColumnFlags_NoResize;
+	ImGui::BeginColumns("##meta", 4, ColumnFlags);
 	ImGui::Text("Frame: %d", Game.FrameCounter);
 	ImGui::NextColumn();
 	ImGui::Text("Script: %d", Game.Script.Counter);
@@ -1074,6 +1078,7 @@ void C4Console::Draw()
 	ImGui::Text("%02d:%02d:%02d", Game.Time / 3600, (Game.Time % 3600) / 60, Game.Time % 60);
 	ImGui::NextColumn();
 	ImGui::Text("%i FPS", Game.FPS);
+	ImGui::SetColumnWidth(0, 150);
 	ImGui::EndColumns();
 
 	ImGui::Spacing();
@@ -1083,8 +1088,6 @@ void C4Console::Draw()
 	{
 		ImGui::Text("Cursor: %s", cursorText.isNull() ? "" : cursorText.getData());
 	}
-
-	ImGui::PopStyleVar();
 
 	if (showAbout)
 	{
