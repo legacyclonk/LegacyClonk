@@ -252,7 +252,7 @@ void C4Console::In(const char *szText)
 		// done
 		return;
 	}
-	// begins with '#'? then it's a message. Route cia ProcessInput to allow #/sound
+	// begins with '#'? then it's a message. Route via ProcessInput to allow #/sound
 	if (*szText == '#')
 	{
 		Game.MessageInput.ProcessInput(szText + 1);
@@ -387,34 +387,94 @@ void C4Console::FileSave(bool fSaveGame)
 	SaveGame(fSaveGame);
 }
 
-void C4Console::FileSaveAs(bool fSaveGame)
+void SDLCALL C4Console::FileSaveGameAsCallback(void* userdata, const char* const* filelist, int filter)
 {
-	// Do save-as dialog
-	char filename[512 + 1];
-	SCopy(Game.ScenarioFile.GetName(), filename);
-	if (!FileSelect(filename, 512,
-		"Clonk 4 Scenario\0*.c4s\0\0",
-		OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY,
-		true)) return;
-	DefaultExtension(filename, "c4s");
-	bool fOkay = true;
-	// Close current scenario file
-	if (!Game.ScenarioFile.Close()) fOkay = false;
-	// Copy current scenario file to target
-	if (!C4Group_CopyItem(Game.ScenarioFilename, filename)) fOkay = false;
-	// Open new scenario file
-	SCopy(filename, Game.ScenarioFilename);
-
-	SetCaption(GetFilename(Game.ScenarioFilename));
-	if (!Game.ScenarioFile.Open(Game.ScenarioFilename)) fOkay = false;
-	// Failure message
-	if (!fOkay)
+	if (!filelist)
 	{
-		Message(LoadResStr(C4ResStrTableKey::IDS_CNS_SAVEASERROR, Game.ScenarioFilename).c_str());
+		SDL_Log("An error occured: %s", SDL_GetError());
 		return;
 	}
-	// Save game
-	SaveGame(fSaveGame);
+	else if (!*filelist)
+	{
+		// Dialog canceled.
+		return;
+	}
+
+	if(!userdata)
+	{
+		return;
+	}
+
+	if(C4Console* ConsoleContext = reinterpret_cast<C4Console*>(userdata))
+	{
+		std::string Filename = *filelist;
+		ConsoleContext->FileSaveMainThread(Filename, true);
+	}
+}
+
+// TODO: Combine with FileSaveGameAsCallback method. Userdata is already used by console this pointer,
+// and using a struct is a bit cumbersome.
+void SDLCALL C4Console::FileSaveScenarioAsCallback(void* userdata, const char* const* filelist, int filter)
+{
+	if (!filelist)
+	{
+		SDL_Log("An error occured: %s", SDL_GetError());
+		return;
+	}
+	else if (!*filelist)
+	{
+		// Dialog canceled.
+		return;
+	}
+
+	if(!userdata)
+	{
+		return;
+	}
+
+	if(C4Console* ConsoleContext = reinterpret_cast<C4Console*>(userdata))
+	{
+		std::string Filename = *filelist;
+		ConsoleContext->FileSaveMainThread(Filename, false);
+	}
+}
+
+void C4Console::FileSaveMainThread(std::string Filename, bool fSaveGame)
+{
+	Application.InteractiveThread.ExecuteInMainThread([this, Filename, fSaveGame] mutable
+	{
+		std::replace(Filename.begin(), Filename.end(), '\\', '/');
+		if(!Filename.ends_with(".c4s"))
+		{
+			Filename.append(".c4s");
+		}
+		bool fOkay = true;
+		// Close current scenario file
+		if (!Game.ScenarioFile.Close()) fOkay = false;
+		// Copy current scenario file to target
+		if (!C4Group_CopyItem(Game.ScenarioFilename, Filename.c_str())) fOkay = false;
+		// Open new scenario file
+		SCopy(Filename.c_str(), Game.ScenarioFilename);
+
+		//SetCaption(GetFilename(Game.ScenarioFilename)); // TODO: needed?
+		if (!Game.ScenarioFile.Open(Game.ScenarioFilename)) fOkay = false;
+		// Failure message
+		if (!fOkay)
+		{
+			Message(LoadResStr(C4ResStrTableKey::IDS_CNS_SAVEASERROR, Game.ScenarioFilename).c_str());
+			return;
+		}
+		// Save game
+		SaveGame(fSaveGame);
+	});
+}
+
+void C4Console::FileSaveAs(bool fSaveGame)
+{
+	static const SDL_DialogFileFilter PlayerFilter[] = {
+		{ "Clonk 4 Scenario",  "c4s" }
+	};
+	SDL_ShowSaveFileDialog(fSaveGame ? FileSaveGameAsCallback : FileSaveScenarioAsCallback, this, sdlWindow, PlayerFilter, 1, Config.General.ExePath);
 }
 
 void C4Console::Message(const char *const message)
@@ -425,49 +485,83 @@ void C4Console::Message(const char *const message)
 	}
 }
 
+void SDLCALL C4Console::FileOpenCallback(void* userdata, const char* const* filelist, int filter)
+{
+	if (!filelist)
+	{
+		SDL_Log("An error occured: %s", SDL_GetError());
+		return;
+	}
+	else if (!*filelist)
+	{
+		// Dialog canceled.
+		return;
+	}
+
+	if(!userdata)
+	{
+		return;
+	}
+
+	if(C4Console* ConsoleContext = reinterpret_cast<C4Console*>(userdata))
+	{
+		while (*filelist)
+		{
+			// Compose command line
+			std::string commandLine{'"'};
+			commandLine.append(*filelist);
+			std::replace(commandLine.begin(), commandLine.end(), '\\', '/');
+			commandLine.append("\" ");
+
+			Application.InteractiveThread.ExecuteInMainThread([ConsoleContext, CmdLine = std::move(commandLine)]
+			{
+				ConsoleContext->OpenGame(CmdLine.c_str());
+			});
+			break;
+		}
+	}
+}
+
 void C4Console::FileOpen()
 {
-	// Get scenario file name
-	char c4sfile[512 + 1] = "";
-	if (!FileSelect(c4sfile, 512,
-		"Clonk 4 Scenario\0*.c4s;*.c4f;Scenario.txt\0\0",
-		OFN_HIDEREADONLY | OFN_FILEMUSTEXIST
-	)) return;
-	// Compose command line
-	std::string commandLine{'"'};
-	commandLine.append(c4sfile);
-	commandLine.append("\" ");
-
-	// Open game
-	Application.InteractiveThread.ExecuteInMainThread([this, commandLine = std::move(commandLine)]
-	{
-		OpenGame(commandLine.c_str());
-	});
+	static const SDL_DialogFileFilter ScenarioFilter[] = {
+		{ "Clonk 4 Scenario",  "c4s;c4f;Scenario.txt"}
+	};
+	SDL_ShowOpenFileDialog(FileOpenCallback, this, sdlWindow, ScenarioFilter, 1, Config.General.ExePath, false);
 }
 
 void C4Console::FileOpenWPlrs()
 {
+	static const SDL_DialogFileFilter ScenarioFilter[] = {
+		{ "Clonk 4 Scenario",  "c4s;c4f;Scenario.txt"}
+	};
+	SDL_ShowOpenFileDialog(FileOpenCallback, this, sdlWindow, ScenarioFilter, 1, Config.General.ExePath, false);
+
+	// TODO: Construct chain with file open callbacks or remove option. Since it can be done via two user commands.
+	return;
 	// Get scenario file name
 	char c4sfile[512 + 1] = "";
+	/*
 	if (!FileSelect(c4sfile, 512,
 		"Clonk 4 Scenario\0*.c4s;*.c4f\0\0",
 		OFN_HIDEREADONLY | OFN_FILEMUSTEXIST
 	)) return;
 	// Get player file name(s)
+	*/
 	char c4pfile[4096 + 1] = "";
+/*
 	if (!FileSelect(c4pfile, 4096,
 		"Clonk 4 Player\0*.c4p\0\0",
 		OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT | OFN_EXPLORER
 	)) return;
-
-	// Compose command line
+*/
 	// Compose command line
 	std::string commandLine{'"'};
 	commandLine.append(c4sfile);
 	commandLine.append("\" ");
 	char cmdline[6000] = "";
 	SAppend("\"", cmdline, 5999); SAppend(c4sfile, cmdline, 5999); SAppend("\" ", cmdline, 5999);
-	if (DirectoryExists(c4pfile)) // Multiplayer
+	if (DirectoryExists(c4pfile)) // Multiple players
 	{
 		const char *cptr = c4pfile + SLen(c4pfile) + 1;
 		while (*cptr)
@@ -479,7 +573,7 @@ void C4Console::FileOpenWPlrs()
 			commandLine.append("\" ");
 		}
 	}
-	else // Single player
+	else // One player
 	{
 		commandLine.append("\"");
 		commandLine.append(c4pfile);
@@ -498,6 +592,7 @@ void C4Console::FileClose()
 	CloseGame();
 }
 
+// TODO: Obsolete. Remove.
 #ifdef _WIN32
 bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, DWORD    dwFlags, bool fSave)
 #else
@@ -505,7 +600,8 @@ bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, uin
 #endif
 {
 
-	// TODO: Use SDL for file handling
+	return true;
+
 #if 0 //def _WIN32
 	OPENFILENAME ofn{};
 	ofn.lStructSize = sizeof(ofn);
@@ -526,8 +622,6 @@ bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, uin
 	return fResult;
 #elif WITH_DEVELOPER_MODE
 	GtkWidget *dialog = gtk_file_chooser_dialog_new(fSave ? "Save file..." : "Load file...", GTK_WINDOW(window), fSave ? GTK_FILE_CHOOSER_ACTION_SAVE : GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, fSave ? GTK_STOCK_SAVE : GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, nullptr);
-
-	// TODO: Set dialog modal?
 
 	if (g_path_is_absolute(sFilename))
 		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog), sFilename);
@@ -723,42 +817,40 @@ void C4Console::EditObjects()
 	ObjectListDlg.Open();
 }
 
+static void SDLCALL JoinPlayerCallback(void* userdata, const char* const* filelist, int filter)
+{
+	if (!filelist)
+	{
+		SDL_Log("An error occured: %s", SDL_GetError());
+		return;
+	}
+	else if (!*filelist)
+	{
+		// Dialog canceled.
+		return;
+	}
+
+	while (*filelist)
+	{
+		SDL_Log("Full path to selected file: '%s'", *filelist);
+		if (Game.Network.isEnabled())
+		{
+			Game.Network.Players.JoinLocalPlayer(*filelist, true);
+		}
+		else
+		{
+			Game.Players.CtrlJoinLocalNoNetwork(*filelist, Game.Clients.getLocalID(), Game.Clients.getLocalName());
+		}
+		filelist++;
+	}
+}
+
 void C4Console::PlayerJoin()
 {
-	// Get player file name(s)
-	char c4pfile[4096 + 1] = "";
-	if (!FileSelect(c4pfile, 4096,
-		"Clonk 4 Player\0*.c4p\0\0",
-		OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT | OFN_EXPLORER
-	)) return;
-
-	// Compose player file list
-	char c4plist[6000] = "";
-	// Multiple players
-	if (DirectoryExists(c4pfile))
-	{
-		const char *cptr = c4pfile + SLen(c4pfile) + 1;
-		while (*cptr)
-		{
-			SNewSegment(c4plist);
-			SAppend(c4pfile, c4plist); SAppend(DirSep, c4plist); SAppend(cptr, c4plist);
-			cptr += SLen(cptr) + 1;
-		}
-	}
-	// Single player
-	else
-	{
-		SAppend(c4pfile, c4plist);
-	}
-
-	// Join players (via network/ctrl queue)
-	char szPlayerFilename[_MAX_PATH + 1];
-	for (int iPar = 0; SCopySegment(c4plist, iPar, szPlayerFilename, ';', _MAX_PATH); iPar++)
-		if (szPlayerFilename[0])
-			if (Game.Network.isEnabled())
-				Game.Network.Players.JoinLocalPlayer(szPlayerFilename, true);
-			else
-				Game.Players.CtrlJoinLocalNoNetwork(szPlayerFilename, Game.Clients.getLocalID(), Game.Clients.getLocalName());
+	static const SDL_DialogFileFilter PlayerFilter[] = {
+		{ "Clonk 4 Player",  "c4p" }
+	};
+	SDL_ShowOpenFileDialog(JoinPlayerCallback, nullptr, sdlWindow, PlayerFilter, 1, nullptr, true);
 }
 
 void C4Console::SetCaption(const char *szCaption)
@@ -787,14 +879,12 @@ void C4Console::Execute()
 void C4Console::Draw()
 {
 	ImGui->Select();
-	//SetSize(400, 400);
 	lpDDraw->FillBG();
 	ImGui->NewFrame();
 
 	const bool lobbyActive{Game.Network.isLobbyActive()};
 	const bool controlsDisabled{!fGameOpen};
 	const bool controlsDisabledIfNotInLobby{!lobbyActive && controlsDisabled};
-
 
 	bool showAbout{false};
 
@@ -804,13 +894,15 @@ void C4Console::Draw()
 	ImGui::SetNextWindowSize({float(x), float(y)});
 	ImGui::Begin("Konsolenmodus", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar);
 
+	// TODO: Add tooltips to menu options. Ideally localized.
 	ImGui::PushStyleVarY(ImGuiStyleVar_FramePadding, 5.0f);
 	if (ImGui::BeginMenuBar())
 	{
 		if (ImGui::BeginMenu(LoadResStr(C4ResStrTableKey::IDS_MNU_FILE)))
 		{
 			if (ImGui::MenuItem(LoadResStr(C4ResStrTableKey::IDS_MNU_OPEN))) FileOpen();
-			if (ImGui::MenuItem(LoadResStr(C4ResStrTableKey::IDS_MNU_OPENWPLRS))) FileOpenWPlrs();
+			// TODO: Disabled for now until it is properly implemented again. The only thing missing is a chain of file dialogs with their callbacks.
+			//if (ImGui::MenuItem(LoadResStr(C4ResStrTableKey::IDS_MNU_OPENWPLRS))) FileOpenWPlrs();
 			ImGui::Separator();
 
 			ImGui::BeginDisabled(controlsDisabled || !Game.Players.GetCount());
@@ -913,7 +1005,7 @@ void C4Console::Draw()
 
 			for (C4Network2Client *client{Game.Network.Clients.GetNextClient(nullptr)}; client; client = Game.Network.Clients.GetNextClient(client))
 			{
-				removeClientMenuEntry(client->getClient(), std::format("{}{}{}", LoadResStrV(client->isActivated() ? C4ResStrTableKey::IDS_MNU_NETCLIENT : C4ResStrTableKey::IDS_MNU_NETCLIENTDE), client->getName(), client->getID()).c_str());
+				removeClientMenuEntry(client->getClient(), std::format("{} {} {}", LoadResStrV(client->isActivated() ? C4ResStrTableKey::IDS_MNU_NETCLIENT : C4ResStrTableKey::IDS_MNU_NETCLIENTDE), client->getName(), client->getID()).c_str());
 			}
 		}
 
@@ -947,7 +1039,7 @@ void C4Console::Draw()
 			{
 				ImGui::TextColored(WarningColor, logBuffer[line_no].c_str());
 			}
-			else if(logBuffer[line_no].starts_with("ERROR"))
+			else if(logBuffer[line_no].starts_with("ERROR") || logBuffer[line_no].starts_with("FATAL ERROR"))
 			{
 				ImGui::TextColored(ErrorColor, logBuffer[line_no].c_str());
 			}
@@ -1120,6 +1212,7 @@ void C4Console::Draw()
 
 	lpDDraw->PageFlip();
 }
+
 
 bool C4Console::OpenGame(const char *szCmdLine)
 {

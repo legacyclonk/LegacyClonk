@@ -65,6 +65,7 @@ public:
 	void UpdateHaltCtrls(bool fHalt);
 	bool OpenGame(const char *szCmdLine = nullptr);
 	bool TogglePause(); // key callpack: pause
+
 protected:
 	void CloseGame();
 	bool fGameOpen;
@@ -81,8 +82,14 @@ protected:
 #else
 	bool FileSelect(char *sFilename, int iSize, const char *szFilter, uint32_t dwFlags, bool fSave = false);
 #endif
+public:
+	static void SDLCALL FileSaveGameAsCallback(void* userdata, const char* const* filelist, int filter);
+	static void SDLCALL FileSaveScenarioAsCallback(void* userdata, const char* const* filelist, int filter);
+	static void SDLCALL FileOpenCallback(void* userdata, const char* const* filelist, int filter);
+protected:
 	void SaveGame(bool fSaveGame);
 	void FileSaveAs(bool fSaveGame);
+	void FileSaveMainThread(std::string Filename, bool fSaveGame);
 	void FileSave(bool fSaveGame);
 	void FileOpen();
 	void FileOpenWPlrs();
