@@ -435,6 +435,12 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 #if defined(_WIN32)
 	if (doExecute && tv.tv_nsec == 0)
 	{
+		// TODO: Check if this is the correct way. These events were processed by the StdAppWin32 before.
+		if(NetworkEvent.GetEvent())
+		{
+			OnNetworkEvents();
+		}
+
 		Execute();
 		return HR_Timer;
 	}

@@ -83,8 +83,7 @@ bool C4InteractiveThread::PushEvent(C4InteractiveEventType eEvent, std::any data
 	pLastEvent->Next = pEvent;
 	pLastEvent = pEvent;
 	PushLock.Clear();
-// TODO: Check network event
-#if FALSE //def _WIN32
+#if defined(_WIN32)
 	// post message to main thread
 	try
 	{

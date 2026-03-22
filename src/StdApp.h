@@ -304,12 +304,15 @@ public:
 		return true;
 	}
 
+#if defined(_WIN32)
+	CStdEvent NetworkEvent{CStdEvent::AutoReset()}; // set if a network event occured
 // TODO: Remove unused code
+#endif
+
 #if FALSE //def _WIN32
 	HINSTANCE hInstance;
 	int iLastExecute, iTimerOffset;
 	CStdEvent TimerEvent{CStdEvent::AutoReset()}; // set periodically by critical timer (C4Engine)
-	CStdEvent NetworkEvent{CStdEvent::AutoReset()}; // set if a network event occured
 	void Init(HINSTANCE hInst, int nCmdShow, char *szCmdLine);
 	void NextTick(bool fYield) { TimerEvent.Set(); if (fYield) Sleep(0); }
 	bool IsShiftDown() { return GetKeyState(VK_SHIFT) < 0; }
@@ -393,6 +396,7 @@ protected:
 	std::thread::id mainThread{};
 	bool InitTimer();
 	virtual void DoInit() = 0;
+	// TODO: Should this be renamed since it doesn't seem to be restricted to network events?
 	virtual void OnNetworkEvents() = 0;
 
 	// commands from stdin (console only)
