@@ -817,6 +817,20 @@ void C4ViewportWindow::DrawImGui()
 
 void C4ViewportWindow::HandleMessage(SDL_Event& sdl_event)
 {
+	if(sdl_event.window.windowID == SDL_GetWindowID(sdlWindow))
+	{
+		switch (sdl_event.type)
+		{
+		case SDL_EVENT_WINDOW_RESIZED :
+			cvp->UpdateOutputSize();
+			break;
+
+		case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+			cvp->pWindow->Close();
+			break;
+		}
+	}
+
 	if(SDL_GetMouseFocus() != sdlWindow)
 	{
 		return;
@@ -863,9 +877,7 @@ void C4ViewportWindow::HandleMessage(SDL_Event& sdl_event)
 	// TODO: Reload File custom message or alternative implementation
 	// TODO: Scrolling (Scrollbars) probably needs to be done via ImGUI
 
-	case SDL_EVENT_WINDOW_RESIZED :
-		cvp->UpdateOutputSize();
-		break;
+
 
 	}
 
