@@ -231,6 +231,8 @@ C4ViewportWindow::~C4ViewportWindow()
 			{
 				return handle.window == sdlWindow;
 			}), viewportHandles.end());
+
+		SDL_DestroyWindow(sdlWindow);
 	}
 }
 
