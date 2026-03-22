@@ -69,11 +69,21 @@ C4ImGui::C4ImGui(SDL_Window* window)
 
 C4ImGui::~C4ImGui()
 {
+	ImGuiContext* prev_ctx = ImGui::GetCurrentContext();
+	if (prev_ctx && prev_ctx == context)
+	{
+		prev_ctx = nullptr; // Only restore context if it was different from this->context
+	}
 	Select();
 	ImGui_ImplOpenGL2_Shutdown();
 	ImGui_ImplSDL3_Shutdown();
 
 	ImGui::DestroyContext(context);
+
+	if(prev_ctx)
+	{
+		ImGui::SetCurrentContext(prev_ctx);
+	}
 }
 
 bool C4ImGui::IsVisible() const
