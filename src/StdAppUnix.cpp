@@ -415,23 +415,6 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 	return timeoutElapsed ? (doExecute ? HR_Timer : HR_Timeout) : HR_Message;
 #else
 
-#if !defined(_WIN32)
-	std::array<pollfd, 3> fds;
-	fds.fill({.fd = -1, .events = POLLIN});
-
-	fds[0].fd = Pipe[0];
-#endif
-
-#ifdef USE_X11
-	// Stop waiting for the next frame when more events arrive
-	XFlush(dpy);
-	fds[1].fd = XConnectionNumber(dpy);
-#endif
-
-#ifdef USE_CONSOLE
-	fds[2].fd = STDIN_FILENO;
-#endif
-
 #if defined(_WIN32)
 	if (doExecute && tv.tv_nsec == 0)
 	{
@@ -448,6 +431,21 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 	return HR_Timeout;
 
 #else
+
+	std::array<pollfd, 3> fds;
+	fds.fill({.fd = -1, .events = POLLIN});
+
+	fds[0].fd = Pipe[0];
+
+#ifdef USE_X11
+	// Stop waiting for the next frame when more events arrive
+	XFlush(dpy);
+	fds[1].fd = XConnectionNumber(dpy);
+#endif
+
+#ifdef USE_CONSOLE
+	fds[2].fd = STDIN_FILENO;
+#endif
 
 	switch (StdSync::Poll(fds, (checkTimer || timeout != StdSync::Infinite) ? tv.tv_nsec / 1000000 : StdSync::Infinite))
 	{
