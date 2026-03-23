@@ -857,7 +857,7 @@ void C4Console::PlayerJoin()
 	static const SDL_DialogFileFilter PlayerFilter[] = {
 		{ "Clonk 4 Player",  "c4p" }
 	};
-	SDL_ShowOpenFileDialog(JoinPlayerCallback, nullptr, sdlWindow, PlayerFilter, 1, nullptr, true);
+	SDL_ShowOpenFileDialog(JoinPlayerCallback, nullptr, sdlWindow, PlayerFilter, 1, Config.General.ExePath, true);
 }
 
 void C4Console::SetCaption(const char *szCaption)
