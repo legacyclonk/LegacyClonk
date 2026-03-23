@@ -1042,11 +1042,11 @@ void C4Console::Draw()
 		for (int line_no = LogClipper.DisplayStart; line_no < LogClipper.DisplayEnd; line_no++)
 		{
 			// TODO: Find a way to get log type (warning, error) directly instead of comparing strings.
-			if(logBuffer[line_no].starts_with("WARNING"))
+			if(logBuffer[line_no].contains("WARNING"))
 			{
 				ImGui::TextColored(WarningColor, logBuffer[line_no].c_str());
 			}
-			else if(logBuffer[line_no].starts_with("ERROR") || logBuffer[line_no].starts_with("FATAL ERROR"))
+			else if(logBuffer[line_no].contains("ERROR"))
 			{
 				ImGui::TextColored(ErrorColor, logBuffer[line_no].c_str());
 			}
