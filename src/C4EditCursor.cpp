@@ -331,7 +331,7 @@ bool C4EditCursor::RightButtonUp()
 {
 	Target = nullptr;
 
-	DoContextMenu();
+	OpenContextMenu();
 
 	return true;
 }
@@ -572,46 +572,50 @@ void C4EditCursor::ApplyToolFill()
 	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Fill, Game.Landscape.Mode, X, Y, 0, Y2, pTools->Grade, false, pTools->Material));
 }
 
-bool C4EditCursor::DoContextMenu()
+bool C4EditCursor::OpenContextMenu()
 {
-	bool fObjectSelected = Selection.ObjectCount();
-	// TODO
-#if 0 //def _WIN32
-	POINT point; GetCursorPos(&point);
-	HMENU hContext = GetSubMenu(hMenu, 0);
-	SetMenuItemEnable(hContext, IDM_VIEWPORT_DELETE,     fObjectSelected && Console.Editing);
-	SetMenuItemEnable(hContext, IDM_VIEWPORT_DUPLICATE,  fObjectSelected && Console.Editing);
-	SetMenuItemEnable(hContext, IDM_VIEWPORT_CONTENTS,   fObjectSelected && Selection.GetObject()->Contents.ObjectCount() && Console.Editing);
-	SetMenuItemEnable(hContext, IDM_VIEWPORT_PROPERTIES, Mode != ConsoleMode::Play);
-	SetMenuItemText(hContext, IDM_VIEWPORT_DELETE,     LoadResStr("IDS_MNU_DELETE"));
-	SetMenuItemText(hContext, IDM_VIEWPORT_DUPLICATE,  LoadResStr("IDS_MNU_DUPLICATE"));
-	SetMenuItemText(hContext, IDM_VIEWPORT_CONTENTS,   LoadResStr("IDS_MNU_CONTENTS"));
-	SetMenuItemText(hContext, IDM_VIEWPORT_PROPERTIES, LoadResStr((Mode == ConsoleMode::Edit) ? "IDS_CNS_PROPERTIES" : "IDS_CNS_TOOLS"));
-	int32_t iItem = TrackPopupMenu(
-		hContext,
-		TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON | TPM_NONOTIFY,
-		point.x, point.y, 0,
-		Console.hWindow,
-		nullptr);
-	switch (iItem)
-	{
-	case IDM_VIEWPORT_DELETE:     Delete();        break;
-	case IDM_VIEWPORT_DUPLICATE:  Duplicate();     break;
-	case IDM_VIEWPORT_CONTENTS:   GrabContents();  break;
-	case IDM_VIEWPORT_PROPERTIES: OpenPropTools(); break;
-	}
-#elif defined(WITH_DEVELOPER_MODE)
-	gtk_widget_set_sensitive(itemDelete,       fObjectSelected && Console.Editing);
-	gtk_widget_set_sensitive(itemDuplicate,    fObjectSelected && Console.Editing);
-	gtk_widget_set_sensitive(itemGrabContents, fObjectSelected && Selection.GetObject()->Contents.ObjectCount() && Console.Editing);
-	gtk_widget_set_sensitive(itemProperties,   Mode != ConsoleMode::Play);
-
-	GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(itemProperties)));
-	gtk_label_set_text(label, LoadResStrUtf8((Mode == ConsoleMode::Edit) ? "IDS_CNS_PROPERTIES" : "IDS_CNS_TOOLS").getData());
-
-	gtk_menu_popup(GTK_MENU(menuContext), nullptr, nullptr, nullptr, nullptr, 3, 0);
-#endif
+	ContextMenuOpenIn = ImGui::GetCurrentContext();
 	return true;
+}
+
+void C4EditCursor::DrawContextMenu()
+{
+	// Make sure the context menu is opened in the same gui context as the right click happened.
+	if(ContextMenuOpenIn && ImGui::GetCurrentContext() && ContextMenuOpenIn == ImGui::GetCurrentContext())
+	{
+		ImGui::OpenPopup("ContextMenu");
+		ContextMenuOpenIn = nullptr;
+	}
+	if (ImGui::BeginPopup("ContextMenu"))
+	{
+		bool fObjectSelected = Selection.ObjectCount();
+		ImGui::BeginDisabled(!fObjectSelected);
+		if (ImGui::MenuItem(LoadResStr(C4ResStrTableKey::IDS_MNU_DELETE), "Delete"))
+		{
+			Delete();
+		}
+
+		if (ImGui::MenuItem(LoadResStr(C4ResStrTableKey::IDS_MNU_DUPLICATE), "Ctrl+D"))
+		{
+			Duplicate();
+		}
+
+		if (ImGui::MenuItem(LoadResStr(C4ResStrTableKey::IDS_MNU_CONTENTS)))
+		{
+			GrabContents();
+		}
+
+		ImGui::EndDisabled();
+
+		ImGui::Separator();
+
+		if (ImGui::MenuItem(LoadResStrV((Mode == ConsoleMode::Edit) ? C4ResStrTableKey::IDS_CNS_PROPERTIES : C4ResStrTableKey::IDS_CNS_TOOLS)))
+		{
+			OpenPropTools();
+		}
+
+		ImGui::EndPopup();
+	}
 }
 
 void C4EditCursor::GrabContents()

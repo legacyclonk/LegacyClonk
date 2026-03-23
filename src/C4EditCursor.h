@@ -44,6 +44,7 @@ protected:
 	int32_t X, Y, X2, Y2;
 	bool Hold, DragFrame, DragLine;
 	C4Object *Target, *DropTarget;
+	ImGuiContext* ContextMenuOpenIn;
 #ifdef _WIN32
 	HMENU hMenu;
 #elif defined(WITH_DEVELOPER_MODE)
@@ -84,13 +85,14 @@ public:
 	bool AltDown();
 	bool AltUp();
 	StdStrBuf GetStatusBarText() const;
+	void DrawContextMenu();
 
 protected:
 	void ApplyToolPicker();
 	void PutContents();
 	void UpdateDropTarget(uint16_t wKeyFlags);
 	void GrabContents();
-	bool DoContextMenu();
+	bool OpenContextMenu();
 	void ApplyToolFill();
 	void ApplyToolRect();
 	void ApplyToolLine();

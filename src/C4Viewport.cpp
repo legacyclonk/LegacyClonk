@@ -811,6 +811,8 @@ void C4ViewportWindow::DrawImGui()
 		Console.PropertyDlg.Draw();
 		Console.ToolsDlg.Draw();
 
+		Console.EditCursor.DrawContextMenu();
+
 		ImGui->Render();
 	}
 }
