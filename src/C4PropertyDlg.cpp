@@ -71,12 +71,20 @@ void C4PropertyDlg::Update()
 	{
 		C4Object *cobj = Selection.GetObject();
 		// Type
-		selectionText = std::format("{} {} {}", LoadResStrV(C4ResStrTableKey::IDS_CNS_TYPE), cobj->GetName(), C4IdText(cobj->Def->id)).c_str();
+		std::string name{cobj->GetName()};
+		std::string id{C4IdText(cobj->Def->id)};
+		std::string TypeFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_TYPE)};
+		SReplaceFormat(TypeFormat);
+		selectionText = std::vformat(TypeFormat, std::make_format_args(name, id)).c_str();
 		// Owner
 		if (ValidPlr(cobj->Owner))
 		{
 			selectionText.Append(LineFeed);
-			selectionText += std::format("{} {}", LoadResStrV(C4ResStrTableKey::IDS_CNS_OWNER), Game.Players.Get(cobj->Owner)->GetName()).c_str();
+
+			std::string OwnerFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_OWNER)};
+			SReplaceFormat(OwnerFormat);
+			std::string Owner{Game.Players.Get(cobj->Owner)->GetName()};
+			selectionText += std::vformat(OwnerFormat, std::make_format_args(Owner)).c_str();
 		}
 		// Contents
 		if (cobj->Contents.ObjectCount())
@@ -101,7 +109,7 @@ void C4PropertyDlg::Update()
 				if (fFirstLocal) { selectionText.Append(LineFeed); selectionText.Append(LoadResStr(C4ResStrTableKey::IDS_CNS_LOCALS)); fFirstLocal = false; }
 				selectionText.Append(LineFeed);
 				// Append id
-				selectionText += std::format("{} {}", " Local(%d) = ", cnt).c_str();
+				selectionText += std::format(" Local(%d) = ", cnt).c_str();
 				// write value
 				selectionText.Append(cobj->Local[cnt].GetDataString().c_str());
 			}
@@ -112,7 +120,7 @@ void C4PropertyDlg::Update()
 			if (fFirstLocal) { selectionText.Append(LineFeed); selectionText.Append(LoadResStr(C4ResStrTableKey::IDS_CNS_LOCALS)); fFirstLocal = false; }
 			selectionText.Append(LineFeed);
 			// Append name
-			selectionText += std::format("{} {}", " %s = ", cobj->LocalNamed.pNames->pNames[cnt]).c_str();
+			selectionText += std::format(" {} = ", cobj->LocalNamed.pNames->pNames[cnt]).c_str();
 			// write value
 			selectionText.Append(cobj->LocalNamed.pData[cnt].GetDataString().c_str());
 		}
@@ -127,7 +135,7 @@ void C4PropertyDlg::Update()
 			}
 			selectionText.Append(LineFeed);
 			// Effect name
-			selectionText += std::format("{} {}", " %s: Interval %d", pEffect->Name, pEffect->iIntervall).c_str();
+			selectionText += std::format(" {}: Interval {}", pEffect->Name, pEffect->iIntervall).c_str();
 		}
 		// Store selected def
 		idSelectedDef = cobj->id;
@@ -135,7 +143,10 @@ void C4PropertyDlg::Update()
 	}
 	// Multiple selected objects
 	default:
-		selectionText = std::format("{} {}", LoadResStrV(C4ResStrTableKey::IDS_CNS_MULTIPLEOBJECTS), Selection.ObjectCount()).c_str();
+		std::string ObjectCount{""+Selection.ObjectCount()};
+		std::string MultipleObjectsFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_MULTIPLEOBJECTS)};
+		SReplaceFormat(MultipleObjectsFormat);
+		selectionText = std::vformat(MultipleObjectsFormat, std::make_format_args(ObjectCount)).c_str();
 		break;
 	}
 }

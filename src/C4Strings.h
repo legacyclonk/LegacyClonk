@@ -92,6 +92,7 @@ bool SRemoveModules(char *szList, const char *szModules, bool fCaseSensitive = f
 int SModuleCount(const char *szList);
 
 const char *SGetParameter(const char *strCommandLine, size_t iParameter, char *strTarget = nullptr, size_t iSize = SizeMax, bool *pWasQuoted = nullptr);
+void SReplaceFormat(std::string& Input);
 
 void SNewSegment(char *szStr, const char *szSepa = ";");
 void SCapitalize(char *szString);

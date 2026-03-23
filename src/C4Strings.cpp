@@ -611,3 +611,16 @@ const char *SGetParameter(const char *strCommandLine, size_t iParameter, char *s
 	// Not found
 	return nullptr;
 }
+
+// TODO: Maybe rewrite resource strings to use {} by default or find another way to format them.
+void SReplaceFormat(std::string& Input)
+{
+	std::string from = "%s";
+	std::string to = "{}";
+	size_t pos = 0;
+	while ((pos = Input.find(from, pos)) != std::string::npos)
+	{
+		Input.replace(pos, from.length(), to);
+		pos += to.length();
+	}
+}

@@ -1071,11 +1071,13 @@ void C4Console::Draw()
 
 			const char *PLRQUITNET {LoadResStrV(C4ResStrTableKey::IDS_CNS_PLRQUITNET)};
 			const char *PLRQUIT {LoadResStrV(C4ResStrTableKey::IDS_CNS_PLRQUIT)};
-			const char *resString {Game.Network.isEnabled() ? PLRQUITNET : PLRQUIT};
-
+			std::string resString {Game.Network.isEnabled() ? PLRQUITNET : PLRQUIT};
+			SReplaceFormat(resString);
 			for (C4Player *player{Game.Players.First}; player; player = player->Next)
 			{
-				if (ImGui::MenuItem(std::format("{} {} {}",resString, player->GetName(), player->AtClientName).c_str()))
+				std::string PlayerName{player->GetName()};
+				std::string PlayerClient{player->AtClientName};
+				if (ImGui::MenuItem(std::vformat(resString, std::make_format_args(PlayerName, PlayerClient)).c_str()))
 				{
 					Game.Control.Input.Add(CID_EliminatePlayer, new C4ControlEliminatePlayer{player->Number});
 				}
@@ -1098,8 +1100,13 @@ void C4Console::Draw()
 
 			for (C4Player *player{Game.Players.First}; player; player = player->Next)
 			{
-				const std::string text = LoadResStrV(C4ResStrTableKey::IDS_CNS_NEWPLRVIEWPORT);
-				if (ImGui::MenuItem(std::format("{}{}",text.c_str(), player->GetName()).c_str())) Game.CreateViewport(player->Number);
+				std::string NewPlayerViewportFormat = LoadResStrV(C4ResStrTableKey::IDS_CNS_NEWPLRVIEWPORT);
+				SReplaceFormat(NewPlayerViewportFormat);
+				std::string PlayerName{player->GetName()};
+				if (ImGui::MenuItem(std::vformat(NewPlayerViewportFormat, std::make_format_args(PlayerName)).c_str()))
+				{
+					Game.CreateViewport(player->Number);
+				}
 			}
 
 			ImGui::EndMenu();
