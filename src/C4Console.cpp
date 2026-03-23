@@ -71,6 +71,12 @@ std::size_t C4Console::GetNumLines()
 
 void C4Console::HandleMessage(SDL_Event& sdl_event)
 {
+	if (ImGui)
+	{
+		ImGui->Select();
+		ImGui_ImplSDL3_ProcessEvent(&sdl_event);
+	}
+
 	for (const std::unique_ptr<C4Viewport>& Viewport : Game.GraphicsSystem.GetViewports())
 	{
 		if(!Viewport)

@@ -365,10 +365,6 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
 	{
-		if (ImGui::GetCurrentContext())
-		{
-			ImGui_ImplSDL3_ProcessEvent(&event);
-		}
 		HandleSDLEvent(event);
 	}
 #endif

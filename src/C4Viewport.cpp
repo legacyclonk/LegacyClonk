@@ -842,12 +842,11 @@ void C4ViewportWindow::HandleMessage(SDL_Event& sdl_event)
 		ImGui_ImplSDL3_ProcessEvent(&sdl_event);
 	}
 
-	// TODO: Some inputs still slip through when we interact with ImGui. (Left Click aka JustPressed)
-	if(ImGui::IsWindowHovered() || ImGui::IsItemActiveAsInputText() || ImGui::IsAnyItemActive())
+	ImGuiIO& io{ImGui::GetIO()};
+	if(io.WantCaptureMouse || io.WantCaptureKeyboard)
 	{
 		return;
 	}
-
 	// TODO: What is PlayerLock for?
 	switch (sdl_event.type)
 	{
