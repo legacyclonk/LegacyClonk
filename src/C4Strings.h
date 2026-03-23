@@ -68,6 +68,7 @@ void SAppendChar(char cChar, char *szStr);
 
 void SInsert(char *szString, const char *szInsert, size_t iPosition = 0, size_t iMaxL = SizeMax);
 void SDelete(char *szString, size_t iLen, size_t iPosition = 0);
+void STrim(char* szString);
 
 int SCharPos(char cTarget, const char *szInStr, size_t iIndex = 0);
 int SCharLastPos(char cTarget, const char *szInStr);

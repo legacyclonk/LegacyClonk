@@ -422,6 +422,16 @@ void SDelete(char *szString, size_t iLen, size_t iPosition)
 	std::memmove(szString + iPosition, szString + iPosition + iLen, SLen(szString + iPosition + iLen) + 1);
 }
 
+void STrim(char* szString)
+{
+	char* strEnd = szString + strlen(szString);
+	while (strEnd > szString && strEnd[-1] == ' ')
+	{
+		strEnd--;
+	}
+	*strEnd = 0;
+}
+
 bool SCopyEnclosed(const char *szSource, char cOpen, char cClose, char *sTarget, size_t iSize)
 {
 	int iPos, iLen;

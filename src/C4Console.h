@@ -98,6 +98,9 @@ protected:
 	void FileRecord();
 	void Draw();
 
+	static int TextEditCallbackStub(ImGuiInputTextCallbackData* data);
+	int TextEditCallback(ImGuiInputTextCallbackData* data);
+
 	std::string_view GetLineAtIdx(std::size_t idx);
 	std::size_t GetNumLines();
 	TextSelect* LogTextSelect;
