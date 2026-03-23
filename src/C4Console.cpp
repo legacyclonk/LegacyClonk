@@ -838,14 +838,15 @@ static void SDLCALL JoinPlayerCallback(void* userdata, const char* const* fileli
 
 	while (*filelist)
 	{
-		SDL_Log("Full path to selected file: '%s'", *filelist);
+		std::string Filepath = *filelist;
+		std::replace(Filepath.begin(), Filepath.end(), '\\', '/');
 		if (Game.Network.isEnabled())
 		{
-			Game.Network.Players.JoinLocalPlayer(*filelist, true);
+			Game.Network.Players.JoinLocalPlayer(Filepath.c_str(), true);
 		}
 		else
 		{
-			Game.Players.CtrlJoinLocalNoNetwork(*filelist, Game.Clients.getLocalID(), Game.Clients.getLocalName());
+			Game.Players.CtrlJoinLocalNoNetwork(Filepath.c_str(), Game.Clients.getLocalID(), Game.Clients.getLocalName());
 		}
 		filelist++;
 	}
