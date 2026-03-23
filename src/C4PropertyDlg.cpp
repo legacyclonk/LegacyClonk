@@ -165,15 +165,51 @@ void C4PropertyDlg::ClearPointers(C4Object *pObj)
 	Selection.ClearPointers(pObj);
 }
 
+int C4PropertyDlg::TextEditCallbackStub(ImGuiInputTextCallbackData* data)
+{
+	C4PropertyDlg* PropertyDialog = (C4PropertyDlg*)data->UserData;
+	// TODO: Use text edit functionality history and such from c4console
+	return 1; // PropertyDialog->TextEditCallback(data);
+}
+
 void C4PropertyDlg::Draw()
 {
 	if (!Active) return;
+	static ImVec2 PropertySizeMin{200, 150};
+	static ImVec2 PropertySizeMax{500, 300};
+	ImGui::SetNextWindowSizeConstraints(PropertySizeMin, PropertySizeMax);
+	ImGui::Begin(LoadResStr(C4ResStrTableKey::IDS_DLG_PROPERTIES), &Active, ImGuiWindowFlags_NoFocusOnAppearing);
 
-	ImGui::Begin(LoadResStr(C4ResStrTableKey::IDS_DLG_PROPERTIES), &Active);
-	if (ImGui::BeginChild("##properties", {0, ImGui::GetContentRegionAvail().y - 25}, true))
+	if (ImGui::BeginChild("##properties", {0, ImGui::GetContentRegionAvail().y - 28}, true))
 	{
+
 		ImGui::TextWrapped("%s", selectionText.isNull() ? "" : selectionText.getData());
-		ImGui::EndChild();
+	}
+	ImGui::EndChild(); // Note: Unlike other elements this must be outside the if-statement.
+
+	// Command-line
+	float CommandLineWidth = ImGui::GetContentRegionAvail().x;
+	ImGui::SetNextItemWidth(CommandLineWidth - 30);
+	bool ReclaimFocus = false;
+	static char InputBuf[512];
+	ImGuiInputTextFlags InputTextFlags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_ElideLeft;
+	if (ImGui::InputText("", InputBuf, IM_COUNTOF(InputBuf), InputTextFlags, &TextEditCallbackStub, (void*)this))
+	{
+		char* s = InputBuf;
+		STrim(s);
+		if (s[0])
+		{
+			Console.EditCursor.In(s);
+		}
+		strcpy(s, "");
+		ReclaimFocus = true;
+	}
+
+	// Auto-focus on window apparition
+	ImGui::SetItemDefaultFocus();
+	if (ReclaimFocus)
+	{
+		ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
 	}
 
 	const auto addFunctionEntry = [this](C4AulFunc *const func)
@@ -181,10 +217,14 @@ void C4PropertyDlg::Draw()
 		if (ImGui::Selectable(std::string{func->Name}.append("()").c_str(), selectedFunction == func))
 		{
 			selectedFunction = func;
+			SAppend(func->Name, InputBuf);
+			SAppend("()", InputBuf);
 		}
 	};
 
-	if (ImGui::BeginCombo("##maininput", selectedFunction ? selectedFunction->Name : nullptr))
+	ImGui::SameLine();
+
+	if (ImGui::BeginCombo("##funcselectorproperties", selectedFunction ? selectedFunction->Name : nullptr, ImGuiComboFlags_NoPreview))
 	{
 		// Add global and standard functions
 		for (C4AulFunc *func{Game.ScriptEngine.GetFirstFunc()}; func; func = Game.ScriptEngine.GetNextFunc(func))
@@ -211,10 +251,6 @@ void C4PropertyDlg::Draw()
 
 		ImGui::EndCombo();
 	}
-
-	ImGui::SameLine();
-
-	ImGui::Button("OK");
 
 	ImGui::End();
 
