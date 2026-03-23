@@ -843,7 +843,7 @@ void C4ViewportWindow::HandleMessage(SDL_Event& sdl_event)
 	}
 
 	ImGuiIO& io{ImGui::GetIO()};
-	if(io.WantCaptureMouse || io.WantCaptureKeyboard)
+	if(io.WantCaptureMouse)
 	{
 		return;
 	}
