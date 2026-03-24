@@ -67,9 +67,12 @@ public:
 	virtual void HandleMessage(XEvent &) override;
 #endif
 	virtual void Close() override;
-	void DrawImGui();
+	void DrawImGui(C4Viewport& OwnerViewport);
 
 	void HandleMessage(SDL_Event&) override;
+
+	float ScrollH;
+	float ScrollV;
 
 	//static LRESULT APIENTRY WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 private:

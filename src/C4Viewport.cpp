@@ -797,7 +797,7 @@ void C4ViewportWindow::Close()
 	Game.GraphicsSystem.CloseViewport(cvp);
 }
 
-void C4ViewportWindow::DrawImGui()
+void C4ViewportWindow::DrawImGui(C4Viewport& OwnerViewport)
 {
 	if (!ImGui.has_value())
 	{
@@ -807,11 +807,56 @@ void C4ViewportWindow::DrawImGui()
 	if(ImGui->NewFrame())
 	{
 		ImGui::ShowDemoWindow();
-		Console.PropertyDlg.Open(); // TODO: Make dialogues open based on tool mode.
+		//Console.PropertyDlg.Open(); // TODO: Make dialogues open based on tool mode.
 		Console.PropertyDlg.Draw();
 		Console.ToolsDlg.Draw();
 
 		Console.EditCursor.DrawContextMenu();
+
+		if(OwnerViewport.fIsNoOwnerViewport)
+		{
+			std::int32_t x, y;
+			const float ScrollbarWidth = 18.0f;
+			SDL_GetWindowSizeInPixels(sdlWindow, &x, &y);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0,0});
+			ImGui::PushStyleColor(ImGuiCol_SliderGrab, {0.7f, 0.7f, 0.7f, 0.9f});
+			ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, {0.9f, 0.9f, 0.9f, 1.0f});
+			ImGui::PushStyleColor(ImGuiCol_FrameBgActive, {0.2f, 0.2f, 0.2f, 0.4f});
+			ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, {0.0f, 0.0f, 0.0f, 0.4f});
+			ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.0f, 0.0f, 0.0f, 0.2f});
+			ImGuiWindowFlags ScrollBarWindowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoSavedSettings;
+
+			if(GBackHgt - OwnerViewport.ViewHgt > 0)
+			{
+				ImGui::SetNextWindowPos({float(x - ScrollbarWidth), -1.0f});
+				ImGui::SetNextWindowSize({ScrollbarWidth, float(y) - ScrollbarWidth});
+				ImGui::Begin("VScroll", nullptr, ScrollBarWindowFlags);
+				//ScrollV = float(OwnerViewport.ViewY); // TODO: Increase slider length which is dependent on value range. So we could use another value for the range.
+				if(ImGui::VSliderInt("", {ScrollbarWidth,float(y) - ScrollbarWidth}, &OwnerViewport.ViewY, GBackHgt - OwnerViewport.ViewHgt, 0, ""))
+				{
+					//OwnerViewport.ViewY = int(ScrollV);
+					OwnerViewport.AdjustPosition();
+				}
+				ImGui::End();
+			}
+
+			if(GBackWdt - OwnerViewport.ViewWdt > 0)
+			{
+				ImGui::SetNextWindowPos({-1.0f, float(y) - ScrollbarWidth});
+				ImGui::SetNextWindowSize({float(x) - ScrollbarWidth, ScrollbarWidth});
+				ImGui::SetNextItemWidth(float(x) - ScrollbarWidth);
+				ImGui::Begin("HScroll", nullptr, ScrollBarWindowFlags);
+
+				if(ImGui::SliderInt("", &OwnerViewport.ViewX, 0, GBackWdt - OwnerViewport.ViewWdt, ""))
+				{
+					OwnerViewport.AdjustPosition();
+				}
+				ImGui::End();
+			}
+			//Console.Message(std::format("width {} x{}, height {} y {}", OwnerViewport.ViewWdt, OwnerViewport.ViewX, OwnerViewport.ViewHgt, OwnerViewport.ViewY).c_str());
+			ImGui::PopStyleVar(1);
+			ImGui::PopStyleColor(5);
+		}
 
 		ImGui->Render();
 	}
@@ -1299,7 +1344,7 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 
 	if (fDrawOverlay && !Application.isFullScreen)
 	{
-		pWindow->DrawImGui();
+		pWindow->DrawImGui(*this);
 	}
 
 	// Remove clippers
