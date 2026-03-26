@@ -73,18 +73,18 @@ void C4PropertyDlg::Update()
 		// Type
 		std::string name{cobj->GetName()};
 		std::string id{C4IdText(cobj->Def->id)};
-		std::string TypeFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_TYPE)};
-		SReplaceFormat(TypeFormat);
-		selectionText = std::vformat(TypeFormat, std::make_format_args(name, id)).c_str();
+		StdStrBuf TypeFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_TYPE)};
+		TypeFormat.Replace("%s", "{}");
+		selectionText = std::vformat(TypeFormat.getData(), std::make_format_args(name, id)).c_str();
 		// Owner
 		if (ValidPlr(cobj->Owner))
 		{
 			selectionText.Append(LineFeed);
 
-			std::string OwnerFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_OWNER)};
-			SReplaceFormat(OwnerFormat);
+			StdStrBuf OwnerFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_OWNER)};
+			OwnerFormat.Replace("%s", "{}");
 			std::string Owner{Game.Players.Get(cobj->Owner)->GetName()};
-			selectionText += std::vformat(OwnerFormat, std::make_format_args(Owner)).c_str();
+			selectionText += std::vformat(OwnerFormat.getData(), std::make_format_args(Owner)).c_str();
 		}
 		// Contents
 		if (cobj->Contents.ObjectCount())
@@ -109,7 +109,7 @@ void C4PropertyDlg::Update()
 				if (fFirstLocal) { selectionText.Append(LineFeed); selectionText.Append(LoadResStr(C4ResStrTableKey::IDS_CNS_LOCALS)); fFirstLocal = false; }
 				selectionText.Append(LineFeed);
 				// Append id
-				selectionText += std::format(" Local(%d) = ", cnt).c_str();
+				selectionText += std::format(" Local({}) = ", cnt).c_str();
 				// write value
 				selectionText.Append(cobj->Local[cnt].GetDataString().c_str());
 			}
@@ -144,9 +144,9 @@ void C4PropertyDlg::Update()
 	// Multiple selected objects
 	default:
 		std::string ObjectCount{""+Selection.ObjectCount()};
-		std::string MultipleObjectsFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_MULTIPLEOBJECTS)};
-		SReplaceFormat(MultipleObjectsFormat);
-		selectionText = std::vformat(MultipleObjectsFormat, std::make_format_args(ObjectCount)).c_str();
+		StdStrBuf MultipleObjectsFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_MULTIPLEOBJECTS)};
+		MultipleObjectsFormat.Replace("%s", "{}");
+		selectionText = std::vformat(MultipleObjectsFormat.getData(), std::make_format_args(ObjectCount)).c_str();
 		break;
 	}
 }
@@ -206,13 +206,13 @@ void C4PropertyDlg::Draw()
 	ImGuiInputTextFlags InputTextFlags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_ElideLeft;
 	if (ImGui::InputText("", InputBuf, IM_COUNTOF(InputBuf), InputTextFlags, &TextEditCallbackStub, (void*)this))
 	{
-		char* s = InputBuf;
-		STrim(s);
+		StdStrBuf s{&InputBuf[0]};
+		s.TrimSpaces();
 		if (s[0])
 		{
-			Console.EditCursor.In(s);
+			Console.EditCursor.In(s.getData());
 		}
-		strcpy(s, "");
+		strcpy(InputBuf, "");
 		ReclaimFocus = true;
 	}
 

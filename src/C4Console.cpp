@@ -1071,13 +1071,13 @@ void C4Console::Draw()
 
 			const char *PLRQUITNET {LoadResStrV(C4ResStrTableKey::IDS_CNS_PLRQUITNET)};
 			const char *PLRQUIT {LoadResStrV(C4ResStrTableKey::IDS_CNS_PLRQUIT)};
-			std::string resString {Game.Network.isEnabled() ? PLRQUITNET : PLRQUIT};
-			SReplaceFormat(resString);
+			StdStrBuf resString {Game.Network.isEnabled() ? PLRQUITNET : PLRQUIT};
+			resString.Replace("%s", "{}");
 			for (C4Player *player{Game.Players.First}; player; player = player->Next)
 			{
 				std::string PlayerName{player->GetName()};
 				std::string PlayerClient{player->AtClientName};
-				if (ImGui::MenuItem(std::vformat(resString, std::make_format_args(PlayerName, PlayerClient)).c_str()))
+				if (ImGui::MenuItem(std::vformat(resString.getData(), std::make_format_args(PlayerName, PlayerClient)).c_str()))
 				{
 					Game.Control.Input.Add(CID_EliminatePlayer, new C4ControlEliminatePlayer{player->Number});
 				}
@@ -1100,10 +1100,10 @@ void C4Console::Draw()
 
 			for (C4Player *player{Game.Players.First}; player; player = player->Next)
 			{
-				std::string NewPlayerViewportFormat = LoadResStrV(C4ResStrTableKey::IDS_CNS_NEWPLRVIEWPORT);
-				SReplaceFormat(NewPlayerViewportFormat);
+				StdStrBuf NewPlayerViewportFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_NEWPLRVIEWPORT)};
+				NewPlayerViewportFormat.Replace("%s", "{}");
 				std::string PlayerName{player->GetName()};
-				if (ImGui::MenuItem(std::vformat(NewPlayerViewportFormat, std::make_format_args(PlayerName)).c_str()))
+				if (ImGui::MenuItem(std::vformat(NewPlayerViewportFormat.getData(), std::make_format_args(PlayerName)).c_str()))
 				{
 					Game.CreateViewport(player->Number);
 				}
@@ -1207,13 +1207,13 @@ void C4Console::Draw()
 	ImGuiInputTextFlags InputTextFlags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_ElideLeft;
 	if (ImGui::InputText("", InputBuf, IM_COUNTOF(InputBuf), InputTextFlags, &TextEditCallbackStub, (void*)this))
 	{
-		char* s = InputBuf;
-		STrim(s);
+		StdStrBuf s{&InputBuf[0]};
+		s.TrimSpaces();
 		if (s[0])
 		{
-			In(s);
+			In(s.getData());
 		}
-		strcpy(s, "");
+		strcpy(InputBuf, "");
 		ReclaimFocus = true;
 	}
 

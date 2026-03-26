@@ -422,16 +422,6 @@ void SDelete(char *szString, size_t iLen, size_t iPosition)
 	std::memmove(szString + iPosition, szString + iPosition + iLen, SLen(szString + iPosition + iLen) + 1);
 }
 
-void STrim(char* szString)
-{
-	char* strEnd = szString + strlen(szString);
-	while (strEnd > szString && strEnd[-1] == ' ')
-	{
-		strEnd--;
-	}
-	*strEnd = 0;
-}
-
 bool SCopyEnclosed(const char *szSource, char cOpen, char cClose, char *sTarget, size_t iSize)
 {
 	int iPos, iLen;
@@ -610,17 +600,4 @@ const char *SGetParameter(const char *strCommandLine, size_t iParameter, char *s
 	}
 	// Not found
 	return nullptr;
-}
-
-// TODO: Maybe rewrite resource strings to use {} by default or find another way to format them.
-void SReplaceFormat(std::string& Input)
-{
-	std::string from = "%s";
-	std::string to = "{}";
-	size_t pos = 0;
-	while ((pos = Input.find(from, pos)) != std::string::npos)
-	{
-		Input.replace(pos, from.length(), to);
-		pos += to.length();
-	}
 }
