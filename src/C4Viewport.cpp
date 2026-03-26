@@ -883,6 +883,19 @@ void C4ViewportWindow::HandleMessage(SDL_Event& sdl_event)
 		return;
 	}
 
+	// Make sure the cursor stays inside the window when dragging.
+	// This makes interaction with elements close to the window border way smoother (e.g scrollbars)
+	// since mouse events can't accidentally be interrupted when moving outside the window.
+	switch (sdl_event.type)
+	{
+	case SDL_EVENT_MOUSE_BUTTON_UP :
+		SDL_SetWindowMouseGrab(sdlWindow, false);
+		break;
+	case SDL_EVENT_MOUSE_BUTTON_DOWN :
+		SDL_SetWindowMouseGrab(sdlWindow, true);
+		break;
+	}
+
 	if (ImGui)
 	{
 		ImGui->Select();
