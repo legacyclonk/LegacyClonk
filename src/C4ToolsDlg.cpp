@@ -380,7 +380,7 @@ void C4ToolsDlg::Draw()
 		// Exact to static: confirm data loss warning
 		if (oldLandscapeMode == C4LSC_Exact)
 		{
-			ImGui::OpenPopup("ExactToStatic");
+			ImGui::OpenPopup("Exact To Static");
 		}
 		else
 		{
