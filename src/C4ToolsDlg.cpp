@@ -248,7 +248,7 @@ void C4ToolsDlg::Draw()
 
 	ImGui::Begin(LoadResStr(C4ResStrTableKey::IDS_DLG_TOOLS), &Active, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
-	auto CreateSelectedButton = [this] (std::uint32_t ImageId, bool IsDisabled, bool IsHighlighted) -> bool
+	auto CreateSelectedButton = [this] (std::uint32_t ImageId, bool IsDisabled, bool IsHighlighted, const char* Tooltip="") -> bool
 	{
 		const std::uint32_t ImageSize = 16;
 		ImGui::BeginDisabled(IsDisabled);
@@ -257,6 +257,10 @@ void C4ToolsDlg::Draw()
 		if(ImGui::ImageButton("", (ImTextureID)(intptr_t)ImageId, {ImageSize,ImageSize}))
 		{
 			WasClicked = true;
+		}
+		if(SLen(Tooltip) > 0)
+		{
+			ImGui::SetItemTooltip(Tooltip);
 		}
 
 		if(IsHighlighted)
@@ -272,19 +276,22 @@ void C4ToolsDlg::Draw()
 		return WasClicked;
 	};
 
-	if (CreateSelectedButton(BrushImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Brush == SelectedTool)) { SetTool(ToolMode::Brush,  false); }
+	if (CreateSelectedButton(BrushImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Brush == SelectedTool, "Brush")) { SetTool(ToolMode::Brush,  false); }
 	ImGui::SameLine();
-	if (CreateSelectedButton(LineImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Line == SelectedTool)) { SetTool(ToolMode::Line,  false); }
+	if (CreateSelectedButton(LineImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Line == SelectedTool, "Line")) { SetTool(ToolMode::Line,  false); }
 	ImGui::SameLine();
-	if (CreateSelectedButton(RectImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Rect == SelectedTool)) { SetTool(ToolMode::Rect,  false); }
+	if (CreateSelectedButton(RectImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Rect == SelectedTool, "Rectangle")) { SetTool(ToolMode::Rect,  false); }
 	ImGui::SameLine();
-	if (CreateSelectedButton(PickerImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Picker == SelectedTool)) { SetTool(ToolMode::Picker,  false); }
-	ImGui::SameLine();
-	if (CreateSelectedButton(FillImage, Game.Landscape.Mode < C4LSC_Exact, ToolMode::Fill == SelectedTool)) { SetTool(ToolMode::Fill,  false); }
+	if (CreateSelectedButton(PickerImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Picker == SelectedTool, "Material picker | Shortcut: Middle mouse button")) { SetTool(ToolMode::Picker,  false); }
+	if(Game.Landscape.Mode == C4LSC_Exact)
+	{
+		ImGui::SameLine();
+		if (CreateSelectedButton(FillImage, Game.IsPaused(), ToolMode::Fill == SelectedTool, "Dynamic fill | Only works when the game is running")) { SetTool(ToolMode::Fill,  false); }
+	}
 
-	if (CreateSelectedButton(IftImage, Game.Landscape.Mode < C4LSC_Static, ModeIFT)) { SetIFT(true); }
+	if (CreateSelectedButton(IftImage, Game.Landscape.Mode < C4LSC_Static, ModeIFT, "With tunnel")) { SetIFT(true); }
 	ImGui::SameLine();
-	if (CreateSelectedButton(NoIftImage, Game.Landscape.Mode < C4LSC_Static, !ModeIFT)) { SetIFT(false); }
+	if (CreateSelectedButton(NoIftImage, Game.Landscape.Mode < C4LSC_Static, !ModeIFT, "Without tunnel")) { SetIFT(false); }
 
 	ImGui::Text("Brush size");
 	ImGui::SetNextItemWidth(190);
@@ -361,11 +368,14 @@ void C4ToolsDlg::Draw()
 	ImGui::Spacing();
 
 	const std::int32_t oldLandscapeMode{Game.Landscape.Mode};
-	// Dynamic: enable only if dynamic anyway
-	if (CreateSelectedButton(DynamicImage, oldLandscapeMode != C4LSC_Dynamic, oldLandscapeMode == C4LSC_Dynamic)) { SetLandscapeMode(C4LSC_Dynamic); }
+	// Static or exact landscapes can't be converted back to generated landscapes. So this button is merely to signalize state.
+	if(Game.Landscape.Mode == C4LSC_Dynamic)
+	{
+		CreateSelectedButton(DynamicImage, false, oldLandscapeMode == C4LSC_Dynamic, "Dynamic: Generated");
+	}
 	ImGui::SameLine();
 	// Static: enable only if map available
-	if (CreateSelectedButton(StaticImage, !Game.Landscape.Map, oldLandscapeMode == C4LSC_Static))
+	if (CreateSelectedButton(StaticImage, !Game.Landscape.Map, oldLandscapeMode == C4LSC_Static, "Static: Grid based"))
 	{
 		// Exact to static: confirm data loss warning
 		if (oldLandscapeMode == C4LSC_Exact)
@@ -379,7 +389,7 @@ void C4ToolsDlg::Draw()
 	}
 	ImGui::SameLine();
 	// Exact: enable always
-	if (CreateSelectedButton(ExactImage, false, oldLandscapeMode == C4LSC_Exact)){ SetLandscapeMode(C4LSC_Exact); }
+	if (CreateSelectedButton(ExactImage, false, oldLandscapeMode == C4LSC_Exact, "Exact: Pixel-wise | Changes here are not transferable to static mode.")){ SetLandscapeMode(C4LSC_Exact); }
 
 	ImGui::BeginDisabled(Game.Landscape.Mode < C4LSC_Static);
 	ImGui::BeginGroup();
@@ -401,9 +411,11 @@ void C4ToolsDlg::Draw()
 
 
 	ImGui::SetNextWindowSize({400, 200});
-	if (ImGui::BeginPopupModal("Exact To Static"))
+	if (ImGui::BeginPopupModal("Exact To Static", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
 	{
 		ImGui::TextWrapped("%s", LoadResStr(C4ResStrTableKey::IDS_CNS_EXACTTOSTATIC));
+
+		ImGui::Spacing();
 
 		if (ImGui::Button(LoadResStr(C4ResStrTableKey::IDS_DLG_YES)))
 		{
