@@ -81,6 +81,19 @@ public:
 	void ResetAlternateTool();
 	void Draw();
 
+	std::uint32_t DynamicImage;
+	std::uint32_t StaticImage;
+	std::uint32_t ExactImage;
+
+	std::uint32_t BrushImage;
+	std::uint32_t LineImage;
+	std::uint32_t RectImage;
+	std::uint32_t PickerImage;
+	std::uint32_t FillImage;
+
+	std::uint32_t IftImage;
+	std::uint32_t NoIftImage;
+
 protected:
 	void AssertValidTexture();
 };

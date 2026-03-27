@@ -117,6 +117,12 @@ protected:
 #ifdef _WIN32
 	friend LRESULT CALLBACK ConsoleWinProc(HWND wnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 #endif
+private:
+	std::uint32_t ToolCursorImage;
+	std::uint32_t ToolMouseImage;
+	std::uint32_t ToolBrushImage;
+	std::uint32_t PlayImage;
+	std::uint32_t HaltImage;
 };
 
 extern C4Console Console;

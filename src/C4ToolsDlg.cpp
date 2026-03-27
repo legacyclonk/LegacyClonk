@@ -28,6 +28,7 @@
 #include "C4Wrappers.h"
 
 #include "imgui/imgui.h"
+#include "res/DeveloperModeIcons.h"
 
 C4ToolsDlg::C4ToolsDlg()
 {
@@ -52,6 +53,22 @@ void C4ToolsDlg::Default()
 	ModeIFT = true;
 	SCopy("Earth", Material);
 	SCopy("Rough", Texture);
+
+	if(lpDDraw)
+	{
+		lpDDraw->LoadTextureFromMemory(DeveloperModeStaticImage, DeveloperModeStaticImageLength, &StaticImage);
+		lpDDraw->LoadTextureFromMemory(DeveloperModeDynamicImage, DeveloperModeDynamicImageLength, &DynamicImage);
+		lpDDraw->LoadTextureFromMemory(DeveloperModeExactImage, DeveloperModeExactImageLength, &ExactImage);
+
+		lpDDraw->LoadTextureFromMemory(DeveloperModeBrushImage, DeveloperModeBrushImageLength, &BrushImage);
+		lpDDraw->LoadTextureFromMemory(DeveloperModeLineImage, DeveloperModeLineImageLength, &LineImage);
+		lpDDraw->LoadTextureFromMemory(DeveloperModeRectImage, DeveloperModeRectImageLength, &RectImage);
+		lpDDraw->LoadTextureFromMemory(DeveloperModePickerImage, DeveloperModePickerImageLength, &PickerImage);
+		lpDDraw->LoadTextureFromMemory(DeveloperModeFillImage, DeveloperModeFillImageLength, &FillImage);
+
+		lpDDraw->LoadTextureFromMemory(DeveloperModeIftImage, DeveloperModeIftImageLength, &IftImage);
+		lpDDraw->LoadTextureFromMemory(DeveloperModeNoIftImage, DeveloperModeNoIftImageLength, &NoIftImage);
+	}
 }
 
 void C4ToolsDlg::Clear()
@@ -225,34 +242,130 @@ void C4ToolsDlg::ResetAlternateTool()
 void C4ToolsDlg::Draw()
 {
 	if (!Active) return;
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.06, 0.12, 0.18, 0.9});
+	static ImVec2 PropertySize{210, 0};
+	ImGui::SetNextWindowSize(PropertySize);
 
-	ImGui::Begin(LoadResStr(C4ResStrTableKey::IDS_DLG_TOOLS), &Active);
+	ImGui::Begin(LoadResStr(C4ResStrTableKey::IDS_DLG_TOOLS), &Active, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
-	ImGui::CollapsingHeader("FIXME: ToolMode");
+	auto CreateSelectedButton = [this] (std::uint32_t ImageId, bool IsDisabled, bool IsHighlighted) -> bool
+	{
+		const std::uint32_t ImageSize = 16;
+		ImGui::BeginDisabled(IsDisabled);
+		ImGui::PushID(ImageId);
+		bool WasClicked = false;
+		if(ImGui::ImageButton("", (ImTextureID)(intptr_t)ImageId, {ImageSize,ImageSize}))
+		{
+			WasClicked = true;
+		}
 
+		if(IsHighlighted)
+		{
+			ImGui::GetWindowDrawList()->AddRect(
+			ImGui::GetItemRectMin(), ImGui::GetItemRectMax(),
+			IM_COL32(30, 200, 247, 255),
+			2.0f, 0, 3.0f);
+		}
+
+		ImGui::PopID();
+		ImGui::EndDisabled();
+		return WasClicked;
+	};
+
+	if (CreateSelectedButton(BrushImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Brush == SelectedTool)) { SetTool(ToolMode::Brush,  false); }
+	ImGui::SameLine();
+	if (CreateSelectedButton(LineImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Line == SelectedTool)) { SetTool(ToolMode::Line,  false); }
+	ImGui::SameLine();
+	if (CreateSelectedButton(RectImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Rect == SelectedTool)) { SetTool(ToolMode::Rect,  false); }
+	ImGui::SameLine();
+	if (CreateSelectedButton(PickerImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Picker == SelectedTool)) { SetTool(ToolMode::Picker,  false); }
+	ImGui::SameLine();
+	if (CreateSelectedButton(FillImage, Game.Landscape.Mode < C4LSC_Exact, ToolMode::Fill == SelectedTool)) { SetTool(ToolMode::Fill,  false); }
+
+	if (CreateSelectedButton(IftImage, Game.Landscape.Mode < C4LSC_Static, ModeIFT)) { SetIFT(true); }
+	ImGui::SameLine();
+	if (CreateSelectedButton(NoIftImage, Game.Landscape.Mode < C4LSC_Static, !ModeIFT)) { SetIFT(false); }
+
+	ImGui::Text("Brush size");
+	ImGui::SetNextItemWidth(190);
+	if (ImGui::SliderInt("##Grade", &Grade, GradeMin, GradeMax, "%d", ImGuiSliderFlags_AlwaysClamp))
+	{
+		UpdateGrade();
+	}
+
+	ImGui::BeginGroup();
 	ImGui::BeginDisabled(Game.Landscape.Mode < C4LSC_Static);
-	const ToolMode oldMode{SelectedTool};
-	if (ImGui::RadioButton("Brush",  oldMode == ToolMode::Brush))  SetTool(ToolMode::Brush,  false);
-	if (ImGui::RadioButton("Line",   oldMode == ToolMode::Line))   SetTool(ToolMode::Line,   false);
-	if (ImGui::RadioButton("Rect",   oldMode == ToolMode::Rect))   SetTool(ToolMode::Rect,   false);
-	if (ImGui::RadioButton("Picker", oldMode == ToolMode::Picker)) SetTool(ToolMode::Picker, false);
-	ImGui::EndDisabled();
-	ImGui::BeginDisabled(Game.Landscape.Mode < C4LSC_Exact);
-	if (ImGui::RadioButton("Fill",   oldMode == ToolMode::Fill))   SetTool(ToolMode::Fill,   false);
-	ImGui::EndDisabled();
+	if(ImGui::CollapsingHeader(LoadResStr(C4ResStrTableKey::IDS_CTL_MATERIAL), ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		if (ImGui::BeginListBox("##MaterialBox", {200, 150}))
+		{
+			const auto addMaterialEntry = [this](const char *const material)
+			{
+				if (ImGui::Selectable(material, SEqual(Material, material))) SetMaterial(material);
+			};
 
-	ImGui::CollapsingHeader("LandscapeMode");
+			addMaterialEntry(C4TLS_MatSky);
+
+			for (std::int32_t i{0}; i < Game.Material.Num; ++i)
+			{
+				addMaterialEntry(Game.Material.Map[i].Name);
+			}
+
+			ImGui::EndListBox();
+		}
+	}
+
+	if(ImGui::CollapsingHeader(LoadResStr(C4ResStrTableKey::IDS_CTL_TEXTURE), ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		if (ImGui::BeginListBox("##TextureBox", {200, 150}))
+		{
+			const auto addTextureEntry = [this](const char *const texture)
+			{
+				if (ImGui::Selectable(texture, SEqual(Texture, texture)))
+				{
+					SetTexture(texture);
+				}
+			};
+
+			// atop: valid textures
+			const char *texture;
+			for (std::int32_t i{0}; (texture = Game.TextureMap.GetTexture(i)); ++i)
+			{
+				// Current material-texture valid? Always valid for exact mode
+				if (Game.TextureMap.GetIndex(Material, texture, false) || Game.Landscape.Mode == C4LSC_Exact)
+				{
+					addTextureEntry(texture);
+				}
+			}
+
+			if (Game.Landscape.Mode != C4LSC_Exact)
+			{
+				ImGui::Separator();
+
+				// bottom-most: any invalid textures
+				for (std::int32_t i{0}; (texture = Game.TextureMap.GetTexture(i)); ++i)
+				{
+					if (!Game.TextureMap.GetIndex(Material, texture, false))
+					{
+						addTextureEntry(texture);
+					}
+				}
+			}
+
+			ImGui::EndListBox();
+		}
+	}
+	ImGui::EndDisabled();
+	ImGui::EndGroup();
+
+	ImGui::Spacing();
 
 	const std::int32_t oldLandscapeMode{Game.Landscape.Mode};
-
 	// Dynamic: enable only if dynamic anyway
-	ImGui::BeginDisabled(oldLandscapeMode != C4LSC_Dynamic);
-	if (ImGui::RadioButton(LoadResStr(C4ResStrTableKey::IDS_DLG_DYNAMIC), oldLandscapeMode == C4LSC_Dynamic)) SetLandscapeMode(C4LSC_Dynamic);
-	ImGui::EndDisabled();
-
+	if (CreateSelectedButton(DynamicImage, oldLandscapeMode != C4LSC_Dynamic, oldLandscapeMode == C4LSC_Dynamic)) { SetLandscapeMode(C4LSC_Dynamic); }
+	ImGui::SameLine();
 	// Static: enable only if map available
-	ImGui::BeginDisabled(!Game.Landscape.Map);
-	if (ImGui::RadioButton(LoadResStr(C4ResStrTableKey::IDS_DLG_STATIC), oldLandscapeMode == C4LSC_Static))
+	if (CreateSelectedButton(StaticImage, !Game.Landscape.Map, oldLandscapeMode == C4LSC_Static))
 	{
 		// Exact to static: confirm data loss warning
 		if (oldLandscapeMode == C4LSC_Exact)
@@ -264,84 +377,11 @@ void C4ToolsDlg::Draw()
 			SetLandscapeMode(C4LSC_Static);
 		}
 	}
-	ImGui::EndDisabled();
-
+	ImGui::SameLine();
 	// Exact: enable always
-	if (ImGui::RadioButton(LoadResStr(C4ResStrTableKey::IDS_DLG_EXACT), oldLandscapeMode == C4LSC_Exact)) SetLandscapeMode(C4LSC_Exact);
-
-	ImGui::CollapsingHeader("Draw");
-
-	ImGui::BeginGroup();
-
-	ImGui::BeginDisabled(Game.Landscape.Mode < C4LSC_Static || SEqual(Material, C4TLS_MatSky));
-
-	if (ImGui::BeginCombo(LoadResStr(C4ResStrTableKey::IDS_CTL_MATERIAL), Material))
-	{
-		const auto addMaterialEntry = [this](const char *const material)
-		{
-			if (ImGui::Selectable(material, SEqual(Material, material))) SetMaterial(material);
-		};
-
-		addMaterialEntry(C4TLS_MatSky);
-
-		for (std::int32_t i{0}; i < Game.Material.Num; ++i)
-		{
-			addMaterialEntry(Game.Material.Map[i].Name);
-		}
-
-		ImGui::EndCombo();
-	}
-
-	if (ImGui::BeginCombo(LoadResStr(C4ResStrTableKey::IDS_CTL_TEXTURE), Texture))
-	{
-		const auto addTextureEntry = [this](const char *const texture)
-		{
-			if (ImGui::Selectable(texture, SEqual(Texture, texture))) SetTexture(texture);
-		};
-
-		// atop: valid textures
-		const char *texture;
-		for (std::int32_t i{0}; (texture = Game.TextureMap.GetTexture(i)); ++i)
-		{
-			// Current material-texture valid? Always valid for exact mode
-			if (Game.TextureMap.GetIndex(Material, texture, false) || Game.Landscape.Mode == C4LSC_Exact)
-			{
-				addTextureEntry(texture);
-			}
-		}
-
-		if (Game.Landscape.Mode != C4LSC_Exact)
-		{
-			ImGui::Separator();
-
-			// bottom-most: any invalid textures
-			for (std::int32_t i{0}; (texture = Game.TextureMap.GetTexture(i)); ++i)
-			{
-				if (!Game.TextureMap.GetIndex(Material, texture, false))
-				{
-					addTextureEntry(texture);
-				}
-			}
-		}
-
-		ImGui::EndCombo();
-	}
-
-	ImGui::EndDisabled();
-
-	ImGui::EndGroup();
-
-	ImGui::BeginGroup();
+	if (CreateSelectedButton(ExactImage, false, oldLandscapeMode == C4LSC_Exact)){ SetLandscapeMode(C4LSC_Exact); }
 
 	ImGui::BeginDisabled(Game.Landscape.Mode < C4LSC_Static);
-
-	ImGui::BeginGroup();
-	if (ImGui::RadioButton("IFT 1", ModeIFT)) SetIFT(true);
-	if (ImGui::RadioButton("IFT 0", !ModeIFT)) SetIFT(false);
-	ImGui::EndGroup();
-
-	ImGui::SameLine();
-
 	ImGui::BeginGroup();
 	const ImVec2 &initialCursorPos{ImGui::GetCursorPos()};
 	const auto texSize = static_cast<float>(surfacePreview.iTexSize);
@@ -356,16 +396,12 @@ void C4ToolsDlg::Draw()
 			//ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(surfacePreview.ppTex[texY][texX].texName)), {texSize, texSize});
 		}
 	}
-
-	if (ImGui::SliderInt("Grade", &Grade, GradeMin, GradeMax, "%d", ImGuiSliderFlags_AlwaysClamp)) UpdateGrade();
-
 	ImGui::EndGroup();
-
 	ImGui::EndDisabled();
 
-	ImGui::EndGroup();
 
-	if (ImGui::BeginPopupModal("ExactToStatic"))
+	ImGui::SetNextWindowSize({400, 200});
+	if (ImGui::BeginPopupModal("Exact To Static"))
 	{
 		ImGui::TextWrapped("%s", LoadResStr(C4ResStrTableKey::IDS_CNS_EXACTTOSTATIC));
 
@@ -374,6 +410,8 @@ void C4ToolsDlg::Draw()
 			SetLandscapeMode(C4LSC_Static);
 			ImGui::CloseCurrentPopup();
 		}
+
+		ImGui::SameLine(0, 50);
 
 		if (ImGui::Button(LoadResStr(C4ResStrTableKey::IDS_DLG_NO)))
 		{
@@ -384,6 +422,8 @@ void C4ToolsDlg::Draw()
 	}
 
 	ImGui::End();
+
+	ImGui::PopStyleColor(1);
 
 	if (!Active)
 	{

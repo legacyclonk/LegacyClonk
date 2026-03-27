@@ -328,6 +328,9 @@ public:
 	bool DeviceReady() override { return true; } // SDL
 #endif
 
+	// Developer mode images
+	bool LoadTextureFromMemory(const void* data, size_t data_size, std::uint32_t* out_texture, int* out_width = nullptr, int* out_height = nullptr) override;
+
 protected:
 	bool CreatePrimarySurfaces() override;
 	bool CreateDirectDraw() override;

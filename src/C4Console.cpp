@@ -44,6 +44,8 @@
 #include "imgui/imgui.h"
 #include "imgui/textselect.hpp"
 
+#include "res/DeveloperModeIcons.h"
+
 
 C4Console::C4Console()
 {
@@ -243,6 +245,15 @@ bool C4Console::Init(CStdApp *app, const char *title, const C4Rect &bounds, CStd
 
 void C4Console::InitGUI()
 {
+
+	if(lpDDraw)
+	{
+		lpDDraw->LoadTextureFromMemory(DeveloperModeCursorImage, DeveloperModeCursorImageLength, &ToolCursorImage);
+		lpDDraw->LoadTextureFromMemory(DeveloperModeMouseImage, DeveloperModeMouseImageLength, &ToolMouseImage);
+		lpDDraw->LoadTextureFromMemory(DeveloperModePlayImage, DeveloperModePlayImageLength, &PlayImage);
+		lpDDraw->LoadTextureFromMemory(DeveloperModeHaltImage, DeveloperModeHaltImageLength, &HaltImage);
+	}
+
 	ImGui.emplace(sdlWindow);
 	Draw();
 	SDL_ShowWindow(sdlWindow);
@@ -866,7 +877,7 @@ void C4Console::SetCaption(const char *szCaption)
 #ifdef _WIN32
 	// Sorry, the window caption needs to be constant so
 	// the window can be found using FindWindow
-	SetTitle(C4ENGINECAPTION);
+	SetTitle(C4ENGINECAPTION); // TODO: Still the case?
 #else
 	SetTitle(szCaption);
 #endif
@@ -1269,9 +1280,8 @@ void C4Console::Draw()
 
 	ImGui::EndDisabled();
 	ImGui::Spacing();
-
 	ImGui::BeginDisabled(controlsDisabledIfNotInLobby || !halt);
-	if (ImGui::Button("Start"))
+	if (ImGui::ImageButton("#Play", (ImTextureID)(intptr_t)PlayImage, {16, 16}))
 	{
 		DoPlay();
 	}
@@ -1280,7 +1290,7 @@ void C4Console::Draw()
 	ImGui::SameLine();
 
 	ImGui::BeginDisabled(controlsDisabledIfNotInLobby || halt);
-	if (ImGui::Button("Pause"))
+	if (ImGui::ImageButton("#Pause", (ImTextureID)(intptr_t)HaltImage, {16, 16}))
 	{
 		DoHalt();
 	}
@@ -1288,26 +1298,33 @@ void C4Console::Draw()
 
 	ImGui::SameLine(0, 20);
 
-	const ConsoleMode mode{EditCursor.GetMode()};
-	ImGui::BeginDisabled(controlsDisabled);
-	if (ImGui::RadioButton("Play", mode == ConsoleMode::Play))
+	auto CreateSelectedButton = [this] (ConsoleMode ThisMode, std::uint32_t ImageId, bool IsDisabled)
 	{
-		EditCursor.SetMode(ConsoleMode::Play);
-	}
-	ImGui::EndDisabled();
-	ImGui::SameLine();
+		const std::uint32_t ImageSize = 16;
+		ImGui::BeginDisabled(IsDisabled);
+		ImGui::PushID(ImageId);
+		if(ImGui::ImageButton("", (ImTextureID)(intptr_t)ImageId, {ImageSize,ImageSize}))
+		{
+			EditCursor.SetMode(ThisMode);
+		}
 
-	ImGui::BeginDisabled(controlsDisabled || !Editing);
-	if (ImGui::RadioButton("Edit", mode == ConsoleMode::Edit))
-	{
-		EditCursor.SetMode(ConsoleMode::Edit);
-	}
+		if(ThisMode == EditCursor.GetMode())
+		{
+			ImGui::GetWindowDrawList()->AddRect(
+			ImGui::GetItemRectMin(), ImGui::GetItemRectMax(),
+			IM_COL32(30, 200, 247, 255),
+			2.0f, 0, 3.0f);
+		}
+
+		ImGui::PopID();
+		ImGui::EndDisabled();
+	};
+
+	CreateSelectedButton(ConsoleMode::Play, ToolCursorImage, controlsDisabled);
 	ImGui::SameLine();
-	if (ImGui::RadioButton("Draw", mode == ConsoleMode::Draw))
-	{
-		EditCursor.SetMode(ConsoleMode::Draw);
-	}
-	ImGui::EndDisabled();
+	CreateSelectedButton(ConsoleMode::Edit, ToolMouseImage, controlsDisabled || !Editing);
+	ImGui::SameLine();
+	CreateSelectedButton(ConsoleMode::Draw, ToolBrushImage, controlsDisabled || !Editing);
 
 	ImGui::PopStyleVar();
 	ImGui::Spacing();

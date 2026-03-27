@@ -47,4 +47,5 @@ public:
 	virtual bool InvalidateDeviceObjects() override { return true; }
 	virtual bool DeviceReady() override { return true; }
 	virtual bool CreatePrimarySurfaces() override;
+	bool LoadTextureFromMemory(const void* data, size_t data_size, std::uint32_t* out_texture, int* out_width, int* out_height) override { return false; }
 };

@@ -414,6 +414,9 @@ public:
 	virtual bool InvalidateDeviceObjects() = 0; // free device dependent objects
 	virtual bool DeviceReady() = 0; // return whether device exists
 
+	// Developer mode images
+	virtual bool LoadTextureFromMemory(const void* data, size_t data_size, std::uint32_t* out_texture, int* out_width = nullptr, int* out_height = nullptr) = 0;
+
 protected:
 	bool StringOut(const char *szText, C4Surface *sfcDest, int iTx, int iTy, uint32_t dwFCol, uint8_t byForm, bool fDoMarkup, CMarkup &Markup, CStdFont *pFont, float fZoom);
 	virtual void DrawPixInt(C4Surface *sfcDest, float tx, float ty, uint32_t dwCol) = 0; // without ClrModMap
