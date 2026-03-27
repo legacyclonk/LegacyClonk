@@ -250,6 +250,7 @@ void C4Console::InitGUI()
 	{
 		lpDDraw->LoadTextureFromMemory(DeveloperModeCursorImage, DeveloperModeCursorImageLength, &ToolCursorImage);
 		lpDDraw->LoadTextureFromMemory(DeveloperModeMouseImage, DeveloperModeMouseImageLength, &ToolMouseImage);
+		lpDDraw->LoadTextureFromMemory(DeveloperModeBrushImage, DeveloperModeBrushImageLength, &ToolBrushImage);
 		lpDDraw->LoadTextureFromMemory(DeveloperModePlayImage, DeveloperModePlayImageLength, &PlayImage);
 		lpDDraw->LoadTextureFromMemory(DeveloperModeHaltImage, DeveloperModeHaltImageLength, &HaltImage);
 	}
