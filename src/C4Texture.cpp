@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -44,7 +44,7 @@ C4Texture::C4Texture(const char *const name, std::shared_ptr<CSurface8> surface8
 }
 
 C4TexMapEntry::C4TexMapEntry()
-	: pMaterial(nullptr), iMaterialIndex(MNone) {}
+	: iMaterialIndex(MNone), pMaterial(nullptr) {}
 
 void C4TexMapEntry::Clear()
 {
@@ -287,7 +287,7 @@ int32_t C4TextureMap::LoadTextures(C4Group &hGroup)
 		if (GetTexture(texname)) continue;
 		SAppend(".png", texname);
 		// load
-		if (ctex = GroupReadSurfacePNG(hGroup))
+		if ((ctex = GroupReadSurfacePNG(hGroup)))
 		{
 			SReplaceChar(texname, '.', 0);
 			textures.emplace_back(texname, std::move(ctex));
@@ -303,7 +303,7 @@ int32_t C4TextureMap::LoadTextures(C4Group &hGroup)
 		SReplaceChar(texname, '.', 0);
 		if (GetTexture(texname)) continue;
 		SAppend(".bmp", texname);
-		if (ctex8 = GroupReadSurface8(hGroup))
+		if ((ctex8 = GroupReadSurface8(hGroup)))
 		{
 			ctex8->AllowColor(0, 2, true);
 			SReplaceChar(texname, '.', 0);
@@ -357,10 +357,10 @@ int32_t C4TextureMap::GetIndexMatTex(const char *szMaterialTexture, const char *
 	// texture not given or invalid?
 	int32_t iMatTex = 0;
 	if (Texture.getData())
-		if (iMatTex = GetIndex(Material.getData(), Texture.getData(), fAddIfNotExist))
+		if ((iMatTex = GetIndex(Material.getData(), Texture.getData(), fAddIfNotExist)))
 			return iMatTex;
 	if (szDefaultTexture)
-		if (iMatTex = GetIndex(Material.getData(), szDefaultTexture, fAddIfNotExist))
+		if ((iMatTex = GetIndex(Material.getData(), szDefaultTexture, fAddIfNotExist)))
 			return iMatTex;
 	// search material
 	const auto iMaterial = section->Material.Get(szMaterialTexture);

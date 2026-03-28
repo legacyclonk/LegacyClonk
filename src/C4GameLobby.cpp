@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -538,7 +538,7 @@ C4GUI::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool f
 					StdStrBuf sPlrName;
 					sPlrName.Copy(szPar, iSepPos);
 					szPar += iSepPos + 1; int32_t id = 0;
-					while (pNfo = Game.PlayerInfos.GetNextPlayerInfoByID(id))
+					while ((pNfo = Game.PlayerInfos.GetNextPlayerInfoByID(id)))
 					{
 						id = pNfo->GetID();
 						if (WildcardMatch(sPlrName.getData(), pNfo->GetName())) break;
@@ -1108,7 +1108,7 @@ void LobbyError(const char *szErrorMsg)
 
 /* Countdown */
 
-Countdown::Countdown(int32_t iStartTimer) : iStartTimer(iStartTimer), pSec1Timer(nullptr)
+Countdown::Countdown(int32_t iStartTimer) : pSec1Timer(nullptr), iStartTimer(iStartTimer)
 {
 	// only on network hosts
 	assert(Game.Network.isHost());

@@ -1023,13 +1023,25 @@ C4Object *C4Section::FindBase(int32_t iPlayer, int32_t iIndex)
 {
 	C4Object *cObj; C4ObjectLink *clnk;
 	for (clnk = Objects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
+	{
 		// Status
 		if (cObj->Status)
+		{
 			// Base
 			if (cObj->Base == iPlayer)
+			{
 				// Index
-				if (iIndex == 0) return cObj;
-				else iIndex--;
+				if (iIndex == 0)
+				{
+					return cObj;
+				}
+				else
+				{
+					iIndex--;
+				}
+			}
+		}
+	}
 	// Not found
 	return nullptr;
 }
@@ -1038,15 +1050,29 @@ C4Object *C4Section::FindFriendlyBase(int32_t iPlayer, int32_t iIndex)
 {
 	C4Object *cObj; C4ObjectLink *clnk;
 	for (clnk = Objects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
+	{
 		// Status
 		if (cObj->Status)
+		{
 			// Base
 			if (ValidPlr(cObj->Base))
+			{
 				// friendly Base
 				if (!Hostile(cObj->Base, iPlayer))
+				{
 					// Index
-					if (iIndex == 0) return cObj;
-					else iIndex--;
+					if (iIndex == 0)
+					{
+						return cObj;
+					}
+					else
+					{
+						iIndex--;
+					}
+				}
+			}
+		}
+	}
 	// Not found
 	return nullptr;
 }

@@ -1,7 +1,7 @@
 /*
  * LegacyClonk
  *
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -211,7 +211,7 @@ bool C4AudioSystemSdl::IsMusicPlaying() const
 
 void C4AudioSystemSdl::PlayMusic(const C4AudioSystem::MusicFile *const music, const bool loop)
 {
-	ThrowIfFailed("Mix_PlayMusic", Mix_PlayMusic(static_cast<const MusicFileSdl *const>(music)->sample.get(), (loop ? -1 : 1)) == -1);
+	ThrowIfFailed("Mix_PlayMusic", Mix_PlayMusic(static_cast<const MusicFileSdl *>(music)->sample.get(), (loop ? -1 : 1)) == -1);
 }
 
 void C4AudioSystemSdl::SetMusicVolume(const float volume)

@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -52,9 +52,9 @@ void DrawMenuSymbol(int32_t iMenu, C4Facet &cgo, int32_t iOwner, C4Object *cObj)
 	case C4MN_Construction:
 	{
 		C4Def *pDef;
-		if (pDef = Game.Defs.ID2Def(C4Id("CXCN")))
+		if ((pDef = Game.Defs.ID2Def(C4Id("CXCN"))))
 			pDef->Draw(cgo);
-		else if (pDef = Game.Defs.ID2Def(C4Id("WKS1")))
+		else if ((pDef = Game.Defs.ID2Def(C4Id("WKS1"))))
 			pDef->Draw(cgo);
 	}
 	break;
@@ -76,9 +76,9 @@ void DrawMenuSymbol(int32_t iMenu, C4Facet &cgo, int32_t iOwner, C4Object *cObj)
 C4MenuItem::C4MenuItem(C4Menu *pMenu, int32_t iIndex, const char *szCaption,
 	const char *szCommand, int32_t iCount, C4Object *pObject, const char *szInfoCaption,
 	C4ID idID, const char *szCommand2, bool fOwnValue, int32_t iValue, int32_t iStyle, bool fIsSelectable)
-	: C4GUI::Element(), Count(iCount), id(idID), Object(pObject), fOwnValue(fOwnValue),
-	iValue(iValue), fSelected(false), iStyle(iStyle), pMenu(pMenu), iIndex(iIndex),
-	IsSelectable(fIsSelectable), TextDisplayProgress(-1), dwSymbolClr(0u)
+	: C4GUI::Element(), Count(iCount), id(idID), Object(pObject), dwSymbolClr(0u),
+	fOwnValue(fOwnValue), iValue(iValue), fSelected(false), iStyle(iStyle), pMenu(pMenu),
+	iIndex(iIndex), IsSelectable(fIsSelectable), TextDisplayProgress(-1)
 {
 	*Caption = *Command = *Command2 = *InfoCaption = 0;
 	Symbol.Default();
@@ -156,7 +156,7 @@ void C4MenuItem::DrawElement(C4FacetEx &cgo)
 	C4Facet cgoItemSymbol, cgoItemText;
 	cgoItemSymbol = cgoItemText = cgoOut;
 	int32_t iSymWidth;
-	if (iSymWidth = GetSymbolWidth(cgoItemText.Hgt))
+	if ((iSymWidth = GetSymbolWidth(cgoItemText.Hgt)))
 	{
 		// get symbol area
 		cgoItemSymbol = cgoItemText.Truncate(C4FCT_Left, iSymWidth);
@@ -658,7 +658,7 @@ void C4Menu::InitLocation(C4Facet &cgoArea)
 		// FIXME: Blah. This stuff should be calculated correctly by pTitle.
 		ItemWidth += ItemHeight + 16;
 		C4MenuItem *pItem;
-		for (int i = 0; pItem = GetItem(i); ++i)
+		for (int i = 0; (pItem = GetItem(i)); ++i)
 		{
 			Game.GraphicsResource.FontRegular.GetTextExtent(pItem->Caption, iWdt, iHgt, true);
 			ItemWidth = (std::max)(ItemWidth, iWdt + pItem->GetSymbolWidth(ItemHeight));
@@ -676,7 +676,7 @@ void C4Menu::InitLocation(C4Facet &cgoArea)
 		ItemHeight = 0;
 		StdStrBuf sText;
 		C4MenuItem *pItem;
-		for (int32_t i = 0; pItem = GetItem(i); ++i)
+		for (int32_t i = 0; (pItem = GetItem(i)); ++i)
 		{
 			Game.GraphicsResource.FontRegular.BreakMessage(pItem->InfoCaption, ItemWidth, &sText, true);
 			Game.GraphicsResource.FontRegular.GetTextExtent(sText.getData(), iWdt, iHgt, true);
@@ -831,7 +831,7 @@ void C4Menu::DrawElement(C4FacetEx &cgo)
 
 	// Get selected item id
 	C4ID idSelected; C4MenuItem *pItem;
-	if (pItem = GetSelectedItem()) idSelected = pItem->id; else idSelected = C4ID_None;
+	if ((pItem = GetSelectedItem())) idSelected = pItem->id; else idSelected = C4ID_None;
 	C4Def *pDef = Game.Defs.ID2Def(idSelected);
 	// Get item value
 	int32_t iValue;
@@ -978,7 +978,7 @@ bool C4Menu::RefillInternal()
 void C4Menu::ClearItems(bool fResetSelection)
 {
 	C4MenuItem *pItem;
-	while (pItem = GetItem(0)) delete pItem;
+	while ((pItem = GetItem(0))) delete pItem;
 	ItemCount = 0;
 	if (fResetSelection)
 	{
@@ -1024,12 +1024,12 @@ void C4Menu::AdjustSelection()
 		// set to new first valid selection: Downwards first
 		iSel = Selection;
 		while (--iSel >= 0)
-			if (pSelection = GetItem(iSel))
+			if ((pSelection = GetItem(iSel)))
 				if (pSelection->IsSelectable)
 					break;
 		// no success: upwards then
 		if (iSel < 0)
-			for (iSel = Selection + 1; pSelection = GetItem(iSel); ++iSel)
+			for (iSel = Selection + 1; (pSelection = GetItem(iSel)); ++iSel)
 				if (pSelection->IsSelectable)
 					break;
 	}
@@ -1094,7 +1094,7 @@ bool C4Menu::SetTextProgress(int32_t iToProgress, bool fAdd)
 	// update menu items
 	C4MenuItem *pItem;
 	bool fAnyItemUnfinished = false;
-	for (int32_t i = HasPortrait(); pItem = GetItem(i); ++i)
+	for (int32_t i = HasPortrait(); (pItem = GetItem(i)); ++i)
 	{
 		// disabled progress: set all progresses to shown
 		if (!fTextProgressing)
@@ -1152,7 +1152,7 @@ void C4Menu::UpdateElementPositions()
 	int32_t iMaxDlgOptionHeight = -1;
 	int32_t iIndex = 0; C4Rect rcNewBounds(0, 0, ItemWidth, ItemHeight);
 	C4MenuItem *pFirstStack = pCurr, *pNext = pFirstStack;
-	while (pCurr = pNext)
+	while ((pCurr = pNext))
 	{
 		pNext = static_cast<C4MenuItem *>(pCurr->GetNext());
 		if (Style == C4MN_Style_Dialog)
@@ -1282,7 +1282,7 @@ bool C4Menu::HasMouse()
 void C4Menu::ClearPointers(C4Object *pObj)
 {
 	C4MenuItem *pItem;
-	for (int32_t i = 0; pItem = GetItem(i); ++i)
+	for (int32_t i = 0; (pItem = GetItem(i)); ++i)
 		if (pItem->GetObject() == pObj)
 			pItem->ClearObject();
 }
@@ -1293,7 +1293,7 @@ void C4Menu::AssertSurfaceNotUsed(C4Surface *sfc)
 	C4MenuItem *pItem;
 	if (!sfc) return;
 	assert(sfc != Symbol.Surface);
-	for (int32_t i = 0; pItem = GetItem(i); ++i)
+	for (int32_t i = 0; (pItem = GetItem(i)); ++i)
 		assert(pItem->Symbol.Surface != sfc);
 }
 #endif

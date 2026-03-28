@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -131,7 +131,6 @@ private:
 	uint32_t *pAlpha;
 
 public:
-	CPattern &operator=(const CPattern &);
 	bool PatternClr(int iX, int iY, uint8_t &byClr, uint32_t &dwClr, CStdPalette &rPal) const; // apply pattern to color
 	bool Set(class C4Surface *sfcSource, int iZoom = 0, bool fMonochrome = false); // set and enable pattern
 	bool Set(class CSurface8 *sfcSource, int iZoom = 0, bool fMonochrome = false); // set and enable pattern
@@ -141,6 +140,7 @@ public:
 	CPattern();
 	~CPattern() { Clear(); }
 	CPattern(const CPattern &);
+	CPattern &operator=(const CPattern &);
 	CPattern(CPattern &&) = default;
 	CPattern &operator=(CPattern &&) = default;
 };

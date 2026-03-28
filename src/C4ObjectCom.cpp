@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -429,7 +429,7 @@ bool ObjectComLineConstruction(C4Object *cObj)
 	// Active construction
 
 	// Active line construction
-	if (cline = cObj->Section->FindObject(C4ID_None, 0, 0, 0, 0, OCF_All, "Connect", linekit))
+	if ((cline = cObj->Section->FindObject(C4ID_None, 0, 0, 0, 0, OCF_All, "Connect", linekit)))
 	{
 		// Check for structure connection
 		ocf = OCF_LineConstruct;
@@ -461,9 +461,11 @@ bool ObjectComLineConstruction(C4Object *cObj)
 			if (tstruct->Def->LineConnect & C4D_Power_Output) connect_okay = true;
 			break;
 		case C4D_Line_Source:
-			if (tstruct->Def->LineConnect & C4D_Liquid_Output) connect_okay = true; break;
+			if (tstruct->Def->LineConnect & C4D_Liquid_Output) connect_okay = true;
+			break;
 		case C4D_Line_Drain:
-			if (tstruct->Def->LineConnect & C4D_Liquid_Input)  connect_okay = true; break;
+			if (tstruct->Def->LineConnect & C4D_Liquid_Input)  connect_okay = true;
+			break;
 		default: return false; // Undefined line type
 		}
 		if (!connect_okay)
@@ -976,7 +978,7 @@ bool SellFromBase(int32_t iPlr, C4Object *pBaseObj, C4ID id, C4Object *pSellObj)
 		GameMsgPlayer(LoadResStr(C4ResStrTableKey::IDS_PLR_HOSTILE, Game.Players.Get(pBaseObj->Base)->GetName()).c_str(), iPlr); return false;
 	}
 	// check validity of sell object, if specified
-	if (pThing = pSellObj)
+	if ((pThing = pSellObj))
 		if (!pThing->Status || pThing->Contained != pBaseObj)
 			pThing = nullptr;
 	// Get object from home pBaseObj via selected id, if no or an anvalid thing has been specified

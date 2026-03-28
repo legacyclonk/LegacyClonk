@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -47,7 +47,17 @@ void C4EditCursor::Execute()
 {
 	// alt check
 	bool fAltIsDown = Application.IsAltDown();
-	if (fAltIsDown != fAltWasDown) if (fAltWasDown = fAltIsDown) AltDown(); else AltUp();
+	if (fAltIsDown != fAltWasDown)
+	{
+		if ((fAltWasDown = fAltIsDown))
+		{
+			AltDown();
+		}
+		else
+		{
+			AltUp();
+		}
+	}
 	// drawing
 	switch (Mode)
 	{
@@ -713,7 +723,7 @@ void C4EditCursor::ApplyToolPicker()
 	{
 	case C4LSC_Static:
 		// Material-texture from map
-		if (byIndex = CurrentSection->Landscape.GetMapIndex(X / CurrentSection->Landscape.MapZoom, Y / CurrentSection->Landscape.MapZoom))
+		if ((byIndex = CurrentSection->Landscape.GetMapIndex(X / CurrentSection->Landscape.MapZoom, Y / CurrentSection->Landscape.MapZoom)))
 		{
 			const C4TexMapEntry *pTex = CurrentSection->TextureMap.GetEntry(byIndex & (IFT - 1));
 			if (pTex)

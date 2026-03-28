@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -221,7 +221,7 @@ void C4PhysicalInfo::PromotionUpdate(int32_t iRank, bool fUpdateTrainablePhysica
 		Fight  = pTrainDef->Physical.Fight  + (C4MaxPhysical - pTrainDef->Physical.Fight)  * iTrainRank / 20;
 		// do script updates for any physicals as required (this will train stuff like magic)
 		const char *szPhysName; C4PhysicalInfo::Offset PhysOff;
-		for (int32_t iPhysIdx = 0; szPhysName = GetNameByIndex(iPhysIdx, &PhysOff); ++iPhysIdx)
+		for (int32_t iPhysIdx = 0; (szPhysName = GetNameByIndex(iPhysIdx, &PhysOff)); ++iPhysIdx)
 		{
 			C4Value PhysVal(this->*PhysOff, C4V_Int);
 			if (pTrainDef->Script.Call(*section, PSF_GetFairCrewPhysical, {C4VString(szPhysName), C4VInt(iRank), C4VRef(&PhysVal)}))

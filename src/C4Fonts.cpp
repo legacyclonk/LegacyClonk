@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -108,7 +108,7 @@ void C4FontLoader::Clear()
 	FontDefs.clear();
 	// delete loaded vector fonts
 	C4VectorFont *pVecFont, *pNextVecFont = pVectorFonts;
-	while (pVecFont = pNextVecFont)
+	while ((pVecFont = pNextVecFont))
 	{
 		pNextVecFont = pVecFont->pNext;
 		delete pVecFont;

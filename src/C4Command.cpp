@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -849,7 +849,7 @@ void C4Command::Build()
 					C4Object *pOtherBuilder = nullptr;
 					if (!cObj->Contents.Find(C4ID_Linekit))
 					{
-						while (pOtherBuilder = cObj->Section->FindObjectByCommand(C4CMD_Build, Target, C4VNull, 0, nullptr, pOtherBuilder))
+						while ((pOtherBuilder = cObj->Section->FindObjectByCommand(C4CMD_Build, Target, C4VNull, 0, nullptr, pOtherBuilder)))
 							if (pOtherBuilder->Contents.Find(C4ID_Linekit))
 								break;
 					}
@@ -1153,6 +1153,7 @@ void C4Command::Get()
 
 	// Target collected
 	if (Target->Contained == cObj)
+	{
 		// Get-count specified: decrease count and continue with next object
 		if (Tx._getInt() > 1)
 		{
@@ -1163,6 +1164,7 @@ void C4Command::Get()
 		{
 			cObj->Action.ComDir = COMD_Stop; Finish(true); return;
 		}
+	}
 
 	// Grabbing other than target container: let go
 	if (cObj->GetProcedure() == DFA_PUSH)
@@ -1406,6 +1408,7 @@ void C4Command::Put() // Notice: Put command is currently using Ty as an interna
 
 	// Thing is in target
 	if (Target2->Contained == Target)
+	{
 		// Put-count specified: decrease count and continue with next object
 		if (Tx._getInt() > 1)
 		{
@@ -1416,6 +1419,7 @@ void C4Command::Put() // Notice: Put command is currently using Ty as an interna
 		{
 			Finish(true); return;
 		}
+	}
 
 	// Thing to put not in contents: get object
 	if (!cObj->Contents.GetLink(Target2))
@@ -1997,7 +2001,7 @@ void C4Command::Buy()
 	// No target (base) object specified: find closest base
 	int32_t cnt; C4Object *pBase;
 	if (!Target)
-		for (cnt = 0; pBase = cObj->Section->FindFriendlyBase(cObj->Owner, cnt); cnt++)
+		for (cnt = 0; (pBase = cObj->Section->FindFriendlyBase(cObj->Owner, cnt)); cnt++)
 			if (!Target || Distance(cObj->x, cObj->y, pBase->x, pBase->y) < Distance(cObj->x, cObj->y, Target->x, Target->y))
 				Target = pBase;
 	// No target (base) object: fail
@@ -2050,7 +2054,7 @@ void C4Command::Sell()
 	// No target (base) object specified: find closest base
 	int32_t cnt; C4Object *pBase;
 	if (!Target)
-		for (cnt = 0; pBase = cObj->Section->FindBase(cObj->Owner, cnt); cnt++)
+		for (cnt = 0; (pBase = cObj->Section->FindBase(cObj->Owner, cnt)); cnt++)
 			if (!Target || Distance(cObj->x, cObj->y, pBase->x, pBase->y) < Distance(cObj->x, cObj->y, Target->x, Target->y))
 				Target = pBase;
 	// No target (base) object: fail
@@ -2114,7 +2118,7 @@ void C4Command::Acquire()
 	// Find available material
 	C4Object *pMaterial = nullptr;
 	// Next closest
-	while (pMaterial = cObj->Section->FindObject(Data, cObj->x, cObj->y, -1, -1, OCF_Available, nullptr, nullptr, nullptr, nullptr, ANY_OWNER, pMaterial))
+	while ((pMaterial = cObj->Section->FindObject(Data, cObj->x, cObj->y, -1, -1, OCF_Available, nullptr, nullptr, nullptr, nullptr, ANY_OWNER, pMaterial)))
 		// Object is not in container to be ignored
 		if (!Target2 || pMaterial->Contained != Target2)
 			// Object is near enough
@@ -2277,7 +2281,7 @@ void C4Command::Energy()
 		cObj->AddCommand(C4CMD_Acquire, nullptr, 0, 0, 50, nullptr, true, C4ID_Linekit); return;
 	}
 	// Find line constructing kit
-	for (int32_t cnt = 0; pKitWithLine = cObj->Contents.GetObject(cnt); cnt++)
+	for (int32_t cnt = 0; (pKitWithLine = cObj->Contents.GetObject(cnt)); cnt++)
 		if ((pKitWithLine->id == C4ID_Linekit) && (pLine = cObj->Section->FindObject(C4ID_PowerLine, 0, 0, 0, 0, OCF_All, "Connect", pKitWithLine)))
 			break;
 	// No line constructed yet
@@ -2329,7 +2333,7 @@ void C4Command::Home()
 	// No target (base) object specified: find closest base
 	int32_t cnt; C4Object *pBase;
 	if (!Target)
-		for (cnt = 0; pBase = cObj->Section->FindBase(cObj->Owner, cnt); cnt++)
+		for (cnt = 0; (pBase = cObj->Section->FindBase(cObj->Owner, cnt)); cnt++)
 			if (!Target || Distance(cObj->x, cObj->y, pBase->x, pBase->y) < Distance(cObj->x, cObj->y, Target->x, Target->y))
 				Target = pBase;
 	// No base: fail

@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -352,8 +352,10 @@ void C4PropertyDlg::UpdateInputCtrl(C4Object *pObj)
 	C4AulScriptFunc *pRef;
 	// Object script available
 	if (pObj && pObj->Def)
+	{
 		// Scan all functions
-		for (cnt = 0; pRef = pObj->Def->Script.GetSFunc(cnt); cnt++)
+		for (cnt = 0; (pRef = pObj->Def->Script.GetSFunc(cnt)); cnt++)
+		{
 			// Public functions only
 			if (pRef->Access == AA_PUBLIC)
 			{
@@ -369,6 +371,8 @@ void C4PropertyDlg::UpdateInputCtrl(C4Object *pObj)
 				gtk_list_store_set(store, &iter, 0, pRef->Name, -1);
 #endif
 			}
+		}
+	}
 
 #ifdef _WIN32
 	// Restore old text

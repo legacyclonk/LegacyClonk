@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2007, Sven2
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -62,12 +62,16 @@ bool ValidateString(StdStrBuf &rsString, ValidationOption eOption)
 		if (rsString.ReplaceChar('\\', '_')) fValid = false;
 
 		// fallthrough to general file name validation
+		[[fallthrough]];
+
 	case VAL_SubPathFilename: // filenames and optional subpath
 		// do not traverse upwards in file hierarchy
 		if (rsString.Replace("..", "__")) fValid = false;
 		if (*rsString.getData() == '/' || *rsString.getData() == '\\') { *rsString.getMData() = '_'; fValid = false; }
 
 		// fallthrough to general file name validation
+		[[fallthrough]];
+
 	case VAL_FullPath: // full filename paths
 		// some characters are prohibited in filenames in general
 		if (rsString.ReplaceChar('*', '_')) fValid = false;

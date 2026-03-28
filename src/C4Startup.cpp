@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2005, Sven2
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -221,7 +221,8 @@ C4StartupDlg *C4Startup::SwitchDialog(DialogID eToDlg, bool fFade)
 		delete pLastDlg;
 	}
 	// retain current dialog as last, so it can fade out and may be used later
-	if (pLastDlg = pCurrDlg)
+	if ((pLastDlg = pCurrDlg))
+	{
 		if (fFade)
 		{
 			if (!pLastDlg->IsShown()) pLastDlg->Show(Game.pGUI, false);
@@ -232,6 +233,7 @@ C4StartupDlg *C4Startup::SwitchDialog(DialogID eToDlg, bool fFade)
 			delete pLastDlg;
 			pLastDlg = nullptr;
 		}
+	}
 	// Okay; now using this dialog
 	pCurrDlg = pToDlg;
 	// fade in new dlg

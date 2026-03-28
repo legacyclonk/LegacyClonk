@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -379,8 +379,8 @@ void C4MaterialMap::CrossMapMaterials(C4Section &section) // Called after load
 		C4Surface *sfcTexture;
 		C4Texture *Texture;
 		if (Map[cnt].sPXSGfx.getLength())
-			if (Texture = section.TextureMap.GetTexture(Map[cnt].sPXSGfx.getData()))
-				if (sfcTexture = Texture->Surface32.get())
+			if ((Texture = section.TextureMap.GetTexture(Map[cnt].sPXSGfx.getData())))
+				if ((sfcTexture = Texture->Surface32.get()))
 					Map[cnt].PXSFace.Set(sfcTexture, Map[cnt].PXSGfxRt.x, Map[cnt].PXSGfxRt.y, Map[cnt].PXSGfxRt.Wdt, Map[cnt].PXSGfxRt.Hgt);
 		// evaluate reactions for that material
 		for (unsigned int iRCnt = 0; iRCnt < pMat->CustomReactionList.size(); ++iRCnt)
@@ -636,6 +636,7 @@ bool C4MaterialMap::mrfConvert(C4MaterialReaction *pReaction, C4Section &section
 		// for hardcoded stuff: only InMatConvert is Snow in Water, which does not have any collision proc
 		if (!pReaction->fUserDefined) break;
 		// user-defined conversions may also convert upon hitting materials
+		[[fallthrough]];
 
 	case meePXSPos: // PXS check before movement
 	{

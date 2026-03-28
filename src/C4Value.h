@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -92,52 +92,52 @@ template<typename T> concept C4ValueInteger = !std::same_as<T, C4ID>;
 class C4Value
 {
 public:
-	C4Value() : Type(C4V_Any), NextRef(nullptr), FirstRef(nullptr) { Data.Raw = 0; }
+	C4Value() : NextRef(nullptr), FirstRef(nullptr), Type(C4V_Any) { Data.Raw = 0; }
 
-	C4Value(const C4Value &nValue, C4ValueHash *owningMap = nullptr) : Data(nValue.Data), Type(nValue.Type), NextRef(nullptr), FirstRef(nullptr), OwningMap(owningMap)
+	C4Value(const C4Value &nValue, C4ValueHash *owningMap = nullptr) : Data(nValue.Data), NextRef(nullptr), FirstRef(nullptr), OwningMap(owningMap), Type(nValue.Type)
 	{
 		AddDataRef();
 	}
 
-	C4Value(C4V_Data nData, C4V_Type nType) : Data(nData), Type(nData || nType == C4V_Int || nType == C4V_Bool ? nType : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
+	C4Value(C4V_Data nData, C4V_Type nType) : Data(nData), NextRef(nullptr), FirstRef(nullptr), Type(nData || nType == C4V_Int || nType == C4V_Bool ? nType : C4V_Any)
 	{
 		AddDataRef();
 	}
 
 	template<typename T> requires (!std::same_as<T, C4ID>)
-	explicit C4Value(T nData, C4V_Type nType) : Type(nData || nType == C4V_Int || nType == C4V_Bool ? nType : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
+	explicit C4Value(T nData, C4V_Type nType) : NextRef(nullptr), FirstRef(nullptr), Type(nData || nType == C4V_Int || nType == C4V_Bool ? nType : C4V_Any)
 	{
 		Data.Raw = 0;
 		Data.Int = nData; AddDataRef();
 	}
 
-	explicit C4Value(C4ID id) : Type(id ? C4V_C4ID : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
+	explicit C4Value(C4ID id) : NextRef(nullptr), FirstRef(nullptr), Type(id ? C4V_C4ID : C4V_Any)
 	{
 		Data.Raw = 0;
 		Data.ID = id;
 	}
 
-	explicit C4Value(C4Object *pObj) : Type(pObj ? C4V_C4Object : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
+	explicit C4Value(C4Object *pObj) : NextRef(nullptr), FirstRef(nullptr), Type(pObj ? C4V_C4Object : C4V_Any)
 	{
 		Data.Obj = pObj; AddDataRef();
 	}
 
-	explicit C4Value(C4String *pStr) : Type(pStr ? C4V_String : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
+	explicit C4Value(C4String *pStr) : NextRef(nullptr), FirstRef(nullptr), Type(pStr ? C4V_String : C4V_Any)
 	{
 		Data.Str = pStr; AddDataRef();
 	}
 
-	explicit C4Value(C4ValueArray *pArray) : Type(pArray ? C4V_Array : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
+	explicit C4Value(C4ValueArray *pArray) : NextRef(nullptr), FirstRef(nullptr), Type(pArray ? C4V_Array : C4V_Any)
 	{
 		Data.Array = pArray; AddDataRef();
 	}
 
-	explicit C4Value(C4ValueHash *pMap) : Type(pMap ? C4V_Map : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
+	explicit C4Value(C4ValueHash *pMap) : NextRef(nullptr), FirstRef(nullptr), Type(pMap ? C4V_Map : C4V_Any)
 	{
 		Data.Map = pMap; AddDataRef();
 	}
 
-	explicit C4Value(C4Value *pVal) : Type(pVal ? C4V_pC4Value : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
+	explicit C4Value(C4Value *pVal) : NextRef(nullptr), FirstRef(nullptr), Type(pVal ? C4V_pC4Value : C4V_Any)
 	{
 		Data.Ref = pVal; AddDataRef();
 	}

@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2005, Sven2
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2023, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -141,7 +141,7 @@ void CheckBox::DrawElement(C4FacetEx &cgo)
 void CheckBox::SetOnChecked(BaseCallbackHandler *pCB)
 {
 	if (pCBHandler) pCBHandler->DeRef();
-	if (pCBHandler = pCB) pCB->Ref();
+	if ((pCBHandler = pCB)) pCB->Ref();
 }
 
 void CheckBox::SetCaption(const std::string &caption)

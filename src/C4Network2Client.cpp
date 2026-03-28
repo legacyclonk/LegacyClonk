@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2011-2018, The OpenClonk Team and contributors
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -105,7 +105,7 @@ void C4Network2Client::CloseConns(const char *szMsg)
 {
 	C4PacketConnRe Pkt(false, false, szMsg);
 	C4Network2IOConnection *pConn;
-	while (pConn = pMsgConn)
+	while ((pConn = pMsgConn))
 	{
 		// send packet, close
 		if (pConn->isOpen())
@@ -367,7 +367,7 @@ void C4Network2Client::ClearGraphs()
 // *** C4Network2ClientList
 
 C4Network2ClientList::C4Network2ClientList(C4Network2IO *pIO)
-	: pFirst(nullptr), pLocal(nullptr), pIO(pIO) {}
+	: pIO(pIO), pFirst(nullptr), pLocal(nullptr) {}
 
 C4Network2ClientList::~C4Network2ClientList()
 {

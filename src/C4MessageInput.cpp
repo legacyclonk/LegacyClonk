@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2005, Sven2
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -51,7 +51,7 @@ bool IsSmallInputQuery(const char *szInputQuery)
 
 C4ChatInputDialog::C4ChatInputDialog(bool fObjInput, C4Object *pScriptTarget, bool fUppercase, Mode mode, int32_t iPlr, const StdStrBuf &rsInputQuery)
 	: C4GUI::InputDialog(fObjInput ? rsInputQuery.getData() : LoadResStrNoAmp(C4ResStrTableKey::IDS_CTL_CHAT).c_str(), nullptr, C4GUI::Ico_None, nullptr, !fObjInput || IsSmallInputQuery(rsInputQuery.getData())),
-	fObjInput(fObjInput), fUppercase(fUppercase), pTarget(pScriptTarget), BackIndex(-1), iPlr(iPlr), fProcessed(false)
+	fObjInput(fObjInput), fUppercase(fUppercase), pTarget(pScriptTarget), iPlr(iPlr), BackIndex(-1), fProcessed(false)
 {
 	// singleton-var
 	pInstance = this;

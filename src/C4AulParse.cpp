@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -180,7 +180,7 @@ public:
 
 	void Shift(HoldStringsPolicy HoldStrings = Hold, bool bOperator = true);
 	void Match(C4AulTokenType TokenType, const char *Message = nullptr);
-	void UnexpectedToken(const char *Expected);
+	[[noreturn]] void UnexpectedToken(const char *Expected);
 	const char *GetTokenName(C4AulTokenType TokenType);
 
 	void Warn(std::string_view msg, const char *pIdtf = nullptr);
@@ -388,7 +388,7 @@ bool C4AulParseState::AdvanceSpaces()
 	// defaultly, not in comment
 	int InComment = 0; // 0/1/2 = no comment/line comment/multi line comment
 	// don't go past end
-	while (C = *SPos)
+	while ((C = *SPos))
 	{
 		// loop until out of comment and non-whitespace is found
 		switch (InComment)
@@ -476,7 +476,11 @@ C4ScriptOpDef C4ScriptOpMap[] =
 	{ 2, "&=",   AB_AndIt,            1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
 	{ 2, "|=",   AB_OrIt,             1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
 	{ 2, "^=",   AB_XOrIt,            1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
-	{ 2, "??=",  AB_NilCoalescingIt,  1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Any },
+
+#define AB_OP "??" "=" // ??=, but that triggers a trigraph warning...
+	{ 2, AB_OP, AB_NilCoalescingIt,  1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Any },
+#undef AB_OP
+
 	{ 2, "=",    AB_Set,              1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Any },
 
 	{ 0, nullptr,  AB_ERR,            0, 0, 0, C4V_Any,    C4V_Any,      C4V_Any }
@@ -817,7 +821,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, std::intptr_t *pInt, 
 	}
 }
 
-static const char *GetTTName(C4AulBCCType e)
+[[maybe_unused]] static const char *GetTTName(C4AulBCCType e)
 {
 	switch (e)
 	{
@@ -1409,7 +1413,7 @@ void C4AulScript::ParseFn(C4AulScriptFunc *Fn, bool fExprOnly)
 {
 	// check if fn overloads other fn (all func tables are built now)
 	// *MUST* check Fn->Owner-list, because it may be the engine (due to linked globals)
-	if (Fn->OwnerOverloaded = Fn->Owner->GetOverloadedFunc(Fn))
+	if ((Fn->OwnerOverloaded = Fn->Owner->GetOverloadedFunc(Fn)))
 		if (Fn->Owner == Fn->OwnerOverloaded->Owner)
 			Fn->OwnerOverloaded->OverloadedBy = Fn;
 	// reset pointer to next same-named func (will be set in AfterLink)
@@ -1616,6 +1620,8 @@ void C4AulParseState::Parse_FuncHead()
 			if (a->Def)
 				break;
 			// func in global context: fallthru
+			[[fallthrough]];
+
 		case AA_GLOBAL:
 			if (a->Engine->GlobalNamedNames.GetItemNr(Idtf) != -1)
 				throw C4AulParseError(this, "function definition: name already in use (global variable)");
@@ -1749,6 +1755,8 @@ void C4AulParseState::Parse_FuncHead()
 		if (a->Def)
 			break;
 		// func in global context: fallthru
+		[[fallthrough]];
+
 	case AA_GLOBAL:
 		if (a->Engine->GlobalNamedNames.GetItemNr(Idtf) != -1)
 			throw C4AulParseError(this, "function definition: name already in use (global variable)");
@@ -1952,7 +1960,9 @@ void C4AulParseState::Parse_Statement()
 		}
 
 		// fall through
+		[[fallthrough]];
 	}
+
 	case ATT_BOPEN:
 	case ATT_BOPEN2:
 	case ATT_OPERATOR:
@@ -2345,7 +2355,7 @@ int C4AulParseState::Parse_Params(int iMaxCnt, const char *sWarn, C4AulFunc *pFu
 				// pFunc either was the return value from a GetFuncFast-Call or
 				// pFunc is the only function that could be called, so this loop is superflous
 				C4AulFunc *pFunc2 = pFunc;
-				while (pFunc2 = a->Engine->GetNextSNFunc(pFunc2))
+				while ((pFunc2 = a->Engine->GetNextSNFunc(pFunc2)))
 					if (pFunc2->GetParCount() > size && pFunc2->GetParType()[size] == C4V_pC4Value) anyfunctakesref = true;
 				// Change the bytecode to the equivalent that does not produce a reference.
 				if (!anyfunctakesref)
@@ -3730,7 +3740,7 @@ C4AulScript *C4AulScript::FindFirstNonStrictScript()
 	// search children
 	C4AulScript *pNonStrScr;
 	for (C4AulScript *pScr = Child0; pScr; pScr = pScr->Next)
-		if (pNonStrScr = pScr->FindFirstNonStrictScript())
+		if ((pNonStrScr = pScr->FindFirstNonStrictScript()))
 			return pNonStrScr;
 	// nothing found
 	return nullptr;

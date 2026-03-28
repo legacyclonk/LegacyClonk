@@ -110,13 +110,12 @@ void C4Weather::Execute()
 		if (!Random(60))
 			if (Random(100) < MeteoriteLevel)
 			{
-				C4Object *meto;
 				// In cave landscapes, meteors must be created a bit lower so they don't hit the ceiling
 				// (who activates meteors in cave landscapes anyway?)
 				// force argument evaluation order
 				const auto r2 = Random(100 + 1);
 				const auto r1 = Random(section.Landscape.Width);
-				meto = section.CreateObject(C4ID_Meteor, nullptr, NO_OWNER,
+				section.CreateObject(C4ID_Meteor, nullptr, NO_OWNER,
 					r1, section.Landscape.TopOpen ? -20 : 5, 0,
 					itofix(r2 - 50) / 10,
 					section.Landscape.TopOpen ? Fix0 : itofix(2), itofix(1) / 5);
@@ -156,7 +155,7 @@ void C4Weather::Clear() {}
 bool C4Weather::LaunchLightning(int32_t x, int32_t y, int32_t xdir, int32_t xrange, int32_t ydir, int32_t yrange, bool fDoGamma)
 {
 	C4Object *pObj;
-	if (pObj = section.CreateObject(C4Id("FXL1"), nullptr))
+	if ((pObj = section.CreateObject(C4Id("FXL1"), nullptr)))
 		pObj->Call(PSF_Activate, {C4VInt(x),
 			C4VInt(y),
 			C4VInt(xdir),
@@ -181,7 +180,7 @@ int32_t C4Weather::GetTemperature()
 bool C4Weather::LaunchVolcano(int32_t mat, int32_t x, int32_t y, int32_t size)
 {
 	C4Object *pObj;
-	if (pObj = section.CreateObject(C4Id("FXV1"), nullptr))
+	if ((pObj = section.CreateObject(C4Id("FXV1"), nullptr)))
 		pObj->Call(PSF_Activate, {C4VInt(x), C4VInt(y), C4VInt(size), C4VInt(mat)});
 	return true;
 }
@@ -199,7 +198,7 @@ void C4Weather::Default()
 bool C4Weather::LaunchEarthquake(int32_t iX, int32_t iY)
 {
 	C4Object *pObj;
-	if (pObj = section.CreateObject(C4Id("FXQ1"), nullptr, NO_OWNER, iX, iY))
+	if ((pObj = section.CreateObject(C4Id("FXQ1"), nullptr, NO_OWNER, iX, iY)))
 		if (pObj->Call(PSF_Activate))
 			return true;
 	return false;
@@ -209,7 +208,7 @@ bool C4Weather::LaunchCloud(int32_t iX, int32_t iY, int32_t iWidth, int32_t iStr
 {
 	if (section.Material.Get(szPrecipitation) == MNone) return false;
 	C4Object *pObj;
-	if (pObj = section.CreateObject(C4Id("FXP1"), nullptr, NO_OWNER, iX, iY))
+	if ((pObj = section.CreateObject(C4Id("FXP1"), nullptr, NO_OWNER, iX, iY)))
 		if (pObj->Call(PSF_Activate, {C4VInt(section.Material.Get(szPrecipitation)),
 			C4VInt(iWidth),
 			C4VInt(iStrength)}))
@@ -275,11 +274,17 @@ void C4Weather::SetSeasonGamma()
 			int32_t iChanVal = (byC1 * iSeasonOff2 + byC2 * iSeasonOff1) / 15;
 			// red+green: reduce in winter
 			if (Temperature < 0)
+			{
 				if (iChan)
+				{
 					iChanVal += Temperature / 2;
+				}
 				else
+				{
 					// blue channel: emphasize in winter
 					iChanVal -= Temperature / 2;
+				}
+			}
 			// set channel
 			dwClr[i] |= BoundBy<int32_t>(iChanVal, 0, 255) << iChan;
 		}

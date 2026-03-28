@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2005, Sven2
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2026, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -17,6 +17,7 @@
 
 // Keyboard input mapping to engine functions
 
+#include "C4TextEncoding.h"
 #include <C4Include.h>
 #include <C4KeyboardInput.h>
 
@@ -374,8 +375,18 @@ std::string C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bo
 	const auto name = XKeysymToString(wCode);
 	return name ? name : "invalid";
 #elif defined(USE_SDL_MAINLOOP)
-	const auto name = SDL_GetScancodeName(static_cast<SDL_Scancode>(wCode));
-	if (!name)
+	std::string name;
+	if (fHumanReadable)
+	{
+		const auto key = SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(wCode));
+		name = TextEncodingConverter.Utf8ToClonk(SDL_GetKeyName(key));
+	}
+	else
+	{
+		name = SDL_GetScancodeName(static_cast<SDL_Scancode>(wCode));
+	}
+
+	if (name.empty())
 	{
 		return "invalid";
 	}
@@ -440,6 +451,23 @@ void C4KeyCodeEx::CompileFunc(StdCompiler *pComp)
 		// write key
 		pComp->Value(mkDecompileAdapt(KeyCode2String(Key, false, false)));
 	}
+}
+
+bool C4KeyCodeEx::IsStandardAlphaNumeric() const noexcept
+{
+#ifdef USE_SDL_MAINLOOP
+	const int key{SDL_GetKeyName(SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(Key)))[0]};
+#else
+	const auto key = Key;
+#endif
+
+	if (!std::in_range<unsigned char>(key))
+	{
+		return false;
+	}
+
+	const auto keyChar = static_cast<unsigned char>(Key);
+	return Inside<unsigned char>(TOUPPERIFX11(keyChar), 'A', 'Z') || Inside<unsigned char>(TOUPPERIFX11(keyChar), '0', '9');
 }
 
 // C4CustomKey

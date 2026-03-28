@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2008, Sven2
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -143,7 +143,7 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 		if (!(pPlayer = Game.Players.Get(Player))) return false;
 		// Refill items
 		C4Player *pPlr; int32_t iIndex;
-		for (iIndex = 0; pPlr = Game.Players.GetByIndex(iIndex); iIndex++)
+		for (iIndex = 0; (pPlr = Game.Players.GetByIndex(iIndex)); iIndex++)
 			// Ignore player self and invisible
 			if (pPlr != pPlayer) if (!pPlr->IsInvisible())
 			{
@@ -244,7 +244,7 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 		AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MSG_FREEVIEW), C4GUI::Icon::GetIconFacet(C4GUI::Ico_Star), "Observe:Free", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MSG_FREELYSCROLLAROUNDTHEMAP));
 		// Add players
 		C4Player *pPlr; int32_t iIndex;
-		for (iIndex = 0; pPlr = Game.Players.GetByIndex(iIndex); iIndex++)
+		for (iIndex = 0; (pPlr = Game.Players.GetByIndex(iIndex)); iIndex++)
 		{
 			// Ignore invisible
 			if (!pPlr->IsInvisible())
@@ -356,8 +356,8 @@ bool C4MainMenu::ActivateGoals(C4Section &section, int32_t iPlayer, bool fDoActi
 		int32_t iNumGoals = GoalList.GetNumberOfIDs(), cnt;
 		C4ID idGoal; C4Def *pDef;
 		for (int32_t i = 0; i < iNumGoals; ++i)
-			if (idGoal = GoalList.GetID(i, &cnt))
-				if (pDef = Game.Defs.ID2Def(idGoal))
+			if ((idGoal = GoalList.GetID(i, &cnt)))
+				if ((pDef = Game.Defs.ID2Def(idGoal)))
 				{
 					fctSymbol.Create(symbolSize, symbolSize);
 					// 2do: If an object instance is known, draw the object instead?
@@ -394,8 +394,8 @@ bool C4MainMenu::ActivateRules(int32_t iPlayer)
 
 	for (const auto &section : Game.GetActiveSections())
 	{
-		for (cnt = 0; idGoal = section->Objects.ObjectsInt().GetListID(C4D_Rule, cnt); cnt++)
-			if (pDef = Game.Defs.ID2Def(idGoal))
+		for (cnt = 0; (idGoal = section->Objects.ObjectsInt().GetListID(C4D_Rule, cnt)); cnt++)
+			if ((pDef = Game.Defs.ID2Def(idGoal)))
 			{
 				fctSymbol.Create(symbolSize, symbolSize); pDef->Draw(fctSymbol);
 				command = std::format("Player:Rule:{}", C4IdText(idGoal));
@@ -418,7 +418,7 @@ bool LooksLikeInteger(const char *szInt)
 	if (!*szInt) return false;
 	// must contain only digits now
 	char c;
-	while (c = *(szInt++)) if (!Inside<char>(c, '0', '9')) return false;
+	while ((c = *(szInt++))) if (!Inside<char>(c, '0', '9')) return false;
 	// it's an int32_t
 	return true;
 }
@@ -811,27 +811,35 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 	{
 		int iClientID = atoi(szCommand + 10);
 		if (iClientID && Game.Network.isEnabled())
+		{
 			if (Game.Parameters.isLeague() && Game.Players.GetAtClient(iClientID))
+			{
 				Game.Network.Vote(VT_Kick, true, iClientID);
+			}
 			else
 			{
 				C4Client *pClient = Game.Clients.getClientByID(iClientID);
 				if (pClient) Game.Clients.CtrlRemove(pClient, LoadResStr(C4ResStrTableKey::IDS_MSG_KICKBYMENU));
 				Close(true);
 			}
+		}
 		return true;
 	}
 	// Part
 	if (SEqual2(szCommand, "Part"))
 	{
 		if (Game.Network.isEnabled())
+		{
 			if (Game.Parameters.isLeague() && Game.Players.GetLocalByIndex(0))
+			{
 				Game.Network.Vote(VT_Kick, true, Game.Control.ClientID());
+			}
 			else
 			{
 				Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, LoadResStr(C4ResStrTableKey::IDS_ERR_GAMELEFTVIAPLAYERMENU));
 				Game.Network.Clear();
 			}
+		}
 		return true;
 	}
 	// Options
@@ -893,7 +901,7 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 		Close(true);
 		// TODO!
 		C4Object *pObj; C4ID idItem = C4Id(szCommand + 12);
-		if (pObj = Game.FindFirstInAllObjects([idItem](C4GameObjects &objects) { return objects.FindInternal(idItem); }))
+		if ((pObj = Game.FindFirstInAllObjects([idItem](C4GameObjects &objects) { return objects.FindInternal(idItem); })))
 			Game.Control.DoInput(CID_ActivateGameGoalRule, new C4ControlActivateGameGoalRule(pObj->Section->Number, Player, pObj->Number), CDT_Queue);
 		else
 			return false;

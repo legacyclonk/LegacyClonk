@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2023, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -125,7 +125,7 @@ void ListBox::DrawElement(C4FacetEx &cgo)
 	// draw delimeter bars
 	Element *pCurr = pClientWindow->GetFirst();
 	if (!pCurr) return;
-	while (pCurr = pCurr->GetNext())
+	while ((pCurr = pCurr->GetNext()))
 		if (pCurr->GetListItemTopSpacingBar())
 		{
 			int32_t iYSpace = pCurr->GetListItemTopSpacing();
@@ -297,13 +297,13 @@ bool ListBox::KeyPageDown()
 	// start from first item or selected
 	Element *pNextSelectedItem = pSelectedItem ? pSelectedItem : pClientWindow->GetFirstContained(), *pNext;
 	if (!pNextSelectedItem) return false;
-	if (pNext = pNextSelectedItem->GetNext())
+	if ((pNext = pNextSelectedItem->GetNext()))
 	{
 		pNextSelectedItem = pNext;
 		// if this is not the last, visible item in the list: go down until item is no longer fully in view
 		if (pClientWindow->IsRangeInView(pNextSelectedItem->GetBounds().y, pNextSelectedItem->GetBounds().Hgt))
 		{
-			while (pNext = pNextSelectedItem->GetNext())
+			while ((pNext = pNextSelectedItem->GetNext()))
 				if (pClientWindow->IsRangeInView(pNext->GetBounds().y, pNext->GetBounds().Hgt))
 					pNextSelectedItem = pNext;
 				else
@@ -315,7 +315,7 @@ bool ListBox::KeyPageDown()
 			pClientWindow->ScrollPages(+1);
 			pNextSelectedItem = pClientWindow->GetLastContained();
 			while (!pClientWindow->IsRangeInView(pNextSelectedItem->GetBounds().y, pNextSelectedItem->GetBounds().Hgt))
-				if (pNext = pNextSelectedItem->GetPrev()) pNextSelectedItem = pNext; else break;
+				if ((pNext = pNextSelectedItem->GetPrev())) pNextSelectedItem = pNext; else break;
 		}
 	}
 	// selection might have changed
@@ -333,13 +333,13 @@ bool ListBox::KeyPageUp()
 	// start from last item or selected
 	Element *pNextSelectedItem = pSelectedItem ? pSelectedItem : pClientWindow->GetLastContained(), *pNext;
 	if (!pNextSelectedItem) return false;
-	if (pNext = pNextSelectedItem->GetPrev())
+	if ((pNext = pNextSelectedItem->GetPrev()))
 	{
 		pNextSelectedItem = pNext;
 		// if this is not the first, visible item in the list: go up until item is no longer fully in view
 		if (pClientWindow->IsRangeInView(pNextSelectedItem->GetBounds().y, pNextSelectedItem->GetBounds().Hgt))
 		{
-			while (pNext = pNextSelectedItem->GetPrev())
+			while ((pNext = pNextSelectedItem->GetPrev()))
 				if (pClientWindow->IsRangeInView(pNext->GetBounds().y, pNext->GetBounds().Hgt))
 					pNextSelectedItem = pNext;
 				else
@@ -351,7 +351,7 @@ bool ListBox::KeyPageUp()
 			pClientWindow->ScrollPages(-1);
 			pNextSelectedItem = pClientWindow->GetFirstContained();
 			while (!pClientWindow->IsRangeInView(pNextSelectedItem->GetBounds().y, pNextSelectedItem->GetBounds().Hgt))
-				if (pNext = pNextSelectedItem->GetNext()) pNextSelectedItem = pNext; else break;
+				if ((pNext = pNextSelectedItem->GetNext())) pNextSelectedItem = pNext; else break;
 		}
 	}
 	// selection might have changed
@@ -421,7 +421,7 @@ void ListBox::UpdateElementPositions()
 			}
 			iOverallHgt = pCurr->GetBounds().Hgt;
 			// others stacked under it
-			while (pCurr = pCurr->GetNext())
+			while ((pCurr = pCurr->GetNext()))
 			{
 				int32_t iYSpace = pCurr->GetListItemTopSpacing();
 				int32_t iNewY = iOverallHgt + iYSpace;
@@ -624,7 +624,7 @@ class SortCompareElements
 	ListBox::SortFunction SortFunc;
 
 public:
-	SortCompareElements(ListBox::SortFunction SortFunc, void *par) : SortFunc(SortFunc), par(par) {}
+	SortCompareElements(ListBox::SortFunction SortFunc, void *par) : par(par), SortFunc(SortFunc) {}
 
 	int operator()(const Element *pEl1, const Element *pEl2)
 	{

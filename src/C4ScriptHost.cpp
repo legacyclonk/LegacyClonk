@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -130,7 +130,16 @@ C4Value C4ScriptHost::FunctionCall(C4Section &section, C4Object *pCaller, const 
 	// get needed access
 	C4AulAccess Acc = AA_PRIVATE;
 	if (pObj && (pObj != pCaller) && !fPrivateCall)
-		if (pCaller) Acc = AA_PUBLIC; else Acc = AA_PROTECTED;
+	{
+		if (pCaller)
+		{
+			Acc = AA_PUBLIC;
+		}
+		else
+		{
+			Acc = AA_PROTECTED;
+		}
+	}
 	// get function
 	C4AulScriptFunc *pFn;
 	if (!(pFn = GetSFunc(szFunction, Acc))) return C4VNull;
@@ -240,11 +249,10 @@ bool C4GameScriptHost::Execute()
 C4Value C4GameScriptHost::GRBroadcast(const char *szFunction, const C4AulParSet &pPars, bool fPassError, bool fRejectTest, bool convertNilToIntBool)
 {
 	// call objects first - scenario script might overwrite hostility, etc...
-
 	for (const auto &section : Game.GetActiveSections())
 	{
 		C4Object *pObj;
-		for (C4ObjectLink *clnk = section->Objects.ObjectsInt().First; clnk; clnk = clnk->Next) if (pObj = clnk->Obj)
+		for (C4ObjectLink *clnk = section->Objects.ObjectsInt().First; clnk; clnk = clnk->Next) if ((pObj = clnk->Obj))
 			if (pObj->Category & (C4D_Goal | C4D_Rule | C4D_Environment))
 				if (pObj->Status)
 				{

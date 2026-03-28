@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -150,10 +150,21 @@ int SCharPos(char cTarget, const char *szInStr, size_t iIndex)
 	int ccpos;
 	if (!szInStr) return -1;
 	for (cpos = szInStr, ccpos = 0; *cpos; cpos++, ccpos++)
+	{
 		if (*cpos == cTarget)
-			if (iIndex == 0) return ccpos;
-			else --iIndex;
-			return -1;
+		{
+			if (iIndex == 0)
+			{
+				return ccpos;
+			}
+			else
+			{
+				--iIndex;
+			}
+		}
+	}
+
+	return -1;
 }
 
 int SCharLastPos(char cTarget, const char *szInStr)
@@ -265,7 +276,12 @@ void SReplaceChar(char *str, char fc, char tc)
 {
 	while (str && *str)
 	{
-		if (*str == fc) *str = tc; str++;
+		if (*str == fc)
+		{
+			*str = tc;
+		}
+
+		str++;
 	}
 }
 
@@ -490,8 +506,8 @@ bool SRemoveModule(char *szList, const char *szModule, bool fCaseSensitive)
 	iPos = 0;
 	if (iMod > 0) iPos = SCharPos(';', szList, iMod - 1) + 1;
 	// Get module length
-	iLen = SCharPos(';', szList + iPos);
-	if (iLen < 0) iLen = SLen(szList); else iLen += 1;
+	iLen = static_cast<std::size_t>(SCharPos(';', szList + iPos));
+	if (iLen == SizeMax) iLen = SLen(szList); else iLen += 1;
 	// Delete module
 	SDelete(szList, iLen, iPos);
 	// Success
@@ -570,7 +586,7 @@ const char *SGetParameter(const char *strCommandLine, size_t iParameter, char *s
 	while (c && *c)
 	{
 		// Quoted parameter
-		if (fQuoted = (*c == '"'))
+		if ((fQuoted = (*c == '"')))
 		{
 			SCopyUntil(++c, strParameter, '"', 2048);
 			c += SLen(strParameter);

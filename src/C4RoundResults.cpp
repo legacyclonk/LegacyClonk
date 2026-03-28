@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2008, Sven2
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -230,7 +230,7 @@ C4RoundResultsPlayers &C4RoundResultsPlayers::operator=(const C4RoundResultsPlay
 {
 	Clear();
 	C4RoundResultsPlayer *pPlr; int32_t i = 0;
-	while (pPlr = cpy.GetByIndex(i++))
+	while ((pPlr = cpy.GetByIndex(i++)))
 		Add(new C4RoundResultsPlayer(*pPlr));
 	return *this;
 }
@@ -287,12 +287,12 @@ void C4RoundResults::EvaluateGoals(C4IDList &GoalList, C4IDList &FulfilledGoalLi
 
 	for (const auto &section : Game.GetActiveSections())
 	{
-		for (cnt = 0; idGoal = section->Objects.GetListID(C4D_Goal, cnt); cnt++)
+		for (cnt = 0; (idGoal = section->Objects.GetListID(C4D_Goal, cnt)); cnt++)
 		{
 			// determine if the goal is fulfilled - do the calls even if the menu is not to be opened to ensure synchronization
 			bool fFulfilled = false;
 			C4Object *pObj;
-			if (pObj = section->Objects.Find(idGoal))
+			if ((pObj = section->Objects.Find(idGoal)))
 			{
 				if (fRivalvry)
 				{
@@ -332,7 +332,7 @@ void C4RoundResults::EvaluateLeague(const char *szResultMsg, bool fSuccess, cons
 	Game.RoundResults.EvaluateNetwork(fSuccess ? C4RoundResults::NR_LeagueOK : C4RoundResults::NR_LeagueError, szResultMsg);
 	// Evaluation called by league: Sets new league scores and ranks
 	C4RoundResultsPlayer *pPlr, *pOwnPlr; int32_t i = 0;
-	while (pPlr = rLeagueInfo.GetByIndex(i++))
+	while ((pPlr = rLeagueInfo.GetByIndex(i++)))
 	{
 		pOwnPlr = Players.GetCreateByID(pPlr->GetID());
 		pOwnPlr->EvaluateLeague(pPlr);

@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2023, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -111,7 +111,8 @@ public:
 
 	void RemoveIndexedRect(size_t idx)
 	{
-		if (idx < GetCount() - 1) Get(idx) = Get(GetCount() - 1); pop_back();
+		if (idx < GetCount() - 1) Get(idx) = Get(GetCount() - 1);
+		pop_back();
 	}
 
 	void Clear() { clear(); }

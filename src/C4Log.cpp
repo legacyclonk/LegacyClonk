@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -113,8 +113,6 @@ public:
 		dest.resize_and_overwrite(dest.size() + msg.payload.size(), [&msg, oldSize{dest.size()}](char *const ptr, const std::size_t size)
 		{
 			std::fill_n(ptr + oldSize, size - oldSize, 0xAB);
-			auto oldSize2 = oldSize;
-			auto &payload = msg.payload;
 			auto copied = msg.payload.copy(ptr + oldSize, msg.payload.size());
 			ptr[oldSize + copied] = '\0';
 

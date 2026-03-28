@@ -36,8 +36,8 @@ class C4Network2IRCMessage
 
 public:
 	C4Network2IRCMessage(C4Network2IRCMessageType enType, const char *szSource, const char *szTarget, const char *szData)
-		: eType(enType), Source(szSource), Target(szTarget), Data(szData),
-		iTimestamp(time(nullptr)), Next(nullptr) {}
+		: iTimestamp(time(nullptr)), eType(enType), Source(szSource), Target(szTarget),
+		Data(szData), Next(nullptr) {}
 
 private:
 	time_t iTimestamp;

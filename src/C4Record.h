@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -241,9 +241,8 @@ protected:
 
 public:
 	C4PktDebugRec() : eType(RCT_Undefined) {}
-	C4PktDebugRec(const C4PktDebugRec &rCopy) : Data(rCopy.Data), eType(rCopy.eType) {}
 	C4PktDebugRec(C4RecordChunkType eType, const StdBuf &rCpyData)
-		: Data(rCpyData), eType(eType) {}
+		: eType(eType), Data(rCpyData) {}
 
 	C4RecordChunkType getType() const { return eType; }
 	size_t getSize() const { return Data.getSize(); }

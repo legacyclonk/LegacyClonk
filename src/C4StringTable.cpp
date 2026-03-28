@@ -250,7 +250,7 @@ bool C4StringTable::Save(C4Group &ParentGroup)
 			{
 				// delete feeds
 				char *pCharPos = pPos;
-				while (pCharPos = strchr(pCharPos, 10)) memmove(pCharPos, pCharPos + 1, SLen(pCharPos + 1) + 1);
+				while ((pCharPos = strchr(pCharPos, 10))) memmove(pCharPos, pCharPos + 1, SLen(pCharPos + 1) + 1);
 				// and replace breaks (by C4Script-"escapes")
 				SReplaceChar(pPos, 13, '|');
 			}

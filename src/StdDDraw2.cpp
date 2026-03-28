@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -859,7 +859,8 @@ bool CStdDDraw::BlitRotate(C4Surface *sfcSource, int fx, int fy, int fwdt, int f
 	fcx = fwdt / 2; fcy = fhgt / 2;
 	tcx = twdt / 2; tcy = thgt / 2;
 	// Adjust angle range
-	while (iAngle < 0) iAngle += 36000; while (iAngle > 35999) iAngle -= 36000;
+	while (iAngle < 0) iAngle += 36000;
+	while (iAngle > 35999) iAngle -= 36000;
 	// Exact/free rotation
 	switch (iAngle)
 	{
@@ -1096,8 +1097,11 @@ void CStdDDraw::DrawBox(C4Surface *sfcDest, int iX1, int iY1, int iX2, int iY2, 
 			sfcDest->Unlock(); return;
 		}
 		// Clip to surface/clip
-		if (iX1 < (std::max)(0, ClipX1)) iX1 = (std::max)(0, ClipX1); if (iX2 > (std::min)(iSfcWdt - 1, ClipX2)) iX2 = (std::min)(iSfcWdt - 1, ClipX2);
-		if (iY1 < (std::max)(0, ClipY1)) iY1 = (std::max)(0, ClipY1); if (iY2 > (std::min)(iSfcHgt - 1, ClipY2)) iY2 = (std::min)(iSfcHgt - 1, ClipY2);
+		if (iX1 < (std::max)(0, ClipX1)) iX1 = (std::max)(0, ClipX1);
+		if (iX2 > (std::min)(iSfcWdt - 1, ClipX2)) iX2 = (std::min)(iSfcWdt - 1, ClipX2);
+
+		if (iY1 < (std::max)(0, ClipY1)) iY1 = (std::max)(0, ClipY1);
+		if (iY2 > (std::min)(iSfcHgt - 1, ClipY2)) iY2 = (std::min)(iSfcHgt - 1, ClipY2);
 		// Set lines
 		for (ycnt = iY2 - iY1; ycnt >= 0; ycnt--)
 			for (xcnt = iX2 - iX1; xcnt >= 0; xcnt--)
@@ -1132,7 +1136,8 @@ void CStdDDraw::DrawHorizontalLine(C4Surface *sfcDest, int x1, int x2, int y, ui
 		sfcDest->Unlock(); return;
 	}
 	// Clip to clip
-	if (x1 < clpx1) x1 = clpx1; if (x2 > clpx2) x2 = clpx2;
+	if (x1 < clpx1) x1 = clpx1;
+	if (x2 > clpx2) x2 = clpx2;
 	// Set line
 	for (xcnt = x2 - x1; xcnt >= 0; xcnt--) sfcDest->SetPix(x1 + xcnt, y, col);
 	// Unlock surface
@@ -1162,7 +1167,8 @@ void CStdDDraw::DrawVerticalLine(C4Surface *sfcDest, int x, int y1, int y2, uint
 		sfcDest->Unlock(); return;
 	}
 	// Clip to clip
-	if (y1 < clpy1) y1 = clpy1; if (y2 > clpy2) y2 = clpy2;
+	if (y1 < clpy1) y1 = clpy1;
+	if (y2 > clpy2) y2 = clpy2;
 	// Set line
 	for (ycnt = y1; ycnt <= y2; ycnt++) sfcDest->SetPix(x, ycnt, col);
 	// Unlock surface

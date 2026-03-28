@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -37,7 +37,7 @@ C4MCCallbackArray::C4MCCallbackArray(C4AulFunc *pSFunc, C4MapCreatorS2 *pMapCrea
 	// zero fields
 	pMap = nullptr; pNext = nullptr;
 	// store and add in map creator
-	if (this->pMapCreator = pMapCreator)
+	if ((this->pMapCreator = pMapCreator))
 		pMapCreator->CallbackArrays.Add(this);
 	// done
 }
@@ -110,7 +110,7 @@ void C4MCCallbackArrayList::Clear()
 {
 	// remove all arrays
 	C4MCCallbackArray *pArray, *pNext = pFirst;
-	while (pArray = pNext)
+	while ((pArray = pNext))
 	{
 		pNext = pArray->pNext;
 		delete pArray;
@@ -165,10 +165,10 @@ void C4MCNode::Reg2Owner(C4MCNode *pOwner)
 	// init list
 	Child0 = ChildL = nullptr;
 	// owner?
-	if (Owner = pOwner)
+	if ((Owner = pOwner))
 	{
 		// link into it
-		if (Prev = Owner->ChildL)
+		if ((Prev = Owner->ChildL))
 			Prev->Next = this;
 		else
 			Owner->Child0 = this;
@@ -425,7 +425,7 @@ void C4MCOverlay::Evaluate(C4Random &random)
 	if (Owner)
 	{
 		C4MCOverlay *pOwnrOvrl;
-		if (pOwnrOvrl = OwnerOverlay())
+		if ((pOwnrOvrl = OwnerOverlay()))
 		{
 			int32_t iOwnerWdt = pOwnrOvrl->Wdt; int32_t iOwnerHgt = pOwnrOvrl->Hgt;
 			X = RX.Evaluate(iOwnerWdt) + pOwnrOvrl->X;
@@ -626,7 +626,7 @@ void C4MCPoint::Evaluate(C4Random &random)
 	if (Owner)
 	{
 		C4MCOverlay *pOwnrOvrl;
-		if (pOwnrOvrl = OwnerOverlay())
+		if ((pOwnrOvrl = OwnerOverlay()))
 		{
 			X = RX.Evaluate(pOwnrOvrl->Wdt) + pOwnrOvrl->X;
 			Y = RY.Evaluate(pOwnrOvrl->Hgt) + pOwnrOvrl->Y;
@@ -786,7 +786,7 @@ C4MCMap *C4MapCreatorS2::GetMap(const char *szMapName)
 	if (szMapName && *szMapName)
 	{
 		// by name...
-		if (pNode = GetNodeByName(szMapName))
+		if ((pNode = GetNodeByName(szMapName)))
 			if (pNode->Type() == MCN_Map)
 				pMap = static_cast<C4MCMap *>(pNode);
 	}
@@ -864,7 +864,7 @@ bool C4MCParser::AdvanceSpaces()
 	// defaultly, not in comment
 	int32_t InComment = 0; // 0/1/2 = no comment/line comment/multi line comment
 	// don't go past end
-	while (C = *CPos)
+	while ((C = *CPos))
 	{
 		// loop until out of comment and non-whitespace is found
 		switch (InComment)
@@ -924,7 +924,7 @@ bool C4MCParser::GetNextToken()
 		case TGS_None:
 			// get token type by first char
 			// +/- are operators
-			if (((C >= '0') && (C <= '9') || (C == '+') || (C == '-')))          // integer by +, -, 0-9
+			if ((((C >= '0') && (C <= '9')) || (C == '+') || (C == '-')))          // integer by +, -, 0-9
 				State = TGS_Int;
 			else if (C == '#') State = TGS_Dir;                                  // directive by "#"
 			else if (C == ';') { CPos++; CurrToken = MCT_SCOLON;  return true; } // ";"
@@ -1049,7 +1049,7 @@ void C4MCParser::ParseTo(C4MCNode *pToNode)
 				else if (SEqual(CurrTokenIdtf, C4MC_Point) && !pToNode->GetNodeByName(CurrTokenIdtf))
 				{
 					// only in overlays
-					if (!pToNode->Type() == MCN_Overlay)
+					if (pToNode->Type() != MCN_Overlay)
 						throw C4MCParserErr(this, C4MCErr_PointOnlyOvl);
 					// create point node, using default template
 					pNewNode = new C4MCPoint(pToNode, MapCreator->DefaultPoint, false);
@@ -1101,6 +1101,8 @@ void C4MCParser::ParseTo(C4MCNode *pToNode)
 				throw C4MCParserErr(this, C4MCErr_UnnamedNoGlbl);
 			}
 			// in local scope, allow unnamed; so continue
+			[[fallthrough]];
+
 		case PS_KEYWD1N:
 			// do expect a block opening
 			if (CurrToken != MCT_BLOPEN)
@@ -1180,6 +1182,8 @@ void C4MCParser::ParseTo(C4MCNode *pToNode)
 			}
 			// fall through to next case, if it was a named node reinstanciation
 			if (State != PS_AFTERNODE) break;
+			[[fallthrough]];
+
 		case PS_AFTERNODE:
 			// expect operator or semicolon
 			switch (CurrToken)
@@ -1341,7 +1345,7 @@ bool PreparePeek(C4MCOverlay **ppOvrl, int32_t &iX, int32_t &iY, C4MCOverlay **p
 	if (!pOvrl2) return false;
 	// get uppermost overlay
 	C4MCOverlay *pNextOvrl;
-	for (*ppTopOvrl = pOvrl2; pNextOvrl = (*ppTopOvrl)->OwnerOverlay(); *ppTopOvrl = pNextOvrl);
+	for (*ppTopOvrl = pOvrl2; (pNextOvrl = (*ppTopOvrl)->OwnerOverlay()); *ppTopOvrl = pNextOvrl);
 	// get first of operator-chain
 	pOvrl2 = pOvrl2->FirstOfChain();
 	// set new overlay
@@ -1522,7 +1526,7 @@ bool AlgoPolygon(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 				else
 				{
 					// if edge intersects line
-					if ((uY < iY == iY < cY) && (lX >= iX)) count++;
+					if (((uY < iY) == (iY < cY)) && (lX >= iX)) count++;
 					ignore = false;
 					uX = cX;
 					uY = cY;
@@ -1542,7 +1546,7 @@ bool AlgoPolygon(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 				else
 				{
 					// if edge intersects line
-					if (uY < iY == iY <= cY)
+					if ((uY < iY) == (iY <= cY))
 					{
 						// and edge intersects ray, because both points are right of iX
 						if (iX < (std::min)(uX, cX))

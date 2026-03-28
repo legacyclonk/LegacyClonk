@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2023, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -50,7 +50,7 @@ void Label::DrawElement(C4FacetEx &cgo)
 }
 
 Label::Label(std::string_view lblText, int32_t iX0, int32_t iTop, int32_t iAlign, uint32_t dwFClr, CStdFont *pFont, bool fMakeReadableOnBlack, bool fMarkup)
-	: Element(), dwFgClr(dwFClr), x0(iX0), iAlign(iAlign), pFont(pFont), cHotkey(0), pClickFocusControl(nullptr), fAutosize(true), fMarkup(fMarkup)
+	: Element(), dwFgClr(dwFClr), x0(iX0), iAlign(iAlign), pFont(pFont), cHotkey(0), fAutosize(true), fMarkup(fMarkup), pClickFocusControl(nullptr)
 {
 	// make color readable
 	if (fMakeReadableOnBlack) MakeColorReadableOnBlack(dwFgClr);
@@ -63,7 +63,7 @@ Label::Label(std::string_view lblText, int32_t iX0, int32_t iTop, int32_t iAlign
 }
 
 Label::Label(std::string_view lblText, const C4Rect &rcBounds, int32_t iAlign, uint32_t dwFClr, CStdFont *pFont, bool fMakeReadableOnBlack, bool fAutosize, bool fMarkup)
-	: Element(), dwFgClr(dwFClr), iAlign(iAlign), pFont(pFont), cHotkey(0), pClickFocusControl(nullptr), fAutosize(fAutosize), fMarkup(fMarkup)
+	: Element(), dwFgClr(dwFClr), iAlign(iAlign), pFont(pFont), cHotkey(0), fAutosize(fAutosize), fMarkup(fMarkup), pClickFocusControl(nullptr)
 {
 	// make color readable
 	if (fMakeReadableOnBlack) MakeColorReadableOnBlack(dwFgClr);
@@ -246,7 +246,7 @@ void MultilineLabel::DrawElement(C4FacetEx &cgo)
 	int32_t iIndex = 0; const char *szLine;
 	int32_t iY = rcBounds.y + cgo.TargetY;
 	CStdFont *pLineFont; uint32_t dwLineClr; bool fNewParagraph;
-	while (szLine = Lines.GetLine(iIndex, &pLineFont, &dwLineClr, &fNewParagraph))
+	while ((szLine = Lines.GetLine(iIndex, &pLineFont, &dwLineClr, &fNewParagraph)))
 	{
 		int32_t iFontLineHeight = pLineFont->GetLineHeight();
 		// indents between paragraphs
@@ -274,9 +274,9 @@ void MultilineLabel::UpdateSize()
 void MultilineLabel::UpdateHeight()
 {
 	// size by line count
-	int32_t iIndex = 0; const char *szLine; int32_t iHgt = 0;
+	int32_t iIndex = 0; int32_t iHgt = 0;
 	CStdFont *pLineFont; bool fNewPar;
-	while (szLine = Lines.GetLine(iIndex, &pLineFont, nullptr, &fNewPar))
+	while (Lines.GetLine(iIndex, &pLineFont, nullptr, &fNewPar))
 	{
 		int32_t iFontLineHeight = pLineFont->GetLineHeight();
 		// indents between separate messages
@@ -393,7 +393,7 @@ bool Picture::EnsureOwnSurface()
 
 void Picture::SetAnimated(bool fEnabled, int iDelay)
 {
-	if (fAnimate = fEnabled)
+	if ((fAnimate = fEnabled))
 	{
 		// starts cycling through all phases of the specified facet
 		iAnimationPhase = iPhaseTime = 0;
@@ -452,7 +452,7 @@ C4FacetEx Icon::GetIconFacet(Icons icoIconIndex)
 // TextWindow
 
 TextWindow::TextWindow(const C4Rect &rtBounds, size_t iPicWdt, size_t iPicHgt, size_t iPicPadding, size_t iMaxLines, size_t iMaxTextLen, const char *szIndentChars, bool fAutoGrow, const C4Facet *pOverlayPic, int iOverlayBorder, bool fMarkup)
-	: Control(rtBounds), fDrawBackground(true), fDrawFrame(true), iPicPadding(iPicPadding), pLogBuffer(nullptr)
+	: Control(rtBounds), pLogBuffer(nullptr), fDrawBackground(true), fDrawFrame(true), iPicPadding(iPicPadding)
 {
 	// calc client rect
 	UpdateOwnPos();

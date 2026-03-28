@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2025, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -769,6 +769,7 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 	case C4V_C4Object:
 		if (!fCompiler)
 			iTmp = Game.ObjectNumber(getObj());
+		[[fallthrough]];
 	case C4V_C4ObjectEnum:
 		if (!fCompiler) if (Type == C4V_C4ObjectEnum)
 			iTmp = Data.Int;

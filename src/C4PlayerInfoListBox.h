@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2008, Sven2
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2023, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -93,7 +93,7 @@ private:
 		bool CanLocalChooseTeams(int32_t idPlayer = 0) const; // whether the local client can change any teams
 
 	public:
-		ListItem(C4PlayerInfoListBox *pList) : pList(pList), dwBackground(0), C4GUI::Window() {}
+		ListItem(C4PlayerInfoListBox *pList) : C4GUI::Window(), pList(pList), dwBackground(0) {}
 	};
 
 	// lobby information and display of joined players

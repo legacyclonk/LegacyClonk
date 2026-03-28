@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -115,7 +115,7 @@ void C4GameObjects::CrossCheck() // Every Tick1 by ExecObjects
 				if (obj1->OCF & focf)
 				{
 					ocf1 = obj1->OCF; ocf2 = tocf;
-					if (obj2 = AtObject(obj1->x, obj1->y, ocf2, obj1))
+					if ((obj2 = AtObject(obj1->x, obj1->y, ocf2, obj1)))
 					{
 						// Incineration
 						if ((ocf1 & OCF_OnFire) && (ocf2 & OCF_Inflammable))
@@ -421,7 +421,7 @@ void C4ObjResort::SortObject()
 	C4ObjectLink *pLnkBck = pLnk;
 	C4Object *pObj2; int iResult;
 	if (!pLnk) return;
-	while (pLnk = pLnk->Next)
+	while ((pLnk = pLnk->Next))
 	{
 		// get object
 		pObj2 = pLnk->Obj;
@@ -449,7 +449,7 @@ void C4ObjResort::SortObject()
 		// no movement yet: check backwards in list
 		Pars[0].Set(C4VObj(pSortObj));
 		pLnk = pLnkBck;
-		while (pLnk = pLnk->Prev)
+		while ((pLnk = pLnk->Prev))
 		{
 			// get object
 			pObj2 = pLnk->Obj;
@@ -688,7 +688,7 @@ std::optional<int> C4GameObjects::AfterLoad(C4Section &section, const bool keepI
 		{
 			if (cLnk->Prev) cLnk->Prev->Next = cLnkNext; else First = cLnkNext;
 			if (cLnkNext) cLnkNext->Prev = cLnk->Prev; else Last = cLnk->Prev;
-			if (cLnk->Prev = InactiveObjects.Last)
+			if ((cLnk->Prev = InactiveObjects.Last))
 				InactiveObjects.Last->Next = cLnk;
 			else
 				InactiveObjects.First = cLnk;
