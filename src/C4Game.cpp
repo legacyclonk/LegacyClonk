@@ -107,11 +107,11 @@ bool C4Game::InitDefs()
 	iDefs = Defs.CheckEngineVersion(C4XVER1, C4XVER2, C4XVER3, C4XVER4, C4XVERBUILD);
 	if (iDefs > 0) { Log(C4ResStrTableKey::IDS_PRC_DEFSINVC4X, iDefs); }
 
-	// sort before CheckRequireDef for better id-lookup performance
-	Defs.SortByID();
-
 	// Check for unmet requirements
 	Defs.CheckRequireDef();
+
+	// sort after CheckRequireDef as all the unnecessary defs have been removed
+	Defs.SortByID();
 
 	// get default particles
 	Particles.SetDefParticles();

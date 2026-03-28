@@ -1212,18 +1212,22 @@ int32_t C4DefList::CheckRequireDef()
 	do
 	{
 		rcount2 = rcount;
-		Defs.erase(std::remove_if(Defs.begin(), Defs.end(), [this, &rcount](const auto &def)
+		rcount += std::erase_if(Defs, [this](const auto &def)
 		{
 			for (const auto &it : def->RequireDef)
 			{
-				if (GetIndex(it.id) < 0)
+				// Don't use FindDefByID as empty unique_ptrs will be in the vector until std::erase_if has finished
+				for (const auto &def : Defs)
 				{
-					++rcount;
-					return true;
+					if (def && def->id == it.id)
+					{
+						return false;
+					}
 				}
 			}
-			return false;
-		}), Defs.end());
+
+			return true;
+		});
 	} while (rcount != rcount2);
 	return rcount;
 }
