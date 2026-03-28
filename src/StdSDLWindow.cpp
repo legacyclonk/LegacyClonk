@@ -43,39 +43,25 @@ namespace
 void CStdWindow::sdlToC4MCBtn(const SDL_MouseButtonEvent &e,
 	int32_t &button)
 {
-	static int lastLeftClick = 0, lastRightClick = 0;
-
 	button = C4MC_Button_None;
 
 	switch (e.button)
 	{
 	case SDL_BUTTON_LEFT:
 		if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
-			if (timeGetTime() - lastLeftClick < 400) // TODO: This leads to missed input when clicking to fast. Other implementations seem to handle it differently.
-			{
-				lastLeftClick = 0;
-				button = C4MC_Button_LeftDouble;
-			}
-			else
-			{
-				lastLeftClick = timeGetTime();
-				button = C4MC_Button_LeftDown;
-			}
+		{
+			button = e.clicks % 2 == 0 ? C4MC_Button_LeftDouble : C4MC_Button_LeftDown;
+		}
 		else
+		{
 			button = C4MC_Button_LeftUp;
+		}
 		break;
 	case SDL_BUTTON_RIGHT:
 		if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
-			if (timeGetTime() - lastRightClick < 400) // TODO: This leads to missed input when clicking to fast. Other implementations seem to handle it differently.
-			{
-				lastRightClick = 0;
-				button = C4MC_Button_RightDouble;
-			}
-			else
-			{
-				lastRightClick = timeGetTime();
-				button = C4MC_Button_RightDown;
-			}
+		{
+			button = e.clicks % 2 == 0 ? C4MC_Button_RightDouble : C4MC_Button_RightDown;
+		}
 		else
 		{
 			button = C4MC_Button_RightUp;
