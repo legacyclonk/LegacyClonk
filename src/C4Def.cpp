@@ -32,6 +32,7 @@
 #include "C4Network2Res.h"
 
 #include <algorithm>
+#include <ranges>
 
 // Default Action Procedures
 
@@ -1214,19 +1215,8 @@ int32_t C4DefList::CheckRequireDef()
 		rcount2 = rcount;
 		rcount += std::erase_if(Defs, [this](const auto &def)
 		{
-			for (const auto &it : def->RequireDef)
-			{
-				// Don't use FindDefByID as empty unique_ptrs will be in the vector until std::erase_if has finished
-				for (const auto &def : Defs)
-				{
-					if (def && def->id == it.id)
-					{
-						return false;
-					}
-				}
-			}
-
-			return true;
+			// Don't use FindDefByID here as Defs may contain nullptrs during erasure callbacks
+			return !std::ranges::all_of(def->RequireDef, [this](const auto &it) { return std::ranges::contains(Defs | std::views::filter([](const auto &def) { return def != nullptr; }), it.id, &C4Def::id); });
 		});
 	} while (rcount != rcount2);
 	return rcount;
