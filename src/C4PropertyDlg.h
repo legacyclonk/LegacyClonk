@@ -34,7 +34,7 @@ public:
 	void Update(C4ObjectList &rSelection);
 	void Draw();
 
-	static int C4PropertyDlg::TextEditCallbackStub(ImGuiInputTextCallbackData* data);
+	static int C4PropertyDlg::TextEditCallbackStub(struct ImGuiInputTextCallbackData* data);
 
 public:
 	bool Active;
