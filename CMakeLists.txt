@@ -78,12 +78,15 @@ option(USE_TESTS "Enable testing" OFF)
 CMAKE_DEPENDENT_OPTION(ENABLE_SOUND "Compile with sound support" ON
 	"NOT USE_CONSOLE" OFF)
 # USE_SDL_MIXER
-CMAKE_DEPENDENT_OPTION(USE_SDL_MIXER "Whether SDL2_mixer shall be used for sound" ON
-	"ENABLE_SOUND" OFF)
+#CMAKE_DEPENDENT_OPTION(USE_SDL_MIXER "Whether SDL2_mixer shall be used for sound" ON "ENABLE_SOUND" OFF)
+# TODO: SDL mixer is currently disabled until sdl3_mixer is implemented.
+set(USE_SDL_MIXER OFF)
 # USE_SDL_MAINLOOP
 set(USE_SDL_MAINLOOP_DEFAULT ON)
 CMAKE_DEPENDENT_OPTION(USE_SDL_MAINLOOP "Use SDL when we're not a console application" ${USE_SDL_MAINLOOP_DEFAULT}
 	"NOT USE_CONSOLE" OFF)
+
+# TODO: Remove
 # USE_X11
 set(USE_X11 OFF)
 
@@ -422,6 +425,7 @@ if (NOT USE_CONSOLE)
 	set(HAVE_FREETYPE 1)
 endif ()
 
+# TODO: Remove GTK
 # Link GTK3
 if (WITH_DEVELOPER_MODE)
 	set(WITH_GLIB 1)
@@ -470,6 +474,7 @@ if (USE_SDL_MAINLOOP OR USE_SDL_MIXER)
 	target_link_libraries(clonk SDL3::SDL3)
 endif ()
 
+# TODO: Upgrade to sdl3_mixer
 # Link SDL2_mixer
 if (USE_SDL_MIXER)
 	find_package(SDL2_mixer REQUIRED)
@@ -562,6 +567,7 @@ if (APPLE)
 	target_link_libraries(standard "-framework Foundation")
 endif ()
 
+# TODO: Remove
 # Link X11
 if (USE_X11)
 	find_package(X11 REQUIRED)
