@@ -923,7 +923,7 @@ void C4Console::Draw()
 	std::int32_t x,y;
 	SDL_GetWindowSizeInPixels(sdlWindow, &x, &y);
 	ImGui::SetNextWindowSize({float(x), float(y)});
-	ImGui::Begin("Konsolenmodus", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar);
+	ImGui::Begin("##Console", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar);
 
 	// TODO: Add tooltips to menu options. Ideally localized.
 	ImGui::PushStyleVarY(ImGuiStyleVar_FramePadding, 5.0f);
@@ -968,9 +968,18 @@ void C4Console::Draw()
 
 		if (ImGui::BeginMenu(LoadResStr(C4ResStrTableKey::IDS_MNU_COMPONENTS)))
 		{
-			if (ImGui::MenuItem(LoadResStr(C4ResStrTableKey::IDS_MNU_SCRIPT))) EditScript();
-			if (ImGui::MenuItem(LoadResStr(C4ResStrTableKey::IDS_MNU_TITLE))) EditTitle();
-			if (ImGui::MenuItem(LoadResStr(C4ResStrTableKey::IDS_MNU_INFO))) EditInfo();
+			if (ImGui::MenuItem(LoadResStr(C4ResStrTableKey::IDS_MNU_SCRIPT)))
+			{
+				EditScript();
+			}
+			if (ImGui::MenuItem(LoadResStr(C4ResStrTableKey::IDS_MNU_TITLE)))
+			{
+				EditTitle();
+			}
+			if (ImGui::MenuItem(LoadResStr(C4ResStrTableKey::IDS_MNU_INFO)))
+			{
+				EditInfo();
+			}
 			ImGui::EndMenu();
 		}
 
@@ -1063,10 +1072,10 @@ void C4Console::Draw()
 
 	ImGui::PopStyleVar(1);
 
-	ImGui::BeginChild("##log", ImVec2(0.0f, y-150.0), ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NoMove);
+	ImGui::BeginChild("##log", ImVec2(0.0f, y - 150.0f), ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NoMove);
 	ImGuiListClipper LogClipper;
-	static ImVec4 WarningColor = ImVec4(0.94f, 0.7f, 0.11f, 1.0f);
-	static ImVec4 ErrorColor = ImVec4(0.97f, 0.23f, 0.18f, 1.0f);
+	const ImVec4 WarningColor = ImVec4(0.94f, 0.7f, 0.11f, 1.0f);
+	const ImVec4 ErrorColor = ImVec4(0.97f, 0.23f, 0.18f, 1.0f);
 	LogClipper.Begin(logBuffer.size()); // TODO: maybe use second parameter to set custom height
 	while (LogClipper.Step())
 	{
@@ -1083,28 +1092,34 @@ void C4Console::Draw()
 			}
 			else
 			{
-				ImGui::DebugTextUnformattedWithLocateItem(logBuffer[line_no].c_str(), logBuffer[line_no].c_str() + logBuffer[line_no].length()-1);
+				ImGui::TextUnformatted(logBuffer[line_no].c_str(), logBuffer[line_no].c_str() + logBuffer[line_no].length()-1);
 			}
 		}
 	}
 	if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+	{
 		ImGui::SetScrollHereY(1.0f);
+	}
 
 	// TODO: Improve selection precision. There seems to be a small offset between the cursor and the actual string character.
 	LogTextSelect->update();
 
-	if (ImGui::BeginPopupContextWindow()) {
+	if (ImGui::BeginPopupContextWindow())
+	{
 		ImGui::BeginDisabled(!LogTextSelect->hasSelection());
-		if (ImGui::MenuItem("Copy", "Ctrl+C")) {
+		if (ImGui::MenuItem("Copy", "Ctrl+C"))
+		{
 			LogTextSelect->copy();
 		}
 		ImGui::EndDisabled();
 
-		if (ImGui::MenuItem("Select all", "Ctrl+A")) {
+		if (ImGui::MenuItem("Select all", "Ctrl+A"))
+		{
 			LogTextSelect->selectAll();
 		}
 
-		if (ImGui::MenuItem("Clear selection")) {
+		if (ImGui::MenuItem("Clear selection"))
+		{
 			LogTextSelect->clearSelection();
 		}
 		ImGui::EndPopup();
