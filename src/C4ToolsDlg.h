@@ -91,9 +91,6 @@ public:
 	std::uint32_t PickerImage;
 	std::uint32_t FillImage;
 
-	std::uint32_t IftImage;
-	std::uint32_t NoIftImage;
-
 protected:
 	void AssertValidTexture();
 };
