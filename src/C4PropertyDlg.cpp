@@ -25,8 +25,6 @@
 #include <C4Wrappers.h>
 #include <C4Player.h>
 
-#include <StdRegistry.h>
-
 #include "imgui/imgui.h"
 
 C4PropertyDlg::C4PropertyDlg()

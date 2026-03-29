@@ -36,7 +36,6 @@
 #include <C4ObjectMenu.h>
 
 #include <StdGL.h>
-#include <StdRegistry.h>
 #include "imgui.h"
 
 
@@ -49,7 +48,6 @@ namespace
 
 std::vector<C4ViewportWindow::ViewportHandle> C4ViewportWindow::viewportHandles;
 
-#include <shellapi.h>
 
 #if 0
 LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -289,6 +287,8 @@ bool C4Viewport::TogglePlayerLock()
 bool C4Viewport::ScrollBarsByViewPosition()
 {
 	if (PlayerLock) return false;
+	// TODO: Still needed?
+	/*
 	SCROLLINFO scroll;
 	scroll.cbSize = sizeof(SCROLLINFO);
 	// Vertical
@@ -297,7 +297,6 @@ bool C4Viewport::ScrollBarsByViewPosition()
 	scroll.nMax = GBackHgt;
 	scroll.nPage = ViewHgt;
 	scroll.nPos = ViewY;
-	// TODO
 	//SetScrollInfo(pWindow-, SB_VERT, &scroll, TRUE);
 	// Horizontal
 	scroll.fMask = SIF_ALL;
@@ -305,6 +304,7 @@ bool C4Viewport::ScrollBarsByViewPosition()
 	scroll.nMax = GBackWdt;
 	scroll.nPage = ViewWdt;
 	scroll.nPos = ViewX;
+	*/
 	//SetScrollInfo(pWindow->hWindow, SB_HORZ, &scroll, TRUE);
 	return true;
 }
@@ -1095,6 +1095,7 @@ void C4Viewport::DrawOverlay(C4FacetEx &cgo)
 
 	// Control overlays (if not film/replay)
 	if (!Game.C4S.Head.Film || !Game.C4S.Head.Replay)
+	{
 		// Mouse control
 		if (Game.MouseControl.IsViewport(this))
 		{
@@ -1117,6 +1118,7 @@ void C4Viewport::DrawOverlay(C4FacetEx &cgo)
 				DrawCommandKey(ccgo, COM_PlayerMenu, false, PlrControlKeyName(Player, Com2Control(COM_PlayerMenu), true).c_str());
 			}
 		}
+	}
 }
 
 void C4Viewport::DrawCursorInfo(C4FacetEx &cgo)
@@ -1368,10 +1370,12 @@ void C4Viewport::BlitOutput()
 {
 	if (pWindow)
 	{
+		// TODO: Still needed?
+		/*
 		RECT rtSrc, rtDst;
 		rtSrc.left = DrawX; rtSrc.top = DrawY; rtSrc.right = DrawX + ViewWdt; rtSrc.bottom = DrawY + ViewHgt;
 		rtDst.left = OutX;  rtDst.top = OutY;  rtDst.right = OutX  + ViewWdt; rtDst.bottom = OutY  + ViewHgt;
-		// TODO
+		*/
 		Application.DDraw->PageFlip(/*&rtSrc, &rtDst, pWindow*/);
 	}
 }

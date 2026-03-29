@@ -405,11 +405,13 @@ void TextSelect::drawSelection(const ImVector<SubLine>& subLines, const ImVec2& 
         float maxY = accumulatedHeight;
 
         // Skip whole/sub lines before selection.
-        if (startY > subLine.wholeLineIndex || subLine.wholeLineIndex == startY && startX >= subLineEndX) {
+        if (startY > subLine.wholeLineIndex || (subLine.wholeLineIndex == startY && startX >= subLineEndX))
+        {
             continue;
         }
         // Skip whole/sub lines after selection.
-        if (endY < subLine.wholeLineIndex || subLine.wholeLineIndex == endY && endX < subLineStartX) {
+        if (endY < subLine.wholeLineIndex || (subLine.wholeLineIndex == endY && endX < subLineStartX))
+        {
             break;
         }
 

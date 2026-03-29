@@ -20,7 +20,6 @@
 #include <C4ToolsDlg.h>
 #include <C4Console.h>
 #include <C4Application.h>
-#include <StdRegistry.h>
 #ifndef USE_CONSOLE
 #include <StdGL.h>
 #endif

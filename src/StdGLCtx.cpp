@@ -418,7 +418,7 @@ bool CStdGL::SaveDefaultGammaRampToMonitor(CStdWindow *pWindow)
 #include <stdexcept>
 #include <string>
 
-CStdGLCtx::CStdGLCtx() : pWindow{}, cx{}, cy{}, ctx{} {}
+CStdGLCtx::CStdGLCtx() : pWindow{}, ctx{}, cx{}, cy{} {}
 
 void CStdGLCtx::Clear()
 {

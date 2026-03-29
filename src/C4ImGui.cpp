@@ -22,8 +22,6 @@
 
 #include <SDL3/SDL.h>
 
-#include <gl/gl.h>
-
 C4ImGui::Selected::Selected(ImGuiContext *newContext)
 	: previousContext{ImGui::GetCurrentContext()}
 {
@@ -112,7 +110,6 @@ C4ImGui::Selected C4ImGui::SelectTemporary()
 void C4ImGui::SetVisible(bool visible)
 {
 	isVisible = visible;
-	ShowCursor(visible);
 }
 
 bool C4ImGui::NewFrame()
