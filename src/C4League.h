@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -77,7 +77,7 @@ private:
 	C4LeagueDisconnectReason eReason;
 
 public:
-	C4LeagueReportDisconnectHead(const char *szCSID, C4LeagueDisconnectReason eReason) : eReason(eReason), C4LeagueRequestHead(C4LA_ReportDisconnect, szCSID, nullptr) {}
+	C4LeagueReportDisconnectHead(const char *szCSID, C4LeagueDisconnectReason eReason) : C4LeagueRequestHead(C4LA_ReportDisconnect, szCSID, nullptr), eReason(eReason) {}
 
 public:
 	void CompileFunc(StdCompiler *pComp);
@@ -209,7 +209,7 @@ private:
 	C4LeagueFBIDList FBIDList;
 
 public:
-	C4LeagueClient() : CSID(), eCurrAction(C4LA_None), C4Network2RefClient() {}
+	C4LeagueClient() : C4Network2RefClient(), CSID(), eCurrAction(C4LA_None) {}
 	const char *getCSID() const { return CSID.getData(); }
 	C4LeagueAction getCurrentAction() const { return eCurrAction; }
 	void ResetCurrentAction() { eCurrAction = C4LA_None; }

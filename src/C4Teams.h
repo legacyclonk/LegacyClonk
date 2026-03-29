@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2005, Sven2
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -144,7 +144,7 @@ private:
 
 public:
 	C4TeamList() : ppList(nullptr), iTeamCount(0), iTeamCapacity(0), iLastTeamID(0), fAllowHostilityChange(true), fAllowTeamSwitch(false),
-		fActive(true), fCustom(false), eTeamDist(TEAMDIST_Free), fTeamColors(false), fAutoGenerateTeams(false), iMaxScriptPlayers(0) {}
+		fActive(true), fCustom(false), fTeamColors(false), fAutoGenerateTeams(false), eTeamDist(TEAMDIST_Free), iMaxScriptPlayers(0) {}
 	~C4TeamList() { Clear(); }
 	void Clear();
 

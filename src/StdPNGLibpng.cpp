@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -198,8 +198,8 @@ struct CPNGFile::Impl
 		png_get_IHDR(png_ptr, info_ptr, nullptr, nullptr, &bitsPerChannel, &colorType,
 			nullptr, nullptr, nullptr);
 		// convert to bgra
-		if (colorType == PNG_COLOR_TYPE_PALETTE && bitsPerChannel <= 8 ||
-			colorType == PNG_COLOR_TYPE_GRAY && bitsPerChannel < 8)
+		if ((colorType == PNG_COLOR_TYPE_PALETTE && bitsPerChannel <= 8) ||
+			(colorType == PNG_COLOR_TYPE_GRAY && bitsPerChannel < 8))
 		{
 			png_set_expand(png_ptr);
 		}

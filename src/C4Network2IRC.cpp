@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2013-2017, The OpenClonk Team and contributors
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -655,10 +655,16 @@ void C4Network2IRCClient::OnNumericCommand(const char *szSender, int iCommand, c
 			pMsg = SSearch(pMsg, " ");
 		// Show it
 		if (pMsg && *pMsg)
+		{
 			if (!pChannel)
+			{
 				PushMessage(MSG_Server, szSender, Nick.getData(), pMsg + 1);
+			}
 			else
+			{
 				PushMessage(MSG_Status, szSender, pChannel->getName(), pMsg + 1);
+			}
+		}
 	}
 }
 
@@ -674,11 +680,6 @@ void C4Network2IRCClient::OnConnected()
 
 void C4Network2IRCClient::OnMessage(bool fNotice, const char *szSender, const char *szTarget, const char *szText)
 {
-	// Find channel, if not private.
-	C4Network2IRCChannel *pChan = nullptr;
-	if (!SEqualNoCase(szTarget, Nick.getData()))
-		pChan = getChannel(szTarget);
-
 	// CTCP tagged data?
 	const char X_DELIM = '\001';
 	if (szText[0] == X_DELIM)

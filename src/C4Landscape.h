@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -146,18 +146,30 @@ public:
 		extern uint8_t MCVehic;
 		// Border checks
 		if (x < 0)
+		{
 			if (y < LeftOpen) return 0;
 			else return MCVehic;
-			if (x >= Width)
-				if (y < RightOpen) return 0;
-				else return MCVehic;
-				if (y < 0)
-					if (TopOpen) return 0;
-					else return MCVehic;
-					if (y >= Height)
-						if (BottomOpen) return 0;
-						else return MCVehic;
-						return Surface8->_GetPix(x, y);
+		}
+
+		if (x >= Width)
+		{
+			if (y < RightOpen) return 0;
+			else return MCVehic;
+		}
+
+		if (y < 0)
+		{
+			if (TopOpen) return 0;
+			else return MCVehic;
+		}
+
+		if (y >= Height)
+		{
+			if (BottomOpen) return 0;
+			else return MCVehic;
+		}
+
+		return Surface8->_GetPix(x, y);
 	}
 
 	inline int32_t _GetMat(int32_t x, int32_t y) // get landscape material (bounds not checked)

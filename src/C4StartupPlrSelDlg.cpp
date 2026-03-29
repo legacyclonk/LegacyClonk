@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2005, Sven2
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2026, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -74,7 +74,7 @@ static bool GetPortrait(char **ppBytes, size_t *ipSize)
 // C4StartupPlrSelDlg::ListItem
 
 C4StartupPlrSelDlg::ListItem::ListItem(C4StartupPlrSelDlg *pForDlg, C4GUI::ListBox *pForListBox, C4GUI::Element *pInsertBeforeElement, bool fActivated)
-	: Control(C4Rect(0, 0, 0, 0)), pCheck(nullptr), pIcon(nullptr), pNameLabel(nullptr), pPlrSelDlg(pForDlg)
+	: Control(C4Rect(0, 0, 0, 0)), pCheck(nullptr), pNameLabel(nullptr), pPlrSelDlg(pForDlg), pIcon(nullptr)
 {
 	CStdFont &rUseFont = C4Startup::Get()->Graphics.BookFont;
 	// calc height
@@ -205,7 +205,7 @@ bool C4StartupPlrSelDlg::ListItem::CheckNameHotkey(const char *c)
 	// FIXME: Unicode
 	if (!pNameLabel) return false;
 	const char *szName = pNameLabel->GetText();
-	return szName && (toupper(*szName) == toupper(c[0]));
+	return szName && (C4Strings::ToUpper(*szName) == C4Strings::ToUpper(c[0]));
 }
 
 // C4StartupPlrSelDlg::PlayerListItem
@@ -682,7 +682,7 @@ void C4StartupPlrSelDlg::UpdatePlayerList()
 	// refill pPlrListBox with players in player folder or crew
 	// clear old items
 	C4GUI::Element *pEl;
-	while (pEl = pPlrListBox->GetFirst()) delete pEl;
+	while ((pEl = pPlrListBox->GetFirst())) delete pEl;
 	// update command buttons
 	UpdateBottomButtons();
 	// create new
@@ -695,7 +695,7 @@ void C4StartupPlrSelDlg::UpdatePlayerList()
 		const char *szFn;
 		const std::string searchPath{std::format("{}{}", +Config.General.ExePath, +Config.General.PlayerPath)};
 		PlayerListItem *pFirstActivatedPlrItem = nullptr, *pFirstDeactivatedPlrItem = nullptr, *pPlrItem = nullptr;
-		for (DirectoryIterator i(searchPath.c_str()); szFn = *i; i++)
+		for (DirectoryIterator i(searchPath.c_str()); (szFn = *i); i++)
 		{
 			szFn = Config.AtExeRelativePath(szFn);
 			if (*GetFilename(szFn) == '.') continue; // ignore ".", ".." and private files (".*")
@@ -1091,7 +1091,7 @@ void C4StartupPlrSelDlg::ResortCrew()
 // Player property dlg
 
 C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerListItem *pForPlayer, C4StartupPlrSelDlg *pParentDlg)
-	: Dialog(C4Startup::Get()->Graphics.fctPlrPropBG.Wdt, C4Startup::Get()->Graphics.fctPlrPropBG.Hgt, "", false), pForPlayer(pForPlayer), pMainDlg(pParentDlg),
+	: Dialog(C4Startup::Get()->Graphics.fctPlrPropBG.Wdt, C4Startup::Get()->Graphics.fctPlrPropBG.Hgt, "", false), pMainDlg(pParentDlg), pForPlayer(pForPlayer),
 	fClearPicture(false), fClearBigIcon(false)
 {
 	if (pForPlayer)

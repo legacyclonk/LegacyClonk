@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2017, The OpenClonk Team and contributors
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2026, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "C4Strings.h"
 #include "StdBuf.h"
 
 #include <assert.h>
@@ -672,7 +673,7 @@ protected:
 		const char *Pos;
 
 		NameNode(NameNode *pParent = nullptr)
-			: Parent(pParent), PrevChild(nullptr), FirstChild(nullptr), NextChild(nullptr), LastChild(nullptr),
+			: Parent(pParent), FirstChild(nullptr), PrevChild(nullptr), NextChild(nullptr), LastChild(nullptr),
 			Indent(-1) {}
 	};
 	NameNode *pNameRoot, *pName;
@@ -712,7 +713,7 @@ protected:
 		SkipWhitespace();
 		// Read number. If this breaks, Günther is to blame!
 		const char *pnPos = pPos;
-		T iNum = function(pPos, const_cast<char **>(&pnPos), *pPos == '0' && std::toupper(pPos[1]) == 'X' ? 16 : 10);
+		T iNum = function(pPos, const_cast<char **>(&pnPos), *pPos == '0' && C4Strings::ToUpper(pPos[1]) == 'X' ? 16 : 10);
 		// Could not read?
 		if (!iNum && pnPos == pPos)
 		{

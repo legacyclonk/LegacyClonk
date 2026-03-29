@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2007, Sven2
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -199,7 +199,7 @@ void C4PlayerInfoListAttributeConflictResolver::MarkConflicts(C4ClientPlayerInfo
 {
 	C4PlayerInfo *pCheckAgainstInfo;
 	// check current and original attribute against all player infos
-	for (int32_t j = 0; pCheckAgainstInfo = rCheckPacket.GetPlayerInfo(j); ++j)
+	for (int32_t j = 0; (pCheckAgainstInfo = rCheckPacket.GetPlayerInfo(j)); ++j)
 	{
 		if (pCheckAgainstInfo->IsUsingAttribute(eAttr)) if (!pResolveInfo->GetID() || pResolveInfo->GetID() != pCheckAgainstInfo->GetID()) if (pResolveInfo != pCheckAgainstInfo)
 		{
@@ -212,6 +212,7 @@ void C4PlayerInfoListAttributeConflictResolver::MarkConflicts(C4ClientPlayerInfo
 			if (fTestOriginal)
 			{
 				if (IsAttributeConflict(pCheckAgainstInfo, pResolveInfo, C4PlayerInfo::PLRAL_Original))
+				{
 					if (fHasHigherPrio && !fOriginalConflict && !pLowPrioOriginalConflictPacket)
 					{
 						// original attribute is taken by a low prio packet - do not mark an original conflict, but remember the packet
@@ -225,11 +226,19 @@ void C4PlayerInfoListAttributeConflictResolver::MarkConflicts(C4ClientPlayerInfo
 						pLowPrioOriginalConflictPacket = nullptr;
 						fOriginalConflict = true;
 					}
+				}
+
 				if (IsAttributeConflict(pCheckAgainstInfo, pResolveInfo, C4PlayerInfo::PLRAL_Alternate))
+				{
 					if (fHasHigherPrio && !fAlternateConflict && !pLowPrioAlternateConflictPacket)
+					{
 						pLowPrioAlternateConflictPacket = &rCheckPacket;
+					}
 					else
+					{
 						fAlternateConflict = true;
+					}
+				}
 			}
 		}
 	}
@@ -267,6 +276,7 @@ void C4PlayerInfoListAttributeConflictResolver::ResolveInInfo()
 			if (!iTries)
 			{
 				if (pResolveInfo->GetColor() != pResolveInfo->GetOriginalColor())
+				{
 					if (!fOriginalConflict)
 					{
 						// revert to original color!
@@ -287,6 +297,7 @@ void C4PlayerInfoListAttributeConflictResolver::ResolveInInfo()
 						// done with this player (breaking the trial-loop)
 						break;
 					}
+				}
 			}
 			// conflict found?
 			if (!fCurrentConflict)
@@ -334,7 +345,7 @@ void C4PlayerInfoListAttributeConflictResolver::ResolveInPacket()
 	// check all player infos
 	fAnyChange = false;
 	int32_t iCheck = 0;
-	while (pResolveInfo = pResolvePacket->GetPlayerInfo(iCheck++))
+	while ((pResolveInfo = pResolvePacket->GetPlayerInfo(iCheck++)))
 	{
 		// not already joined? Joined player must not change their attributes!
 		if (pResolveInfo->HasJoined()) continue;

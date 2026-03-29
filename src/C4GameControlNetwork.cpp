@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -321,7 +321,7 @@ void C4GameControlNetwork::CopyClientList(const C4ClientList &rClients)
 	// create local copy of activated client list
 	ClearClients();
 	C4Client *pClient = nullptr;
-	while (pClient = rClients.getClient(pClient))
+	while ((pClient = rClients.getClient(pClient)))
 		if (pClient->isActivated())
 			AddClient(pClient->getID(), pClient->getName());
 }
@@ -368,13 +368,13 @@ void C4GameControlNetwork::SetCtrlMode(C4GameControlNetworkMode enMode) // by ma
 	if (enMode == CNM_Decentral)
 	{
 		CStdLock CtrlLock(&CtrlCSec); C4GameControlPacket *pPkt;
-		for (int32_t iCtrlTick = Game.Control.ControlTick; pPkt = getCtrl(iClientID, iCtrlTick); iCtrlTick++)
+		for (int32_t iCtrlTick = Game.Control.ControlTick; (pPkt = getCtrl(iClientID, iCtrlTick)); iCtrlTick++)
 			Game.Network.Clients.BroadcastMsgToClients(MkC4NetIOPacket(PID_Control, *pPkt));
 	}
 	else if (enMode == CNM_Central && fHost)
 	{
 		CStdLock CtrlLock(&CtrlCSec); C4GameControlPacket *pPkt;
-		for (int32_t iCtrlTick = Game.Control.ControlTick; pPkt = getCtrl(C4ClientIDAll, iCtrlTick); iCtrlTick++)
+		for (int32_t iCtrlTick = Game.Control.ControlTick; (pPkt = getCtrl(C4ClientIDAll, iCtrlTick)); iCtrlTick++)
 			Game.Network.Clients.BroadcastMsgToClients(MkC4NetIOPacket(PID_Control, *pPkt));
 	}
 }
@@ -874,7 +874,7 @@ void C4GameControlPacket::CompileFunc(StdCompiler *pComp)
 // *** C4GameControlClient
 
 C4GameControlClient::C4GameControlClient()
-	: iClientID(C4ClientIDUnknown), iPerformance(0), iNextControl(0)
+	: iClientID(C4ClientIDUnknown), iNextControl(0), iPerformance(0)
 {
 	szName[0] = '\0';
 }

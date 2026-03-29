@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2025, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -826,7 +826,17 @@ bool C4Group::AddEntry(int status,
 				fOkay = !!hFile.Write(membuf, size);
 			hFile.Close();
 
-			if (fHoldBuffer) if (fBufferIsStdbuf) StdBuf::DeletePointer(membuf); else delete[] membuf;
+			if (fHoldBuffer)
+			{
+				if (fBufferIsStdbuf)
+				{
+					StdBuf::DeletePointer(membuf);
+				}
+				else
+				{
+					delete[] membuf;
+				}
+			}
 
 			return fOkay;
 
@@ -1367,7 +1377,7 @@ bool C4Group::View(const char *szFiles)
 
 	// Display list
 	ResetSearch();
-	while (centry = SearchNextEntry(szFiles))
+	while ((centry = SearchNextEntry(szFiles)))
 	{
 		fcount++;
 		bcount += centry->Size;
@@ -1381,7 +1391,7 @@ bool C4Group::View(const char *szFiles)
 		Head.Ver1, Head.Ver2,
 		crc, crc);
 	ResetSearch();
-	while (centry = SearchNextEntry(szFiles))
+	while ((centry = SearchNextEntry(szFiles)))
 	{
 		// convert centry->Time into time_t for localtime
 		time_t cur_time = centry->Time;
@@ -1445,13 +1455,14 @@ bool C4Group::AddEntryOnDisk(const char *szFilename,
 	// Do not process yourself
 	if (ItemIdentical(szFilename, FileName)) return true;
 
+	char szTempFilename[_MAX_PATH + 1];
+
 	// File is a directory: copy to temp path, pack, and add packed file
 	if (DirectoryExists(szFilename))
 	{
 		// Ignore
 		if (C4Group_TestIgnore(szFilename)) return true;
 		// Temp filename
-		char szTempFilename[_MAX_PATH + 1];
 		if (C4Group_TempPath[0]) { SCopy(C4Group_TempPath, szTempFilename, _MAX_PATH); SAppend(GetFilename(szFilename), szTempFilename, _MAX_PATH); }
 		else SCopy(szFilename, szTempFilename, _MAX_PATH);
 		MakeTempFilename(szTempFilename);
@@ -1686,7 +1697,7 @@ bool C4Group::Extract(const char *szFiles, const char *szExtractTo, const char *
 	{
 		// Search all entries
 		ResetSearch();
-		while (tentry = SearchNextEntry(szFileName))
+		while ((tentry = SearchNextEntry(szFileName)))
 		{
 			// skip?
 			if (C4Group_IsExcluded(tentry->FileName, szExclude)) continue;
@@ -1830,7 +1841,7 @@ bool C4Group::OpenAsChild(C4Group *pMother,
 
 	// Get original entry name
 	C4GroupEntry *centry;
-	if (centry = Mother->GetEntry(FileName))
+	if ((centry = Mother->GetEntry(FileName)))
 		SCopy(centry->FileName, FileName, _MAX_PATH);
 
 	// Access entry in mother group
@@ -2146,7 +2157,7 @@ int C4Group::EntryCount(const char *szWildCard)
 	if (!szWildCard) szWildCard = "*";
 	// Match wildcard
 	ResetSearch(); fcount = 0;
-	while (tentry = SearchNextEntry(szWildCard)) fcount++;
+	while ((tentry = SearchNextEntry(szWildCard))) fcount++;
 	return fcount;
 }
 
@@ -2158,7 +2169,7 @@ int C4Group::EntrySize(const char *szWildCard)
 	if (!szWildCard) szWildCard = "*";
 	// Match wildcard
 	ResetSearch(); fsize = 0;
-	while (tentry = SearchNextEntry(szWildCard))
+	while ((tentry = SearchNextEntry(szWildCard)))
 		fsize += tentry->Size;
 	return fsize;
 }
@@ -2169,7 +2180,7 @@ unsigned int C4Group::EntryCRC32(const char *szWildCard)
 	// iterate thorugh child
 	C4GroupEntry *pEntry; unsigned int iCRC = 0;
 	ResetSearch();
-	while (pEntry = SearchNextEntry(szWildCard))
+	while ((pEntry = SearchNextEntry(szWildCard)))
 	{
 		if (!CalcCRC32(pEntry)) return false;
 		iCRC ^= pEntry->CRC;
@@ -2296,7 +2307,7 @@ bool C4Group::Sort(const char *szSortList)
 		fBubble = false;
 
 		for (prev = nullptr, centry = FirstEntry; centry; prev = centry, centry = next)
-			if (next = centry->Next)
+			if ((next = centry->Next))
 			{
 				// primary sort by file list
 				int iS1 = SortRank(centry->FileName, szSortList);

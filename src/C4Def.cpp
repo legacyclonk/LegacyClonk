@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -32,6 +32,7 @@
 #include "C4Network2Res.h"
 
 #include <algorithm>
+#include <ranges>
 
 // Default Action Procedures
 
@@ -504,9 +505,28 @@ void C4Def::Clear()
 
 	Script.Clear();
 	StringTable.Clear();
-	if (fClonkNamesOwned)  delete pClonkNames;  pClonkNames  = nullptr;
-	if (fRankNamesOwned)   delete pRankNames;   pRankNames   = nullptr;
-	if (fRankSymbolsOwned) delete pRankSymbols; pRankSymbols = nullptr;
+
+	if (fClonkNamesOwned)
+	{
+		delete pClonkNames;
+	}
+
+	pClonkNames = nullptr;
+
+	if (fRankNamesOwned)
+	{
+		delete pRankNames;
+	}
+
+	pRankNames = nullptr;
+
+	if (fRankSymbolsOwned)
+	{
+		delete pRankSymbols;
+	}
+
+	pRankSymbols = nullptr;
+
 	delete pFairCrewPhysical; pFairCrewPhysical = nullptr;
 	fClonkNamesOwned = fRankNamesOwned = fRankSymbolsOwned = false;
 
@@ -851,7 +871,7 @@ int32_t C4Def::GetValue(C4Object *pInBase, int32_t iBuyPlayer)
 	if (pInBase)
 	{
 		C4AulFunc *pFn;
-		if (pFn = pInBase->Def->Script.GetSFunc(PSF_CalcBuyValue, AA_PROTECTED))
+		if ((pFn = pInBase->Def->Script.GetSFunc(PSF_CalcBuyValue, AA_PROTECTED)))
 			iValue = pFn->Exec(pInBase, {C4VID(id), C4VInt(iValue)}).getInt();
 	}
 	return iValue;
@@ -996,7 +1016,7 @@ int32_t C4DefList::Load(const char *szSearch,
 
 	// Segments
 	char szSegment[_MAX_PATH + 1]; int32_t iGroupCount;
-	if (iGroupCount = SCharCount(';', szSearch))
+	if ((iGroupCount = SCharCount(';', szSearch)))
 	{
 		++iGroupCount; int32_t iPrg = iMaxProgress - iMinProgress;
 		for (int32_t cseg = 0; SCopySegment(szSearch, cseg, szSegment, ';', _MAX_PATH); cseg++)
@@ -1193,18 +1213,11 @@ int32_t C4DefList::CheckRequireDef()
 	do
 	{
 		rcount2 = rcount;
-		Defs.erase(std::remove_if(Defs.begin(), Defs.end(), [this, &rcount](const auto &def)
+		rcount += std::erase_if(Defs, [this](const auto &def)
 		{
-			for (const auto &it : def->RequireDef)
-			{
-				if (GetIndex(it.id) < 0)
-				{
-					++rcount;
-					return true;
-				}
-			}
-			return false;
-		}), Defs.end());
+			// Don't use FindDefByID here as Defs may contain nullptrs during erasure callbacks
+			return !std::ranges::all_of(def->RequireDef, [this](const auto &it) { return std::ranges::contains(Defs | std::views::filter([](const auto &def) { return def != nullptr; }), it.id, &C4Def::id); });
+		});
 	} while (rcount != rcount2);
 	return rcount;
 }

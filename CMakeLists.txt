@@ -1,6 +1,6 @@
 # LegacyClonk
 #
-# Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+# Copyright (c) 2017-2025, The LegacyClonk Team and contributors
 #
 # Distributed under the terms of the ISC license; see accompanying file
 # "COPYING" for details.
@@ -132,10 +132,40 @@ if (WIN32)
 	endif ()
 endif ()
 
-# Disable some Visual C++ warnings
 if (MSVC)
 	# "multiple copy constructors specified"
 	add_compile_options(/wd4521)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	add_compile_options(-Wall -Wextra)
+
+	add_compile_options(
+		-Werror=cast-function-type
+		-Werror=dangling-else
+		-Werror=ignored-qualifiers
+		-Werror=implicit-fallthrough
+		-Werror=misleading-indentation
+		-Werror=suggest-override
+		-Werror=parentheses
+		-Werror=reorder
+		-Werror=type-limits
+	)
+	add_compile_options(-Wno-overloaded-virtual -Wno-unused-parameter -Wno-missing-field-initializers)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	add_compile_options(-Wall -Wextra)
+
+	add_compile_options(
+		-Werror=cast-function-type-mismatch
+		-Werror=dangling-else
+		-Werror=ignored-qualifiers
+		-Werror=implicit-fallthrough
+		-Werror=inconsistent-missing-override
+		-Werror=misleading-indentation
+		-Werror=parentheses
+		-Werror=reorder
+		-Werror=type-limits
+	)
+
+	add_compile_options(-Wno-overloaded-virtual -Wno-unused-parameter -Wno-missing-designated-field-initializers -Wno-missing-field-initializers)
 endif ()
 
 # Incompatible with CF_ENUM

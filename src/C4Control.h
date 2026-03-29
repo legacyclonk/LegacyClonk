@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -538,7 +538,7 @@ class C4ControlMessageBoardAnswer : public C4ControlInternalPlayerScriptBase
 
 public:
 	C4ControlMessageBoardAnswer() {}
-	C4ControlMessageBoardAnswer(int32_t obj, int32_t plr, const std::string &answer) : obj(obj), answer(answer), C4ControlInternalPlayerScriptBase(plr) {}
+	C4ControlMessageBoardAnswer(int32_t obj, int32_t plr, const std::string &answer) : C4ControlInternalPlayerScriptBase(plr), obj(obj), answer(answer) {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
 	virtual std::string FormatScript() const override;
 };
@@ -550,7 +550,7 @@ class C4ControlCustomCommand : public C4ControlInternalPlayerScriptBase
 
 public:
 	C4ControlCustomCommand() {}
-	C4ControlCustomCommand(int32_t plr, const std::string &command, const std::string &argument) : command(command), argument(argument), C4ControlInternalPlayerScriptBase(plr) {}
+	C4ControlCustomCommand(int32_t plr, const std::string &command, const std::string &argument) : C4ControlInternalPlayerScriptBase(plr), command(command), argument(argument) {}
 	virtual bool Allowed() const override;
 	virtual void CompileFunc(StdCompiler *pComp) override;
 	virtual std::string FormatScript() const override;
@@ -562,7 +562,7 @@ class C4ControlInitScenarioPlayer : public C4ControlInternalPlayerScriptBase
 
 public:
 	C4ControlInitScenarioPlayer() {}
-	C4ControlInitScenarioPlayer(int32_t plr, int32_t team) : team(team), C4ControlInternalPlayerScriptBase(plr) {}
+	C4ControlInitScenarioPlayer(int32_t plr, int32_t team) : C4ControlInternalPlayerScriptBase(plr), team(team) {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
 	virtual std::string FormatScript() const override { return std::format("InitScenarioPlayer({},{})", plr, team); }
 };
@@ -581,7 +581,7 @@ class C4ControlToggleHostility : public C4ControlInternalPlayerScriptBase
 
 public:
 	C4ControlToggleHostility() {}
-	C4ControlToggleHostility(int32_t plr, int32_t opponent) : opponent(opponent), C4ControlInternalPlayerScriptBase(plr) {}
+	C4ControlToggleHostility(int32_t plr, int32_t opponent) : C4ControlInternalPlayerScriptBase(plr), opponent(opponent) {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
 	virtual std::string FormatScript() const override { return std::format("SetHostility({},{},!Hostile({},{},true))", plr, opponent, plr, opponent); }
 };
@@ -600,7 +600,7 @@ class C4ControlActivateGameGoalRule : public C4ControlInternalPlayerScriptBase
 
 public:
 	C4ControlActivateGameGoalRule() {}
-	C4ControlActivateGameGoalRule(int32_t plr, int32_t obj) : obj(obj), C4ControlInternalPlayerScriptBase(plr) {}
+	C4ControlActivateGameGoalRule(int32_t plr, int32_t obj) : C4ControlInternalPlayerScriptBase(plr), obj(obj) {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
 	virtual std::string FormatScript() const override { return std::format("Activate({})", plr); }
 	virtual int32_t Scope() const override { return obj; }
@@ -612,7 +612,7 @@ class C4ControlSetPlayerTeam : public C4ControlInternalPlayerScriptBase
 
 public:
 	C4ControlSetPlayerTeam() {}
-	C4ControlSetPlayerTeam(int32_t plr, int32_t team) : team(team), C4ControlInternalPlayerScriptBase(plr) {}
+	C4ControlSetPlayerTeam(int32_t plr, int32_t team) : C4ControlInternalPlayerScriptBase(plr), team(team) {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
 	virtual std::string FormatScript() const override { return std::format("SetPlayerTeam({},{})", plr, team); }
 };

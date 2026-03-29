@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2013-2017, The OpenClonk Team and contributors
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -55,8 +55,8 @@ void C4Network2Reference::InitLocal(C4Game *pGame)
 	// Add league performance (but only after game end)
 	C4ClientPlayerInfos *pClientInfos; C4PlayerInfo *pPlayerInfo;
 	int32_t i, j;
-	for (i = 0; pClientInfos = Parameters.PlayerInfos.GetIndexedInfo(i); i++)
-		for (j = 0; pPlayerInfo = pClientInfos->GetPlayerInfo(j); j++)
+	for (i = 0; (pClientInfos = Parameters.PlayerInfos.GetIndexedInfo(i)); i++)
+		for (j = 0; (pPlayerInfo = pClientInfos->GetPlayerInfo(j)); j++)
 		{
 			pPlayerInfo->DiscardResource();
 			if (pGame->GameOver)
@@ -390,7 +390,7 @@ public:
 #ifdef _WIN32
 	HANDLE GetEvent() override { return C4NetIOTCP::GetEvent(); }
 #else
-	void GetFDs(std::vector<pollfd> &fds) { C4NetIOTCP::GetFDs(fds); }
+	void GetFDs(std::vector<pollfd> &fds) override { C4NetIOTCP::GetFDs(fds); }
 #endif
 
 protected:
@@ -587,7 +587,7 @@ C4Task::Hot<void> C4Network2HTTPClientImplCurl::QueryAsync(C4Task::Hot<C4HTTPCli
 }
 
 C4Network2HTTPClientImplNetIO::C4Network2HTTPClientImplNetIO(std::shared_ptr<spdlog::logger> logger)
-	: logger{std::move(logger)}, fBusy(false), fSuccess(false), fConnected(false), iDownloadedSize(0), iTotalSize(0), fBinary(false), iDataOffset(0),
+	: logger{std::move(logger)}, fBinary(false), fBusy(false), fSuccess(false), fConnected(false), iDataOffset(0), iDownloadedSize(0), iTotalSize(0),
 	pNotify(nullptr)
 {
 	C4NetIOTCP::SetCallback(this);

@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2018, The OpenClonk Team and contributors
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -574,7 +574,7 @@ class StdPlainPtrAdapt : public StdPtrAdapt<PlainPtrRef<T>>
 
 public:
 	StdPlainPtrAdapt(T *&rpObj, bool fAllowNull = true, const char *szNaming = "Data")
-	: ptr{rpObj}, StdPtrAdapt<PlainPtrRef<T>>{ptr, fAllowNull, szNaming} {}
+	: StdPtrAdapt<PlainPtrRef<T>>{ptr, fAllowNull, szNaming}, ptr{rpObj} {}
 };
 
 template <class T>

@@ -183,8 +183,9 @@ protected:
 	typedef void (CallbackDlg::*CBCancelFunc)(ParType);
 	typedef RenameResult(CallbackDlg::*CBOKFunc)(ParType, const char *);
 
-	CBCancelFunc pCBCancelFunc; CBOKFunc pCBOKFunc;
 	CallbackDlg *pDlg; ParType par;
+	CBOKFunc pCBOKFunc;
+	CBCancelFunc pCBCancelFunc;
 
 	virtual void OnCancelRename() override { if (pDlg && pCBCancelFunc)(pDlg->*pCBCancelFunc)(par); }
 	virtual RenameResult OnOKRename(const char *szNewName) override { return (pDlg && pCBOKFunc) ? (pDlg->*pCBOKFunc)(par, szNewName) : RR_Accepted; }

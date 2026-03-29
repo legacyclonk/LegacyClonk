@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -88,9 +88,38 @@ bool C4FacetExSurface::Create(int iWdt, int iHgt, int iWdt2, int iHgt2)
 	// Create surface
 	Face.Default();
 	if (!Face.Create(iWdt, iHgt)) return false;
+
 	// Set facet
-	if (iWdt2 == C4FCT_Full) iWdt2 = Face.Wdt; if (iWdt2 == C4FCT_Height) iWdt2 = Face.Hgt; if (iWdt2 == C4FCT_Width) iWdt2 = Face.Wdt;
-	if (iHgt2 == C4FCT_Full) iHgt2 = Face.Hgt; if (iHgt2 == C4FCT_Height) iHgt2 = Face.Hgt; if (iHgt2 == C4FCT_Width) iHgt2 = Face.Wdt;
+	if (iWdt2 == C4FCT_Full)
+	{
+		iWdt2 = Face.Wdt;
+	}
+
+	if (iWdt2 == C4FCT_Height)
+	{
+		iWdt2 = Face.Hgt;
+	}
+
+	if (iWdt2 == C4FCT_Width)
+	{
+		iWdt2 = Face.Wdt;
+	}
+
+	if (iHgt2 == C4FCT_Full)
+	{
+		iHgt2 = Face.Hgt;
+	}
+
+	if (iHgt2 == C4FCT_Height)
+	{
+		iHgt2 = Face.Hgt;
+	}
+
+	if (iHgt2 == C4FCT_Width)
+	{
+		iHgt2 = Face.Wdt;
+	}
+
 	Set(&Face, 0, 0, iWdt2, iHgt2, 0, 0);
 	return true;
 }
@@ -146,7 +175,7 @@ bool C4FacetExSurface::Load(C4Group &hGroup, const char *szName, int iWdt, int i
 		// no extension: Default to extension that is found as file in group
 		const char *const extensions[] = { "png", "bmp", "jpeg", "jpg", nullptr };
 		int i = 0; const char *szExt;
-		while (szExt = extensions[i++])
+		while ((szExt = extensions[i++]))
 		{
 			EnforceExtension(szFilename, szExt);
 			if (hGroup.FindEntry(szFilename)) break;
@@ -154,9 +183,38 @@ bool C4FacetExSurface::Load(C4Group &hGroup, const char *szName, int iWdt, int i
 	}
 	// Load surface
 	if (!Face.Load(hGroup, szFilename, fOwnPal, fNoErrIfNotFound)) return false;
+
 	// Set facet
-	if (iWdt == C4FCT_Full) iWdt = Face.Wdt; if (iWdt == C4FCT_Height) iWdt = Face.Hgt; if (iWdt == C4FCT_Width) iWdt = Face.Wdt;
-	if (iHgt == C4FCT_Full) iHgt = Face.Hgt; if (iHgt == C4FCT_Height) iHgt = Face.Hgt; if (iHgt == C4FCT_Width) iHgt = Face.Wdt;
+	if (iWdt == C4FCT_Full)
+	{
+		iWdt = Face.Wdt;
+	}
+
+	if (iWdt == C4FCT_Height)
+	{
+		iWdt = Face.Hgt;
+	}
+
+	if (iWdt == C4FCT_Width)
+	{
+		iWdt = Face.Wdt;
+	}
+
+	if (iHgt == C4FCT_Full)
+	{
+		iHgt = Face.Hgt;
+	}
+
+	if (iHgt == C4FCT_Height)
+	{
+		iHgt = Face.Hgt;
+	}
+
+	if (iHgt == C4FCT_Width)
+	{
+		iHgt = Face.Wdt;
+	}
+
 	Set(&Face, 0, 0, iWdt, iHgt, 0, 0);
 	return true;
 }

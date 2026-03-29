@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -180,7 +180,12 @@ bool C4Surface::CreateTextures()
 #endif
 		/* keep standard texture size */;
 	// get needed tex size - begin with smaller value of wdt/hgt, so there won't be too much space wasted
-	int iNeedSize = (std::min)(Wdt, Hgt); int n = 0; while ((1 << ++n) < iNeedSize); iNeedSize = 1 << n;
+	int iNeedSize = (std::min)(Wdt, Hgt);
+	int n = 0;
+	while ((1 << ++n) < iNeedSize)
+	{
+	}
+	iNeedSize = 1 << n;
 	// adjust to available texture size
 	iTexSize = (std::min)(iNeedSize, iMaxTexSize);
 	// get the number of textures needed for this size
@@ -201,7 +206,11 @@ bool C4Surface::CreateTextures()
 		{
 			// last texture might be smaller
 			iNeedSize = (std::max)(Wdt % iTexSize, Hgt % iTexSize);
-			int n = 0; while ((1 << ++n) < iNeedSize); iNeedSize = 1 << n;
+			int n = 0;
+			while ((1 << ++n) < iNeedSize)
+			{
+			}
+			iNeedSize = 1 << n;
 			*ppCTex = new C4TexRef(iNeedSize, fIsRenderTarget);
 		}
 		if (fIsBackground && ppCTex)(*ppCTex)->FillBlack();
@@ -643,7 +652,7 @@ uint32_t C4Surface::GetPixDw(int iX, int iY, bool fApplyModulation, float scale)
 	{
 #ifndef USE_CONSOLE
 		// OpenGL?
-		if (pGL)
+		if (pGL) [[likely]]
 		{
 			int hgt = static_cast<int32_t>(ceilf(Hgt * scale));
 			if (!PrimarySurfaceLockBits)
@@ -655,6 +664,10 @@ uint32_t C4Surface::GetPixDw(int iX, int iY, bool fApplyModulation, float scale)
 				PrimarySurfaceLockPitch = wdt * 3;
 			}
 			return *reinterpret_cast<uint32_t *>(PrimarySurfaceLockBits + (hgt - iY - 1) * PrimarySurfaceLockPitch + iX * 3);
+		}
+		else
+		{
+			std::abort();
 		}
 #endif
 	}
@@ -854,7 +867,7 @@ bool C4Surface::LoadAny(C4Group &hGroup, const char *szName, bool fOwnPal, bool 
 		// no extension: Default to extension that is found as file in group
 		const char *const extensions[] = { "png", "bmp", "jpeg", "jpg", nullptr };
 		int i = 0; const char *szExt;
-		while (szExt = extensions[i++])
+		while ((szExt = extensions[i++]))
 		{
 			EnforceExtension(szFilename, szExt);
 			if (hGroup.FindEntry(szFilename)) break;
@@ -876,7 +889,7 @@ bool C4Surface::LoadAny(C4GroupSet &hGroupset, const char *szName, bool fOwnPal,
 		// no extension: Default to extension that is found as file in group
 		const char *const extensions[] = { "png", "bmp", "jpeg", "jpg", nullptr };
 		int i = 0; const char *szExt;
-		while (szExt = extensions[i++])
+		while ((szExt = extensions[i++]))
 		{
 			EnforceExtension(szFilename, szExt);
 			pGroup = hGroupset.FindEntry(szFilename);
@@ -1125,7 +1138,8 @@ C4TexRef::~C4TexRef()
 		glDeleteTextures(1, &texName);
 	}
 #endif
-	if (lpDDraw) delete[] texLock.pBits; texLock.pBits = nullptr;
+	if (lpDDraw) delete[] texLock.pBits;
+	texLock.pBits = nullptr;
 	// remove from texture manager
 	pTexMgr->UnregTex(this);
 }

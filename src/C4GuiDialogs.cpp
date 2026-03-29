@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2026, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -56,7 +56,12 @@ private:
 	static constexpr auto WindowStyle = WS_VISIBLE | WS_POPUP | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX;
 #endif
 public:
+#ifdef _WIN32
 	DialogWindow(Dialog &dialog) : dialog{dialog} {}
+#else
+	DialogWindow(Dialog &) {}
+#endif
+
 	virtual void Close() override;
 
 // TODO: Remove unused code
@@ -69,9 +74,9 @@ public:
 #endif
 
 private:
+#ifdef _WIN32
 	Dialog &dialog;
 
-#ifdef _WIN32
 	friend LRESULT APIENTRY DialogWinProc(HWND, UINT, WPARAM, LPARAM);
 #endif
 };
@@ -496,7 +501,7 @@ void Dialog::Draw(C4FacetEx &cgo)
 		// fade in
 		if ((iFade += 10) >= 100)
 		{
-			if (pScreen = GetScreen())
+			if ((pScreen = GetScreen()))
 			{
 				if (pScreen->GetTopDialog() == this)
 					pScreen->ActivateDialog(this);
@@ -509,7 +514,7 @@ void Dialog::Draw(C4FacetEx &cgo)
 		if ((iFade -= 10) <= 0)
 		{
 			fVisible = fShow = false;
-			if (pScreen = GetScreen())
+			if ((pScreen = GetScreen()))
 				pScreen->RecheckActiveDialog();
 			eFade = eFadeNone;
 		}
@@ -573,8 +578,11 @@ bool Dialog::KeyHotkey(C4KeyCodeEx key)
 	const auto wKey = SDL_GetKeyName(SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(key.Key), SDL_KMOD_NONE, true))[0];
 
 	// do hotkey procs for standard alphanumerics only
-	if (Inside<uint16_t>(TOUPPERIFX11(wKey), 'A', 'Z')) if (OnHotkey(char(TOUPPERIFX11(wKey)))) return true;
-	if (Inside<uint16_t>(TOUPPERIFX11(wKey), '0', '9')) if (OnHotkey(char(TOUPPERIFX11(wKey)))) return true;
+	if (key.IsStandardAlphaNumeric())
+	{
+		return OnHotkey(static_cast<char>(TOUPPERIFX11(static_cast<unsigned char>(key.Key))));
+	}
+
 	return false;
 }
 
@@ -608,7 +616,7 @@ void Dialog::SetFocus(Control *pCtrl, bool fByMouse)
 		if (pActiveCtrl) return;
 	}
 	// set new
-	if (pActiveCtrl = pCtrl) pCtrl->OnGetFocus(fByMouse);
+	if ((pActiveCtrl = pCtrl)) pCtrl->OnGetFocus(fByMouse);
 }
 
 void Dialog::AdvanceFocus(bool fBackwards)
@@ -985,7 +993,7 @@ MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, uint3
 ConfirmationDialog::ConfirmationDialog(const char *szMessage, const char *szCaption, BaseCallbackHandler *pCB, uint32_t dwButtons, bool fSmall, Icons icoIcon)
 	: MessageDialog(szMessage, szCaption, dwButtons, icoIcon, fSmall ? MessageDialog::dsSmall : MessageDialog::dsRegular)
 {
-	if (this->pCB = pCB) pCB->Ref();
+	if ((this->pCB = pCB)) pCB->Ref();
 	// always log confirmation messages
 	spdlog::debug("[Cnf] {}: {}", szCaption, szMessage);
 	// confirmations always get deleted on close
@@ -1101,7 +1109,7 @@ bool Screen::ShowRemoveDlg(Dialog *pDlg)
 // InputDialog
 
 InputDialog::InputDialog(const char *szMessage, const char *szCaption, Icons icoIcon, BaseInputCallback *pCB, bool fChatLayout)
-	: Dialog(fChatLayout ? Config.Graphics.ResX * 4 / 5 : C4GUI_InputDlgWdt, fChatLayout ? C4GUI::Edit::GetDefaultEditHeight() + 2 : 100, szCaption, false), pEdit(nullptr), pChatLbl(nullptr), pCB(pCB), fChatLayout(fChatLayout)
+	: Dialog(fChatLayout ? Config.Graphics.ResX * 4 / 5 : C4GUI_InputDlgWdt, fChatLayout ? C4GUI::Edit::GetDefaultEditHeight() + 2 : 100, szCaption, false), pEdit(nullptr), pCB(pCB), fChatLayout(fChatLayout), pChatLbl(nullptr)
 {
 	if (fChatLayout)
 	{

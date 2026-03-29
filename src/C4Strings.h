@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2026, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -204,7 +204,34 @@ void FormatWithNull(const std::span<char, N> buf, const std::format_string<Args.
 namespace C4Strings
 {
 
+template<typename T>
+concept NarrowChar = std::same_as<T, char> || std::same_as<T, signed char> || std::same_as<T, unsigned char>;
+
 template<std::integral T>
 inline constexpr std::size_t NumberOfCharactersForDigits{std::numeric_limits<T>::digits10 + 1};
+
+template<NarrowChar CharT>
+inline CharT ToUpper(const CharT c)
+{
+	return static_cast<CharT>(std::toupper(static_cast<int>(static_cast<unsigned char>(c))));
+}
+
+template<NarrowChar CharT>
+inline CharT ToLower(const CharT c)
+{
+	return static_cast<CharT>(std::tolower(static_cast<int>(static_cast<unsigned char>(c))));
+}
+
+template<NarrowChar CharT>
+inline bool IsPrint(const CharT c)
+{
+	return std::isprint(static_cast<int>(static_cast<unsigned char>(c)));
+}
+
+template<NarrowChar CharT>
+inline CharT IsAlphanumeric(const CharT c)
+{
+	return std::isalnum(static_cast<int>(static_cast<unsigned char>(c)));
+}
 
 }

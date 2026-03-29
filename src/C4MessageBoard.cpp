@@ -143,6 +143,7 @@ void C4MessageBoard::Execute()
 			iBackScroll = -1;
 			break;
 		}
+		[[fallthrough]];
 
 	case 0: // one msg
 

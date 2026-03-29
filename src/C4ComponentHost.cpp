@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -245,7 +245,7 @@ bool C4ComponentHost::GetLanguageString(const char *szLanguage, StdStrBuf &rTarg
 	for (int clseg = 0; SCopySegment(szLanguage ? szLanguage : "", clseg, langindex, ',', 2); clseg++)
 	{
 		SAppend(":", langindex);
-		if (cptr = SSearch(Data.getData(), langindex))
+		if ((cptr = SSearch(Data.getData(), langindex)))
 		{
 			// Return the according string
 			auto iEndPos = SCharPos('\r', cptr);

@@ -3,7 +3,7 @@
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
  * Copyright (c) 2016, The OpenClonk Team and contributors
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2026, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -62,11 +62,11 @@
 constexpr unsigned int defaultIngameGameTickDelayMS = 28;
 
 C4Game::C4Game()
-	: Input(Control.Input), KeyboardInput(C4KeyboardInput_Init()), fQuitWithError(false), fPreinited(false),
-	Teams(Parameters.Teams),
-	PlayerInfos(Parameters.PlayerInfos),
-	RestorePlayerInfos(Parameters.RestorePlayerInfos),
-	Clients(Parameters.Clients)
+	: Clients(Parameters.Clients), Teams(Parameters.Teams), PlayerInfos(Parameters.PlayerInfos), RestorePlayerInfos(Parameters.RestorePlayerInfos),
+	Input(Control.Input),
+	KeyboardInput(C4KeyboardInput_Init()),
+	fPreinited(false),
+	fQuitWithError(false)
 {
 	Default();
 }
@@ -107,11 +107,11 @@ bool C4Game::InitDefs()
 	iDefs = Defs.CheckEngineVersion(C4XVER1, C4XVER2, C4XVER3, C4XVER4, C4XVERBUILD);
 	if (iDefs > 0) { Log(C4ResStrTableKey::IDS_PRC_DEFSINVC4X, iDefs); }
 
-	// sort before CheckRequireDef for better id-lookup performance
-	Defs.SortByID();
-
 	// Check for unmet requirements
 	Defs.CheckRequireDef();
+
+	// sort after CheckRequireDef as all the unnecessary defs have been removed
+	Defs.SortByID();
 
 	// get default particles
 	Particles.SetDefParticles();
@@ -1622,7 +1622,7 @@ bool C4Game::DropFile(const char *szFilename, int32_t iX, int32_t iY)
 	if (SEqualNoCase(GetExtension(szFilename), "c4d"))
 	{
 		// Get id from file
-		if (c_id = DefFileGetID(szFilename))
+		if ((c_id = DefFileGetID(szFilename)))
 			// Get loaded def or try to load def from file
 			if ((cdef = C4Id2Def(c_id))
 				|| (Defs.Load(szFilename, C4D_Load_RX, Config.General.LanguageEx, &*Application.SoundSystem) && (cdef = C4Id2Def(c_id))))
@@ -2367,7 +2367,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 			RestartRestoreInfos.Clear();
 
 			C4PlayerInfo *info;
-			for (int32_t i = 0; info = PlayerInfos.GetPlayerInfoByIndex(i); ++i)
+			for (int32_t i = 0; (info = PlayerInfos.GetPlayerInfoByIndex(i)); ++i)
 			{
 				if (!info->IsRemoved() && !info->IsInvisible())
 				{
@@ -2453,6 +2453,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 
 	// Load round results
 	if (!section)
+	{
 		if (hGroup.FindEntry(C4CFN_RoundResults))
 		{
 			if (!RoundResults.Load(hGroup, C4CFN_RoundResults))
@@ -2464,6 +2465,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 		{
 			RoundResults.Init();
 		}
+	}
 
 	// Denumerate game data pointers
 	if (!section) ScriptEngine.DenumerateVariablePointers();
@@ -3541,7 +3543,7 @@ bool C4Game::LocalControlKey(C4KeyCodeEx key, C4KeySetCtrl Ctrl)
 {
 	// keyboard callback: Perform local player control
 	C4Player *pPlr;
-	if (pPlr = Players.GetLocalByKbdSet(Ctrl.iKeySet))
+	if ((pPlr = Players.GetLocalByKbdSet(Ctrl.iKeySet)))
 	{
 		// Swallow a event generated from Keyrepeat for AutoStopControl
 		if (pPlr->ControlStyle)
@@ -3713,13 +3715,25 @@ C4Object *C4Game::FindBase(int32_t iPlayer, int32_t iIndex)
 {
 	C4Object *cObj; C4ObjectLink *clnk;
 	for (clnk = Objects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
+	{
 		// Status
 		if (cObj->Status)
+		{
 			// Base
 			if (cObj->Base == iPlayer)
+			{
 				// Index
-				if (iIndex == 0) return cObj;
-				else iIndex--;
+				if (iIndex == 0)
+				{
+					return cObj;
+				}
+				else
+				{
+					iIndex--;
+				}
+			}
+		}
+	}
 	// Not found
 	return nullptr;
 }
@@ -3728,15 +3742,29 @@ C4Object *C4Game::FindFriendlyBase(int32_t iPlayer, int32_t iIndex)
 {
 	C4Object *cObj; C4ObjectLink *clnk;
 	for (clnk = Objects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
+	{
 		// Status
 		if (cObj->Status)
+		{
 			// Base
 			if (ValidPlr(cObj->Base))
+			{
 				// friendly Base
 				if (!Hostile(cObj->Base, iPlayer))
+				{
 					// Index
-					if (iIndex == 0) return cObj;
-					else iIndex--;
+					if (iIndex == 0)
+					{
+						return cObj;
+					}
+					else
+					{
+						iIndex--;
+					}
+				}
+			}
+		}
+	}
 	// Not found
 	return nullptr;
 }
@@ -3978,8 +4006,8 @@ void C4Game::InitValueOverloads()
 {
 	C4ID idOvrl; C4Def *pDef;
 	// set new values
-	for (int32_t cnt = 0; idOvrl = C4S.Game.Realism.ValueOverloads.GetID(cnt); cnt++)
-		if (pDef = Defs.ID2Def(idOvrl))
+	for (int32_t cnt = 0; (idOvrl = C4S.Game.Realism.ValueOverloads.GetID(cnt)); cnt++)
+		if ((pDef = Defs.ID2Def(idOvrl)))
 			pDef->Value = C4S.Game.Realism.ValueOverloads.GetIDCount(idOvrl);
 }
 

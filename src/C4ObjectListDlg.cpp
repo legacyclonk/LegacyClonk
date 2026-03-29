@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2007, Günther
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -56,11 +56,12 @@ GType c4_list_get_type(void);
 
 // Initialise an instance
 static void
-c4_list_init(C4List *c4_list)
+c4_list_init(GTypeInstance *c4_list, void *)
 {
-	c4_list->data = &Game.Objects;
+	auto &list = *reinterpret_cast<C4List *>(c4_list);
+	list.data = &Game.Objects;
 
-	c4_list->stamp = g_random_int(); /* Random int to check whether iters belong to this model */
+	list.stamp = g_random_int(); /* Random int to check whether iters belong to this model */
 }
 
 // destructor
@@ -415,7 +416,7 @@ c4_list_new(void)
 
 // Called once for the class.
 static void
-c4_list_class_init(C4ListClass *klass)
+c4_list_class_init(void *klass, void *)
 {
 	GObjectClass *object_class;
 
@@ -427,20 +428,22 @@ c4_list_class_init(C4ListClass *klass)
 
 // fill in the GtkTreeModel interface with the functions above.
 static void
-c4_list_tree_model_init(GtkTreeModelIface *iface)
+c4_list_tree_model_init(void *iface, void *)
 {
-	iface->get_flags = c4_list_get_flags;
-	iface->get_n_columns = c4_list_get_n_columns;
-	iface->get_column_type = c4_list_get_column_type;
-	iface->get_iter = c4_list_get_iter;
-	iface->get_path = c4_list_get_path;
-	iface->get_value = c4_list_get_value;
-	iface->iter_next = c4_list_iter_next;
-	iface->iter_children = c4_list_iter_children;
-	iface->iter_has_child = c4_list_iter_has_child;
-	iface->iter_n_children = c4_list_iter_n_children;
-	iface->iter_nth_child = c4_list_iter_nth_child;
-	iface->iter_parent = c4_list_iter_parent;
+	auto &treeModelIface{*reinterpret_cast<GtkTreeModelIface *>(iface)};
+
+	treeModelIface.get_flags = c4_list_get_flags;
+	treeModelIface.get_n_columns = c4_list_get_n_columns;
+	treeModelIface.get_column_type = c4_list_get_column_type;
+	treeModelIface.get_iter = c4_list_get_iter;
+	treeModelIface.get_path = c4_list_get_path;
+	treeModelIface.get_value = c4_list_get_value;
+	treeModelIface.iter_next = c4_list_iter_next;
+	treeModelIface.iter_children = c4_list_iter_children;
+	treeModelIface.iter_has_child = c4_list_iter_has_child;
+	treeModelIface.iter_n_children = c4_list_iter_n_children;
+	treeModelIface.iter_nth_child = c4_list_iter_nth_child;
+	treeModelIface.iter_parent = c4_list_iter_parent;
 }
 
 // Return the type, registering it on first call.
@@ -454,16 +457,16 @@ c4_list_get_type(void)
 		// Some boilerplate type registration stuff
 		static const GTypeInfo c4_list_info =
 		{
-			sizeof(C4ListClass),                /* class_size */
-			nullptr,                            /* base_init */
-			nullptr,                            /* base_finalize */
-			(GClassInitFunc)c4_list_class_init, /* class_init */
-			nullptr,                            /* class finalize */
-			nullptr,                            /* class_data */
-			sizeof(C4List),                     /* instance_size */
-			0,                                  /* n_preallocs */
-			(GInstanceInitFunc)c4_list_init,    /* instance_init */
-			nullptr                             /* value_table */
+			sizeof(C4ListClass), /* class_size */
+			nullptr,             /* base_init */
+			nullptr,             /* base_finalize */
+			c4_list_class_init,  /* class_init */
+			nullptr,             /* class finalize */
+			nullptr,             /* class_data */
+			sizeof(C4List),      /* instance_size */
+			0,                   /* n_preallocs */
+			c4_list_init,        /* instance_init */
+			nullptr              /* value_table */
 		};
 
 		c4_list_type = g_type_register_static(G_TYPE_OBJECT, "C4List",
@@ -472,7 +475,7 @@ c4_list_get_type(void)
 		/* register the GtkTreeModel interface with the type system */
 		static const GInterfaceInfo tree_model_info =
 		{
-			(GInterfaceInitFunc)c4_list_tree_model_init,
+			c4_list_tree_model_init,
 			nullptr,
 			nullptr
 		};
@@ -612,7 +615,7 @@ void C4ObjectListDlg::OnSelectionChanged(GtkTreeSelection *selection, C4ObjectLi
 		Console.EditCursor.GetSelection().Add(((C4ObjectLink *)iter.user_data)->Obj, C4ObjectList::stNone);
 	}
 
-	g_list_foreach(list, (GFunc)gtk_tree_path_free, nullptr);
+	g_list_foreach(list, [](void *const ptr, void *) { gtk_tree_path_free(reinterpret_cast<GtkTreePath *>(ptr)); }, nullptr);
 	g_list_free(list);
 
 	Console.EditCursor.OnSelectionChanged();
@@ -646,10 +649,10 @@ void C4ObjectListDlg::Update(C4ObjectList &rSelection)
 }
 
 C4ObjectListDlg::C4ObjectListDlg() :
-	updating_selection(false),
 	window(nullptr),
 	treeview(nullptr),
-	model(nullptr) {}
+	model(nullptr),
+	updating_selection(false) {}
 
 C4ObjectListDlg::~C4ObjectListDlg() {}
 

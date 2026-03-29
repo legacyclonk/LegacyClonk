@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -521,11 +521,24 @@ void C4SGame::ConvertGoals(C4SRealism &rRealism)
 	// CreateObjects,ClearObjects,ClearMaterials are still valid but invisible
 
 	// Convert realism to rules
-	if (rRealism.ConstructionNeedsMaterial) Rules.SetIDCount(C4Id("CNMT"), 1, true); rRealism.ConstructionNeedsMaterial = false;
-	if (rRealism.StructuresNeedEnergy) Rules.SetIDCount(C4Id("ENRG"), 1, true); rRealism.StructuresNeedEnergy = false;
+	if (rRealism.ConstructionNeedsMaterial)
+	{
+		Rules.SetIDCount(C4Id("CNMT"), 1, true);
+		rRealism.ConstructionNeedsMaterial = false;
+	}
+
+	if (rRealism.StructuresNeedEnergy)
+	{
+		Rules.SetIDCount(C4Id("ENRG"), 1, true);
+		rRealism.StructuresNeedEnergy = false;
+	}
 
 	// Convert rules
-	if (EnableRemoveFlag) Rules.SetIDCount(C4Id("FGRV"), 1, true); EnableRemoveFlag = false;
+	if (EnableRemoveFlag)
+	{
+		Rules.SetIDCount(C4Id("FGRV"), 1, true);
+		EnableRemoveFlag = false;
+	}
 
 	// Convert eliminiation to rules
 	switch (Elimination)
@@ -594,9 +607,29 @@ bool C4ScenarioSection::ScenarioLoad(char *szFilename)
 C4Group *C4ScenarioSection::GetGroupfile(C4Group &rGrp)
 {
 	// check temp filename
-	if (!TempFilename.empty()) if (rGrp.Open(TempFilename.c_str())) return &rGrp; else return nullptr;
+	if (!TempFilename.empty())
+	{
+		if (rGrp.Open(TempFilename.c_str()))
+		{
+			return &rGrp;
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
 	// check filename within scenario
-	if (!Filename.empty()) if (rGrp.OpenAsChild(&Game.ScenarioFile, Filename.c_str())) return &rGrp; else return nullptr;
+	if (!Filename.empty())
+	{
+		if (rGrp.OpenAsChild(&Game.ScenarioFile, Filename.c_str()))
+		{
+			return &rGrp;
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
 	// unmodified main section: return main group
 	if (SEqualNoCase(Name.c_str(), C4ScenSect_Main)) return &Game.ScenarioFile;
 	// failure
