@@ -161,17 +161,17 @@ void C4ImGui::SetStyle()
 
 	colors[ImGuiCol_Text]                   = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 	colors[ImGuiCol_TextDisabled]           = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
-	colors[ImGuiCol_WindowBg]               = ImVec4(0.07f, 0.12f, 0.18f, 0.70f);
-	colors[ImGuiCol_ChildBg]                = ImVec4(0.04f, 0.04f, 0.04f, 0.50f);
+	colors[ImGuiCol_WindowBg]               = ImVec4(0.07f, 0.12f, 0.18f, 0.80f);
+	colors[ImGuiCol_ChildBg]                = ImVec4(0.04f, 0.04f, 0.04f, 0.70f);
 	colors[ImGuiCol_PopupBg]                = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
 	colors[ImGuiCol_Border]                 = ImVec4(0.43f, 0.43f, 0.50f, 0.50f);
 	colors[ImGuiCol_BorderShadow]           = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-	colors[ImGuiCol_FrameBg]                = ImVec4(0.16f, 0.29f, 0.48f, 0.54f);
-	colors[ImGuiCol_FrameBgHovered]         = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
+	colors[ImGuiCol_FrameBg]                = ImVec4(0.16f, 0.29f, 0.48f, 0.7f);
+	colors[ImGuiCol_FrameBgHovered]         = ImVec4(0.26f, 0.59f, 0.98f, 0.60f);
 	colors[ImGuiCol_FrameBgActive]          = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
-	colors[ImGuiCol_TitleBg]                = ImVec4(0.07f, 0.12f, 0.18f, 0.60f);
+	colors[ImGuiCol_TitleBg]                = ImVec4(0.07f, 0.12f, 0.18f, 0.70f);
 	colors[ImGuiCol_TitleBgActive]          = ImVec4(0.07f, 0.12f, 0.18f, 1.00f);
-	colors[ImGuiCol_TitleBgCollapsed]       = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
+	colors[ImGuiCol_TitleBgCollapsed]       = ImVec4(0.00f, 0.00f, 0.00f, 0.5f);
 	colors[ImGuiCol_MenuBarBg]              = ImVec4(0.07f, 0.12f, 0.18f, 1.00f);
 	colors[ImGuiCol_ScrollbarBg]            = ImVec4(0.02f, 0.04f, 0.04f, 0.70f);
 	colors[ImGuiCol_ScrollbarGrab]          = ImVec4(0.27f, 0.3f, 0.34f, 1.00f);
