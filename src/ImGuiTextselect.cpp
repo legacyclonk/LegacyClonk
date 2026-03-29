@@ -3,7 +3,7 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
-#include "textselect.hpp"
+#include "ImGuiTextselect.hpp"
 
 #include <algorithm>
 #include <array>

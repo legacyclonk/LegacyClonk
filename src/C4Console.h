@@ -36,7 +36,7 @@ typedef CStdGtkWindow C4ConsoleBase;
 typedef CStdWindow C4ConsoleBase;
 #endif
 
-#include "imgui/textselect.hpp"
+#include "ImGuiTextselect.hpp"
 
 class C4Console : public C4ConsoleBase
 {

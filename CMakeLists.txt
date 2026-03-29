@@ -243,8 +243,30 @@ endif ()
 # Also use for windows ( TODO: Rename file and maybe move to some cmake filelist )
 list(APPEND CLONK_SOURCES src/StdAppUnix.cpp)
 
-file(GLOB IMGUI_FILES "src/imgui/*")
-list(APPEND CLONK_SOURCES ${IMGUI_FILES})
+if (NOT USE_CONSOLE)
+	set(IMGUI_SOURCES
+	    imconfig.h
+		imgui.cpp
+		imgui.h
+		imgui_demo.cpp
+		imgui_draw.cpp
+		imgui_internal.h
+		imgui_tables.cpp
+		imgui_widgets.cpp
+		imstb_rectpack.h
+		imstb_textedit.h
+		imstb_truetype.h
+		backends/imgui_impl_opengl2.cpp
+		backends/imgui_impl_opengl2.h
+		backends/imgui_impl_sdl3.cpp
+		backends/imgui_impl_sdl3.h
+	)
+
+	list(TRANSFORM IMGUI_SOURCES PREPEND src/imgui/)
+	list(APPEND IMGUI_SOURCES src/ImGuiTextselect.hpp src/ImGuiTextselect.cpp)
+
+	list(APPEND CLONK_SOURCES ${IMGUI_SOURCES})
+endif ()
 
 if (USE_SDL_MAINLOOP OR USE_SDL_MIXER)
 	append_filelist(CLONK_SOURCES EngineSdl)
@@ -295,6 +317,7 @@ if (USE_CONSOLE)
 	target_compile_definitions(clonk PRIVATE USE_CONSOLE=1)
 else ()
 	add_executable(clonk WIN32 MACOSX_BUNDLE ${CLONK_SOURCES})
+	target_include_directories(clonk PUBLIC src/imgui)
 endif ()
 target_link_libraries(clonk standard)
 target_compile_definitions(clonk PRIVATE C4ENGINE)

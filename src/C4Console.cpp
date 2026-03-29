@@ -41,8 +41,8 @@
 #include <commdlg.h>
 #endif
 
-#include "imgui/imgui.h"
-#include "imgui/textselect.hpp"
+#include "imgui.h"
+#include "ImGuiTextselect.hpp"
 
 #include "res/DeveloperModeIcons.h"
 

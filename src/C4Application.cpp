@@ -38,9 +38,9 @@
 #include "StdRegistry.h" // For DDraw emulation warning
 #endif
 
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_sdl3.h"
-#include "imgui/imgui_impl_opengl2.h"
+#include "imgui.h"
+#include "backends/imgui_impl_sdl3.h"
+#include "backends/imgui_impl_opengl2.h"
 #include <cassert>
 #include <stdexcept>
 

@@ -7,7 +7,7 @@
 #include <functional>
 #include <string_view>
 
-//#include "imgui.h"
+#include "imgui.h"
 
 // Manages text selection in a GUI window.
 // This class only works if the window only has text.

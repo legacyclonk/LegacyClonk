@@ -18,10 +18,8 @@
 #include <array>
 #include <stdexcept>
 
-#include "imgui/imgui.h"
+#include "imgui.h"
 
-#include "imgui/imgui_impl_sdl3.h"
-#include "imgui/imgui_impl_opengl2.h"
 #include <SDL3/SDL.h>
 
 #include <gl/gl.h>
