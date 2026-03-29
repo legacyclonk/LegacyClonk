@@ -574,13 +574,10 @@ bool Dialog::CharIn(const char *c)
 
 bool Dialog::KeyHotkey(C4KeyCodeEx key)
 {
-	// TODO: Check if SDL3 migration conversion is correct.
-	const auto wKey = SDL_GetKeyName(SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(key.Key), SDL_KMOD_NONE, true))[0];
-
 	// do hotkey procs for standard alphanumerics only
 	if (key.IsStandardAlphaNumeric())
 	{
-		return OnHotkey(static_cast<char>(TOUPPERIFX11(static_cast<unsigned char>(key.Key))));
+		return OnHotkey(static_cast<char>(C4Strings::ToUpper(static_cast<unsigned char>(key.Key))));
 	}
 
 	return false;

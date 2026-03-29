@@ -306,7 +306,7 @@ bool ContextMenu::KeyHotkey(C4KeyCodeEx key)
 	Element *pPrevSelectedItem = pSelectedItem;
 	if (key.IsStandardAlphaNumeric())
 	{
-		const auto ch = static_cast<char>(TOUPPERIFX11(static_cast<unsigned char>(key.Key)));
+		const auto ch = static_cast<char>(C4Strings::ToUpper(static_cast<unsigned char>(key.Key)));
 
 		// process hotkeys
 		for (Element *pCurr = GetFirst(); pCurr; pCurr = pCurr->GetNext())
