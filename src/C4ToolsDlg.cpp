@@ -65,9 +65,6 @@ void C4ToolsDlg::Default()
 		lpDDraw->LoadTextureFromMemory(DeveloperModeRectImage, DeveloperModeRectImageLength, &RectImage);
 		lpDDraw->LoadTextureFromMemory(DeveloperModePickerImage, DeveloperModePickerImageLength, &PickerImage);
 		lpDDraw->LoadTextureFromMemory(DeveloperModeFillImage, DeveloperModeFillImageLength, &FillImage);
-
-		lpDDraw->LoadTextureFromMemory(DeveloperModeIftImage, DeveloperModeIftImageLength, &IftImage);
-		lpDDraw->LoadTextureFromMemory(DeveloperModeNoIftImage, DeveloperModeNoIftImageLength, &NoIftImage);
 	}
 }
 
