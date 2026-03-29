@@ -264,6 +264,7 @@ if (NOT USE_CONSOLE)
 
 	list(TRANSFORM IMGUI_SOURCES PREPEND src/imgui/)
 	list(APPEND IMGUI_SOURCES src/ImGuiTextselect.hpp src/ImGuiTextselect.cpp)
+	list(APPEND IMGUI_SOURCES src/ImGuiUserConfig.h)
 
 	list(APPEND CLONK_SOURCES ${IMGUI_SOURCES})
 endif ()
@@ -317,6 +318,8 @@ if (USE_CONSOLE)
 	target_compile_definitions(clonk PRIVATE USE_CONSOLE=1)
 else ()
 	add_executable(clonk WIN32 MACOSX_BUNDLE ${CLONK_SOURCES})
+
+	target_compile_definitions(clonk PRIVATE IMGUI_USER_CONFIG="ImGuiUserConfig.h")
 	target_include_directories(clonk PUBLIC src/imgui)
 endif ()
 target_link_libraries(clonk standard)
