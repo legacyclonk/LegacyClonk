@@ -78,9 +78,7 @@ option(USE_TESTS "Enable testing" OFF)
 CMAKE_DEPENDENT_OPTION(ENABLE_SOUND "Compile with sound support" ON
 	"NOT USE_CONSOLE" OFF)
 # USE_SDL_MIXER
-#CMAKE_DEPENDENT_OPTION(USE_SDL_MIXER "Whether SDL2_mixer shall be used for sound" ON "ENABLE_SOUND" OFF)
-# TODO: SDL mixer is currently disabled until sdl3_mixer is implemented.
-set(USE_SDL_MIXER OFF)
+CMAKE_DEPENDENT_OPTION(USE_SDL_MIXER "Whether SDL3_mixer shall be used for sound" ON "ENABLE_SOUND" OFF)
 # USE_SDL_MAINLOOP
 set(USE_SDL_MAINLOOP_DEFAULT ON)
 CMAKE_DEPENDENT_OPTION(USE_SDL_MAINLOOP "Use SDL when we're not a console application" ${USE_SDL_MAINLOOP_DEFAULT}
@@ -328,10 +326,6 @@ endif ()
 target_link_libraries(clonk standard)
 target_compile_definitions(clonk PRIVATE C4ENGINE)
 
-if (USE_SDL_MIXER AND WIN32)
-	target_compile_definitions(clonk PRIVATE SDL_MAIN_HANDLED)
-endif ()
-
 set(RES_STR_TABLE_INPUT "${CMAKE_SOURCE_DIR}/src/C4ResStrTable.txt")
 set(RES_STR_TABLE_OUTPUT_CPP "${CMAKE_BINARY_DIR}/generated/C4ResStrTableGenerated.cpp")
 set(RES_STR_TABLE_OUTPUT_H "${CMAKE_BINARY_DIR}/generated/C4ResStrTableGenerated.h")
@@ -474,11 +468,10 @@ if (USE_SDL_MAINLOOP OR USE_SDL_MIXER)
 	target_link_libraries(clonk SDL3::SDL3)
 endif ()
 
-# TODO: Upgrade to sdl3_mixer
-# Link SDL2_mixer
+# Link SDL3_mixer
 if (USE_SDL_MIXER)
-	find_package(SDL2_mixer REQUIRED)
-	target_link_libraries(clonk SDL2_mixer::SDL2_mixer)
+	find_package(SDL3_mixer REQUIRED)
+	target_link_libraries(clonk SDL3_mixer::SDL3_mixer)
 endif ()
 
 # Link spdlog

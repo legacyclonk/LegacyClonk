@@ -29,12 +29,12 @@
 #include <optional>
 #include <span>
 
-#include <SDL_mixer.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 class C4AudioSystemSdl : public C4AudioSystem
 {
 public:
-	C4AudioSystemSdl(int maxChannels, bool preferLinearResampling);
+	C4AudioSystemSdl(int maxTracks, bool preferLinearResampling);
 	~C4AudioSystemSdl() noexcept override;
 
 	void FadeOutMusic(std::int32_t ms) override;
@@ -43,28 +43,28 @@ public:
 	void SetMusicVolume(float volume) override;
 	void StopMusic() override;
 	void UnpauseMusic() override;
+	MIX_Track* GetFreeAudioTrack();
+	void ReturnAudioTrack(MIX_Track* Track);
+	SDL_PropertiesID LoopProperty;
+	SDL_PropertiesID NoLoopProperty;
+	std::shared_ptr<spdlog::logger> logger;
 
 private:
 	static constexpr int Frequency = 44100;
-	static constexpr Uint16 Format = AUDIO_S16SYS;
+	static constexpr SDL_AudioFormat Format = SDL_AUDIO_S16;
 	static constexpr int NumChannels = 2;
 	static constexpr int BytesPerSecond =
 	Frequency * (SDL_AUDIO_BITSIZE(Format) / 8) * NumChannels;
-	static constexpr int InvalidChannel{-1};
-
-	// Smart pointers for SDL_mixer objects
-	using SDLMixChunkUniquePtr = C4DeleterFunctionUniquePtr<Mix_FreeChunk>;
-	using SDLMixMusicUniquePtr = C4DeleterFunctionUniquePtr<Mix_FreeMusic>;
 
 	std::optional<StdSdlSubSystem> system;
 
 	static void ThrowIfFailed(const char *funcName, bool failed, std::string_view errorMessage = {});
 
-	template <typename T>
-	using SampleLoadFunc = T *(*)(SDL_RWops *, int);
+	static MIX_Audio *LoadSampleCheckMpegLayer3Header(const void *buf, const std::size_t size);
 
-	template <typename T>
-	static T *LoadSampleCheckMpegLayer3Header(SampleLoadFunc<T> loadFunc, const char *funcName, const void *buf, const std::size_t size);
+	MIX_Mixer* Mixer;
+	MIX_Track* MusicTrack;
+	std::vector<MIX_Track*> AudioTracks;
 
 public:
 
@@ -74,12 +74,15 @@ public:
 		MusicFileSdl(const void *buf, std::size_t size);
 
 	private:
-		SDLMixMusicUniquePtr sample;
+		MIX_Audio* sample;
 
 		friend class C4AudioSystemSdl;
 	};
 
-	MusicFile *CreateMusicFile(const void *buf, std::size_t size) override { return new MusicFileSdl{buf, size}; }
+	MusicFile *CreateMusicFile(const void *buf, std::size_t size) override
+	{
+		return new MusicFileSdl{buf, size};
+	}
 
 	class SoundFileSdl;
 
@@ -95,17 +98,20 @@ public:
 		void SetPosition(std::uint32_t ms) override;
 		void SetVolumeAndPan(float volume, float pan) override;
 		void Unpause() override;
-		int GetChannelId() const { return channel.load(std::memory_order_acquire); }
-		void ClearChannelId() { channel.store(InvalidChannel, std::memory_order_release); }
+		MIX_Track* GetAssignedTrack()
+		{
+			return AssignedTrack;
+		};
 
 	private:
-		std::atomic_int channel;
+		MIX_Track* AssignedTrack;
+		MIX_StereoGains StereoGains;
 	};
 
 	SoundChannel *CreateSoundChannel(const SoundFile *const sound, bool loop) override
 	{
+		// Caller manages lifetime.
 		const auto channel = new SoundChannelSdl{static_cast<const SoundFileSdl *>(sound), loop};
-		playingChannels[channel->GetChannelId()] = channel;
 		return channel;
 	}
 
@@ -118,7 +124,7 @@ public:
 		std::uint32_t GetDuration() const override;
 
 	private:
-		const SDLMixChunkUniquePtr sample;
+		MIX_Audio* sample;
 
 		friend class C4AudioSystemSdl;
 	};
@@ -126,10 +132,8 @@ public:
 	virtual SoundFile *CreateSoundFile(const void *buf, std::size_t size) override { return new SoundFileSdl{buf, size}; }
 
 private:
-	std::vector<SoundChannelSdl *> playingChannels;
-
 	static inline C4AudioSystemSdl *instance{nullptr};
-	static void ChannelFinished(int channel);
+	static void TrackFinished(void *userdata, MIX_Track *track);
 };
 
 // this is used instead of MIX_MAX_VOLUME, because MIX_MAX_VOLUME is very loud and easily leads to clipping
@@ -140,50 +144,88 @@ static constexpr auto MaximumMusicVolume = 80;
 // higher than MaximumMusicVolume to compensate for lower maximum panning volume
 static constexpr auto MaximumSoundVolume = 100;
 
-C4AudioSystemSdl::C4AudioSystemSdl(const int maxChannels, const bool preferLinearResampling)
+const char* GetAudioFormatString(const SDL_AudioFormat& AudioFormat)
+{
+	switch (AudioFormat)
+	{
+	case SDL_AUDIO_UNKNOWN:
+		return "SDL_AUDIO_UNKNOWN";
+	case SDL_AUDIO_U8:
+		return "SDL_AUDIO_U8";
+	case SDL_AUDIO_S8:
+		return "SDL_AUDIO_S8";
+	case SDL_AUDIO_S16LE:
+		return "SDL_AUDIO_S16LE";
+	case SDL_AUDIO_S16BE:
+		return "SDL_AUDIO_S16BE";
+	case SDL_AUDIO_S32LE:
+		return "SDL_AUDIO_S32LE";
+	case SDL_AUDIO_S32BE:
+		return "SDL_AUDIO_S32BE";
+	case SDL_AUDIO_F32LE:
+		return "SDL_AUDIO_F32LE";
+	case SDL_AUDIO_F32BE:
+		return "SDL_AUDIO_F32BE";
+	}
+	return "None";
+}
+
+C4AudioSystemSdl::C4AudioSystemSdl(const int maxTracks, const bool preferLinearResampling)
 {
 	assert(!instance);
 	instance = this;
 
-	auto logger = Application.LogSystem.CreateLoggerWithDifferentName(Config.Logging.AudioSystem, "C4AudioSystem");
+	logger = Application.LogSystem.CreateLoggerWithDifferentName(Config.Logging.AudioSystem, "C4AudioSystem");
 
 	// Check SDL_mixer version
-	SDL_version compile_version;
-	MIX_VERSION(&compile_version);
-	const auto link_version = Mix_Linked_Version();
-	logger->info("SDL_mixer runtime version is {}.{}.{} (compiled with {}.{}.{})",
-		link_version->major, link_version->minor, link_version->patch,
-		compile_version.major, compile_version.minor, compile_version.patch);
+	std::int32_t compile_version = MIX_Version();
+	logger->info("SDL_mixer runtime version is {}.{}.{} (compiled with {})",
+		SDL_MIXER_MAJOR_VERSION, SDL_MIXER_MINOR_VERSION, SDL_MIXER_MICRO_VERSION,
+		compile_version);
 
+
+	// TODO: This hint doesn't exist anymore in SDL3. Also linear seems to never have been a valid option.
+	/*
 	// Try to enable linear resampling if requested
 	if (preferLinearResampling)
 	{
 		if (!SDL_SetHint(SDL_HINT_AUDIO_RESAMPLING_MODE, "linear"))
+		{
 			logger->error("SDL_SetHint(SDL_HINT_AUDIO_RESAMPLING_MODE, \"linear\") failed");
+		}
 	}
+	*/
 
 	// Initialize SDL_mixer
 	StdSdlSubSystem system{SDL_INIT_AUDIO};
-	ThrowIfFailed("Mix_OpenAudioDevice",
-		Mix_OpenAudioDevice(Frequency, Format, NumChannels, 1024, nullptr, SDL_AUDIO_ALLOW_ANY_CHANGE & ~SDL_AUDIO_ALLOW_CHANNELS_CHANGE) != 0);
+	ThrowIfFailed("MIX_Init", !MIX_Init());
+	const SDL_AudioSpec AudioSpec{Format, NumChannels, Frequency};
+	Mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &AudioSpec);
+	ThrowIfFailed("MIX_CreateMixerDevice", Mixer == nullptr);
 
-	int frequency;
-	Uint16 format;
-	int channels;
-	Mix_QuerySpec(&frequency, &format, &channels);
+	SDL_AudioSpec Spec;
+	MIX_GetMixerFormat(Mixer, &Spec);
+	logger->debug("SDL_mixer device spec: frequency = {} Hz, format = {}, channels = {}", Spec.freq, GetAudioFormatString(Spec.format), Spec.channels);
 
-	logger->debug("SDL_mixer device spec: frequency = {} Hz, format = {}, channels = {}", frequency, format, channels);
-
-	Mix_AllocateChannels(maxChannels);
-	Mix_ChannelFinished(ChannelFinished);
 	this->system.emplace(std::move(system));
-	playingChannels.resize(maxChannels);
+	AudioTracks.reserve(maxTracks);
+	for (int TrackIndex = 0; TrackIndex < maxTracks; ++TrackIndex)
+	{
+		AudioTracks.emplace_back(MIX_CreateTrack(Mixer));
+		MIX_SetTrackStoppedCallback(AudioTracks.back(), TrackFinished, nullptr);
+	}
+	MusicTrack = MIX_CreateTrack(Mixer);
+
+	LoopProperty = SDL_CreateProperties();
+	SDL_SetNumberProperty(LoopProperty, MIX_PROP_PLAY_LOOPS_NUMBER, -1);
+	NoLoopProperty = SDL_CreateProperties();
+	SDL_SetNumberProperty(NoLoopProperty, MIX_PROP_PLAY_LOOPS_NUMBER, 0);
 }
 
 C4AudioSystemSdl::~C4AudioSystemSdl() noexcept
 {
-	Mix_CloseAudio();
-	Mix_Quit();
+	MIX_DestroyMixer(Mixer); // Will also destroy audio tracks.
+	MIX_Quit();
 }
 
 void C4AudioSystemSdl::ThrowIfFailed(const char *const funcName, const bool failed, std::string_view errorMessage)
@@ -192,7 +234,7 @@ void C4AudioSystemSdl::ThrowIfFailed(const char *const funcName, const bool fail
 	{
 		if (errorMessage.empty())
 		{
-			errorMessage = Mix_GetError();
+			errorMessage = SDL_GetError();
 		}
 
 		throw std::runtime_error{std::format("SDL_mixer: {} failed: {}", funcName, errorMessage)};
@@ -201,40 +243,65 @@ void C4AudioSystemSdl::ThrowIfFailed(const char *const funcName, const bool fail
 
 void C4AudioSystemSdl::FadeOutMusic(const std::int32_t ms)
 {
-	ThrowIfFailed("Mix_FadeOutMusic", Mix_FadeOutMusic(ms) != 1);
+	ThrowIfFailed("MIX_StopTrack", MIX_StopTrack(MusicTrack, MIX_TrackMSToFrames(MusicTrack, ms)) != 1);
 }
 
 bool C4AudioSystemSdl::IsMusicPlaying() const
 {
-	return Mix_PlayingMusic() == 1;
+	return MIX_TrackPlaying(MusicTrack);
 }
 
 void C4AudioSystemSdl::PlayMusic(const C4AudioSystem::MusicFile *const music, const bool loop)
 {
-	ThrowIfFailed("Mix_PlayMusic", Mix_PlayMusic(static_cast<const MusicFileSdl *>(music)->sample.get(), (loop ? -1 : 1)) == -1);
+	MIX_SetTrackAudio(MusicTrack, static_cast<const MusicFileSdl *>(music)->sample);
+	ThrowIfFailed("MIX_PlayTrack", !MIX_PlayTrack(MusicTrack, loop ? LoopProperty : NoLoopProperty));
 }
 
 void C4AudioSystemSdl::SetMusicVolume(const float volume)
 {
-	Mix_VolumeMusic(std::lrint(volume * MaximumMusicVolume));
+	MIX_SetTrackGain(MusicTrack, volume * (MaximumMusicVolume / 100.0f));
 }
 
 void C4AudioSystemSdl::StopMusic()
 {
-	Mix_HaltMusic();
+	MIX_StopTrack(MusicTrack, MIX_TrackMSToFrames(MusicTrack, 100));
 }
 
-void C4AudioSystemSdl::UnpauseMusic() { /* Not supported */ }
-
-template <typename T>
-T *C4AudioSystemSdl::LoadSampleCheckMpegLayer3Header(const SampleLoadFunc<T> loadFunc, const char *const funcName, const void *const buf, const std::size_t size)
+void C4AudioSystemSdl::UnpauseMusic()
 {
-	const auto direct = loadFunc(SDL_RWFromConstMem(buf, size), SDL_TRUE);
+	MIX_ResumeTrack(MusicTrack);
+}
+
+MIX_Track* C4AudioSystemSdl::GetFreeAudioTrack()
+{
+	if (AudioTracks.size())
+	{
+		MIX_Track* FreeTrack = AudioTracks.back();
+		AudioTracks.pop_back();
+		return FreeTrack;
+	}
+	return nullptr;
+}
+
+void C4AudioSystemSdl::ReturnAudioTrack(MIX_Track* Track)
+{
+	AudioTracks.push_back(Track);
+}
+
+MIX_Audio *C4AudioSystemSdl::LoadSampleCheckMpegLayer3Header(const void *const buf, const std::size_t size)
+{
+	if(!C4AudioSystemSdl::instance)
+	{
+		ThrowIfFailed("LoadSampleCheckMpegLayer3Header", true, "C4AudioSystemSdl Instance invalid.");
+		return nullptr;
+	}
+
+	MIX_Audio* const direct = MIX_LoadAudio_IO(C4AudioSystemSdl::instance->Mixer, SDL_IOFromConstMem(buf, size), true, true);
 	if (direct)
 	{
 		return direct;
 	}
-	const std::string error{Mix_GetError()};
+	const std::string error{SDL_GetError()};
 
 	// According to http://www.idea2ic.com/File_Formats/MPEG%20Audio%20Frame%20Header.pdf
 	// Maximum possible frame size = 144 * max bit rate / min sample rate + padding
@@ -266,74 +333,99 @@ T *C4AudioSystemSdl::LoadSampleCheckMpegLayer3Header(const SampleLoadFunc<T> loa
 		if ((byte4 & std::byte{0x03}) == std::byte{0x02}) continue;
 
 		// at this point there seems to be a valid MPEG frame header
-		const auto sample = loadFunc(SDL_RWFromConstMem(data.data() + i, size - i), SDL_TRUE);
+		MIX_Audio* const sample = MIX_LoadAudio_IO(C4AudioSystemSdl::instance->Mixer, SDL_IOFromConstMem(data.data() + i, size - i), true, true);
 		if (sample)
 		{
 			return sample;
 		}
 	}
 
-	ThrowIfFailed(funcName, true, error);
+	ThrowIfFailed("MIX_LoadAudio", true, error);
 	return nullptr;
 }
 
 C4AudioSystemSdl::MusicFileSdl::MusicFileSdl(const void *const buf, const std::size_t size)
-	: sample{LoadSampleCheckMpegLayer3Header(Mix_LoadMUS_RW, "Mix_LoadMUS_RW", buf, size)}
+	: sample{LoadSampleCheckMpegLayer3Header(buf, size)}
 {}
 
 C4AudioSystemSdl::SoundFileSdl::SoundFileSdl(const void *const buf, const std::size_t size)
-	: sample{LoadSampleCheckMpegLayer3Header(Mix_LoadWAV_RW, "Mix_LoadWAV_RW", buf, size)}
+	: sample{LoadSampleCheckMpegLayer3Header(buf, size)}
 {}
 
 std::uint32_t C4AudioSystemSdl::SoundFileSdl::GetDuration() const
 {
-	return 1000 * sample->alen / BytesPerSecond;
+	return MIX_AudioFramesToMS(sample, MIX_GetAudioDuration(sample));
 }
 
 C4AudioSystemSdl::SoundChannelSdl::SoundChannelSdl(const SoundFileSdl *const sound, const bool loop)
-	: channel{Mix_PlayChannel(-1, sound->sample.get(), (loop ? -1 : 0))}
 {
-	ThrowIfFailed("Mix_PlayChannel", GetChannelId() == InvalidChannel);
+	if(!C4AudioSystemSdl::instance)
+	{
+		ThrowIfFailed("SoundChannelSdl", true, "C4AudioSystemSdl Instance invalid.");
+		return;
+	}
+
+	StereoGains.left = 0.0f;
+	StereoGains.right = 0.0f;
+
+	MIX_Track* Track = C4AudioSystemSdl::instance->GetFreeAudioTrack();
+	if(Track)
+	{
+		this->AssignedTrack = Track;
+		ThrowIfFailed("MIX_SetTrackAudio", !MIX_SetTrackAudio(Track, sound->sample));
+		ThrowIfFailed("MIX_PlayTrack", !MIX_PlayTrack(Track, loop ? C4AudioSystemSdl::instance->LoopProperty : C4AudioSystemSdl::instance->NoLoopProperty));
+		MIX_PauseTrack(Track); // Unpaused in outer AudioSystem
+	}
 }
 
 C4AudioSystemSdl::SoundChannelSdl::~SoundChannelSdl()
 {
-	if (const auto ch = channel.load(std::memory_order::acquire); ch != InvalidChannel)
+	if(C4AudioSystemSdl::instance && AssignedTrack)
 	{
-		Mix_HaltChannel(ch);
+		MIX_StopTrack(AssignedTrack, 0);
+		C4AudioSystemSdl::instance->ReturnAudioTrack(AssignedTrack);
 	}
 }
 
 bool C4AudioSystemSdl::SoundChannelSdl::IsPlaying() const
 {
-	const auto ch = channel.load(std::memory_order::acquire);
-	return ch != InvalidChannel && Mix_Playing(ch) == 1;
+	if(AssignedTrack)
+	{
+		return MIX_TrackPlaying(AssignedTrack);
+	}
+	return false;
 }
 
 void C4AudioSystemSdl::SoundChannelSdl::SetPosition(const std::uint32_t ms)
 {
-	// Not supported
+	if(AssignedTrack)
+	{
+		MIX_SetTrackPlaybackPosition(AssignedTrack, MIX_TrackMSToFrames(AssignedTrack, ms));
+	}
 }
 
 void C4AudioSystemSdl::SoundChannelSdl::SetVolumeAndPan(const float volume, const float pan)
 {
-	const auto ch = channel.load(std::memory_order::acquire);
-	if (ch == InvalidChannel) return;
-
-	Mix_Volume(ch, std::lrint(volume * MaximumSoundVolume));
-	const Uint8
-		left  = static_cast<Uint8>(std::clamp(std::lrint((1.0f - pan) * 192.0f), 0L, 192L)),
-		right = static_cast<Uint8>(std::clamp(std::lrint((1.0f + pan) * 192.0f), 0L, 192L));
-	ThrowIfFailed("Mix_SetPanning", Mix_SetPanning(ch, left, right) == 0);
+	if(!AssignedTrack)
+	{
+		return;
+	}
+	ThrowIfFailed("MIX_SetTrackGain", !MIX_SetTrackGain(AssignedTrack, volume * (MaximumSoundVolume / 100.0f)));
+	StereoGains.left = 1.0f - pan;
+	StereoGains.right = 1.0f + pan;
+	ThrowIfFailed("MIX_SetTrackStereo", !MIX_SetTrackStereo(AssignedTrack, &StereoGains));
 }
 
-void C4AudioSystemSdl::SoundChannelSdl::Unpause() { /* Not supported */ }
-
-void C4AudioSystemSdl::ChannelFinished(int channel)
+void C4AudioSystemSdl::SoundChannelSdl::Unpause()
 {
-	auto &soundInstance = instance->playingChannels[channel];
-	soundInstance->ClearChannelId();
-	soundInstance = nullptr;
+	if(AssignedTrack)
+	{
+		MIX_ResumeTrack(AssignedTrack);
+	}
+}
+
+void C4AudioSystemSdl::TrackFinished(void *userdata, MIX_Track *track)
+{
 }
 
 C4AudioSystem *CreateC4AudioSystemSdl(int maxChannels, const bool preferLinearResampling)
