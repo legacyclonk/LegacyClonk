@@ -255,7 +255,7 @@ void C4Console::InitGUI()
 		lpDDraw->LoadTextureFromMemory(DeveloperModeHaltImage, DeveloperModeHaltImageLength, &HaltImage);
 	}
 
-	ImGui.emplace(sdlWindow);
+	InitImGui();
 	Draw();
 	SDL_ShowWindow(sdlWindow);
 }
@@ -888,11 +888,9 @@ void C4Console::Execute()
 {
 	EditCursor.Execute();
 	PropertyDlg.Execute();
-	//ObjectListDlg.Execute();
 
 	Game.GraphicsSystem.Execute();
 	Draw();
-
 }
 
 int C4Console::TextEditCallbackStub(ImGuiInputTextCallbackData* data)

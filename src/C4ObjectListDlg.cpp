@@ -795,11 +795,133 @@ C4ObjectListDlg::C4ObjectListDlg() {}
 
 C4ObjectListDlg::~C4ObjectListDlg() {}
 
-void C4ObjectListDlg::Execute() {}
+void C4ObjectListDlg::Open()
+{
+	Active = true;
+}
 
-void C4ObjectListDlg::Open() {}
 
-void C4ObjectListDlg::Update(C4ObjectList &rSelection) {}
+void C4ObjectListDlg::Draw(C4Viewport* OwnerViewport)
+{
+	if (!Active)
+	{
+		return;
+	}
+
+	static ImVec2 PropertySizeMin{250, 150};
+	static ImVec2 PropertySizeMax{500, 1200};
+	ImGui::SetNextWindowSizeConstraints(PropertySizeMin, PropertySizeMax);
+	ImGui::Begin("Object list", &Active, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar);
+
+	if (ImGui::BeginMenuBar())
+	{
+		if (ImGui::BeginMenu("Select"))
+		{
+			if (ImGui::MenuItem("All"))
+			{
+				Console.EditCursor.SelectAll();
+			}
+
+			ImGui::Separator();
+
+			if (ImGui::MenuItem("None"))
+			{
+				Console.EditCursor.GetSelection().Clear();
+			}
+
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
+	}
+
+	ImGuiInputTextFlags InputFlags = ImGuiInputTextFlags_AutoSelectAll;
+	static char FilterInput[64] = "";
+	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+	ImGui::InputTextWithHint("", "Search", FilterInput, IM_COUNTOF(FilterInput), InputFlags);
+
+	StdStrBuf Filter{FilterInput};
+	Filter.TrimSpaces();
+
+	std::vector<C4Object*> Objects; // For element order.
+	std::unordered_map<C4Object*, bool> ObjectsSelection; // For fast access of selection.
+	const std::int32_t ObjectCount {Game.Objects.ObjectCount()};
+
+	if(ObjectCount == 0)
+	{
+		ImGui::TextUnformatted("No objects.");
+
+		ImGui::End();
+		return;
+	}
+
+	Objects.reserve(ObjectCount);
+	ObjectsSelection.reserve(ObjectCount);
+
+	for (C4Object* GameObject : Game.Objects)
+	{
+		if(Filter.getLength() > 0 &&
+			SSearchNoCase(GameObject->GetName(), Filter.getData()) == nullptr &&
+			SSearchNoCase(C4IdText(GameObject->id), Filter.getData()) == nullptr)
+		{
+			continue;
+		}
+		Objects.push_back(GameObject);
+		ObjectsSelection[GameObject] = false;
+	}
+	std::uint32_t SelectionCount = 0;
+	for (C4Object* GameObject : Console.EditCursor.GetSelection())
+	{
+		if(ObjectsSelection.contains(GameObject))
+		{
+			ObjectsSelection[GameObject] = true;
+			SelectionCount++;
+		}
+	}
+
+	ImVec2 RegionSize = ImGui::GetContentRegionAvail();
+	ImGui::BeginChild("##objectlist", ImVec2(0.0f, RegionSize.y - 20.0f), ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NoMove);
+
+	ImGuiListClipper ObjectListClipper;
+	ObjectListClipper.Begin(Objects.size());
+	while (ObjectListClipper.Step())
+	{
+		for (std::int32_t line_no = ObjectListClipper.DisplayStart; line_no < ObjectListClipper.DisplayEnd; line_no++)
+		{
+			C4Object* CurrentObject = Objects[line_no];
+			if(ImGui::Selectable(std::format("{}: {} ({})", line_no + 1, CurrentObject != nullptr ? CurrentObject->GetName() : "Invalid", C4IdText(CurrentObject->id)).c_str(), ObjectsSelection.at(CurrentObject)))
+			{
+				if(ObjectsSelection.at(CurrentObject) && SelectionCount == 1)
+				{
+					if(OwnerViewport)
+					{
+						OwnerViewport->FocusPosition(CurrentObject->x, CurrentObject->y);
+					}
+				}
+
+				if(!Application.IsShiftDown())
+				{
+					Console.EditCursor.GetSelection().Clear();
+				}
+				Console.EditCursor.ToggleTargetSelection(CurrentObject);
+			}
+		}
+	}
+	if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+	{
+		ImGui::SetScrollY(1.0f);
+	}
+
+	ImGui::EndChild();
+
+	ImGui::Text("%i object(s) | %i selected", ObjectCount, SelectionCount);
+
+	ImGui::End();
+}
+
+void C4ObjectListDlg::Update(C4ObjectList &rSelection)
+{
+
+}
 
 void C4ObjectListDlg::OnObjectRemove(C4ObjectList *pList, C4ObjectLink *pLnk) {}
 

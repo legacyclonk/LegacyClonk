@@ -80,8 +80,10 @@ public:
 	bool Init();
 	bool EditingOK();
 	C4ObjectList &GetSelection() { return Selection; }
+	void SelectAll();
 	void SetHold(bool fToState) { Hold = fToState; }
 	void OnSelectionChanged();
+	void ToggleTargetSelection(C4Object* Target);
 	bool AltDown();
 	bool AltUp();
 	StdStrBuf GetStatusBarText() const;

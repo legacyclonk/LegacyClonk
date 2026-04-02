@@ -119,6 +119,7 @@ public:
 	bool IsViewportMenu(class C4Menu *pMenu);
 	int32_t GetPlayer() { return Player; }
 	void CenterPosition();
+	void FocusPosition(std::int32_t x, std::int32_t y);
 	C4ViewportWindow* GetViewportWindow() { return pWindow; }
 
 protected:

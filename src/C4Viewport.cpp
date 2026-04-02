@@ -810,6 +810,7 @@ void C4ViewportWindow::DrawImGui(C4Viewport& OwnerViewport)
 		//Console.PropertyDlg.Open(); // TODO: Make dialogues open based on tool mode.
 		Console.PropertyDlg.Draw();
 		Console.ToolsDlg.Draw();
+		Console.ObjectListDlg.Draw(&OwnerViewport);
 
 		Console.EditCursor.DrawContextMenu();
 
@@ -934,9 +935,6 @@ void C4ViewportWindow::HandleMessage(SDL_Event& sdl_event)
 		break;
 	// TODO: Drop Def custom message or alternative implementation
 	// TODO: Reload File custom message or alternative implementation
-	// TODO: Scrolling (Scrollbars) probably needs to be done via ImGUI
-
-
 
 	}
 
@@ -1483,6 +1481,13 @@ void C4Viewport::CenterPosition()
 	ViewX = (GBackWdt - ViewWdt) / 2;
 	ViewY = (GBackHgt - ViewHgt) / 2;
 	// clips and updates
+	UpdateViewPosition();
+}
+
+void C4Viewport::FocusPosition(std::int32_t x, std::int32_t y)
+{
+	ViewX = x - (ViewWdt / 2);
+	ViewY = y - (ViewHgt / 2);
 	UpdateViewPosition();
 }
 

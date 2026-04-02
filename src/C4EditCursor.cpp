@@ -199,6 +199,18 @@ void C4EditCursor::OnSelectionChanged()
 	fSelectionChanged = true;
 }
 
+void C4EditCursor::ToggleTargetSelection(C4Object* Target)
+{
+	if (Target)
+	{
+		if (!Selection.Remove(Target))
+		{
+			Selection.Add(Target, C4ObjectList::stNone);
+		}
+		OnSelectionChanged();
+	}
+}
+
 bool C4EditCursor::LeftButtonDown(bool fControl)
 {
 	// Hold
@@ -251,6 +263,8 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 	OnSelectionChanged();
 	return true;
 }
+
+
 
 bool C4EditCursor::RightButtonDown(bool fControl)
 {
@@ -604,7 +618,7 @@ void C4EditCursor::DrawContextMenu()
 		{
 			Delete();
 		}
-
+		// TODO: Make shortcut functional
 		if (ImGui::MenuItem(LoadResStr(C4ResStrTableKey::IDS_MNU_DUPLICATE), "Ctrl+D"))
 		{
 			Duplicate();
@@ -619,9 +633,13 @@ void C4EditCursor::DrawContextMenu()
 
 		ImGui::Separator();
 
-		if (ImGui::MenuItem(LoadResStrV((Mode == ConsoleMode::Edit) ? C4ResStrTableKey::IDS_CNS_PROPERTIES : C4ResStrTableKey::IDS_CNS_TOOLS)))
+		if (ImGui::MenuItem(LoadResStrV((Mode == ConsoleMode::Draw) ? C4ResStrTableKey::IDS_CNS_TOOLS : C4ResStrTableKey::IDS_CNS_PROPERTIES)))
 		{
 			OpenPropTools();
+		}
+		if (ImGui::MenuItem("Object List"))
+		{
+			Console.ObjectListDlg.Open();
 		}
 
 		ImGui::EndPopup();
@@ -680,6 +698,12 @@ bool C4EditCursor::EditingOK()
 		return false;
 	}
 	return true;
+}
+
+void C4EditCursor::SelectAll()
+{
+	Selection.Copy(Game.Objects);
+	OnSelectionChanged();
 }
 
 ConsoleMode C4EditCursor::GetMode() const
