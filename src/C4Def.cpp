@@ -1118,10 +1118,7 @@ bool C4DefList::Remove(C4ID id)
 
 void C4DefList::Remove(C4Def *def)
 {
-	if (const auto it = std::find_if(Defs.begin(), Defs.end(), [def](const auto &check)
-		{
-			return check.get() == def;
-		}); it != Defs.end())
+	if (const auto it = std::ranges::find(Defs, def, &std::unique_ptr<C4Def>::get); it != Defs.end())
 	{
 		Defs.erase(it);
 	}
@@ -1219,7 +1216,7 @@ int32_t C4DefList::CheckRequireDef()
 
 int32_t C4DefList::ColorizeByMaterial(C4MaterialMap &rMats, uint8_t bGBM)
 {
-	return std::count_if(Defs.begin(), Defs.end(), [bGBM, &rMats](const auto &def)
+	return std::ranges::count_if(Defs, [bGBM, &rMats](const auto &def)
 	{
 		return def->ColorizeByMaterial(rMats, bGBM);
 	});
@@ -1406,34 +1403,26 @@ void C4DefList::SortByID()
 	//  within the same object pack and multiple appendtos with function overloads that depend on their
 	//  order.)
 
-	std::sort(Defs.begin(), Defs.end(), [](const auto &a, const auto &b)
-	{
-		return a->id < b->id;
-	});
+	std::ranges::sort(Defs, std::ranges::less{}, &C4Def::id);
 
 	Sorted = true;
 }
 
 void C4DefList::Synchronize()
 {
-	for (const auto &it : Defs)
-		it->Synchronize();
+	std::ranges::for_each(Defs, &C4Def::Synchronize);
 }
 
 void C4DefList::ResetIncludeDependencies()
 {
-	for (const auto &it : Defs)
-		it->ResetIncludeDependencies();
+	std::ranges::for_each(Defs, &C4Def::ResetIncludeDependencies);
 }
 
 std::vector<std::unique_ptr<C4Def>>::iterator C4DefList::FindDefByID(C4ID id)
 {
 	if (Sorted)
 	{
-		const auto it = std::lower_bound(Defs.begin(), Defs.end(), id, [](const auto &def, C4ID id)
-		{
-			return def->id < id;
-		});
+		const auto it = std::ranges::lower_bound(Defs, id, std::ranges::less{}, &C4Def::id);
 		if (it != Defs.end() && (*it)->id != id)
 		{
 			return Defs.end();
@@ -1441,8 +1430,5 @@ std::vector<std::unique_ptr<C4Def>>::iterator C4DefList::FindDefByID(C4ID id)
 		return it;
 	}
 
-	return std::find_if(Defs.begin(), Defs.end(), [id](const auto &def)
-	{
-		return def->id == id;
-	});
+	return std::ranges::find(Defs, id, &C4Def::id);
 }
