@@ -946,14 +946,9 @@ int32_t C4DefList::Load(C4Group &hGroup, uint32_t dwLoadWhat,
 
 	auto def = std::make_unique<C4Def>();
 	// Load primary definition
-	if (def->Load(hGroup, dwLoadWhat, szLanguage, pSoundSystem) && Add(def.get(), fOverload))
+	if (def->Load(hGroup, dwLoadWhat, szLanguage, pSoundSystem) && Add(std::move(def), fOverload))
 	{
 		iResult++; fPrimaryDef = true;
-		def.release();
-	}
-	else
-	{
-		def.reset();
 	}
 
 	// Load sub definitions
@@ -1076,12 +1071,12 @@ int32_t C4DefList::Load(const char *szSearch,
 	return iResult;
 }
 
-bool C4DefList::Add(C4Def *pDef, bool fOverload)
+bool C4DefList::Add(std::unique_ptr<C4Def> def, bool fOverload)
 {
-	if (!pDef) return false;
+	if (!def) return false;
 
 	// Check old def to overload
-	const auto old = FindDefByID(pDef->id);
+	auto old = FindDefByID(def->id);
 	const auto hasOld = (old != Defs.end());
 	if (hasOld && !fOverload) return false;
 
@@ -1089,23 +1084,23 @@ bool C4DefList::Add(C4Def *pDef, bool fOverload)
 	if (Config.Graphics.VerboseObjectLoading >= 1)
 		if (hasOld)
 		{
-			Log(C4ResStrTableKey::IDS_PRC_DEFOVERLOAD, pDef->GetName(), C4IdText((*old)->id));
+			Log(C4ResStrTableKey::IDS_PRC_DEFOVERLOAD, def->GetName(), C4IdText((*old)->id));
 			if (Config.Graphics.VerboseObjectLoading >= 2)
 			{
 				LogNTr("      Old def at {}", +(*old)->Filename);
-				LogNTr("     Overload by {}", +pDef->Filename);
+				LogNTr("     Overload by {}", +def->Filename);
 			}
 		}
 
 	if (hasOld)
 	{
 		// Replace old def
-		old->reset(pDef);
+		*old = std::move(def);
 	}
 	else
 	{
 		// Add new def
-		Defs.emplace_back(pDef);
+		Defs.emplace_back(std::move(def));
 	}
 
 	return true;
