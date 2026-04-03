@@ -314,12 +314,11 @@ bool C4GraphicsSystem::InitLoaderScreen(const char *szLoaderSpec)
 bool C4GraphicsSystem::CloseViewport(int32_t iPlayer, bool fSilent)
 {
 	// Close all matching viewports
-	if (const auto it = std::remove_if(Viewports.begin(), Viewports.end(), [iPlayer](const auto &viewport)
+	if (std::erase_if(Viewports, [iPlayer](const auto &viewport)
 		{
 			return viewport->Player == iPlayer || (iPlayer == NO_OWNER && viewport->fIsNoOwnerViewport);
-		}); it != Viewports.end())
+		}))
 	{
-		Viewports.erase(it, Viewports.end());
 		// Recalculate viewports
 		RecalculateViewports();
 		if (!fSilent)

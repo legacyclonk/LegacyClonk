@@ -1186,17 +1186,10 @@ C4Def *C4DefList::GetByPath(const char *szPath)
 
 int32_t C4DefList::CheckEngineVersion(int32_t ver1, int32_t ver2, int32_t ver3, int32_t ver4, int32_t ver5)
 {
-	int32_t rcount = 0;
-	Defs.erase(std::remove_if(Defs.begin(), Defs.end(), [ver1, ver2, ver3, ver4, ver5, &rcount](const auto &def)
+	return std::erase_if(Defs, [ver1, ver2, ver3, ver4, ver5](const auto &def)
 	{
-		if (CompareVersion(def->rC4XVer[0], def->rC4XVer[1], def->rC4XVer[2], def->rC4XVer[3], def->rC4XVer[4], ver1, ver2, ver3, ver4, ver5) > 0)
-		{
-			++rcount;
-			return true;
-		}
-		return false;
-	}), Defs.end());
-	return rcount;
+		return CompareVersion(def->rC4XVer[0], def->rC4XVer[1], def->rC4XVer[2], def->rC4XVer[3], def->rC4XVer[4], ver1, ver2, ver3, ver4, ver5) > 0;
+	});
 }
 
 int32_t C4DefList::CheckRequireDef()

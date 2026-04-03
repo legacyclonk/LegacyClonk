@@ -76,6 +76,6 @@ const char *LoadResStrV(const C4ResStrTableKey id)
 std::string LoadResStrNoAmpV(const C4ResStrTableKey id)
 {
 	std::string result{LoadResStrV(id)};
-	result.erase(std::remove(result.begin(), result.end(), '&'), result.end());
+	std::erase(result, '&');
 	return result;
 }

@@ -255,10 +255,10 @@ C4GameMessageList::~C4GameMessageList()
 
 void C4GameMessageList::ClearPointers(C4Object *pObj)
 {
-	Messages.erase(std::remove_if(Messages.begin(), Messages.end(), [pObj](const auto &msg)
+	std::erase_if(Messages, [pObj](const auto &msg)
 	{
 		return msg->Target == pObj;
-	}), Messages.end());
+	});
 }
 
 void C4GameMessageList::Clear()
@@ -268,10 +268,10 @@ void C4GameMessageList::Clear()
 
 void C4GameMessageList::Execute()
 {
-	Messages.erase(std::remove_if(Messages.begin(), Messages.end(), [](const auto &msg)
+	std::erase_if(Messages, [](const auto &msg)
 	{
 		return !msg->Execute();
-	}), Messages.end());
+	});
 }
 
 bool C4GameMessageList::New(int32_t iType, const char *szText,
@@ -331,10 +331,10 @@ bool C4GameMessageList::Append(int32_t iType, const char *szText, C4Object *pTar
 
 void C4GameMessageList::ClearPlayers(int32_t iPlayer, int32_t dwPositioningFlags)
 {
-	Messages.erase(std::remove_if(Messages.begin(), Messages.end(), [iPlayer, dwPositioningFlags](const auto &msg)
+	std::erase_if(Messages, [iPlayer, dwPositioningFlags](const auto &msg)
 	{
 		return msg->Player == iPlayer && msg->GetPositioningFlags() == dwPositioningFlags;
-	}), Messages.end());
+	});
 }
 
 void C4GameMessageList::UpdateDef(C4ID idUpdDef)
