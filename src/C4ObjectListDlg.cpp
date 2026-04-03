@@ -797,21 +797,20 @@ C4ObjectListDlg::~C4ObjectListDlg() {}
 
 void C4ObjectListDlg::Open()
 {
-	Active = true;
+	opened = true;
 }
 
-
-void C4ObjectListDlg::Draw(C4Viewport* OwnerViewport)
+void C4ObjectListDlg::Draw(C4Viewport* ownerViewport)
 {
-	if (!Active)
+	if (!opened)
 	{
 		return;
 	}
 
-	static ImVec2 PropertySizeMin{250, 150};
-	static ImVec2 PropertySizeMax{500, 1200};
-	ImGui::SetNextWindowSizeConstraints(PropertySizeMin, PropertySizeMax);
-	ImGui::Begin("Object list", &Active, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar);
+	static ImVec2 propertySizeMin{250, 150};
+	static ImVec2 propertySizeMax{500, 1200};
+	ImGui::SetNextWindowSizeConstraints(propertySizeMin, propertySizeMax);
+	ImGui::Begin("Object list", &opened, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar);
 
 	if (ImGui::BeginMenuBar())
 	{
@@ -834,19 +833,9 @@ void C4ObjectListDlg::Draw(C4Viewport* OwnerViewport)
 		ImGui::EndMenuBar();
 	}
 
-	ImGuiInputTextFlags InputFlags = ImGuiInputTextFlags_AutoSelectAll;
-	static char FilterInput[64] = "";
-	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-	ImGui::InputTextWithHint("", "Search", FilterInput, IM_COUNTOF(FilterInput), InputFlags);
+	const std::int32_t objectCount{Game.Objects.ObjectCount()};
 
-	StdStrBuf Filter{FilterInput};
-	Filter.TrimSpaces();
-
-	std::vector<C4Object*> Objects; // For element order.
-	std::unordered_map<C4Object*, bool> ObjectsSelection; // For fast access of selection.
-	const std::int32_t ObjectCount {Game.Objects.ObjectCount()};
-
-	if(ObjectCount == 0)
+	if(objectCount == 0)
 	{
 		ImGui::TextUnformatted("No objects.");
 
@@ -854,47 +843,120 @@ void C4ObjectListDlg::Draw(C4Viewport* OwnerViewport)
 		return;
 	}
 
-	Objects.reserve(ObjectCount);
-	ObjectsSelection.reserve(ObjectCount);
+	ImGuiInputTextFlags inputFlags{ImGuiInputTextFlags_AutoSelectAll};
+	static char filterInput[64]{""};
+	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+	ImGui::InputTextWithHint("", "Search", filterInput, IM_COUNTOF(filterInput), inputFlags);
 
-	for (C4Object* GameObject : Game.Objects)
+	StdStrBuf filter{filterInput};
+	filter.TrimSpaces();
+
+	std::vector<C4Object*> objects; // For element order.
+	objects.reserve(objectCount);
+	std::unordered_map<C4Object*, bool> objectsSelection; // For fast access of selection.
+	objectsSelection.reserve(objectCount);
+	std::unordered_map<C4Object*, std::int8_t> objectsContainedDepth;
+	objectsContainedDepth.reserve(64);
+	bool filterActive = filter.getLength() > 0;
+	for (C4Object *gameObject : Game.Objects)
 	{
-		if(Filter.getLength() > 0 &&
-			SSearchNoCase(GameObject->GetName(), Filter.getData()) == nullptr &&
-			SSearchNoCase(C4IdText(GameObject->id), Filter.getData()) == nullptr)
+		objectsSelection[gameObject] = false;
+
+		if(filterActive &&
+			SSearchNoCase(gameObject->GetName(), filter.getData()) == nullptr &&
+			SSearchNoCase(C4IdText(gameObject->id), filter.getData()) == nullptr)
 		{
 			continue;
 		}
-		Objects.push_back(GameObject);
-		ObjectsSelection[GameObject] = false;
-	}
-	std::uint32_t SelectionCount = 0;
-	for (C4Object* GameObject : Console.EditCursor.GetSelection())
-	{
-		if(ObjectsSelection.contains(GameObject))
+
+		if(gameObject->Contained && !filterActive)
 		{
-			ObjectsSelection[GameObject] = true;
-			SelectionCount++;
+			continue;
+		}
+
+		objects.push_back(gameObject);
+
+		// Show objects in a flat list when a search is active.
+		if(filterActive)
+		{
+			continue;
+		}
+
+		std::vector<C4Object*> contents;
+		contents.reserve(gameObject->Contents.ObjectCount());
+		for (C4Object *content : gameObject->Contents)
+		{
+			contents.push_back(content);
+			objectsContainedDepth[content] = 1;
+		}
+		C4Object *containedObject{contents.size() > 0 ? contents[0] : nullptr};
+		std::int32_t insertAt{0};
+		std::int8_t depth{1};
+		while (containedObject)
+		{
+			depth = objectsContainedDepth[containedObject]; // Reset depth
+			insertAt++;
+
+			std::int32_t ContentCount = containedObject->Contents.ObjectCount();
+			if(ContentCount)
+			{
+				std::vector<C4Object*> Contents2;
+				Contents2.reserve(ContentCount);
+				depth++;
+				for (C4Object* Content : containedObject->Contents)
+				{
+					Contents2.push_back(Content);
+					objectsContainedDepth[Content] = depth;
+				}
+				contents.insert_range(contents.cbegin() + insertAt, Contents2);
+			}
+
+			containedObject = insertAt < contents.size() ? contents[insertAt] : nullptr;
+		}
+
+		objects.append_range(contents);
+	}
+	std::uint32_t selectionCount{0};
+	for (C4Object *gameObject : Console.EditCursor.GetSelection())
+	{
+		if(objectsSelection.contains(gameObject))
+		{
+			objectsSelection[gameObject] = true;
+			selectionCount++;
 		}
 	}
 
-	ImVec2 RegionSize = ImGui::GetContentRegionAvail();
-	ImGui::BeginChild("##objectlist", ImVec2(0.0f, RegionSize.y - 20.0f), ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NoMove);
+	ImVec2 regionSize{ImGui::GetContentRegionAvail()};
+	ImGui::BeginChild("##objectList", ImVec2(0.0f, regionSize.y - 20.0f), ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NoMove);
 
-	ImGuiListClipper ObjectListClipper;
-	ObjectListClipper.Begin(Objects.size());
-	while (ObjectListClipper.Step())
+	ImGuiListClipper objectListClipper;
+	objectListClipper.Begin(objects.size());
+	const ImVec4 objectNumberColor{0.5f, 0.5f, 0.5f, 0.5f};
+	while (objectListClipper.Step())
 	{
-		for (std::int32_t line_no = ObjectListClipper.DisplayStart; line_no < ObjectListClipper.DisplayEnd; line_no++)
+		for (std::int32_t lineNo = objectListClipper.DisplayStart; lineNo < objectListClipper.DisplayEnd; lineNo++)
 		{
-			C4Object* CurrentObject = Objects[line_no];
-			if(ImGui::Selectable(std::format("{}: {} ({})", line_no + 1, CurrentObject != nullptr ? CurrentObject->GetName() : "Invalid", C4IdText(CurrentObject->id)).c_str(), ObjectsSelection.at(CurrentObject)))
+			C4Object *const currentObject{objects[lineNo]};
+			std::int8_t depth{0};
+			std::string depthString{""};
+			if(objectsContainedDepth.contains(currentObject))
 			{
-				if(ObjectsSelection.at(CurrentObject) && SelectionCount == 1)
+				depth = objectsContainedDepth[currentObject];
+				depthString = std::string(depth * 2, ' ') + "- ";
+			}
+			const char* label{std::format("{}{} ({})##{}",
+				depthString,
+				currentObject != nullptr ? currentObject->GetName() : "Invalid",
+				C4IdText(currentObject->id),
+				lineNo).c_str()}; // Invisible and needed for unique imgui ids.
+			if(ImGui::Selectable(label,
+				objectsSelection.at(currentObject)))
+			{
+				if(objectsSelection.at(currentObject) && selectionCount == 1)
 				{
-					if(OwnerViewport)
+					if(ownerViewport)
 					{
-						OwnerViewport->FocusPosition(CurrentObject->x, CurrentObject->y);
+						ownerViewport->FocusPosition(currentObject->x, currentObject->y);
 					}
 				}
 
@@ -902,25 +964,19 @@ void C4ObjectListDlg::Draw(C4Viewport* OwnerViewport)
 				{
 					Console.EditCursor.GetSelection().Clear();
 				}
-				Console.EditCursor.ToggleTargetSelection(CurrentObject);
+				Console.EditCursor.ToggleTargetSelection(currentObject);
 			}
+			ImGui::SameLine();
+			ImGui::TextColored(objectNumberColor, std::format("#{}", currentObject != nullptr ? currentObject->Number : -1).c_str());
 		}
 	}
-	if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
-	{
-		ImGui::SetScrollY(1.0f);
-	}
+	// TODO: Scroll towards item that was selected outside of imgui.
 
 	ImGui::EndChild();
 
-	ImGui::Text("%i object(s) | %i selected", ObjectCount, SelectionCount);
+	ImGui::Text("%i object(s) | %i selected", objectCount, selectionCount);
 
 	ImGui::End();
-}
-
-void C4ObjectListDlg::Update(C4ObjectList &rSelection)
-{
-
 }
 
 void C4ObjectListDlg::OnObjectRemove(C4ObjectList *pList, C4ObjectLink *pLnk) {}

@@ -79,7 +79,6 @@ void C4EditCursor::Execute()
 	{
 		fSelectionChanged = false;
 		Console.PropertyDlg.Update(Selection);
-		Console.ObjectListDlg.Update(Selection);
 	}
 }
 
