@@ -1366,21 +1366,21 @@ void CStdGL::BindGammaTextures()
 
 // Simple helper function to load an image into a OpenGL texture with common settings.
 // Reference (https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples#example-for-opengl-users)
-bool CStdGL::LoadTextureFromMemory(const void* data, size_t data_size, std::uint32_t* out_texture, int* out_width, int* out_height)
+bool CStdGL::LoadTextureFromMemory(const void *data, std::uint32_t dataSize, std::uint32_t *outTexture, int *outWidth, int *outHeight)
 {
 	// Load from file
-	int image_width = 0;
-	int image_height = 0;
-	unsigned char* image_data = stbi_load_from_memory((const unsigned char*)data, (int)data_size, &image_width, &image_height, NULL, 4);
-	if (image_data == NULL)
+	int imageWidth{0};
+	int imageHeight{0};
+	std::uint8_t *imageData = stbi_load_from_memory(reinterpret_cast<const std::uint8_t*>(data), dataSize, &imageWidth, &imageHeight, nullptr, 4);
+	if (imageData == nullptr)
 	{
 		return false;
 	}
 
 	// Create a OpenGL texture identifier
-	GLuint image_texture;
-	glGenTextures(1, &image_texture);
-	glBindTexture(GL_TEXTURE_2D, image_texture);
+	GLuint imageTexture;
+	glGenTextures(1, &imageTexture);
+	glBindTexture(GL_TEXTURE_2D, imageTexture);
 
 	// Setup filtering parameters for display
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -1388,17 +1388,17 @@ bool CStdGL::LoadTextureFromMemory(const void* data, size_t data_size, std::uint
 
 	// Upload pixels into texture
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
-	stbi_image_free(image_data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+	stbi_image_free(imageData);
 
-	*out_texture = image_texture;
-	if(out_width)
+	*outTexture = imageTexture;
+	if(outWidth)
 	{
-		*out_width = image_width;
+		*outWidth = imageWidth;
 	}
-	if(out_height)
+	if(outHeight)
 	{
-		*out_height = image_height;
+		*outHeight = imageHeight;
 	}
 
 	return true;

@@ -31,7 +31,7 @@ public:
 	C4ObjectListDlg();
 	virtual ~C4ObjectListDlg();
 	void Open();
-	void Draw(C4Viewport* ownerViewport);
+	void Draw(C4Viewport *ownerViewport);
 
 	virtual void OnObjectRemove(C4ObjectList *pList, C4ObjectLink *pLnk) override;
 	virtual void OnObjectAdded(C4ObjectList *pList, C4ObjectLink *pLnk) override;

@@ -50,7 +50,7 @@ void C4MusicSystem::Execute()
 {
 	if (!Application.AudioSystem) return;
 
-	if(dynamic_cast<C4AudioSystemNone*>(Application.AudioSystem.get())) return;
+	if (dynamic_cast<C4AudioSystemNone*>(Application.AudioSystem.get())) return;
 
 	if (!Application.AudioSystem->IsMusicPlaying())
 	{

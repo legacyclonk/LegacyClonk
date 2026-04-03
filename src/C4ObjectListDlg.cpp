@@ -800,7 +800,7 @@ void C4ObjectListDlg::Open()
 	opened = true;
 }
 
-void C4ObjectListDlg::Draw(C4Viewport* ownerViewport)
+void C4ObjectListDlg::Draw(C4Viewport *ownerViewport)
 {
 	if (!opened)
 	{

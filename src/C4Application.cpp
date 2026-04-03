@@ -178,8 +178,8 @@ void C4Application::DoInit()
 	// Init carrier window
 	if (isFullScreen)
 	{
-		C4Rect Bounds{0,0, static_cast<int32_t>(Config.Graphics.ResX * GetScale()), static_cast<int32_t>(Config.Graphics.ResY * GetScale())};
-		if (!FullScreen.Init(this, STD_PRODUCT, Bounds))
+		C4Rect bounds{0, 0, static_cast<int32_t>(Config.Graphics.ResX * GetScale()), static_cast<int32_t>(Config.Graphics.ResY * GetScale())};
+		if (!FullScreen.Init(this, STD_PRODUCT, bounds))
 		{
 			Clear(); return;
 		}
@@ -197,9 +197,9 @@ void C4Application::DoInit()
 	}
 	else
 	{
-		std::int32_t MinWidth = 450;
-		C4Rect Bounds{25,200, MinWidth, 450};
-		if (!Console.Init(this, LoadResStr(C4ResStrTableKey::IDS_CNS_CONSOLE), Bounds, nullptr, SDL_WINDOW_ALWAYS_ON_TOP, MinWidth, 250))
+		std::int32_t minWidth{450};
+		C4Rect bounds{25, 200, minWidth, 450};
+		if (!Console.Init(this, LoadResStr(C4ResStrTableKey::IDS_CNS_CONSOLE), bounds, nullptr, SDL_WINDOW_ALWAYS_ON_TOP, minWidth, 250))
 		{
 			Clear(); return;
 		}

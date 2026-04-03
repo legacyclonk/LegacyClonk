@@ -51,7 +51,7 @@ public:
 	void Default();
 	virtual void Clear() override;
 	virtual void Close() override;
-	virtual bool Init(CStdApp *app, const char *title, const C4Rect &bounds = DefaultBounds, CStdWindow *parent = nullptr, std::uint32_t AdditionalFlags = 0, std::int32_t MinWidth = 250, std::int32_t MinHeight = 250) override;
+	virtual bool Init(CStdApp *app, const char *title, const C4Rect &bounds = defaultBounds, CStdWindow *parent = nullptr, std::uint32_t additionalFlags = 0, std::int32_t minWidth = 250, std::int32_t minHeight = 250) override;
 	void InitGUI();
 	void Execute();
 	void ClearPointers(C4Object *pObj);
@@ -89,7 +89,7 @@ public:
 protected:
 	void SaveGame(bool fSaveGame);
 	void FileSaveAs(bool fSaveGame);
-	void FileSaveMainThread(std::string Filename, bool fSaveGame);
+	void FileSaveMainThread(std::string filename, bool fSaveGame);
 	void FileSave(bool fSaveGame);
 	void FileOpen();
 	void FileOpenWPlrs();
@@ -103,10 +103,10 @@ protected:
 
 	std::string_view GetLineAtIdx(std::size_t idx);
 	std::size_t GetNumLines();
-	TextSelect* LogTextSelect;
+	TextSelect *logTextSelect;
 	std::vector<std::string> logBuffer;
-	static constexpr std::size_t LogBufferSize{1024};
-	ImGuiListClipper LogClipper;
+	static constexpr std::size_t logBufferSize{1024};
+	ImGuiListClipper logClipper;
 
 
 	bool halt{false};
@@ -118,11 +118,11 @@ protected:
 	friend LRESULT CALLBACK ConsoleWinProc(HWND wnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 #endif
 private:
-	std::uint32_t ToolCursorImage;
-	std::uint32_t ToolMouseImage;
-	std::uint32_t ToolBrushImage;
-	std::uint32_t PlayImage;
-	std::uint32_t HaltImage;
+	std::uint32_t toolCursorImage;
+	std::uint32_t toolMouseImage;
+	std::uint32_t toolBrushImage;
+	std::uint32_t playImage;
+	std::uint32_t haltImage;
 };
 
 extern C4Console Console;

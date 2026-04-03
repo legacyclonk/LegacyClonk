@@ -31,7 +31,7 @@ public:
 	};
 
 public:
-	C4ImGui(SDL_Window* window);
+	C4ImGui(SDL_Window *window);
 	~C4ImGui();
 
 public:

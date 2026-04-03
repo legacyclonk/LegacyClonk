@@ -65,20 +65,20 @@ public:
 	virtual void Close() = 0;
 	// Keypress(es) translated to a char
 	virtual void CharIn(const char *c) {}
-	virtual bool Init(CStdApp *app, const char *title, const C4Rect &bounds = DefaultBounds, CStdWindow *parent = nullptr, std::uint32_t AdditionalFlags = 0, std::int32_t MinWidth = 250, std::int32_t MinHeight = 250);
+	virtual bool Init(CStdApp *app, const char *title, const C4Rect &bounds = defaultBounds, CStdWindow *parent = nullptr, std::uint32_t additionalFlags = 0, std::int32_t minWidth = 250, std::int32_t minHeight = 250);
 	void StorePosition();
 	void RestorePosition();
 	bool GetSize(C4Rect &rect);
 
 	void InitImGui();
-	std::optional<C4ImGui> ImGui;
+	std::optional<C4ImGui> imGui;
 
 // TODO: Remove unused code
 #if FALSE//def _WIN32
 	virtual
 #endif
 	void SetSize(unsigned int cx, unsigned int cy); // resize
-	void SetTitle(const char *Title);
+	void SetTitle(const char *title);
 	void FlashWindow();
 	void SetDisplayMode(DisplayMode mode);
 	void SetProgress(uint32_t progress); // progress 100 disables the progress bar
@@ -133,7 +133,7 @@ protected:
 
 #elif defined(USE_SDL_MAINLOOP)
 public:
-	static constexpr C4Rect DefaultBounds{0, 0, 100, 100};
+	static constexpr C4Rect defaultBounds{0, 0, 100, 100};
 	static void sdlToC4MCBtn(const SDL_MouseButtonEvent &e, int32_t &button);
 public:
 	float GetInputScale();

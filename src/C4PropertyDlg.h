@@ -34,14 +34,14 @@ public:
 	void Update(C4ObjectList &rSelection);
 	void Draw();
 
-	static int TextEditCallbackStub(struct ImGuiInputTextCallbackData* data);
+	static int TextEditCallbackStub(struct ImGuiInputTextCallbackData *data);
 
 public:
-	bool Active;
+	bool opened{false};
 
 protected:
 	C4ID idSelectedDef;
-	C4ObjectList Selection;
+	C4ObjectList selection;
 	StdStrBuf selectionText;
 	C4AulFunc *selectedFunction;
 };

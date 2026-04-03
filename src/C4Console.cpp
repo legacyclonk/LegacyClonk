@@ -53,12 +53,12 @@ C4Console::C4Console()
 	Editing = true;
 	fGameOpen = false;
 
-	LogTextSelect = new TextSelect{std::bind(&C4Console::GetLineAtIdx, this, std::placeholders::_1), std::bind(&C4Console::GetNumLines, this)};
+	logTextSelect = new TextSelect{std::bind(&C4Console::GetLineAtIdx, this, std::placeholders::_1), std::bind(&C4Console::GetNumLines, this)};
 }
 
 C4Console::~C4Console()
 {
-	delete LogTextSelect;
+	delete logTextSelect;
 }
 
 std::string_view C4Console::GetLineAtIdx(std::size_t idx)
@@ -73,9 +73,9 @@ std::size_t C4Console::GetNumLines()
 
 void C4Console::HandleMessage(SDL_Event& sdl_event)
 {
-	if (ImGui)
+	if (imGui)
 	{
-		ImGui->Select();
+		imGui->Select();
 		ImGui_ImplSDL3_ProcessEvent(&sdl_event);
 	}
 
@@ -170,14 +170,14 @@ void C4Console::HandleMessage(XEvent &e)
 
 #endif // _WIN32/USE_X11
 
-bool C4Console::Init(CStdApp *app, const char *title, const C4Rect &bounds, CStdWindow *parent, std::uint32_t AdditionalFlags, std::int32_t MinWidth, std::int32_t MinHeight)
+bool C4Console::Init(CStdApp *app, const char *title, const C4Rect &bounds, CStdWindow *parent, std::uint32_t additionalFlags, std::int32_t minWidth, std::int32_t minHeight)
 {
 	// Active
 	Active = true;
 	// Editing (enable even if network)
 	Editing = true;
 	// Create dialog window
-	return CStdWindow::Init(app, title, bounds, parent, AdditionalFlags, MinWidth, MinHeight);
+	return CStdWindow::Init(app, title, bounds, parent, additionalFlags, minWidth, minHeight);
 #if 0 //def _WIN32
 	WNDCLASSEX WndClass{};
 	WndClass.cbSize = sizeof(WNDCLASSEX);
@@ -248,11 +248,11 @@ void C4Console::InitGUI()
 
 	if(lpDDraw)
 	{
-		lpDDraw->LoadTextureFromMemory(DeveloperModeCursorImage, DeveloperModeCursorImageLength, &ToolCursorImage);
-		lpDDraw->LoadTextureFromMemory(DeveloperModeMouseImage, DeveloperModeMouseImageLength, &ToolMouseImage);
-		lpDDraw->LoadTextureFromMemory(DeveloperModeBrushImage, DeveloperModeBrushImageLength, &ToolBrushImage);
-		lpDDraw->LoadTextureFromMemory(DeveloperModePlayImage, DeveloperModePlayImageLength, &PlayImage);
-		lpDDraw->LoadTextureFromMemory(DeveloperModeHaltImage, DeveloperModeHaltImageLength, &HaltImage);
+		lpDDraw->LoadTextureFromMemory(developerModeCursorImage, developerModeCursorImageLength, &toolCursorImage);
+		lpDDraw->LoadTextureFromMemory(developerModeMouseImage, developerModeMouseImageLength, &toolMouseImage);
+		lpDDraw->LoadTextureFromMemory(developerModeBrushImage, developerModeBrushImageLength, &toolBrushImage);
+		lpDDraw->LoadTextureFromMemory(developerModePlayImage, developerModePlayImageLength, &playImage);
+		lpDDraw->LoadTextureFromMemory(developerModeHaltImage, developerModeHaltImageLength, &haltImage);
 	}
 
 	InitImGui();
@@ -288,7 +288,7 @@ void C4Console::Out(const char *szText)
 	if (!szText || !*szText) return;
 
 	logBuffer.emplace_back(szText);
-	if (logBuffer.size() > LogBufferSize)
+	if (logBuffer.size() > logBufferSize)
 	{
 		logBuffer.erase(logBuffer.begin());
 	}
@@ -396,11 +396,13 @@ void C4Console::FileSave(bool fSaveGame)
 {
 	// Don't quicksave games over scenarios
 	if (fSaveGame)
+	{
 		if (!Game.C4S.Head.SaveGame)
 		{
 			Message(LoadResStr(C4ResStrTableKey::IDS_CNS_NOGAMEOVERSCEN));
 			return;
 		}
+	}
 	// Save game
 	SaveGame(fSaveGame);
 }
@@ -450,29 +452,29 @@ void SDLCALL C4Console::FileSaveScenarioAsCallback(void* userdata, const char* c
 		return;
 	}
 
-	if(C4Console* ConsoleContext = reinterpret_cast<C4Console*>(userdata))
+	if(C4Console *consoleContext = reinterpret_cast<C4Console*>(userdata))
 	{
 		std::string Filename = *filelist;
-		ConsoleContext->FileSaveMainThread(Filename, false);
+		consoleContext->FileSaveMainThread(Filename, false);
 	}
 }
 
-void C4Console::FileSaveMainThread(std::string Filename, bool fSaveGame)
+void C4Console::FileSaveMainThread(std::string filename, bool fSaveGame)
 {
-	Application.InteractiveThread.ExecuteInMainThread([this, Filename, fSaveGame] mutable
+	Application.InteractiveThread.ExecuteInMainThread([this, filename, fSaveGame] mutable
 	{
-		std::replace(Filename.begin(), Filename.end(), '\\', '/');
-		if(!Filename.ends_with(".c4s"))
+		std::replace(filename.begin(), filename.end(), '\\', '/');
+		if(!filename.ends_with(".c4s"))
 		{
-			Filename.append(".c4s");
+			filename.append(".c4s");
 		}
 		bool fOkay = true;
 		// Close current scenario file
 		if (!Game.ScenarioFile.Close()) fOkay = false;
 		// Copy current scenario file to target
-		if (!C4Group_CopyItem(Game.ScenarioFilename, Filename.c_str())) fOkay = false;
+		if (!C4Group_CopyItem(Game.ScenarioFilename, filename.c_str())) fOkay = false;
 		// Open new scenario file
-		SCopy(Filename.c_str(), Game.ScenarioFilename);
+		SCopy(filename.c_str(), Game.ScenarioFilename);
 
 		//SetCaption(GetFilename(Game.ScenarioFilename)); // TODO: needed?
 		if (!Game.ScenarioFile.Open(Game.ScenarioFilename)) fOkay = false;
@@ -521,7 +523,7 @@ void SDLCALL C4Console::FileOpenCallback(void* userdata, const char* const* file
 		return;
 	}
 
-	if(C4Console* ConsoleContext = reinterpret_cast<C4Console*>(userdata))
+	if(C4Console *consoleContext = reinterpret_cast<C4Console*>(userdata))
 	{
 		while (*filelist)
 		{
@@ -531,9 +533,9 @@ void SDLCALL C4Console::FileOpenCallback(void* userdata, const char* const* file
 			std::replace(commandLine.begin(), commandLine.end(), '\\', '/');
 			commandLine.append("\" ");
 
-			Application.InteractiveThread.ExecuteInMainThread([ConsoleContext, CmdLine = std::move(commandLine)]
+			Application.InteractiveThread.ExecuteInMainThread([consoleContext, CmdLine = std::move(commandLine)]
 			{
-				ConsoleContext->OpenGame(CmdLine.c_str());
+				consoleContext->OpenGame(CmdLine.c_str());
 			});
 			break;
 		}
@@ -693,7 +695,7 @@ bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, uin
 
 			if ((dwFlags & OFN_FILEMUSTEXIST) && !g_file_test(filename, G_FILE_TEST_IS_REGULAR))
 			{
-				Message(FormatString("File \"%s\" does not exist", filename).getData(), false);
+				Message(std::format("File \"{}\" does not exist", filename).c_str(), false);
 				error = true;
 			}
 
@@ -850,15 +852,15 @@ static void SDLCALL JoinPlayerCallback(void* userdata, const char* const* fileli
 
 	while (*filelist)
 	{
-		std::string Filepath = *filelist;
-		std::replace(Filepath.begin(), Filepath.end(), '\\', '/');
+		std::string filepath{*filelist};
+		std::replace(filepath.begin(), filepath.end(), '\\', '/');
 		if (Game.Network.isEnabled())
 		{
-			Game.Network.Players.JoinLocalPlayer(Filepath.c_str(), true);
+			Game.Network.Players.JoinLocalPlayer(filepath.c_str(), true);
 		}
 		else
 		{
-			Game.Players.CtrlJoinLocalNoNetwork(Filepath.c_str(), Game.Clients.getLocalID(), Game.Clients.getLocalName());
+			Game.Players.CtrlJoinLocalNoNetwork(filepath.c_str(), Game.Clients.getLocalID(), Game.Clients.getLocalName());
 		}
 		filelist++;
 	}
@@ -893,23 +895,23 @@ void C4Console::Execute()
 	Draw();
 }
 
-int C4Console::TextEditCallbackStub(ImGuiInputTextCallbackData* data)
+int C4Console::TextEditCallbackStub(ImGuiInputTextCallbackData *data)
 {
-	C4Console* console = (C4Console*)data->UserData;
+	C4Console *console{reinterpret_cast<C4Console*>(data->UserData)};
 	return console->TextEditCallback(data);
 }
 
 // TODO: Reference the implementation from ImGui Console demo that uses input history and text completion.
-int C4Console::TextEditCallback(ImGuiInputTextCallbackData* data)
+int C4Console::TextEditCallback(ImGuiInputTextCallbackData *data)
 {
     return 0;
 }
 
 void C4Console::Draw()
 {
-	ImGui->Select();
+	imGui->Select();
 	lpDDraw->FillBG();
-	ImGui->NewFrame();
+	imGui->NewFrame();
 
 	const bool lobbyActive{Game.Network.isLobbyActive()};
 	const bool controlsDisabled{!fGameOpen};
@@ -918,7 +920,7 @@ void C4Console::Draw()
 	bool showAbout{false};
 
 	ImGui::SetNextWindowPos({0, 0});
-	std::int32_t x,y;
+	std::int32_t x, y;
 	SDL_GetWindowSizeInPixels(sdlWindow, &x, &y);
 	ImGui::SetNextWindowSize({float(x), float(y)});
 	ImGui::Begin("##Console", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar);
@@ -990,15 +992,15 @@ void C4Console::Draw()
 
 			ImGui::BeginDisabled(!Editing || (Game.Network.isEnabled() && !Game.Network.isHost()));
 
-			const char *PLRQUITNET {LoadResStrV(C4ResStrTableKey::IDS_CNS_PLRQUITNET)};
-			const char *PLRQUIT {LoadResStrV(C4ResStrTableKey::IDS_CNS_PLRQUIT)};
-			StdStrBuf resString {Game.Network.isEnabled() ? PLRQUITNET : PLRQUIT};
+			const char *plrQuitNet{LoadResStrV(C4ResStrTableKey::IDS_CNS_PLRQUITNET)};
+			const char *plrQuit{LoadResStrV(C4ResStrTableKey::IDS_CNS_PLRQUIT)};
+			StdStrBuf resString{Game.Network.isEnabled() ? plrQuitNet : plrQuit};
 			resString.Replace("%s", "{}");
 			for (C4Player *player{Game.Players.First}; player; player = player->Next)
 			{
-				std::string PlayerName{player->GetName()};
-				std::string PlayerClient{player->AtClientName};
-				if (ImGui::MenuItem(std::vformat(resString.getData(), std::make_format_args(PlayerName, PlayerClient)).c_str()))
+				std::string playerName{player->GetName()};
+				std::string playerClient{player->AtClientName};
+				if (ImGui::MenuItem(std::vformat(resString.getData(), std::make_format_args(playerName, playerClient)).c_str()))
 				{
 					Game.Control.Input.Add(CID_EliminatePlayer, new C4ControlEliminatePlayer{player->Number});
 				}
@@ -1021,10 +1023,10 @@ void C4Console::Draw()
 
 			for (C4Player *player{Game.Players.First}; player; player = player->Next)
 			{
-				StdStrBuf NewPlayerViewportFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_NEWPLRVIEWPORT)};
-				NewPlayerViewportFormat.Replace("%s", "{}");
-				std::string PlayerName{player->GetName()};
-				if (ImGui::MenuItem(std::vformat(NewPlayerViewportFormat.getData(), std::make_format_args(PlayerName)).c_str()))
+				StdStrBuf newPlayerViewportFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_NEWPLRVIEWPORT)};
+				newPlayerViewportFormat.Replace("%s", "{}");
+				std::string playerName{player->GetName()};
+				if (ImGui::MenuItem(std::vformat(newPlayerViewportFormat.getData(), std::make_format_args(playerName)).c_str()))
 				{
 					Game.CreateViewport(player->Number);
 				}
@@ -1071,26 +1073,26 @@ void C4Console::Draw()
 	ImGui::PopStyleVar(1);
 
 	ImGui::BeginChild("##log", ImVec2(0.0f, y - 150.0f), ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NoMove);
-	ImGuiListClipper LogClipper;
-	const ImVec4 WarningColor = ImVec4(0.94f, 0.7f, 0.11f, 1.0f);
-	const ImVec4 ErrorColor = ImVec4(0.97f, 0.23f, 0.18f, 1.0f);
-	LogClipper.Begin(logBuffer.size()); // TODO: maybe use second parameter to set custom height
-	while (LogClipper.Step())
+	ImGuiListClipper logClipper;
+	const ImVec4 warningColor{ImVec4(0.94f, 0.7f, 0.11f, 1.0f)};
+	const ImVec4 errorColor{ImVec4(0.97f, 0.23f, 0.18f, 1.0f)};
+	logClipper.Begin(logBuffer.size()); // TODO: maybe use second parameter to set custom height
+	while (logClipper.Step())
 	{
-		for (int line_no = LogClipper.DisplayStart; line_no < LogClipper.DisplayEnd; line_no++)
+		for (std::int32_t lineNo = logClipper.DisplayStart; lineNo < logClipper.DisplayEnd; lineNo++)
 		{
 			// TODO: Find a way to get log type (warning, error) directly instead of comparing strings.
-			if(logBuffer[line_no].contains("WARNING"))
+			if(logBuffer[lineNo].contains("WARNING"))
 			{
-				ImGui::TextColored(WarningColor, logBuffer[line_no].c_str());
+				ImGui::TextColored(warningColor, "%s", logBuffer[lineNo].c_str());
 			}
-			else if(logBuffer[line_no].contains("ERROR"))
+			else if(logBuffer[lineNo].contains("ERROR"))
 			{
-				ImGui::TextColored(ErrorColor, logBuffer[line_no].c_str());
+				ImGui::TextColored(errorColor, "%s", logBuffer[lineNo].c_str());
 			}
 			else
 			{
-				ImGui::TextUnformatted(logBuffer[line_no].c_str(), logBuffer[line_no].c_str() + logBuffer[line_no].length()-1);
+				ImGui::Text("%s", logBuffer[lineNo].c_str());
 			}
 		}
 	}
@@ -1100,25 +1102,25 @@ void C4Console::Draw()
 	}
 
 	// TODO: Improve selection precision. There seems to be a small offset between the cursor and the actual string character.
-	LogTextSelect->update();
+	logTextSelect->update();
 
 	if (ImGui::BeginPopupContextWindow())
 	{
-		ImGui::BeginDisabled(!LogTextSelect->hasSelection());
+		ImGui::BeginDisabled(!logTextSelect->hasSelection());
 		if (ImGui::MenuItem("Copy", "Ctrl+C"))
 		{
-			LogTextSelect->copy();
+			logTextSelect->copy();
 		}
 		ImGui::EndDisabled();
 
 		if (ImGui::MenuItem("Select all", "Ctrl+A"))
 		{
-			LogTextSelect->selectAll();
+			logTextSelect->selectAll();
 		}
 
 		if (ImGui::MenuItem("Clear selection"))
 		{
-			LogTextSelect->clearSelection();
+			logTextSelect->clearSelection();
 		}
 		ImGui::EndPopup();
 	}
@@ -1127,26 +1129,26 @@ void C4Console::Draw()
 
 
 	// Command-line
-	float CommandLineWidth = ImGui::GetContentRegionAvail().x;
-	ImGui::SetNextItemWidth(CommandLineWidth - 30);
-	bool ReclaimFocus = false;
-	static char InputBuf[512];
-	ImGuiInputTextFlags InputTextFlags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_ElideLeft;
-	if (ImGui::InputText("", InputBuf, IM_COUNTOF(InputBuf), InputTextFlags, &TextEditCallbackStub, (void*)this))
+	float commandLineWidth{ImGui::GetContentRegionAvail().x};
+	ImGui::SetNextItemWidth(commandLineWidth - 30);
+	bool reclaimFocus{false};
+	static char inputBuf[512];
+	ImGuiInputTextFlags inputTextFlags{ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_ElideLeft};
+	if (ImGui::InputText("", inputBuf, IM_COUNTOF(inputBuf), inputTextFlags, &TextEditCallbackStub, (void*)this))
 	{
-		StdStrBuf s{&InputBuf[0]};
+		StdStrBuf s{&inputBuf[0]};
 		s.TrimSpaces();
 		if (s[0])
 		{
 			In(s.getData());
 		}
-		strcpy(InputBuf, "");
-		ReclaimFocus = true;
+		strcpy(inputBuf, "");
+		reclaimFocus = true;
 	}
 
 	// Auto-focus on window apparition
 	ImGui::SetItemDefaultFocus();
-	if (ReclaimFocus)
+	if (reclaimFocus)
 	{
 		ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
 	}
@@ -1159,13 +1161,12 @@ void C4Console::Draw()
 		if (ImGui::Selectable(std::string{func->Name}.append("()").c_str(), selectedFunction == func))
 		{
 			selectedFunction = func;
-			SAppend(func->Name, InputBuf);
-			SAppend("()", InputBuf);
+			SAppend(func->Name, inputBuf);
+			SAppend("()", inputBuf);
 		}
 	};
 
 	ImGui::SameLine();
-
 
 	if (ImGui::BeginCombo("##funcselector", selectedFunction ? selectedFunction->Name : nullptr, ImGuiComboFlags_NoPreview))
 	{
@@ -1193,11 +1194,10 @@ void C4Console::Draw()
 		ImGui::EndCombo();
 	}
 
-
 	ImGui::EndDisabled();
 	ImGui::Spacing();
 	ImGui::BeginDisabled(controlsDisabledIfNotInLobby || !halt);
-	if (ImGui::ImageButton("#Play", (ImTextureID)(intptr_t)PlayImage, {16, 16}))
+	if (ImGui::ImageButton("#Play", {playImage}, {16, 16}))
 	{
 		DoPlay();
 	}
@@ -1206,7 +1206,7 @@ void C4Console::Draw()
 	ImGui::SameLine();
 
 	ImGui::BeginDisabled(controlsDisabledIfNotInLobby || halt);
-	if (ImGui::ImageButton("#Pause", (ImTextureID)(intptr_t)HaltImage, {16, 16}))
+	if (ImGui::ImageButton("#Pause", {haltImage}, {16, 16}))
 	{
 		DoHalt();
 	}
@@ -1214,17 +1214,17 @@ void C4Console::Draw()
 
 	ImGui::SameLine(0, 20);
 
-	auto CreateSelectedButton = [this] (ConsoleMode ThisMode, std::uint32_t ImageId, bool IsDisabled)
+	auto CreateSelectedButton = [this] (ConsoleMode thisMode, std::uint32_t imageId, bool isDisabled)
 	{
-		const std::uint32_t ImageSize = 16;
-		ImGui::BeginDisabled(IsDisabled);
-		ImGui::PushID(ImageId);
-		if(ImGui::ImageButton("", (ImTextureID)(intptr_t)ImageId, {ImageSize,ImageSize}))
+		const std::uint32_t imageSize{16};
+		ImGui::BeginDisabled(isDisabled);
+		ImGui::PushID(imageId);
+		if(ImGui::ImageButton("", {imageId}, {imageSize,imageSize}))
 		{
-			EditCursor.SetMode(ThisMode);
+			EditCursor.SetMode(thisMode);
 		}
 
-		if(ThisMode == EditCursor.GetMode())
+		if(thisMode == EditCursor.GetMode())
 		{
 			ImGui::GetWindowDrawList()->AddRect(
 			ImGui::GetItemRectMin(), ImGui::GetItemRectMax(),
@@ -1236,18 +1236,18 @@ void C4Console::Draw()
 		ImGui::EndDisabled();
 	};
 
-	CreateSelectedButton(ConsoleMode::Play, ToolCursorImage, controlsDisabled);
+	CreateSelectedButton(ConsoleMode::Play, toolCursorImage, controlsDisabled);
 	ImGui::SameLine();
-	CreateSelectedButton(ConsoleMode::Edit, ToolMouseImage, controlsDisabled || !Editing);
+	CreateSelectedButton(ConsoleMode::Edit, toolMouseImage, controlsDisabled || !Editing);
 	ImGui::SameLine();
-	CreateSelectedButton(ConsoleMode::Draw, ToolBrushImage, controlsDisabled || !Editing);
+	CreateSelectedButton(ConsoleMode::Draw, toolBrushImage, controlsDisabled || !Editing);
 
 	ImGui::PopStyleVar();
 	ImGui::Spacing();
 	ImGui::Separator();
 
-	ImGuiOldColumnFlags ColumnFlags = ImGuiOldColumnFlags_NoResize;
-	ImGui::BeginColumns("##meta", 4, ColumnFlags);
+	ImGuiOldColumnFlags columnFlags{ImGuiOldColumnFlags_NoResize};
+	ImGui::BeginColumns("##meta", 4, columnFlags);
 	ImGui::Text("Frame: %d", Game.FrameCounter);
 	ImGui::NextColumn();
 	ImGui::Text("Script: %d", Game.Script.Counter);
@@ -1293,7 +1293,7 @@ void C4Console::Draw()
 
 	ImGui::End();
 
-	ImGui->Render();
+	imGui->Render();
 
 	lpDDraw->PageFlip();
 }

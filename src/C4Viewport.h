@@ -67,7 +67,7 @@ public:
 	virtual void HandleMessage(XEvent &) override;
 #endif
 	virtual void Close() override;
-	void DrawImGui(C4Viewport& OwnerViewport);
+	void DrawImGui(C4Viewport &ownerViewport);
 
 	void HandleMessage(SDL_Event&) override;
 

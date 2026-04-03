@@ -326,14 +326,14 @@ GtkWidget *C4ViewportWindow::InitGUI()
 	GtkWidget *table;
 
 	drawing_area = gtk_drawing_area_new();
-	h_scrollbar = gtk_hscrollbar_new(nullptr);
-	v_scrollbar = gtk_vscrollbar_new(nullptr);
+	h_scrollbar = gtk_scrollbar_new(GTK_ORIENTATION_HORIZONTAL, nullptr);
+	v_scrollbar = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL, nullptr);
 	table = gtk_table_new(2, 2, FALSE);
 
 	GtkAdjustment *adjustment = gtk_range_get_adjustment(GTK_RANGE(h_scrollbar));
-	adjustment->lower = 0;
-	adjustment->upper = GBackWdt;
-	adjustment->step_increment = ViewportScrollSpeed;
+	gtk_adjustment_set_lower(adjustment, 0);
+	gtk_adjustment_set_upper(adjustment, GBackWdt);
+	gtk_adjustment_set_step_increment(adjustment, ViewportScrollSpeed);
 
 	g_signal_connect(
 		G_OBJECT(adjustment),
@@ -343,9 +343,9 @@ GtkWidget *C4ViewportWindow::InitGUI()
 	);
 
 	adjustment = gtk_range_get_adjustment(GTK_RANGE(v_scrollbar));
-	adjustment->lower = 0;
-	adjustment->upper = GBackHgt;
-	adjustment->step_increment = ViewportScrollSpeed;
+	gtk_adjustment_set_lower(adjustment, 0);
+	gtk_adjustment_set_upper(adjustment, GBackHgt);
+	gtk_adjustment_set_step_increment(adjustment, ViewportScrollSpeed);
 
 	g_signal_connect(
 		G_OBJECT(adjustment),
@@ -406,17 +406,17 @@ bool C4Viewport::ScrollBarsByViewPosition()
 {
 	if (PlayerLock) return false;
 
+	GtkAllocation allocation;
+	gtk_widget_get_allocation(pWindow->drawing_area, &allocation);
 	GtkAdjustment *adjustment = gtk_range_get_adjustment(GTK_RANGE(pWindow->h_scrollbar));
-	adjustment->page_increment = pWindow->drawing_area->allocation.width;
-	adjustment->page_size = pWindow->drawing_area->allocation.width;
-	adjustment->value = ViewX;
-	gtk_adjustment_changed(adjustment);
+	gtk_adjustment_set_page_increment(adjustment, allocation.width);
+	gtk_adjustment_set_page_size(adjustment, allocation.width);
+	gtk_adjustment_set_value(adjustment, ViewX);
 
 	adjustment = gtk_range_get_adjustment(GTK_RANGE(pWindow->v_scrollbar));
-	adjustment->page_increment = pWindow->drawing_area->allocation.height;
-	adjustment->page_size = pWindow->drawing_area->allocation.height;
-	adjustment->value = ViewY;
-	gtk_adjustment_changed(adjustment);
+	gtk_adjustment_set_page_increment(adjustment, allocation.height);
+	gtk_adjustment_set_page_size(adjustment, allocation.height);
+	gtk_adjustment_set_value(adjustment, ViewY);
 
 	return true;
 }
@@ -426,10 +426,10 @@ bool C4Viewport::ViewPositionByScrollBars()
 	if (PlayerLock) return false;
 
 	GtkAdjustment *adjustment = gtk_range_get_adjustment(GTK_RANGE(pWindow->h_scrollbar));
-	ViewX = static_cast<int32_t>(adjustment->value);
+	ViewX = static_cast<int32_t>(gtk_adjustment_get_value(adjustment));
 
 	adjustment = gtk_range_get_adjustment(GTK_RANGE(pWindow->v_scrollbar));
-	ViewY = static_cast<int32_t>(adjustment->value);
+	ViewY = static_cast<int32_t>(gtk_adjustment_get_value(adjustment));
 
 	return true;
 }
@@ -476,7 +476,7 @@ void C4ViewportWindow::OnRealizeStatic(GtkWidget *widget, gpointer user_data)
 
 gboolean C4ViewportWindow::OnKeyPressStatic(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
-	if (event->keyval == GDK_Scroll_Lock)
+	if (event->keyval == GDK_KEY_Scroll_Lock)
 		static_cast<C4ViewportWindow *>(user_data)->cvp->TogglePlayerLock();
 #ifndef NDEBUG
 	switch (event->keyval)
@@ -797,27 +797,27 @@ void C4ViewportWindow::Close()
 	Game.GraphicsSystem.CloseViewport(cvp);
 }
 
-void C4ViewportWindow::DrawImGui(C4Viewport& OwnerViewport)
+void C4ViewportWindow::DrawImGui(C4Viewport &ownerViewport)
 {
-	if (!ImGui.has_value())
+	if (!imGui.has_value())
 	{
 		return;
 	}
 
-	if(ImGui->NewFrame())
+	if(imGui->NewFrame())
 	{
 		ImGui::ShowDemoWindow();
 		//Console.PropertyDlg.Open(); // TODO: Make dialogues open based on tool mode.
 		Console.PropertyDlg.Draw();
 		Console.ToolsDlg.Draw();
-		Console.ObjectListDlg.Draw(&OwnerViewport);
+		Console.ObjectListDlg.Draw(&ownerViewport);
 
 		Console.EditCursor.DrawContextMenu();
 
-		if(OwnerViewport.fIsNoOwnerViewport)
+		if(ownerViewport.fIsNoOwnerViewport)
 		{
 			std::int32_t x, y;
-			const float ScrollbarWidth = 18.0f;
+			const float scrollbarWidth{18.0f};
 			SDL_GetWindowSizeInPixels(sdlWindow, &x, &y);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0,0});
 			ImGui::PushStyleColor(ImGuiCol_SliderGrab, {0.7f, 0.7f, 0.7f, 0.9f});
@@ -825,32 +825,32 @@ void C4ViewportWindow::DrawImGui(C4Viewport& OwnerViewport)
 			ImGui::PushStyleColor(ImGuiCol_FrameBgActive, {0.2f, 0.2f, 0.2f, 0.4f});
 			ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, {0.0f, 0.0f, 0.0f, 0.4f});
 			ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.0f, 0.0f, 0.0f, 0.2f});
-			ImGuiWindowFlags ScrollBarWindowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoSavedSettings;
+			ImGuiWindowFlags scrollBarWindowFlags{ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoSavedSettings};
 
-			if(GBackHgt - OwnerViewport.ViewHgt > 0)
+			if(GBackHgt - ownerViewport.ViewHgt > 0)
 			{
-				ImGui::SetNextWindowPos({float(x - ScrollbarWidth), -1.0f});
-				ImGui::SetNextWindowSize({ScrollbarWidth, float(y) - ScrollbarWidth});
-				ImGui::Begin("VScroll", nullptr, ScrollBarWindowFlags);
+				ImGui::SetNextWindowPos({float(x - scrollbarWidth), -1.0f});
+				ImGui::SetNextWindowSize({scrollbarWidth, float(y) - scrollbarWidth});
+				ImGui::Begin("VScroll", nullptr, scrollBarWindowFlags);
 				//ScrollV = float(OwnerViewport.ViewY); // TODO: Increase slider length which is dependent on value range. So we could use another value for the range.
-				if(ImGui::VSliderInt("", {ScrollbarWidth,float(y) - ScrollbarWidth}, &OwnerViewport.ViewY, GBackHgt - OwnerViewport.ViewHgt, 0, ""))
+				if(ImGui::VSliderInt("", {scrollbarWidth,float(y) - scrollbarWidth}, &ownerViewport.ViewY, GBackHgt - ownerViewport.ViewHgt, 0, ""))
 				{
 					//OwnerViewport.ViewY = int(ScrollV);
-					OwnerViewport.AdjustPosition();
+					ownerViewport.AdjustPosition();
 				}
 				ImGui::End();
 			}
 
-			if(GBackWdt - OwnerViewport.ViewWdt > 0)
+			if(GBackWdt - ownerViewport.ViewWdt > 0)
 			{
-				ImGui::SetNextWindowPos({-1.0f, float(y) - ScrollbarWidth});
-				ImGui::SetNextWindowSize({float(x) - ScrollbarWidth, ScrollbarWidth});
-				ImGui::SetNextItemWidth(float(x) - ScrollbarWidth);
-				ImGui::Begin("HScroll", nullptr, ScrollBarWindowFlags);
+				ImGui::SetNextWindowPos({-1.0f, float(y) - scrollbarWidth});
+				ImGui::SetNextWindowSize({float(x) - scrollbarWidth, scrollbarWidth});
+				ImGui::SetNextItemWidth(float(x) - scrollbarWidth);
+				ImGui::Begin("HScroll", nullptr, scrollBarWindowFlags);
 
-				if(ImGui::SliderInt("", &OwnerViewport.ViewX, 0, GBackWdt - OwnerViewport.ViewWdt, ""))
+				if(ImGui::SliderInt("", &ownerViewport.ViewX, 0, GBackWdt - ownerViewport.ViewWdt, ""))
 				{
-					OwnerViewport.AdjustPosition();
+					ownerViewport.AdjustPosition();
 				}
 				ImGui::End();
 			}
@@ -859,11 +859,11 @@ void C4ViewportWindow::DrawImGui(C4Viewport& OwnerViewport)
 			ImGui::PopStyleColor(5);
 		}
 
-		ImGui->Render();
+		imGui->Render();
 	}
 }
 
-void C4ViewportWindow::HandleMessage(SDL_Event& sdl_event)
+void C4ViewportWindow::HandleMessage(SDL_Event &sdl_event)
 {
 	if(sdl_event.window.windowID == SDL_GetWindowID(sdlWindow))
 	{
@@ -897,9 +897,9 @@ void C4ViewportWindow::HandleMessage(SDL_Event& sdl_event)
 		break;
 	}
 
-	if (ImGui)
+	if (imGui)
 	{
-		ImGui->Select();
+		imGui->Select();
 		ImGui_ImplSDL3_ProcessEvent(&sdl_event);
 	}
 
@@ -938,7 +938,7 @@ void C4ViewportWindow::HandleMessage(SDL_Event& sdl_event)
 
 	}
 
-	const auto scale = Application.GetScale();
+	const float scale{Application.GetScale()};
 	if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 	{
 		switch (sdl_event.type)
@@ -946,13 +946,11 @@ void C4ViewportWindow::HandleMessage(SDL_Event& sdl_event)
 		case SDL_EVENT_MOUSE_MOTION :
 		{
 			// TODO: Hide Cursor when inside viewport and in play mode.
-			const auto InputScale = GetInputScale();
 			Game.GraphicsSystem.MouseMove(C4MC_Button_None, sdl_event.motion.x, sdl_event.motion.y, Application.GetModifiers(), nullptr);
 			break;
 		}
 		case SDL_EVENT_MOUSE_WHEEL :
 		{
-			const auto InputScale = GetInputScale();
 			float x, y;
 			SDL_GetMouseState(&x, &y);
 			Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, sdl_event.button.x, sdl_event.button.y, static_cast<std::int32_t>(sdl_event.wheel.y * 60) << 16, nullptr);
@@ -961,7 +959,6 @@ void C4ViewportWindow::HandleMessage(SDL_Event& sdl_event)
 		case SDL_EVENT_MOUSE_BUTTON_UP :
 		case SDL_EVENT_MOUSE_BUTTON_DOWN :
 		{
-			const auto InputScale = GetInputScale();
 			int32_t button;
 			C4ViewportWindow::sdlToC4MCBtn(sdl_event.button, button);
 			Game.GraphicsSystem.MouseMove(button, sdl_event.button.x, sdl_event.button.y, Application.GetModifiers(), nullptr);
@@ -977,7 +974,6 @@ void C4ViewportWindow::HandleMessage(SDL_Event& sdl_event)
 		{
 			float x, y;
 			SDL_GetMouseState(&x, &y);
-			const auto InputScale = GetInputScale();
 			Console.EditCursor.Move(cvp->ViewX + x / scale, cvp->ViewY + y / scale, Application.GetModifiers());
 			break;
 		}
@@ -991,7 +987,6 @@ void C4ViewportWindow::HandleMessage(SDL_Event& sdl_event)
 		{
 			float x, y;
 			SDL_GetMouseState(&x, &y);
-			const auto InputScale = GetInputScale();
 			int32_t button;
 			C4ViewportWindow::sdlToC4MCBtn(sdl_event.button, button);
 			switch (button)
@@ -1032,7 +1027,7 @@ bool C4Viewport::UpdateOutputSize()
 		return false;
 	}
 	OutX = rect.x; OutY = rect.y;
-	const auto scale = Application.GetScale();
+	const float scale{Application.GetScale()};
 	ViewWdt = static_cast<int32_t>(ceilf(rect.Wdt / scale)); ViewHgt = static_cast<int32_t>(ceilf(rect.Hgt / scale));
 	// Scroll bars
 	ScrollBarsByViewPosition();
@@ -1040,7 +1035,10 @@ bool C4Viewport::UpdateOutputSize()
 	ResetMenuPositions = true;
 #ifndef USE_CONSOLE
 	// update internal GL size
-	if (pCtx) pCtx->UpdateSize();
+	if (pCtx)
+	{
+		pCtx->UpdateSize();
+	}
 #endif
 	// Done
 	return true;
@@ -1608,15 +1606,15 @@ bool C4Viewport::Init(CStdWindow *pParent, CStdApp *pApp, int32_t iPlayer)
 	fIsNoOwnerViewport = (Player == NO_OWNER);
 	// Create window
 	pWindow = new C4ViewportWindow(this);
-	const SDL_DisplayMode* DM = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
-	std::int32_t Width = 512;
-	std::int32_t Height = 512;
-	if(DM)
+	const SDL_DisplayMode *sdlDisplayMode{SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay())};
+	std::int32_t width = 512;
+	std::int32_t height = 512;
+	if(sdlDisplayMode)
 	{
-		Width = DM->w;
-		Height = DM->h;
+		width = sdlDisplayMode->w;
+		height = sdlDisplayMode->h;
 	}
-	if (!pWindow->Init(pApp, (Player == NO_OWNER) ? LoadResStrV(C4ResStrTableKey::IDS_CNS_VIEWPORT) : Game.Players.Get(Player)->GetName(), C4Rect{500, 200, Width - 1000, Height - 400}, pParent))
+	if (!pWindow->Init(pApp, (Player == NO_OWNER) ? LoadResStrV(C4ResStrTableKey::IDS_CNS_VIEWPORT) : Game.Players.Get(Player)->GetName(), C4Rect{500, 200, width - 1000, height - 400}, pParent))
 	{
 		return false;
 	}

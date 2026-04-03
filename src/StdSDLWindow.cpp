@@ -88,7 +88,7 @@ CStdWindow::~CStdWindow()
 
 // Only set title.
 // FIXME: Read from application bundle on the Mac.
-bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent, std::uint32_t AdditionalFlags, std::int32_t MinWidth, std::int32_t MinHeight)
+bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent, std::uint32_t additionalFlags, std::int32_t minWidth, std::int32_t minHeight)
 {
 	Active = true;
 	//SetTitle(title);
@@ -102,10 +102,10 @@ bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	std::uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
-	flags |= AdditionalFlags;
+	flags |= additionalFlags;
 	sdlWindow = SDL_CreateWindow(title, width, height, flags);
 	ThrowIfFailed("SDL_CreateWindow", !sdlWindow);
-	SDL_SetWindowMinimumSize(sdlWindow, MinWidth, MinHeight);
+	SDL_SetWindowMinimumSize(sdlWindow, minWidth, minHeight);
 	SDL_SetWindowPosition(sdlWindow, bounds.x, bounds.y);
 
 	return true;
@@ -113,7 +113,7 @@ bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect 
 
 void CStdWindow::InitImGui()
 {
-	ImGui.emplace(sdlWindow);
+	imGui.emplace(sdlWindow);
 }
 
 
@@ -136,9 +136,9 @@ void CStdWindow::SetSize(const unsigned int X, const unsigned int Y)
 	SetDisplayMode(displayMode);
 }
 
-void CStdWindow::SetTitle(const char *const Title)
+void CStdWindow::SetTitle(const char *const title)
 {
-	SDL_SetWindowTitle(sdlWindow, Title);
+	SDL_SetWindowTitle(sdlWindow, title);
 }
 
 void CStdWindow::FlashWindow()

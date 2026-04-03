@@ -48,13 +48,13 @@ public:
 	~C4ToolsDlg();
 
 public:
-	bool Active;
+	bool opened{false};
 
-	ToolMode Tool, SelectedTool;
-	std::int32_t Grade;
-	bool ModeIFT;
-	char Material[C4M_MaxName + 1];
-	char Texture[C4M_MaxName + 1];
+	ToolMode tool, selectedTool;
+	std::int32_t grade;
+	bool modeIft;
+	char material[C4M_MaxName + 1];
+	char texture[C4M_MaxName + 1];
 
 protected:
 	static constexpr auto PreviewWidth = 64;
@@ -74,22 +74,22 @@ public:
 	bool ToggleTool();
 	bool SetLandscapeMode(int32_t iMode, bool fThroughControl = false);
 	void SetIFT(bool fIFT);
-	bool ToggleIFT() { SetIFT(!ModeIFT); return true; }
+	bool ToggleIFT() { SetIFT(!modeIft); return true; }
 	void SetTexture(const char *szTexture);
 	void SetMaterial(const char *szMaterial);
 	void SetAlternateTool();
 	void ResetAlternateTool();
 	void Draw();
 
-	std::uint32_t DynamicImage;
-	std::uint32_t StaticImage;
-	std::uint32_t ExactImage;
+	std::uint32_t dynamicImage;
+	std::uint32_t staticImage;
+	std::uint32_t exactImage;
 
-	std::uint32_t BrushImage;
-	std::uint32_t LineImage;
-	std::uint32_t RectImage;
-	std::uint32_t PickerImage;
-	std::uint32_t FillImage;
+	std::uint32_t brushImage;
+	std::uint32_t lineImage;
+	std::uint32_t rectImage;
+	std::uint32_t pickerImage;
+	std::uint32_t fillImage;
 
 protected:
 	void AssertValidTexture();

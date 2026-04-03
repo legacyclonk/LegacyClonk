@@ -39,26 +39,32 @@ C4PropertyDlg::~C4PropertyDlg()
 
 void C4PropertyDlg::Open()
 {
-	Active = true;
+	opened = true;
 }
 
 void C4PropertyDlg::Update(C4ObjectList &rSelection)
 {
-	if (!Active) return;
+	if (!opened)
+	{
+		return;
+	}
 	// Set new selection
-	Selection.Copy(rSelection);
+	selection.Copy(rSelection);
 	// Update contents
 	Update();
 }
 
 void C4PropertyDlg::Update()
 {
-	if (!Active) return;
+	if (!opened)
+	{
+		return;
+	}
 
 	idSelectedDef = C4ID_None;
 
 	// Compose info text by selected object(s)
-	switch (Selection.ObjectCount())
+	switch (selection.ObjectCount())
 	{
 	// No selection
 	case 0:
@@ -67,22 +73,22 @@ void C4PropertyDlg::Update()
 	// One selected object
 	case 1:
 	{
-		C4Object *cobj = Selection.GetObject();
+		C4Object *cobj{selection.GetObject()};
 		// Type
 		std::string name{cobj->GetName()};
 		std::string id{C4IdText(cobj->Def->id)};
-		StdStrBuf TypeFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_TYPE)};
-		TypeFormat.Replace("%s", "{}");
-		selectionText = std::vformat(TypeFormat.getData(), std::make_format_args(name, id)).c_str();
+		StdStrBuf typeFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_TYPE)};
+		typeFormat.Replace("%s", "{}");
+		selectionText = std::vformat(typeFormat.getData(), std::make_format_args(name, id)).c_str();
 		// Owner
 		if (ValidPlr(cobj->Owner))
 		{
 			selectionText.Append(LineFeed);
 
-			StdStrBuf OwnerFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_OWNER)};
-			OwnerFormat.Replace("%s", "{}");
-			std::string Owner{Game.Players.Get(cobj->Owner)->GetName()};
-			selectionText += std::vformat(OwnerFormat.getData(), std::make_format_args(Owner)).c_str();
+			StdStrBuf ownerFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_OWNER)};
+			ownerFormat.Replace("%s", "{}");
+			std::string owner{Game.Players.Get(cobj->Owner)->GetName()};
+			selectionText += std::vformat(ownerFormat.getData(), std::make_format_args(owner)).c_str();
 		}
 		// Contents
 		if (cobj->Contents.ObjectCount())
@@ -99,23 +105,35 @@ void C4PropertyDlg::Update()
 			selectionText.Append(cobj->Def->ActMap[cobj->Action.Act].Name);
 		}
 		// Locals
-		int cnt; bool fFirstLocal = true;
+		int cnt; bool fFirstLocal{true};
 		for (cnt = 0; cnt < cobj->Local.GetSize(); cnt++)
+		{
 			if (cobj->Local[cnt])
 			{
 				// Header
-				if (fFirstLocal) { selectionText.Append(LineFeed); selectionText.Append(LoadResStr(C4ResStrTableKey::IDS_CNS_LOCALS)); fFirstLocal = false; }
+				if (fFirstLocal)
+				{
+					selectionText.Append(LineFeed);
+					selectionText.Append(LoadResStr(C4ResStrTableKey::IDS_CNS_LOCALS));
+					fFirstLocal = false;
+				}
 				selectionText.Append(LineFeed);
 				// Append id
 				selectionText += std::format(" Local({}) = ", cnt).c_str();
 				// write value
 				selectionText.Append(cobj->Local[cnt].GetDataString().c_str());
 			}
+		}
 		// Locals (named)
 		for (cnt = 0; cnt < cobj->LocalNamed.GetAnzItems(); cnt++)
 		{
 			// Header
-			if (fFirstLocal) { selectionText.Append(LineFeed); selectionText.Append(LoadResStr(C4ResStrTableKey::IDS_CNS_LOCALS)); fFirstLocal = false; }
+			if (fFirstLocal)
+			{
+				selectionText.Append(LineFeed);
+				selectionText.Append(LoadResStr(C4ResStrTableKey::IDS_CNS_LOCALS));
+				fFirstLocal = false;
+			}
 			selectionText.Append(LineFeed);
 			// Append name
 			selectionText += std::format(" {} = ", cobj->LocalNamed.pNames->pNames[cnt]).c_str();
@@ -123,7 +141,7 @@ void C4PropertyDlg::Update()
 			selectionText.Append(cobj->LocalNamed.pData[cnt].GetDataString().c_str());
 		}
 		// Effects
-		for (C4Effect *pEffect = cobj->pEffects; pEffect; pEffect = pEffect->pNext)
+		for (C4Effect *pEffect{cobj->pEffects}; pEffect; pEffect = pEffect->pNext)
 		{
 			// Header
 			if (pEffect == cobj->pEffects)
@@ -141,27 +159,28 @@ void C4PropertyDlg::Update()
 	}
 	// Multiple selected objects
 	default:
-		std::string ObjectCount{""+Selection.ObjectCount()};
-		StdStrBuf MultipleObjectsFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_MULTIPLEOBJECTS)};
-		MultipleObjectsFormat.Replace("%s", "{}");
-		selectionText = std::vformat(MultipleObjectsFormat.getData(), std::make_format_args(ObjectCount)).c_str();
+		std::string objectCount{""+selection.ObjectCount()};
+		StdStrBuf multipleObjectsFormat{LoadResStrV(C4ResStrTableKey::IDS_CNS_MULTIPLEOBJECTS)};
+		multipleObjectsFormat.Replace("%i", "{}");
+		multipleObjectsFormat.Replace("%s", "{}");
+		selectionText = std::vformat(multipleObjectsFormat.getData(), std::make_format_args(objectCount)).c_str();
 		break;
 	}
 }
 
 void C4PropertyDlg::Default()
 {
-	Active = false;
+	opened = false;
 	idSelectedDef = C4ID_None;
-	Selection.Default();
+	selection.Default();
 	selectedFunction = nullptr;
 }
 
 void C4PropertyDlg::Clear()
 {
-	Selection.Clear();
+	selection.Clear();
 	selectionText.Clear();
-	Active = false;
+	opened = false;
 }
 
 void C4PropertyDlg::Execute()
@@ -171,52 +190,54 @@ void C4PropertyDlg::Execute()
 
 void C4PropertyDlg::ClearPointers(C4Object *pObj)
 {
-	Selection.ClearPointers(pObj);
+	selection.ClearPointers(pObj);
 }
 
-int C4PropertyDlg::TextEditCallbackStub(ImGuiInputTextCallbackData* data)
+int C4PropertyDlg::TextEditCallbackStub(ImGuiInputTextCallbackData *data)
 {
-	C4PropertyDlg* PropertyDialog = (C4PropertyDlg*)data->UserData;
+	C4PropertyDlg *PropertyDialog{reinterpret_cast<C4PropertyDlg*>(data->UserData)};
 	// TODO: Use text edit functionality history and such from c4console
 	return 1; // PropertyDialog->TextEditCallback(data);
 }
 
 void C4PropertyDlg::Draw()
 {
-	if (!Active) return;
-	static ImVec2 PropertySizeMin{200, 150};
-	static ImVec2 PropertySizeMax{500, 300};
-	ImGui::SetNextWindowSizeConstraints(PropertySizeMin, PropertySizeMax);
-	ImGui::Begin(LoadResStr(C4ResStrTableKey::IDS_DLG_PROPERTIES), &Active, ImGuiWindowFlags_NoFocusOnAppearing);
+	if (!opened)
+	{
+		return;
+	}
+	static ImVec2 propertySizeMin{200, 150};
+	static ImVec2 propertySizeMax{500, 300};
+	ImGui::SetNextWindowSizeConstraints(propertySizeMin, propertySizeMax);
+	ImGui::Begin(LoadResStr(C4ResStrTableKey::IDS_DLG_PROPERTIES), &opened, ImGuiWindowFlags_NoFocusOnAppearing);
 
 	if (ImGui::BeginChild("##properties", {0, ImGui::GetContentRegionAvail().y - 28}, true))
 	{
-
 		ImGui::TextWrapped("%s", selectionText.isNull() ? "" : selectionText.getData());
 	}
 	ImGui::EndChild(); // Note: Unlike other elements this must be outside the if-statement.
 
 	// Command-line
-	float CommandLineWidth = ImGui::GetContentRegionAvail().x;
-	ImGui::SetNextItemWidth(CommandLineWidth - 30);
-	bool ReclaimFocus = false;
-	static char InputBuf[512];
-	ImGuiInputTextFlags InputTextFlags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_ElideLeft;
-	if (ImGui::InputText("", InputBuf, IM_COUNTOF(InputBuf), InputTextFlags, &TextEditCallbackStub, (void*)this))
+	float commandLineWidth{ImGui::GetContentRegionAvail().x};
+	ImGui::SetNextItemWidth(commandLineWidth - 30);
+	bool reclaimFocus{false};
+	static char inputBuf[512];
+	ImGuiInputTextFlags inputTextFlags{ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_ElideLeft};
+	if (ImGui::InputText("", inputBuf, IM_COUNTOF(inputBuf), inputTextFlags, &TextEditCallbackStub, reinterpret_cast<void*>(this)))
 	{
-		StdStrBuf s{&InputBuf[0]};
+		StdStrBuf s{&inputBuf[0]};
 		s.TrimSpaces();
 		if (s[0])
 		{
 			Console.EditCursor.In(s.getData());
 		}
-		strcpy(InputBuf, "");
-		ReclaimFocus = true;
+		strcpy(inputBuf, "");
+		reclaimFocus = true;
 	}
 
 	// Auto-focus on window apparition
 	ImGui::SetItemDefaultFocus();
-	if (ReclaimFocus)
+	if (reclaimFocus)
 	{
 		ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
 	}
@@ -226,8 +247,8 @@ void C4PropertyDlg::Draw()
 		if (ImGui::Selectable(std::string{func->Name}.append("()").c_str(), selectedFunction == func))
 		{
 			selectedFunction = func;
-			SAppend(func->Name, InputBuf);
-			SAppend("()", InputBuf);
+			SAppend(func->Name, inputBuf);
+			SAppend("()", inputBuf);
 		}
 	};
 
@@ -246,7 +267,7 @@ void C4PropertyDlg::Draw()
 
 		// Add scenario script functions
 		C4AulScriptFunc *func;
-		if (C4Object *const obj{Selection.GetObject()}; obj)
+		if (C4Object *const obj{selection.GetObject()}; obj)
 		{
 			for (std::int32_t i{0}; (func = obj->Def->Script.GetSFunc(i)); ++i)
 			{
@@ -263,7 +284,7 @@ void C4PropertyDlg::Draw()
 
 	ImGui::End();
 
-	if (!Active)
+	if (!opened)
 	{
 		Clear();
 	}

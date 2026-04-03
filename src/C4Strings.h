@@ -68,7 +68,6 @@ void SAppendChar(char cChar, char *szStr);
 
 void SInsert(char *szString, const char *szInsert, size_t iPosition = 0, size_t iMaxL = SizeMax);
 void SDelete(char *szString, size_t iLen, size_t iPosition = 0);
-void STrim(char* szString);
 
 int SCharPos(char cTarget, const char *szInStr, size_t iIndex = 0);
 int SCharLastPos(char cTarget, const char *szInStr);
@@ -92,7 +91,6 @@ bool SRemoveModules(char *szList, const char *szModules, bool fCaseSensitive = f
 int SModuleCount(const char *szList);
 
 const char *SGetParameter(const char *strCommandLine, size_t iParameter, char *strTarget = nullptr, size_t iSize = SizeMax, bool *pWasQuoted = nullptr);
-void SReplaceFormat(std::string& Input);
 
 void SNewSegment(char *szStr, const char *szSepa = ";");
 void SCapitalize(char *szString);

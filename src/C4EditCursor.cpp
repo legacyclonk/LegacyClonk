@@ -66,7 +66,7 @@ void C4EditCursor::Execute()
 		break;
 
 	case ConsoleMode::Draw:
-		switch (Console.ToolsDlg.Tool)
+		switch (Console.ToolsDlg.tool)
 		{
 		case ToolMode::Fill:
 			if (Hold) if (!Game.HaltCount) if (Console.Editing) ApplyToolFill();
@@ -148,7 +148,7 @@ bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
 		break;
 
 	case ConsoleMode::Draw:
-		switch (Console.ToolsDlg.Tool)
+		switch (Console.ToolsDlg.tool)
 		{
 		case ToolMode::Brush:
 			if (Hold) ApplyToolBrush();
@@ -241,7 +241,7 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 		break;
 
 	case ConsoleMode::Draw:
-		switch (Console.ToolsDlg.Tool)
+		switch (Console.ToolsDlg.tool)
 		{
 		case ToolMode::Brush: ApplyToolBrush(); break;
 		case ToolMode::Line: DragLine  = true; X2 = X; Y2 = Y; break;
@@ -309,7 +309,7 @@ bool C4EditCursor::LeftButtonUp()
 		break;
 
 	case ConsoleMode::Draw:
-		switch (Console.ToolsDlg.Tool)
+		switch (Console.ToolsDlg.tool)
 		{
 		case ToolMode::Line:
 			if (DragLine) ApplyToolLine();
@@ -522,13 +522,13 @@ bool C4EditCursor::SetMode(const ConsoleMode mode)
 	switch (Mode)
 	{
 	case ConsoleMode::Play: case ConsoleMode::Edit:
-		if (Console.ToolsDlg.Active || Console.PropertyDlg.Active) fOpenPropTools = true;
+		if (Console.ToolsDlg.opened || Console.PropertyDlg.opened) fOpenPropTools = true;
 		Console.ToolsDlg.Clear();
 		if (fOpenPropTools) OpenPropTools();
 		break;
 
 	case ConsoleMode::Draw:
-		if (Console.ToolsDlg.Active || Console.PropertyDlg.Active) fOpenPropTools = true;
+		if (Console.ToolsDlg.opened || Console.PropertyDlg.opened) fOpenPropTools = true;
 		Console.PropertyDlg.Clear();
 		if (fOpenPropTools) OpenPropTools();
 		break;
@@ -568,7 +568,7 @@ void C4EditCursor::ApplyToolBrush()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Brush, Game.Landscape.Mode, X, Y, 0, 0, pTools->Grade, !!pTools->ModeIFT, pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Brush, Game.Landscape.Mode, X, Y, 0, 0, pTools->grade, !!pTools->modeIft, pTools->material, pTools->texture));
 }
 
 void C4EditCursor::ApplyToolLine()
@@ -576,7 +576,7 @@ void C4EditCursor::ApplyToolLine()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Line, Game.Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Line, Game.Landscape.Mode, X, Y, X2, Y2, pTools->grade, !!pTools->modeIft, pTools->material, pTools->texture));
 }
 
 void C4EditCursor::ApplyToolRect()
@@ -584,7 +584,7 @@ void C4EditCursor::ApplyToolRect()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Rect, Game.Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Rect, Game.Landscape.Mode, X, Y, X2, Y2, pTools->grade, !!pTools->modeIft, pTools->material, pTools->texture));
 }
 
 void C4EditCursor::ApplyToolFill()
@@ -592,7 +592,7 @@ void C4EditCursor::ApplyToolFill()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Fill, Game.Landscape.Mode, X, Y, 0, Y2, pTools->Grade, false, pTools->Material));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Fill, Game.Landscape.Mode, X, Y, 0, Y2, pTools->grade, false, pTools->material));
 }
 
 bool C4EditCursor::OpenContextMenu()

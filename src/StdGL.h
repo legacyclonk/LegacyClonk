@@ -329,7 +329,7 @@ public:
 #endif
 
 	// Developer mode images
-	bool LoadTextureFromMemory(const void* data, size_t data_size, std::uint32_t* out_texture, int* out_width = nullptr, int* out_height = nullptr) override;
+	bool LoadTextureFromMemory(const void *data, std::uint32_t dataSize, std::uint32_t *outTexture, int *outWidth = nullptr, int *outHeight = nullptr) override;
 
 protected:
 	bool CreatePrimarySurfaces() override;

@@ -41,43 +41,43 @@ C4ToolsDlg::~C4ToolsDlg()
 
 void C4ToolsDlg::Open()
 {
-	Active = true;
+	opened = true;
 }
 
 void C4ToolsDlg::Default()
 {
-	Active = false;
-	Tool = SelectedTool = ToolMode::Brush;
-	Grade = GradeDefault;
-	ModeIFT = true;
-	SCopy("Earth", Material);
-	SCopy("Rough", Texture);
+	opened = false;
+	tool = selectedTool = ToolMode::Brush;
+	grade = GradeDefault;
+	modeIft = true;
+	SCopy("Earth", material);
+	SCopy("Rough", texture);
 
 	if(lpDDraw)
 	{
-		lpDDraw->LoadTextureFromMemory(DeveloperModeStaticImage, DeveloperModeStaticImageLength, &StaticImage);
-		lpDDraw->LoadTextureFromMemory(DeveloperModeDynamicImage, DeveloperModeDynamicImageLength, &DynamicImage);
-		lpDDraw->LoadTextureFromMemory(DeveloperModeExactImage, DeveloperModeExactImageLength, &ExactImage);
+		lpDDraw->LoadTextureFromMemory(developerModeStaticImage, developerModeStaticImageLength, &staticImage);
+		lpDDraw->LoadTextureFromMemory(developerModeDynamicImage, developerModeDynamicImageLength, &dynamicImage);
+		lpDDraw->LoadTextureFromMemory(developerModeExactImage, developerModeExactImageLength, &exactImage);
 
-		lpDDraw->LoadTextureFromMemory(DeveloperModeBrushImage, DeveloperModeBrushImageLength, &BrushImage);
-		lpDDraw->LoadTextureFromMemory(DeveloperModeLineImage, DeveloperModeLineImageLength, &LineImage);
-		lpDDraw->LoadTextureFromMemory(DeveloperModeRectImage, DeveloperModeRectImageLength, &RectImage);
-		lpDDraw->LoadTextureFromMemory(DeveloperModePickerImage, DeveloperModePickerImageLength, &PickerImage);
-		lpDDraw->LoadTextureFromMemory(DeveloperModeFillImage, DeveloperModeFillImageLength, &FillImage);
+		lpDDraw->LoadTextureFromMemory(developerModeBrushImage, developerModeBrushImageLength, &brushImage);
+		lpDDraw->LoadTextureFromMemory(developerModeLineImage, developerModeLineImageLength, &lineImage);
+		lpDDraw->LoadTextureFromMemory(developerModeRectImage, developerModeRectImageLength, &rectImage);
+		lpDDraw->LoadTextureFromMemory(developerModePickerImage, developerModePickerImageLength, &pickerImage);
+		lpDDraw->LoadTextureFromMemory(developerModeFillImage, developerModeFillImageLength, &fillImage);
 	}
 }
 
 void C4ToolsDlg::Clear()
 {
-	Active = false;
+	opened = false;
 }
 
 void C4ToolsDlg::SetTool(const ToolMode tool, const bool temp)
 {
-	Tool = tool;
+	this->tool = tool;
 	if (!temp)
 	{
-		SelectedTool = Tool;
+		selectedTool = tool;
 	}
 
 	UpdatePreview();
@@ -85,13 +85,13 @@ void C4ToolsDlg::SetTool(const ToolMode tool, const bool temp)
 
 bool C4ToolsDlg::ToggleTool()
 {
-	SetTool(static_cast<ToolMode>((static_cast<std::underlying_type_t<ToolMode>>(Tool) + 1) % 4), false);
+	SetTool(static_cast<ToolMode>((static_cast<std::underlying_type_t<ToolMode>>(tool) + 1) % 4), false);
 	return true;
 }
 
 void C4ToolsDlg::SetMaterial(const char *szMaterial)
 {
-	SCopy(szMaterial, Material, C4M_MaxName);
+	SCopy(szMaterial, material, C4M_MaxName);
 	AssertValidTexture();
 	UpdatePreview();
 }
@@ -103,21 +103,31 @@ void C4ToolsDlg::SetTexture(const char *szTexture)
 	{
 		return;
 	}
-	SCopy(szTexture, Texture, C4M_MaxName);
+	SCopy(szTexture, texture, C4M_MaxName);
 	UpdatePreview();
 }
 
 void C4ToolsDlg::SetIFT(bool fIFT)
 {
-	ModeIFT = fIFT;
-	if (fIFT) ModeIFT = 1; else ModeIFT = 0;
+	modeIft = fIFT;
+	if (fIFT)
+	{
+		modeIft = 1;
+	}
+	else
+	{
+		modeIft = 0;
+	}
 	UpdatePreview();
 }
 
 // TODO
 void C4ToolsDlg::UpdatePreview()
 {
-	if (!Active) return;
+	if (!opened)
+	{
+		return;
+	}
 
 	if (Game.Landscape.Mode < C4LSC_Static)
 	{
@@ -128,21 +138,21 @@ void C4ToolsDlg::UpdatePreview()
 
 	//Application.DDraw->DrawBox(purfacePreview.get(), 0, 0, previewWidth - 1, PreviewHeight - 1, CGray4);
 
-	uint8_t bCol = 0;
-	CPattern Pattern1;
-	CPattern Pattern2;
+	std::uint8_t bCol{0};
+	CPattern pattern1;
+	CPattern pattern2;
 	// Sky material: sky as pattern only
-	if (SEqual(Material, C4TLS_MatSky))
+	if (SEqual(material, C4TLS_MatSky))
 	{
-		Pattern1.SetColors(nullptr, nullptr);
-		Pattern1.Set(Game.Landscape.Sky.Surface, 0, false);
+		pattern1.SetColors(nullptr, nullptr);
+		pattern1.Set(Game.Landscape.Sky.Surface, 0, false);
 	}
 	// Material-Texture
 	else
 	{
-		bCol = Mat2PixColDefault(Game.Material.Get(Material));
+		bCol = Mat2PixColDefault(Game.Material.Get(material));
 		// Get/Create TexMap entry
-		uint8_t iTex = Game.TextureMap.GetIndex(Material, Texture, true);
+		uint8_t iTex = Game.TextureMap.GetIndex(material, texture, true);
 		if (iTex)
 		{
 			// Define texture pattern
@@ -151,12 +161,12 @@ void C4ToolsDlg::UpdatePreview()
 			if (pTex)
 			{
 				// Set drawing pattern
-				Pattern2 = pTex->getPattern();
+				pattern2 = pTex->getPattern();
 				// get and set extended texture of material
 				C4Material *pMat = pTex->GetMaterial();
 				if (pMat && !(pMat->OverlayType & C4MatOv_None))
 				{
-					Pattern1 = pMat->MatPattern;
+					pattern1 = pMat->MatPattern;
 				}
 			}
 		}
@@ -164,26 +174,26 @@ void C4ToolsDlg::UpdatePreview()
 
 	Application.DDraw->DrawPatternedCircle(surfacePreview.get(),
 		PreviewWidth / 2, PreviewHeight / 2,
-		Grade,
-		bCol, Pattern1, Pattern2, *Game.Landscape.GetPal());
+		grade,
+		bCol, pattern1, pattern2, *Game.Landscape.GetPal());
 }
 
 void C4ToolsDlg::UpdateGrade()
 {
-	Grade = std::clamp(Grade, GradeMin, GradeMax);
+	grade = std::clamp(grade, GradeMin, GradeMax);
 	UpdatePreview();
 }
 
 bool C4ToolsDlg::ChangeGrade(int32_t iChange)
 {
-	Grade += iChange;
+	grade += iChange;
 	UpdateGrade();
 	return true;
 }
 
 bool C4ToolsDlg::SetLandscapeMode(int32_t iMode, bool fThroughControl)
 {
-	int32_t iLastMode = Game.Landscape.Mode;
+	int32_t iLastMode{Game.Landscape.Mode};
 	// send as control
 	if (!fThroughControl)
 	{
@@ -198,7 +208,7 @@ bool C4ToolsDlg::SetLandscapeMode(int32_t iMode, bool fThroughControl)
 			Game.Landscape.MapToLandscape();
 	// Assert valid tool
 	if (iMode != C4LSC_Exact)
-		if (SelectedTool == ToolMode::Fill)
+		if (selectedTool == ToolMode::Fill)
 			SetTool(ToolMode::Brush, false);
 	// Success
 	return true;
@@ -209,14 +219,14 @@ void C4ToolsDlg::AssertValidTexture()
 	// Static map mode only
 	if (Game.Landscape.Mode != C4LSC_Static) return;
 	// Ignore if sky
-	if (SEqual(Material, C4TLS_MatSky)) return;
+	if (SEqual(material, C4TLS_MatSky)) return;
 	// Current material-texture valid
-	if (Game.TextureMap.GetIndex(Material, Texture, false)) return;
+	if (Game.TextureMap.GetIndex(material, texture, false)) return;
 	// Find valid material-texture
 	const char *szTexture;
 	for (int32_t iTexture = 0; (szTexture = Game.TextureMap.GetTexture(iTexture)); iTexture++)
 	{
-		if (Game.TextureMap.GetIndex(Material, szTexture, false))
+		if (Game.TextureMap.GetIndex(material, szTexture, false))
 		{
 			SetTexture(szTexture); return;
 		}
@@ -233,34 +243,37 @@ void C4ToolsDlg::SetAlternateTool()
 void C4ToolsDlg::ResetAlternateTool()
 {
 	// reset tool to selected tool in case alternate tool was set
-	SetTool(SelectedTool, true);
+	SetTool(selectedTool, true);
 }
 
 void C4ToolsDlg::Draw()
 {
-	if (!Active) return;
+	if (!opened)
+	{
+		return;
+	}
 	ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.06, 0.12, 0.18, 0.9});
-	static ImVec2 PropertySize{210, 0};
-	ImGui::SetNextWindowSize(PropertySize);
+	static ImVec2 propertySize{210, 0};
+	ImGui::SetNextWindowSize(propertySize);
 
-	ImGui::Begin(LoadResStr(C4ResStrTableKey::IDS_DLG_TOOLS), &Active, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+	ImGui::Begin(LoadResStr(C4ResStrTableKey::IDS_DLG_TOOLS), &opened, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
 	static ImVec2 ImageSize{16, 16};
-	auto CreateSelectedButton = [this, ImageSize = ImageSize] (std::uint32_t ImageId, bool IsDisabled, bool IsHighlighted, const char* Tooltip="") -> bool
+	auto createSelectedButton = [this, ImageSize = ImageSize] (std::uint32_t imageId, bool isDisabled, bool isHighlighted, const char* tooltip = "") -> bool
 	{
-		ImGui::BeginDisabled(IsDisabled);
-		ImGui::PushID(ImageId);
-		bool WasClicked = false;
-		if(ImGui::ImageButton("", (ImTextureID)(intptr_t)ImageId, ImageSize))
+		ImGui::BeginDisabled(isDisabled);
+		ImGui::PushID(imageId);
+		bool wasClicked{false};
+		if(ImGui::ImageButton("", {imageId}, ImageSize))
 		{
-			WasClicked = true;
+			wasClicked = true;
 		}
-		if(SLen(Tooltip) > 0)
+		if(SLen(tooltip) > 0)
 		{
-			ImGui::SetItemTooltip(Tooltip);
+			ImGui::SetItemTooltip(tooltip);
 		}
 
-		if(IsHighlighted)
+		if(isHighlighted)
 		{
 			ImGui::GetWindowDrawList()->AddRect(
 			ImGui::GetItemRectMin(), ImGui::GetItemRectMax(),
@@ -270,32 +283,47 @@ void C4ToolsDlg::Draw()
 
 		ImGui::PopID();
 		ImGui::EndDisabled();
-		return WasClicked;
+		return wasClicked;
 	};
 
-	if (CreateSelectedButton(BrushImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Brush == SelectedTool, "Brush")) { SetTool(ToolMode::Brush,  false); }
+	if (createSelectedButton(brushImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Brush == selectedTool, "Brush"))
+	{
+		SetTool(ToolMode::Brush,  false);
+	}
 	ImGui::SameLine();
-	if (CreateSelectedButton(LineImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Line == SelectedTool, "Line")) { SetTool(ToolMode::Line,  false); }
+	if (createSelectedButton(lineImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Line == selectedTool, "Line"))
+	{
+		SetTool(ToolMode::Line,  false);
+	}
 	ImGui::SameLine();
-	if (CreateSelectedButton(RectImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Rect == SelectedTool, "Filled rectangle")) { SetTool(ToolMode::Rect,  false); }
+	if (createSelectedButton(rectImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Rect == selectedTool, "Filled rectangle"))
+	{
+		SetTool(ToolMode::Rect,  false);
+	}
 	ImGui::SameLine();
-	if (CreateSelectedButton(PickerImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Picker == SelectedTool, "Material picker | Shortcut: Middle mouse button")) { SetTool(ToolMode::Picker,  false); }
+	if (createSelectedButton(pickerImage, Game.Landscape.Mode < C4LSC_Static, ToolMode::Picker == selectedTool, "Material picker | Shortcut: Middle mouse button"))
+	{
+		SetTool(ToolMode::Picker,  false);
+	}
 	if(Game.Landscape.Mode == C4LSC_Exact)
 	{
 		ImGui::SameLine();
-		if (CreateSelectedButton(FillImage, Game.IsPaused(), ToolMode::Fill == SelectedTool, "Rain brush | Only works when the game is running")) { SetTool(ToolMode::Fill,  false); }
+		if (createSelectedButton(fillImage, Game.IsPaused(), ToolMode::Fill == selectedTool, "Rain brush | Only works when the game is running"))
+		{
+			SetTool(ToolMode::Fill,  false);
+		}
 	}
 
 	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-	if (ImGui::SliderInt("##Grade", &Grade, GradeMin, GradeMax, "%d", ImGuiSliderFlags_AlwaysClamp))
+	if (ImGui::SliderInt("##Grade", &grade, GradeMin, GradeMax, "%d", ImGuiSliderFlags_AlwaysClamp))
 	{
 		UpdateGrade();
 	}
 	ImGui::SetItemTooltip("Brush size");
 
-	if(ImGui::Checkbox("Tunnel wall", &ModeIFT))
+	if(ImGui::Checkbox("Tunnel wall", &modeIft))
 	{
-		SetIFT(ModeIFT);
+		SetIFT(modeIft);
 	}
 
 	ImGui::BeginGroup();
@@ -306,7 +334,7 @@ void C4ToolsDlg::Draw()
 		{
 			const auto addMaterialEntry = [this](const char *const material)
 			{
-				if (ImGui::Selectable(material, SEqual(Material, material)))
+				if (ImGui::Selectable(material, SEqual(material, material)))
 				{
 					SetMaterial(material);
 					ImGui::SetItemDefaultFocus();
@@ -330,7 +358,7 @@ void C4ToolsDlg::Draw()
 		{
 			const auto addTextureEntry = [this](const char *const texture)
 			{
-				if (ImGui::Selectable(texture, SEqual(Texture, texture)))
+				if (ImGui::Selectable(texture, SEqual(texture, texture)))
 				{
 					SetTexture(texture);
 					ImGui::SetItemDefaultFocus();
@@ -342,7 +370,7 @@ void C4ToolsDlg::Draw()
 			for (std::int32_t i{0}; (texture = Game.TextureMap.GetTexture(i)); ++i)
 			{
 				// Current material-texture valid? Always valid for exact mode
-				if (Game.TextureMap.GetIndex(Material, texture, false) || Game.Landscape.Mode == C4LSC_Exact)
+				if (Game.TextureMap.GetIndex(material, texture, false) || Game.Landscape.Mode == C4LSC_Exact)
 				{
 					addTextureEntry(texture);
 				}
@@ -355,7 +383,7 @@ void C4ToolsDlg::Draw()
 				// bottom-most: any invalid textures
 				for (std::int32_t i{0}; (texture = Game.TextureMap.GetTexture(i)); ++i)
 				{
-					if (!Game.TextureMap.GetIndex(Material, texture, false))
+					if (!Game.TextureMap.GetIndex(material, texture, false))
 					{
 						addTextureEntry(texture);
 					}
@@ -374,11 +402,11 @@ void C4ToolsDlg::Draw()
 	// Static or exact landscapes can't be converted back to generated landscapes. So this button is merely to signalize state.
 	if(Game.Landscape.Mode == C4LSC_Dynamic)
 	{
-		CreateSelectedButton(DynamicImage, false, oldLandscapeMode == C4LSC_Dynamic, "Dynamic: Generated");
+		createSelectedButton(dynamicImage, false, oldLandscapeMode == C4LSC_Dynamic, "Dynamic: Generated");
 	}
 	ImGui::SameLine();
 	// Static: enable only if map available
-	if (CreateSelectedButton(StaticImage, !Game.Landscape.Map, oldLandscapeMode == C4LSC_Static, "Static: Block-wise"))
+	if (createSelectedButton(staticImage, !Game.Landscape.Map, oldLandscapeMode == C4LSC_Static, "Static: Block-wise"))
 	{
 		// Exact to static: confirm data loss warning
 		if (oldLandscapeMode == C4LSC_Exact)
@@ -392,7 +420,7 @@ void C4ToolsDlg::Draw()
 	}
 	ImGui::SameLine();
 	// Exact: enable always
-	if (CreateSelectedButton(ExactImage, false, oldLandscapeMode == C4LSC_Exact, "Exact: Pixel-wise | Changes here are not transferable to static mode."))
+	if (createSelectedButton(exactImage, false, oldLandscapeMode == C4LSC_Exact, "Exact: Pixel-wise | Changes here are not transferable to static mode."))
 	{
 		SetLandscapeMode(C4LSC_Exact);
 	}
@@ -443,7 +471,7 @@ void C4ToolsDlg::Draw()
 
 	ImGui::PopStyleColor(1);
 
-	if (!Active)
+	if (!opened)
 	{
 		Clear();
 	}

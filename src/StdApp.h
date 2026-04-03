@@ -85,57 +85,6 @@ struct _GIOChannel;
 #define KEY_V ((uint16_t) 'V') // paste in GUI-editbox
 #define KEY_W ((uint16_t) 'W') // console mode control key
 #define KEY_X ((uint16_t) 'X') // cut from GUI-editbox
-#elif defined(USE_X11)
-#include <X11/keysym.h>
-#include <sys/time.h>
-#define K_F1 XK_F1
-#define K_F2 XK_F2
-#define K_F3 XK_F3
-#define K_F4 XK_F4
-#define K_F5 XK_F5
-#define K_F6 XK_F6
-#define K_F7 XK_F7
-#define K_F8 XK_F8
-#define K_F9 XK_F9
-#define K_F10 XK_F10
-#define K_F11 XK_F11
-#define K_F12 XK_F12
-#define K_ADD XK_KP_Add
-#define K_SUBTRACT XK_KP_Subtract
-#define K_MULTIPLY XK_KP_Multiply
-#define K_ESCAPE XK_Escape
-#define K_PAUSE XK_Pause
-#define K_TAB XK_Tab
-#define K_RETURN XK_Return
-#define K_DELETE XK_Delete
-#define K_INSERT XK_Insert
-#define K_BACK XK_BackSpace
-#define K_SPACE XK_space
-#define K_UP XK_Up
-#define K_DOWN XK_Down
-#define K_LEFT XK_Left
-#define K_RIGHT XK_Right
-#define K_HOME XK_Home
-#define K_END XK_End
-#define K_SCROLL XK_Scroll_Lock
-#define K_MENU XK_Menu
-#define K_PAGEUP XK_Page_Up
-#define K_PAGEDOWN XK_Page_Down
-#define KEY_A XK_a // select all in GUI-editbox
-#define KEY_C XK_c // copy in GUI-editbox
-#define KEY_F XK_f // search in ScenSelDlg
-#define KEY_I XK_i // console mode control key
-#define KEY_M XK_m // console mode control key
-#define KEY_T XK_t // console mode control key
-#define KEY_V XK_v // paste in GUI-editbox
-#define KEY_W XK_w // console mode control key
-#define KEY_X XK_x // cut from GUI-editbox
-// from X.h:
-//#define ShiftMask (1 << 0)
-//#define ControlMask (1 << 2)
-#define MK_ALT (1 << 3)
-#define MK_CONTROL (1 << 2)
-#define MK_SHIFT (1 << 0)
 #elif defined(USE_SDL_MAINLOOP)
 #include <StdSdlSubSystem.h>
 #include <SDL3/SDL.h>
@@ -328,10 +277,6 @@ protected:
 	UINT idCriticalTimer;
 	UINT GetDelay() { return uCriticalTimerDelay; }
 #else
-#ifdef USE_X11
-	Display *dpy{nullptr};
-	int xf86vmode_major_version, xf86vmode_minor_version;
-#endif
 	const char *Location{""};
 	void Init(int argc, char *argv[]);
 	bool DoNotDelay{false};
@@ -351,7 +296,6 @@ protected:
 
 protected:
 // TODO: Remove unused code
-#if 1// ndef _WIN32
 	std::uint32_t DelayNS{27777000}; // 36 FPS
 	std::timespec LastExecute;
 	int argc;
@@ -371,25 +315,11 @@ protected:
 	_GIOChannel *pipeChannel{nullptr};
 #endif
 
-#ifdef USE_X11
-	int detectable_autorepeat_supported;
-	_XIM *inputMethod{nullptr};
-	_XIC *inputContext{nullptr};
-	std::unordered_map<unsigned long, CStdWindow *> windows;
-	unsigned long LastEventTime{0};
-	std::string primarySelection;
-	std::string clipboardSelection;
-#elif defined(USE_SDL_MAINLOOP)
+
+#if defined(USE_SDL_MAINLOOP)
 	int nextWidth, nextHeight, nextBPP;
 	std::optional<StdSdlSubSystem> sdlVideoSubSys;
-#endif
-
-#ifdef USE_X11
-	void NewWindow(CStdWindow *window);
-	void HandleXMessage();
-#elif defined(USE_SDL_MAINLOOP)
 	void HandleSDLEvent(SDL_Event &event);
-#endif
 #endif
 
 	const char *szCmdLine;

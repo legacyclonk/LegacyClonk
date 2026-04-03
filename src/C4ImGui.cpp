@@ -41,15 +41,15 @@ static void ThrowIfFailed(const bool result, const char *const message)
 	}
 }
 
-C4ImGui::C4ImGui(SDL_Window* window)
+C4ImGui::C4ImGui(SDL_Window *window)
 {
-	ImGuiContext* prev_ctx = ImGui::GetCurrentContext();
+	ImGuiContext *prevCtx{ImGui::GetCurrentContext()};
 	context = ImGui::CreateContext();
 	Select(); // Set explicitly since ImGui::CreateContext won't change the global context if there was already one assigned.
-	ImGuiIO& io{ImGui::GetIO()};
+	ImGuiIO &io{ImGui::GetIO()};
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-	ImFont* vecfont = io.Fonts->AddFontDefaultVector();
+	ImFont *vecFont{io.Fonts->AddFontDefaultVector()};
 
 	SetStyle();
 
@@ -57,15 +57,15 @@ C4ImGui::C4ImGui(SDL_Window* window)
 	ThrowIfFailed(ImGui_ImplOpenGL2_Init(), "ImGui OpenGL2 init");
 
 	// Reset outside context so we don't run into errors if this constructor was called via another ImGui UI (e.g When creating a new viewport).
-	if(prev_ctx)
+	if(prevCtx)
 	{
-		ImGui::SetCurrentContext(prev_ctx);
+		ImGui::SetCurrentContext(prevCtx);
 	}
 }
 
 C4ImGui::~C4ImGui()
 {
-	ImGuiContext* prev_ctx = ImGui::GetCurrentContext();
+	ImGuiContext *prev_ctx{ImGui::GetCurrentContext()};
 	if (prev_ctx && prev_ctx == context)
 	{
 		prev_ctx = nullptr; // Only restore context if it was different from this->context
@@ -143,7 +143,7 @@ void C4ImGui::Render()
 
 void C4ImGui::SetStyle()
 {
-	ImGuiStyle& style = ImGui::GetStyle();
+	ImGuiStyle &style{ImGui::GetStyle()};
 	style.FrameRounding = 2.0f;
 	style.WindowRounding = 2.0f;
 	style.ChildRounding = 2.0f;
@@ -152,7 +152,7 @@ void C4ImGui::SetStyle()
 	style.FontScaleMain = 1.0f;
 	style.FontSizeBase = 16;
 	style.WindowTitleAlign.x = 0.5f;
-	ImVec4* colors = style.Colors;
+	ImVec4 *colors{style.Colors};
 
 	colors[ImGuiCol_Text]                   = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 	colors[ImGuiCol_TextDisabled]           = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
@@ -173,7 +173,7 @@ void C4ImGui::SetStyle()
 	// TODO: Add more styling
 }
 
-// TODO: Handle sdl messages on class instances
+// TODO: Remove unused code
 /*
 #ifdef _WIN32
 bool C4ImGui::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
