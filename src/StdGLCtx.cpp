@@ -468,7 +468,7 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 
 bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 {
-	if (SDL_GL_MakeCurrent(this->pWindow->sdlWindow, ctx) == false)
+	if (!SDL_GL_MakeCurrent(this->pWindow->sdlWindow, ctx))
 	{
 		throw std::runtime_error{std::string{"SDL_GL_MakeCurrent failed: "} + SDL_GetError()};
 	}
@@ -499,7 +499,7 @@ bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 
 void CStdGLCtx::DoDeselect()
 {
-	if (SDL_GL_MakeCurrent(this->pWindow->sdlWindow, nullptr) == false)
+	if (!SDL_GL_MakeCurrent(this->pWindow->sdlWindow, nullptr))
 	{
 		throw std::runtime_error{std::string{"SDL_GL_MakeCurrent failed: "} + SDL_GetError()};
 	}

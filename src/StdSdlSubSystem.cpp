@@ -25,7 +25,7 @@ using namespace std::string_literals;
 
 StdSdlSubSystem::StdSdlSubSystem(const Uint32 flags) : flags{flags}
 {
-	if (SDL_InitSubSystem(flags) == false)
+	if (!SDL_InitSubSystem(flags))
 	{
 		throw std::runtime_error{"SDL_InitSubSystem failed: "s + SDL_GetError()};
 	}
