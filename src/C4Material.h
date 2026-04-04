@@ -26,9 +26,10 @@
 
 #define C4MatOv_Default    0
 #define C4MatOv_Exact      1
-#define C4MatOv_None       2
+#define C4MatOv_NoConsole  2
 #define C4MatOv_HugeZoom   4
 #define C4MatOv_Monochrome 8
+#define C4MatOv_None       16
 
 enum MaterialInteractionEvent
 {

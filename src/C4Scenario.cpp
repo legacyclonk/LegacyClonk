@@ -125,8 +125,9 @@ void C4Scenario::CompileFunc(StdCompiler *pComp, bool fSection)
 	for (int32_t i = 0; i < C4S_MaxPlayer; i++)
 		pComp->Value(mkNamingAdapt(PlrStart[i], std::format("Player{}", i + 1).c_str()));
 
-	const bool newScenario{!Head.C4XVer[0] || CompareVersion(Head.C4XVer[0], Head.C4XVer[1], Head.C4XVer[2], Head.C4XVer[3], Head.C4XVer[4], 4, 6, 5, 0, 0) >= 0};
-	pComp->Value(mkNamingAdapt(mkParAdapt(Landscape, newScenario),   "Landscape"));
+	const bool enableShadeMaterialsDefault{!Head.C4XVer[0] || CompareVersion(Head.C4XVer[0], Head.C4XVer[1], Head.C4XVer[2], Head.C4XVer[3], Head.C4XVer[4], 4, 6, 5, 0, 0) >= 0};
+	const bool enableTextureOverlaysdefault{!Head.C4XVer[0] || CompareVersion(Head.C4XVer[0], Head.C4XVer[1], Head.C4XVer[2], Head.C4XVer[3], Head.C4XVer[4], 4, 9, 5, 0, 0) >= 0};
+	pComp->Value(mkNamingAdapt(mkParAdapt(Landscape, enableShadeMaterialsDefault, enableTextureOverlaysdefault),   "Landscape"));
 	pComp->Value(mkNamingAdapt(Animals,     "Animals"));
 	pComp->Value(mkNamingAdapt(Weather,     "Weather"));
 	pComp->Value(mkNamingAdapt(Disasters,   "Disasters"));
@@ -322,6 +323,7 @@ void C4SLandscape::Default()
 	NewStyleLandscape = 0;
 	FoWRes = CClrModAddMap::iDefResolutionX;
 	ShadeMaterials = true;
+	EnableTextureOverlays = true;
 }
 
 void C4SLandscape::GetMapSize(int32_t &rWdt, int32_t &rHgt, int32_t iPlayerNum)
@@ -333,7 +335,7 @@ void C4SLandscape::GetMapSize(int32_t &rWdt, int32_t &rHgt, int32_t iPlayerNum)
 		rWdt = (std::min)(rWdt * (std::min)(iPlayerNum, C4S_MaxMapPlayerExtend), MapWdt.Max);
 }
 
-void C4SLandscape::CompileFunc(StdCompiler *pComp, bool newScenario)
+void C4SLandscape::CompileFunc(StdCompiler *pComp, const bool shadeMaterialsDefault, const bool enableTextureOverlaysDefault)
 {
 	pComp->Value(mkNamingAdapt(ExactLandscape,            "ExactLandscape",    false));
 	pComp->Value(mkNamingAdapt(Vegetation,                "Vegetation",        C4IDList()));
@@ -342,31 +344,32 @@ void C4SLandscape::CompileFunc(StdCompiler *pComp, bool newScenario)
 	pComp->Value(mkNamingAdapt(InEarthLevel,              "InEarthLevel",      C4SVal(50, 0, 0, 100), true));
 	pComp->Value(mkNamingAdapt(mkStringAdaptMA(SkyDef),   "Sky",               ""));
 	pComp->Value(mkNamingAdapt(mkArrayAdapt(SkyDefFade, 0), "SkyFade"));
-	pComp->Value(mkNamingAdapt(NoSky,                     "NoSky",             false));
-	pComp->Value(mkNamingAdapt(BottomOpen,                "BottomOpen",        false));
-	pComp->Value(mkNamingAdapt(TopOpen,                   "TopOpen",           true));
-	pComp->Value(mkNamingAdapt(LeftOpen,                  "LeftOpen",          0));
-	pComp->Value(mkNamingAdapt(RightOpen,                 "RightOpen",         0));
-	pComp->Value(mkNamingAdapt(AutoScanSideOpen,          "AutoScanSideOpen",  true));
-	pComp->Value(mkNamingAdapt(MapWdt,                    "MapWidth",          C4SVal(100, 0, 64, 250), true));
-	pComp->Value(mkNamingAdapt(MapHgt,                    "MapHeight",         C4SVal(50, 0, 40, 250), true));
-	pComp->Value(mkNamingAdapt(MapZoom,                   "MapZoom",           C4SVal(10, 0, 5, 15), true));
-	pComp->Value(mkNamingAdapt(Amplitude,                 "Amplitude",         C4SVal(0)));
-	pComp->Value(mkNamingAdapt(Phase,                     "Phase",             C4SVal(50)));
-	pComp->Value(mkNamingAdapt(Period,                    "Period",            C4SVal(15)));
-	pComp->Value(mkNamingAdapt(Random,                    "Random",            C4SVal(0)));
-	pComp->Value(mkNamingAdapt(mkStringAdaptMA(Material), "Material",          "Earth"));
-	pComp->Value(mkNamingAdapt(mkStringAdaptMA(Liquid),   "Liquid",            "Water"));
-	pComp->Value(mkNamingAdapt(LiquidLevel,               "LiquidLevel",       C4SVal()));
-	pComp->Value(mkNamingAdapt(MapPlayerExtend,           "MapPlayerExtend",   false));
-	pComp->Value(mkNamingAdapt(Layers,                    "Layers",            C4NameList()));
-	pComp->Value(mkNamingAdapt(Gravity,                   "Gravity",           C4SVal(100, 0, 10, 200), true));
-	pComp->Value(mkNamingAdapt(NoScan,                    "NoScan",            false));
-	pComp->Value(mkNamingAdapt(KeepMapCreator,            "KeepMapCreator",    false));
-	pComp->Value(mkNamingAdapt(SkyScrollMode,             "SkyScrollMode",     0));
-	pComp->Value(mkNamingAdapt(NewStyleLandscape,         "NewStyleLandscape", 0));
-	pComp->Value(mkNamingAdapt(FoWRes,                    "FoWRes",            static_cast<int32_t>(CClrModAddMap::iDefResolutionX)));
-	pComp->Value(mkNamingAdapt(ShadeMaterials,            "ShadeMaterials",    newScenario));
+	pComp->Value(mkNamingAdapt(NoSky,                     "NoSky",                 false));
+	pComp->Value(mkNamingAdapt(BottomOpen,                "BottomOpen",            false));
+	pComp->Value(mkNamingAdapt(TopOpen,                   "TopOpen",               true));
+	pComp->Value(mkNamingAdapt(LeftOpen,                  "LeftOpen",              0));
+	pComp->Value(mkNamingAdapt(RightOpen,                 "RightOpen",             0));
+	pComp->Value(mkNamingAdapt(AutoScanSideOpen,          "AutoScanSideOpen",      true));
+	pComp->Value(mkNamingAdapt(MapWdt,                    "MapWidth",              C4SVal(100, 0, 64, 250), true));
+	pComp->Value(mkNamingAdapt(MapHgt,                    "MapHeight",             C4SVal(50, 0, 40, 250), true));
+	pComp->Value(mkNamingAdapt(MapZoom,                   "MapZoom",               C4SVal(10, 0, 5, 15), true));
+	pComp->Value(mkNamingAdapt(Amplitude,                 "Amplitude",             C4SVal(0)));
+	pComp->Value(mkNamingAdapt(Phase,                     "Phase",                 C4SVal(50)));
+	pComp->Value(mkNamingAdapt(Period,                    "Period",                C4SVal(15)));
+	pComp->Value(mkNamingAdapt(Random,                    "Random",                C4SVal(0)));
+	pComp->Value(mkNamingAdapt(mkStringAdaptMA(Material), "Material",              "Earth"));
+	pComp->Value(mkNamingAdapt(mkStringAdaptMA(Liquid),   "Liquid",                "Water"));
+	pComp->Value(mkNamingAdapt(LiquidLevel,               "LiquidLevel",           C4SVal()));
+	pComp->Value(mkNamingAdapt(MapPlayerExtend,           "MapPlayerExtend",       false));
+	pComp->Value(mkNamingAdapt(Layers,                    "Layers",                C4NameList()));
+	pComp->Value(mkNamingAdapt(Gravity,                   "Gravity",               C4SVal(100, 0, 10, 200), true));
+	pComp->Value(mkNamingAdapt(NoScan,                    "NoScan",                false));
+	pComp->Value(mkNamingAdapt(KeepMapCreator,            "KeepMapCreator",        false));
+	pComp->Value(mkNamingAdapt(SkyScrollMode,             "SkyScrollMode",         0));
+	pComp->Value(mkNamingAdapt(NewStyleLandscape,         "NewStyleLandscape",     0));
+	pComp->Value(mkNamingAdapt(FoWRes,                    "FoWRes",                static_cast<int32_t>(CClrModAddMap::iDefResolutionX)));
+	pComp->Value(mkNamingAdapt(ShadeMaterials,            "ShadeMaterials",        shadeMaterialsDefault));
+	pComp->Value(mkNamingAdapt(EnableTextureOverlays,     "EnableTextureOverlays", enableTextureOverlaysDefault));
 }
 
 void C4SWeather::Default()

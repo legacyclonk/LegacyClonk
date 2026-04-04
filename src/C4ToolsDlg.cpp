@@ -659,7 +659,7 @@ void C4ToolsDlg::UpdatePreview()
 				Pattern2 = pTex->getPattern();
 				// get and set extended texture of material
 				C4Material *pMat = pTex->GetMaterial();
-				if (pMat && !(pMat->OverlayType & C4MatOv_None))
+				if (pMat && !(pMat->OverlayType & (C4MatOv_NoConsole | C4MatOv_None)))
 				{
 					Pattern1 = pMat->MatPattern;
 				}
