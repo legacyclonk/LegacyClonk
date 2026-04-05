@@ -35,10 +35,6 @@
 #include <math.h>
 #include <limits.h>
 
-#define STB_IMAGE_IMPLEMENTATION
-#define STBI_ONLY_PNG
-#include "stb_image.h"
-
 void CStdGLShader::Compile()
 {
 	if (shader) // recompiling?
@@ -1366,42 +1362,26 @@ void CStdGL::BindGammaTextures()
 
 // Simple helper function to load an image into a OpenGL texture with common settings.
 // Reference (https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples#example-for-opengl-users)
-bool CStdGL::LoadTextureFromMemory(const void *data, std::uint32_t dataSize, std::uint32_t *outTexture, int *outWidth, int *outHeight)
+std::uint32_t CStdGL::LoadPNGFromMemory(const void *data, const std::uint32_t dataSize)
 {
-	// Load from file
-	int imageWidth{0};
-	int imageHeight{0};
-	std::uint8_t *imageData = stbi_load_from_memory(reinterpret_cast<const std::uint8_t*>(data), dataSize, &imageWidth, &imageHeight, nullptr, 4);
-	if (imageData == nullptr)
+	CPNGFile pngLoader{data, dataSize};
+	StdBitmap bmp{pngLoader.Width(), pngLoader.Height(), pngLoader.UsesAlpha()};
+	pngLoader.Decode(bmp.GetBytes(), false);
+	if (bmp.GetBytes() == nullptr)
 	{
-		return false;
+		return -1;
 	}
 
-	// Create a OpenGL texture identifier
 	GLuint imageTexture;
 	glGenTextures(1, &imageTexture);
 	glBindTexture(GL_TEXTURE_2D, imageTexture);
 
-	// Setup filtering parameters for display
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	// Upload pixels into texture
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
-	stbi_image_free(imageData);
+	glTexImage2D(GL_TEXTURE_2D, 0, pngLoader.UsesAlpha() ? 4 : 3, pngLoader.Width(), pngLoader.Height(), 0, pngLoader.UsesAlpha() ? GL_BGRA : GL_BGR, GL_UNSIGNED_INT_8_8_8_8_REV, bmp.GetBytes());
 
-	*outTexture = imageTexture;
-	if(outWidth)
-	{
-		*outWidth = imageWidth;
-	}
-	if(outHeight)
-	{
-		*outHeight = imageHeight;
-	}
-
-	return true;
+	return imageTexture;
 }
 
 

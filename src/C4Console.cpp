@@ -245,14 +245,13 @@ bool C4Console::Init(CStdApp *app, const char *title, const C4Rect &bounds, CStd
 
 void C4Console::InitGUI()
 {
-
 	if(lpDDraw)
 	{
-		lpDDraw->LoadTextureFromMemory(developerModeCursorImage, developerModeCursorImageLength, &toolCursorImage);
-		lpDDraw->LoadTextureFromMemory(developerModeMouseImage, developerModeMouseImageLength, &toolMouseImage);
-		lpDDraw->LoadTextureFromMemory(developerModeBrushImage, developerModeBrushImageLength, &toolBrushImage);
-		lpDDraw->LoadTextureFromMemory(developerModePlayImage, developerModePlayImageLength, &playImage);
-		lpDDraw->LoadTextureFromMemory(developerModeHaltImage, developerModeHaltImageLength, &haltImage);
+		toolCursorImage = lpDDraw->LoadPNGFromMemory(developerModeCursorImage, developerModeCursorImageLength);
+		toolMouseImage = lpDDraw->LoadPNGFromMemory(developerModeMouseImage, developerModeMouseImageLength);
+		toolBrushImage = lpDDraw->LoadPNGFromMemory(developerModeBrushImage, developerModeBrushImageLength);
+		playImage = lpDDraw->LoadPNGFromMemory(developerModePlayImage, developerModePlayImageLength);
+		haltImage = lpDDraw->LoadPNGFromMemory(developerModeHaltImage, developerModeHaltImageLength);
 	}
 
 	InitImGui();

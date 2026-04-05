@@ -87,12 +87,11 @@ struct CPNGFile::Impl
 	}
 
 	// Reads the PNG file into the specified buffer. Don't use this object after calling.
-	void Decode(void *const pixels)
+	void Decode(void *const pixels, bool invertAlpha)
 	{
 		wic.CopyPixels(nullptr, rowSize, height * rowSize, pixels);
 
-		// Invert alpha channel
-		if (useAlpha)
+		if (useAlpha && invertAlpha)
 		{
 			for (std::uint32_t y = 0; y < height; ++y)
 			{
@@ -115,7 +114,7 @@ void CPNGFile::Encode(const void *const pixels) { impl->Encode(pixels); }
 CPNGFile::CPNGFile(const void *const fileContents, const std::size_t fileSize)
 	: impl(new Impl(fileContents, fileSize)) {}
 
-void CPNGFile::Decode(void *const pixels) { impl->Decode(pixels); }
+void CPNGFile::Decode(void *const pixels, bool invertAlpha) { impl->Decode(pixels, invertAlpha); }
 
 CPNGFile::~CPNGFile() = default;
 

@@ -55,15 +55,15 @@ void C4ToolsDlg::Default()
 
 	if(lpDDraw)
 	{
-		lpDDraw->LoadTextureFromMemory(developerModeStaticImage, developerModeStaticImageLength, &staticImage);
-		lpDDraw->LoadTextureFromMemory(developerModeDynamicImage, developerModeDynamicImageLength, &dynamicImage);
-		lpDDraw->LoadTextureFromMemory(developerModeExactImage, developerModeExactImageLength, &exactImage);
+		dynamicImage = lpDDraw->LoadPNGFromMemory(developerModeDynamicImage, developerModeDynamicImageLength);
+		staticImage = lpDDraw->LoadPNGFromMemory(developerModeStaticImage, developerModeStaticImageLength);
+		exactImage = lpDDraw->LoadPNGFromMemory(developerModeExactImage, developerModeExactImageLength);
 
-		lpDDraw->LoadTextureFromMemory(developerModeBrushImage, developerModeBrushImageLength, &brushImage);
-		lpDDraw->LoadTextureFromMemory(developerModeLineImage, developerModeLineImageLength, &lineImage);
-		lpDDraw->LoadTextureFromMemory(developerModeRectImage, developerModeRectImageLength, &rectImage);
-		lpDDraw->LoadTextureFromMemory(developerModePickerImage, developerModePickerImageLength, &pickerImage);
-		lpDDraw->LoadTextureFromMemory(developerModeFillImage, developerModeFillImageLength, &fillImage);
+		brushImage = lpDDraw->LoadPNGFromMemory(developerModeBrushImage, developerModeBrushImageLength);
+		lineImage = lpDDraw->LoadPNGFromMemory(developerModeLineImage, developerModeLineImageLength);
+		rectImage = lpDDraw->LoadPNGFromMemory(developerModeRectImage, developerModeRectImageLength);
+		pickerImage = lpDDraw->LoadPNGFromMemory(developerModePickerImage, developerModePickerImageLength);
+		fillImage = lpDDraw->LoadPNGFromMemory(developerModeFillImage, developerModeFillImageLength);
 	}
 }
 

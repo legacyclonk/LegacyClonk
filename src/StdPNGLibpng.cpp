@@ -189,8 +189,6 @@ struct CPNGFile::Impl
 		if (!info_ptr) throw std::runtime_error("png_create_info_struct failed");
 		// set file-reading proc
 		png_set_read_fn(png_ptr, this, &ReadCallbackFn);
-		// Clonk expects the alpha channel to be inverted
-		png_set_invert_alpha(png_ptr);
 		// read info
 		png_read_info(png_ptr, info_ptr);
 		// assign local vars
@@ -237,9 +235,14 @@ struct CPNGFile::Impl
 		CalculateRowSize();
 	}
 
-	void Decode(void *const pixels)
+	void Decode(void *const pixels, bool invertAlpha)
 	{
 		png_read_image(png_ptr, CreateRowBuffer(pixels).get());
+		if(useAlpha && invertAlpha)
+		{
+			// Clonk expects the alpha channel to be inverted
+			png_set_invert_alpha(png_ptr);
+		}
 		Clear();
 	}
 
@@ -304,7 +307,7 @@ void CPNGFile::Encode(const void *pixels) { impl->Encode(pixels); }
 CPNGFile::CPNGFile(const void *const fileContents, const std::size_t fileSize)
 	: impl(new Impl(fileContents, fileSize)) {}
 
-void CPNGFile::Decode(void *const pixels) { impl->Decode(pixels); }
+void CPNGFile::Decode(void *const pixels, bool invertAlpha) { impl->Decode(pixels, invertAlpha); }
 
 CPNGFile::~CPNGFile() = default;
 

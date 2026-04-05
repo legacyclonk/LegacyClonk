@@ -36,7 +36,7 @@ public:
 	// Creates an object that can be used to read the specified file contents.
 	CPNGFile(const void *fileContents, std::size_t fileSize);
 	// Reads the PNG file into the specified buffer. Don't use this object after calling.
-	void Decode(void *pixels);
+	void Decode(void *pixels, bool invertAlpha = true);
 
 	~CPNGFile();
 
