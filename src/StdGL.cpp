@@ -1364,9 +1364,9 @@ void CStdGL::BindGammaTextures()
 // Reference (https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples#example-for-opengl-users)
 std::uint32_t CStdGL::LoadPNGFromMemory(const void *data, const std::uint32_t dataSize)
 {
-	CPNGFile pngLoader{data, dataSize};
+	CPNGFile pngLoader{data, dataSize, false};
 	StdBitmap bmp{pngLoader.Width(), pngLoader.Height(), pngLoader.UsesAlpha()};
-	pngLoader.Decode(bmp.GetBytes(), false);
+	pngLoader.Decode(bmp.GetBytes());
 	if (bmp.GetBytes() == nullptr)
 	{
 		return -1;

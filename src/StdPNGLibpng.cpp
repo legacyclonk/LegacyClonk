@@ -43,6 +43,7 @@ struct CPNGFile::Impl
 
 	std::uint32_t width, height, rowSize;
 	bool useAlpha;
+	bool invertAlpha = true;
 
 	// libpng structs
 	png_structp png_ptr;
@@ -98,9 +99,11 @@ struct CPNGFile::Impl
 
 	// Initialize for encoding
 	Impl(const std::string &filename,
-		const unsigned int width, const unsigned int height, const bool useAlpha)
+		const unsigned int width, const unsigned int height, const bool useAlpha, const bool invertAlpha)
 		: Impl()
 	{
+		this->invertAlpha = invertAlpha;
+
 		try
 		{
 			PrepareEncoding(filename, width, height, useAlpha);
@@ -136,8 +139,11 @@ struct CPNGFile::Impl
 		this->height = height;
 		this->useAlpha = useAlpha;
 		CalculateRowSize();
-		// Clonk expects the alpha channel to be inverted
-		png_set_invert_alpha(png_ptr);
+		if (invertAlpha)
+		{
+			// Clonk expects the alpha channel to be inverted
+			png_set_invert_alpha(png_ptr);
+		}
 		// Write header
 		png_write_info(png_ptr, info_ptr);
 		// image data is given as bgr...
@@ -155,9 +161,11 @@ struct CPNGFile::Impl
 	}
 
 	// Initialize for decoding
-	Impl(const void *const fileContents, const std::size_t fileSize)
+	Impl(const void *const fileContents, const std::size_t fileSize, const bool invertAlpha)
 		: Impl()
 	{
+		this->invertAlpha = invertAlpha;
+
 		try
 		{
 			PrepareDecoding(fileContents, fileSize);
@@ -191,6 +199,11 @@ struct CPNGFile::Impl
 		png_set_read_fn(png_ptr, this, &ReadCallbackFn);
 		// read info
 		png_read_info(png_ptr, info_ptr);
+		if(invertAlpha)
+		{
+			// Clonk expects the alpha channel to be inverted
+			png_set_invert_alpha(png_ptr);
+		}
 		// assign local vars
 		int bitsPerChannel, colorType;
 		png_get_IHDR(png_ptr, info_ptr, nullptr, nullptr, &bitsPerChannel, &colorType,
@@ -235,14 +248,9 @@ struct CPNGFile::Impl
 		CalculateRowSize();
 	}
 
-	void Decode(void *const pixels, bool invertAlpha)
+	void Decode(void *const pixels)
 	{
 		png_read_image(png_ptr, CreateRowBuffer(pixels).get());
-		if(useAlpha && invertAlpha)
-		{
-			// Clonk expects the alpha channel to be inverted
-			png_set_invert_alpha(png_ptr);
-		}
 		Clear();
 	}
 
@@ -298,16 +306,16 @@ struct CPNGFile::Impl
 
 // Initialize for encoding
 CPNGFile::CPNGFile(const std::string &filename,
-	const std::uint32_t width, const std::uint32_t height, const bool useAlpha)
-	: impl(new Impl(filename, width, height, useAlpha)) {}
+	const std::uint32_t width, const std::uint32_t height, const bool useAlpha, const bool invertAlpha)
+	: impl(new Impl(filename, width, height, useAlpha, invertAlpha)) {}
 
 void CPNGFile::Encode(const void *pixels) { impl->Encode(pixels); }
 
 // Initialize for decoding
-CPNGFile::CPNGFile(const void *const fileContents, const std::size_t fileSize)
-	: impl(new Impl(fileContents, fileSize)) {}
+CPNGFile::CPNGFile(const void *const fileContents, const std::size_t fileSize, const bool invertAlpha)
+	: impl(new Impl(fileContents, fileSize, invertAlpha)) {}
 
-void CPNGFile::Decode(void *const pixels, bool invertAlpha) { impl->Decode(pixels, invertAlpha); }
+void CPNGFile::Decode(void *const pixels) { impl->Decode(pixels); }
 
 CPNGFile::~CPNGFile() = default;
 

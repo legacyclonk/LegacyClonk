@@ -29,11 +29,12 @@ struct CPNGFile::Impl
 
 	std::uint32_t width, height, rowSize;
 	bool useAlpha;
+	bool invertAlpha = true;
 
 	// Creates an object that can be used to write to the specified file.
 	Impl(const std::string &filename,
-		const std::uint32_t width, const std::uint32_t height, const bool useAlpha)
-		: width(width), height(height), useAlpha(useAlpha),
+		const std::uint32_t width, const std::uint32_t height, const bool useAlpha, const bool invertAlpha)
+		: width(width), height(height), useAlpha(useAlpha), invertAlpha(invertAlpha),
 		rowSize(width * (useAlpha ? 4 : 3)),
 		wic(false, filename)
 	{
@@ -47,7 +48,7 @@ struct CPNGFile::Impl
 		C4DeleterFunctionUniquePtr<static_cast<void(*)(void *)>(operator delete)> copy{nullptr};
 		const void *encodePixels = pixels;
 		// Invert alpha channel
-		if (useAlpha)
+		if (useAlpha && invertAlpha)
 		{
 			size_t dataSize = height * rowSize;
 			auto modifiedPixels = operator new(dataSize);
@@ -70,7 +71,7 @@ struct CPNGFile::Impl
 	}
 
 	// Creates an object that can be used to read the specified file contents.
-	Impl(const void *const fileContents, const std::size_t fileSize)
+	Impl(const void *const fileContents, const std::size_t fileSize, const bool invertAlpha)
 		: wic(true, fileContents, fileSize)
 	{
 		wic.PrepareDecode(GUID_ContainerFormatPng);
@@ -83,11 +84,13 @@ struct CPNGFile::Impl
 		useAlpha = (wic.GetOutputFormat() != GUID_WICPixelFormat24bppBGR);
 		if (useAlpha) wic.SetOutputFormat(GUID_WICPixelFormat32bppBGRA);
 
+		this->invertAlpha = invertAlpha;
+
 		rowSize = width * (useAlpha ? 4 : 3);
 	}
 
 	// Reads the PNG file into the specified buffer. Don't use this object after calling.
-	void Decode(void *const pixels, bool invertAlpha)
+	void Decode(void *const pixels)
 	{
 		wic.CopyPixels(nullptr, rowSize, height * rowSize, pixels);
 
@@ -106,15 +109,15 @@ struct CPNGFile::Impl
 };
 
 CPNGFile::CPNGFile(const std::string &filename,
-	const std::uint32_t width, const std::uint32_t height, const bool useAlpha)
-	: impl(new Impl(filename, width, height, useAlpha)) {}
+	const std::uint32_t width, const std::uint32_t height, const bool useAlpha, const bool invertAlpha)
+	: impl(new Impl(filename, width, height, useAlpha, invertAlpha)) {}
 
 void CPNGFile::Encode(const void *const pixels) { impl->Encode(pixels); }
 
-CPNGFile::CPNGFile(const void *const fileContents, const std::size_t fileSize)
-	: impl(new Impl(fileContents, fileSize)) {}
+CPNGFile::CPNGFile(const void *const fileContents, const std::size_t fileSize, const bool invertAlpha)
+	: impl(new Impl(fileContents, fileSize, invertAlpha)) {}
 
-void CPNGFile::Decode(void *const pixels, bool invertAlpha) { impl->Decode(pixels, invertAlpha); }
+void CPNGFile::Decode(void *const pixels) { impl->Decode(pixels); }
 
 CPNGFile::~CPNGFile() = default;
 
