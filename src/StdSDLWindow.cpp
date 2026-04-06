@@ -105,6 +105,7 @@ bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect 
 	ThrowIfFailed("SDL_CreateWindow", !sdlWindow);
 	SDL_SetWindowMinimumSize(sdlWindow, minWidth, minHeight);
 	SDL_SetWindowPosition(sdlWindow, bounds.x, bounds.y);
+	SDL_StartTextInput(sdlWindow);
 
 	return true;
 }
@@ -128,7 +129,13 @@ void CStdWindow::InitImGui()
 	imGui.emplace(sdlWindow);
 }
 
-void CStdWindow::Clear() {}
+void CStdWindow::Clear()
+{
+	if(sdlWindow)
+	{
+		SDL_StopTextInput(sdlWindow);
+	}
+}
 
 // Window size is automatically managed by CStdApp's display mode management.
 // Just remember the size for others to query.
