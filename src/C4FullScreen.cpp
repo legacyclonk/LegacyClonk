@@ -358,15 +358,14 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 		break;
 	case SDL_EVENT_MOUSE_MOTION :
 	{
-		const auto scale{GetInputScale()};
+		const float scale{GetInputScale()};
 		Game.GraphicsSystem.MouseMove(C4MC_Button_None, e.motion.x * scale, e.motion.y * scale, Application.GetModifiers(), nullptr);
 		break;
 	}
 	case SDL_EVENT_MOUSE_WHEEL :
 	{
-		const auto scale{GetInputScale()};
+		const float scale{GetInputScale()};
 		float x, y;
-			// TODO: Check if change from int (SDL2) pos to float (SDL3: subpixel mouse position change) might break things.
 		SDL_GetMouseState(&x, &y);
 		Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, x * scale, y * scale, static_cast<std::int32_t>(e.wheel.y * 60) << 16, nullptr);
 		break;
@@ -374,7 +373,7 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 	case SDL_EVENT_MOUSE_BUTTON_UP :
 	case SDL_EVENT_MOUSE_BUTTON_DOWN :
 	{
-		const auto scale{GetInputScale()};
+		const float scale{GetInputScale()};
 		int32_t button;
 		C4ViewportWindow::sdlToC4MCBtn(e.button, button);
 		Game.GraphicsSystem.MouseMove(button, e.button.x * scale, e.button.y * scale, Application.GetModifiers(), nullptr);

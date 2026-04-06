@@ -456,7 +456,7 @@ void C4GraphicsSystem::SortViewportsByPlayerControl()
 
 void C4GraphicsSystem::MouseMove(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam, class C4Viewport *pVP)
 {
-	const auto scale = Application.GetScale();
+	const float scale{Application.GetScale()};
 	iX = static_cast<int32_t>(ceilf(iX / scale));
 	iY = static_cast<int32_t>(ceilf(iY / scale));
 	// pass on to GUI
