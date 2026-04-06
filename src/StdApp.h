@@ -218,7 +218,7 @@ protected:
 	std::timespec lastExecute;
 	int argc;
 	char **argv;
-	int pipe[2];
+	int msgPipe[2];
 	unsigned int keyMask{0};
 
 #if defined(USE_SDL_MAINLOOP)

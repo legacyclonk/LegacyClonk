@@ -622,7 +622,7 @@ void C4ConfigGeneral::DeterminePaths(bool forceWorkingDirectory)
 	if (TempPath[0]) AppendBackslash(TempPath);
 #elif defined(__linux__)
 #ifdef C4ENGINE
-	GetParentPath(Application.Location, ExePath);
+	GetParentPath(Application.location, ExePath);
 #else
 	ExePath[0] = '.'; ExePath[1] = 0;
 #endif

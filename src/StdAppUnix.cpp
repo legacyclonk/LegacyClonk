@@ -84,7 +84,7 @@ void CStdApp::Init(const int argc, char **const argv)
 #endif
 
 #if !defined(_WIN32)
-	if (pipe(Pipe) != 0)
+	if (pipe(msgPipe) != 0)
 	{
 		throw StartupException{"Error creating Pipe"};
 	}
@@ -102,8 +102,8 @@ bool CStdApp::InitTimer()
 void CStdApp::Clear()
 {
 #if !defined(_WIN32)
-	close(Pipe[0]);
-	close(Pipe[1]);
+	close(msgPipe[0]);
+	close(msgPipe[1]);
 #endif
 
 #if defined(USE_SDL_MAINLOOP)
@@ -232,7 +232,7 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 	std::array<pollfd, 3> fds;
 	fds.fill({.fd = -1, .events = POLLIN});
 
-	fds[0].fd = Pipe[0];
+	fds[0].fd = msgPipe[0];
 
 #ifdef USE_CONSOLE
 	fds[2].fd = STDIN_FILENO;
@@ -280,7 +280,7 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 bool CStdApp::SignalNetworkEvent()
 {
 	char c{1};
-	write(pipe[1], &c, 1);
+	write(msgPipe[1], &c, 1);
 	return true;
 }
 
@@ -317,7 +317,7 @@ bool CStdApp::IsClipboardFull(const bool clipboard)
 void CStdApp::OnPipeInput()
 {
 	char c;
-	read(pipe[0], &c, 1);
+	read(msgPipe[0], &c, 1);
 	OnNetworkEvents();
 }
 
@@ -334,15 +334,15 @@ bool CStdApp::ReadStdInCommand()
 
 	if (c == '\n')
 	{
-		if (!CmdBuf.isNull())
+		if (!cmdBuf.isNull())
 		{
-			OnCommand(CmdBuf.getData());
-			CmdBuf.Clear();
+			OnCommand(cmdBuf.getData());
+			cmdBuf.Clear();
 		}
 	}
 	else if (C4Strings::IsPrint(c))
 	{
-		CmdBuf.AppendChar(c);
+		cmdBuf.AppendChar(c);
 	}
 #endif
 
