@@ -28,8 +28,6 @@
 #include <tuple>
 
 #ifdef _WIN32
-#include "C4Com.h"
-#include "C4WinRT.h"
 #include <shobjidl.h>
 #endif
 
@@ -37,15 +35,9 @@
 #include <optional>
 
 class CStdApp;
-#ifdef USE_X11
-// Forward declarations because xlib.h is evil
-typedef union _XEvent XEvent;
-typedef struct _XDisplay Display;
-#elif defined(USE_SDL_MAINLOOP)
 struct SDL_Window;
 union SDL_Event;
 struct SDL_MouseButtonEvent;
-#endif
 
 enum class DisplayMode
 {
@@ -69,14 +61,11 @@ public:
 	void StorePosition();
 	void RestorePosition();
 	bool GetSize(C4Rect &rect);
+	static constexpr C4Rect defaultBounds{0, 0, 100, 100};
 
 	void InitImGui();
 	std::optional<C4ImGui> imGui;
 
-// TODO: Remove unused code
-#if FALSE//def _WIN32
-	virtual
-#endif
 	void SetSize(unsigned int cx, unsigned int cy); // resize
 	void SetTitle(const char *title);
 	void FlashWindow();
@@ -86,69 +75,20 @@ public:
 protected:
 	virtual void Sec1Timer() {}
 
-// TODO: Remove unused code
-#if FALSE //def _WIN32
-
+#if defined(USE_SDL_MAINLOOP)
 public:
-	static constexpr C4Rect DefaultBounds{CW_USEDEFAULT, CW_USEDEFAULT, 0, 0};
-
-	HWND hWindow{nullptr};
-	void Maximize();
-	void SetPosition(int x, int y);
-	virtual HWND GetRenderWindow() const { return hWindow; }
-
-	static LRESULT DefaultWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-protected:
-	virtual WNDCLASSEX GetWindowClass(HINSTANCE instance) const = 0;
-	virtual bool Win32DialogMessageHandling(MSG *msg) { return false; };
-	virtual bool GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const { return {}; }
-	virtual std::pair<DWORD, DWORD> GetWindowStyle() const { return {WS_OVERLAPPEDWINDOW, 0}; }
-	virtual bool SupportsDarkMode() const { return true; }
-
-private:
-	C4Com com;
-	DWORD style = WS_OVERLAPPEDWINDOW;
-	DWORD styleEx = 0;
-	winrt::com_ptr<ITaskbarList3> taskBarList{nullptr};
-
-#elif defined(USE_X11)
-
-public:
-	static constexpr C4Rect DefaultBounds{0, 0, 640, 480};
-
-protected:
-	bool FindInfo();
-	virtual bool HideCursor() const { return false; }
-
-	unsigned long wnd{0};
-	unsigned long renderwnd{0};
-	Display *dpy{nullptr};
-	virtual void HandleMessage(XEvent &);
-	// The currently set window hints
-	void *Hints{nullptr};
-	bool HasFocus{false}; // To clear urgency hint
-	// The XVisualInfo the window was created with
-	void *Info{nullptr};
-
-#elif defined(USE_SDL_MAINLOOP)
-public:
-	static constexpr C4Rect defaultBounds{0, 0, 100, 100};
 	static void sdlToC4MCBtn(const SDL_MouseButtonEvent &e, int32_t &button);
-public:
 	float GetInputScale();
+
+protected:
+	SDL_Window *sdlWindow;
+	virtual void HandleMessage(SDL_Event &) {}
 
 private:
 	int width, height;
 	CStdApp *app;
 	DisplayMode displayMode;
 
-protected:
-	SDL_Window *sdlWindow;
-	virtual void HandleMessage(SDL_Event &) {}
-#elif defined(USE_CONSOLE)
-public:
-	static constexpr C4Rect DefaultBounds{0, 0, 100, 100};
 #endif
 
 	friend class CStdDDraw;

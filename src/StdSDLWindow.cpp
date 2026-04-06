@@ -86,9 +86,8 @@ CStdWindow::~CStdWindow()
 	Clear();
 }
 
-// Only set title.
 // FIXME: Read from application bundle on the Mac.
-bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent, std::uint32_t additionalFlags, std::int32_t minWidth, std::int32_t minHeight)
+bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent, const std::uint32_t additionalFlags, const std::int32_t minWidth, const std::int32_t minHeight)
 {
 	Active = true;
 

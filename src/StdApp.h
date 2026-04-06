@@ -22,70 +22,10 @@
 #include "StdSync.h"
 #include "StdWindow.h"
 
-// TODO: Remove unused code
-#if FALSE //def _WIN32
-
-const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
-#elif defined(USE_X11)
-struct _XIC;
-struct _XIM;
-#include <unordered_map>
-#endif
-
-#ifdef WITH_GLIB
-struct _GMainLoop;
-struct _GIOChannel;
-#endif
-
 #include <thread>
 #include <stdexcept>
 
-// TODO: Remove unused code
-#if FALSE //def _WIN32
-#define K_ALT VK_MENU
-#define K_ESCAPE VK_ESCAPE
-#define K_PAUSE VK_PAUSE
-#define K_TAB VK_TAB
-#define K_RETURN VK_RETURN
-#define K_DELETE VK_DELETE
-#define K_INSERT VK_INSERT
-#define K_BACK VK_BACK
-#define K_SPACE VK_SPACE
-#define K_F1 VK_F1
-#define K_F2 VK_F2
-#define K_F3 VK_F3
-#define K_F4 VK_F4
-#define K_F5 VK_F5
-#define K_F6 VK_F6
-#define K_F7 VK_F7
-#define K_F8 VK_F8
-#define K_F9 VK_F9
-#define K_F10 VK_F10
-#define K_F11 VK_F11
-#define K_F12 VK_F12
-#define K_ADD VK_ADD
-#define K_SUBTRACT VK_SUBTRACT
-#define K_MULTIPLY VK_MULTIPLY
-#define K_UP VK_UP
-#define K_DOWN VK_DOWN
-#define K_LEFT VK_LEFT
-#define K_RIGHT VK_RIGHT
-#define K_HOME VK_HOME
-#define K_END VK_END
-#define K_SCROLL VK_SCROLL
-#define K_MENU VK_APPS
-#define K_PAGEUP VK_PRIOR
-#define K_PAGEDOWN VK_NEXT
-#define KEY_A ((uint16_t) 'A') // select all in GUI-editbox
-#define KEY_C ((uint16_t) 'C') // copy in GUI-editbox
-#define KEY_F ((uint16_t) 'F') // search in ScenSelDlg
-#define KEY_I ((uint16_t) 'I') // console mode control key
-#define KEY_M ((uint16_t) 'M') // console mode control key
-#define KEY_T ((uint16_t) 'T') // console mode control key
-#define KEY_V ((uint16_t) 'V') // paste in GUI-editbox
-#define KEY_W ((uint16_t) 'W') // console mode control key
-#define KEY_X ((uint16_t) 'X') // cut from GUI-editbox
-#elif defined(USE_SDL_MAINLOOP)
+#if defined(USE_SDL_MAINLOOP)
 #include <StdSdlSubSystem.h>
 #include <SDL3/SDL.h>
 #include <optional>
@@ -122,15 +62,15 @@ struct _GIOChannel;
 #define K_MENU SDL_SCANCODE_MENU
 #define K_PAGEUP SDL_SCANCODE_PAGEUP
 #define K_PAGEDOWN SDL_SCANCODE_PAGEDOWN
-#define KEY_M SDL_SCANCODE_M
-#define KEY_T SDL_SCANCODE_T
-#define KEY_W SDL_SCANCODE_W
-#define KEY_I SDL_SCANCODE_I
-#define KEY_C SDL_SCANCODE_C
-#define KEY_V SDL_SCANCODE_V
-#define KEY_X SDL_SCANCODE_X
-#define KEY_A SDL_SCANCODE_A
-#define KEY_F SDL_SCANCODE_F
+#define KEY_M SDL_SCANCODE_M // console mode control key
+#define KEY_T SDL_SCANCODE_T // console mode control key
+#define KEY_W SDL_SCANCODE_W // console mode control key
+#define KEY_I SDL_SCANCODE_I // console mode control key
+#define KEY_C SDL_SCANCODE_C // copy in GUI-editbox
+#define KEY_V SDL_SCANCODE_V // paste in GUI-editbox
+#define KEY_X SDL_SCANCODE_X // cut from GUI-editbox
+#define KEY_A SDL_SCANCODE_A // select all in GUI-editbox
+#define KEY_F SDL_SCANCODE_F // search in ScenSelDlg
 #define MK_ALT SDL_KMOD_ALT
 #define MK_CONTROL SDL_KMOD_CTRL
 #define MK_SHIFT SDL_KMOD_SHIFT
@@ -233,8 +173,11 @@ public:
 	// notify user to get back to the program
 	void NotifyUserIfInactive()
 	{
-#ifndef USE_CONSOLE
-		if (pWindow) pWindow->FlashWindow();
+#if !defined(USE_CONSOLE)
+		if (pWindow)
+		{
+			pWindow->FlashWindow();
+		}
 #endif
 	}
 
@@ -258,25 +201,6 @@ public:
 // TODO: Remove unused code
 #endif
 
-#if FALSE //def _WIN32
-	HINSTANCE hInstance;
-	int iLastExecute, iTimerOffset;
-	CStdEvent TimerEvent{CStdEvent::AutoReset()}; // set periodically by critical timer (C4Engine)
-	void Init(HINSTANCE hInst, int nCmdShow, char *szCmdLine);
-	void NextTick(bool fYield) { TimerEvent.Set(); if (fYield) Sleep(0); }
-	bool IsShiftDown() { return GetKeyState(VK_SHIFT) < 0; }
-	bool IsControlDown() { return GetKeyState(VK_CONTROL) < 0; }
-	bool IsAltDown() { return GetKeyState(VK_MENU) < 0; }
-	HWND GetWindowHandle() { return pWindow ? pWindow->hWindow : nullptr; }
-
-protected:
-	bool SetCriticalTimer();
-	void CloseCriticalTimer();
-	bool fTimePeriod;
-	UINT uCriticalTimerDelay, uCriticalTimerResolution;
-	UINT idCriticalTimer;
-	UINT GetDelay() { return uCriticalTimerDelay; }
-#else
 	const char *Location{""};
 	void Init(int argc, char *argv[]);
 	bool DoNotDelay{false};
@@ -287,34 +211,16 @@ protected:
 	unsigned int GetModifiers() const { return KeyMask; }
 	bool SignalNetworkEvent();
 
-	// These must be public to be callable from callback functions from
-	// the glib main loop that are in an anonymous namespace in
-	// StdXApp.cpp.
 	void OnPipeInput();
 	void OnStdInInput();
-#endif
 
 protected:
-// TODO: Remove unused code
 	std::uint32_t DelayNS{27777000}; // 36 FPS
 	std::timespec LastExecute;
 	int argc;
 	char **argv;
 	int Pipe[2];
 	unsigned int KeyMask{0};
-
-#ifdef WITH_GLIB
-	virtual std::shared_ptr<spdlog::logger> CreateGLibLogger() = 0;
-
-	std::shared_ptr<spdlog::logger> glibLogger;
-	unsigned int glibLogHandlerId{};
-	_GMainLoop *loop{nullptr};
-#ifdef USE_X11
-	_GIOChannel *xChannel{nullptr};
-#endif
-	_GIOChannel *pipeChannel{nullptr};
-#endif
-
 
 #if defined(USE_SDL_MAINLOOP)
 	int nextWidth, nextHeight, nextBPP;
@@ -326,7 +232,7 @@ protected:
 	std::thread::id mainThread{};
 	bool InitTimer();
 	virtual void DoInit() = 0;
-	// TODO: Should this be renamed since it doesn't seem to be restricted to network events?
+
 	virtual void OnNetworkEvents() = 0;
 
 	// commands from stdin (console only)
@@ -337,11 +243,3 @@ protected:
 	friend class CStdWindow;
 	friend class CStdGtkWindow;
 };
-
-#ifdef WITH_GLIB
-template<>
-struct C4LoggerConfig::Name<_GMainLoop>
-{
-	static constexpr auto Value = "GLib";
-};
-#endif
