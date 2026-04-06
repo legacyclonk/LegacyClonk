@@ -91,7 +91,6 @@ CStdWindow::~CStdWindow()
 bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent, std::uint32_t additionalFlags, std::int32_t minWidth, std::int32_t minHeight)
 {
 	Active = true;
-	//SetTitle(title);
 
 	width = bounds.Wdt;
 	height = bounds.Hgt;
@@ -115,7 +114,6 @@ void CStdWindow::InitImGui()
 {
 	imGui.emplace(sdlWindow);
 }
-
 
 void CStdWindow::Clear() {}
 
