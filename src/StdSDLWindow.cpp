@@ -150,8 +150,7 @@ void CStdWindow::SetDisplayMode(const DisplayMode mode)
 {
 	if (mode == DisplayMode::Fullscreen)
 	{
-		const SDL_DisplayMode *DisplayMode = SDL_GetWindowFullscreenMode(sdlWindow);
-		ThrowIfFailed("SDL_SetWindowFullscreen", !SDL_SetWindowFullscreen(sdlWindow, DisplayMode != nullptr));
+		ThrowIfFailed("SDL_SetWindowFullscreen", !SDL_SetWindowFullscreen(sdlWindow, true));
 	}
 	else
 	{
@@ -168,7 +167,7 @@ void CStdWindow::SetDisplayMode(const DisplayMode mode)
 			}
 		}
 
-		ThrowIfFailed("SDL_SetWindowFullscreen", !SDL_SetWindowFullscreen(sdlWindow, 0));
+		ThrowIfFailed("SDL_SetWindowFullscreen", !SDL_SetWindowFullscreen(sdlWindow, false));
 		SDL_SetWindowSize(sdlWindow, width, height);
 	}
 
