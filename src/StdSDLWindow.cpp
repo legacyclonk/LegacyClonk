@@ -131,7 +131,7 @@ bool CStdWindow::GetSize(C4Rect &rect)
 
 void CStdWindow::SetSize(const unsigned int X, const unsigned int Y)
 {
-	const auto scale = GetInputScale();
+	const float scale{GetInputScale()};
 	width = X / scale, height = Y / scale;
 	SetDisplayMode(displayMode);
 }
@@ -151,7 +151,7 @@ void CStdWindow::SetDisplayMode(const DisplayMode mode)
 	if (mode == DisplayMode::Fullscreen)
 	{
 		const SDL_DisplayMode *DisplayMode = SDL_GetWindowFullscreenMode(sdlWindow);
-		ThrowIfFailed("SDL_SetWindowFullscreen", SDL_SetWindowFullscreen(sdlWindow, DisplayMode != nullptr) == false);
+		ThrowIfFailed("SDL_SetWindowFullscreen", !SDL_SetWindowFullscreen(sdlWindow, DisplayMode != nullptr));
 	}
 	else
 	{
@@ -173,7 +173,7 @@ void CStdWindow::SetDisplayMode(const DisplayMode mode)
 	}
 
 	displayMode = mode;
-	ThrowIfFailed("SDL_ShowCursor", SDL_ShowCursor() == false);
+	ThrowIfFailed("SDL_ShowCursor", !SDL_ShowCursor());
 }
 
 void CStdWindow::SetProgress(uint32_t) {} // stub
