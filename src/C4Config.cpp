@@ -202,11 +202,8 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	};
 	pComp->Value(mkNamingAdapt(mkEnumAdaptT<int>(UseDisplayMode, DisplayModes), "DisplayMode", DisplayMode::Fullscreen, false, true));
 
-#if FALSE //def _WIN32
-	pComp->Value(mkNamingAdapt(Maximized,   "Maximized",   false, false, true));
 	pComp->Value(mkNamingAdapt(PositionX,   "PositionX",   0,     false, true));
 	pComp->Value(mkNamingAdapt(PositionY,   "PositionY",   0,     false, true));
-#endif
 
 	pComp->Value(mkNamingAdapt(ShowFolderMaps, "ShowFolderMaps", true));
 	pComp->Value(mkNamingAdapt(UseShaderGamma, "UseShaderGamma", true));

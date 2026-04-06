@@ -110,6 +110,20 @@ bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect 
 	return true;
 }
 
+void CStdWindow::StorePosition()
+{
+	std::int32_t x, y;
+	SDL_GetWindowPosition(sdlWindow, &x, &y);
+	Config.Graphics.PositionX = x;
+	Config.Graphics.PositionY = y;
+}
+
+void CStdWindow::RestorePosition()
+{
+	// Only has an effect in windowed mode.
+	SDL_SetWindowPosition(sdlWindow, Config.Graphics.PositionX, Config.Graphics.PositionY);
+}
+
 void CStdWindow::InitImGui()
 {
 	imGui.emplace(sdlWindow);

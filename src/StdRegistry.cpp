@@ -278,55 +278,6 @@ bool SetRegFileClass(const char *szClassRoot,
 	return true;
 }
 
-// Window Position
-
-bool StoreWindowPosition(HWND hwnd,
-	const char *szWindowName,
-	const char *szSubKey,
-	bool fStoreSize)
-{
-	RECT winpos;
-	char regstr[100];
-	if (IsZoomed(hwnd))
-		return SetRegistryString(szSubKey, szWindowName, "Maximized");
-	if (IsIconic(hwnd))
-		return SetRegistryString(szSubKey, szWindowName, "Minimized");
-	if (!GetWindowRect(hwnd, &winpos)) return false;
-	if (fStoreSize) FormatWithNull(regstr, "{},{},{},{}", winpos.left, winpos.top, winpos.right - winpos.left, winpos.bottom - winpos.top);
-	else FormatWithNull(regstr, "{},{}", winpos.left, winpos.top);
-	return SetRegistryString(szSubKey, szWindowName, regstr);
-}
-
-bool RestoreWindowPosition(HWND hwnd,
-	const char *szWindowName,
-	const char *szSubKey)
-{
-	char regstr[100], buffer2[5];
-	int x, y, wdt, hgt;
-	bool fSetSize = true;
-	// No position stored: cannot restore
-	if (!GetRegistryString(szSubKey, szWindowName, regstr, 100))
-		return false;
-	if (SEqual(regstr, "Maximized"))
-		return ShowWindow(hwnd, SW_MAXIMIZE | SW_NORMAL);
-	if (SEqual(regstr, "Minimized"))
-		return ShowWindow(hwnd, SW_MINIMIZE | SW_NORMAL);
-	SCopySegment(regstr, 0, buffer2, ',', 4); sscanf(buffer2, "%i", &x);
-	SCopySegment(regstr, 1, buffer2, ',', 4); sscanf(buffer2, "%i", &y);
-	if (SCopySegment(regstr, 2, buffer2, ',', 4)) sscanf(buffer2, "%i", &wdt); else fSetSize = false;
-	if (SCopySegment(regstr, 3, buffer2, ',', 4)) sscanf(buffer2, "%i", &hgt); else fSetSize = false;
-	if (!fSetSize)
-	{
-		RECT winpos; if (!GetWindowRect(hwnd, &winpos)) return false;
-		wdt = winpos.right - winpos.left; hgt = winpos.bottom - winpos.top;
-	}
-	// Move window
-	if (!MoveWindow(hwnd, x, y, wdt, hgt, TRUE))
-		return false;
-	// Show window
-	return ShowWindow(hwnd, SW_NORMAL);
-}
-
 // Registry compiler
 
 // *** StdCompilerConfigWrite

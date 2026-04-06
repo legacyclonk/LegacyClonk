@@ -185,15 +185,6 @@ void C4Application::DoInit()
 		}
 		pWindow = &FullScreen;
 		SetDisplayMode(Config.Graphics.UseDisplayMode);
-
-// TODO: Remove unused code
-#if FALSE //def _WIN32
-		if (Config.Graphics.UseDisplayMode == DisplayMode::Window)
-		{
-			if (Config.Graphics.Maximized) pWindow->Maximize();
-			else pWindow->SetPosition(Config.Graphics.PositionX, Config.Graphics.PositionY);
-		}
-#endif
 	}
 	else
 	{
@@ -205,6 +196,11 @@ void C4Application::DoInit()
 		}
 
 		pWindow = &Console;
+
+		if(Config.Graphics.PositionX != 0 && Config.Graphics.PositionY != 0)
+		{
+			pWindow->RestorePosition();
+		}
 	}
 
 	// init timers (needs window)
@@ -364,17 +360,10 @@ void C4Application::Quit()
 {
 	// Clear definitions passed by frontend for this round
 	Config.General.Definitions[0] = 0;
-#if FALSE //def _WIN32
-	if (pWindow)
+	if (pWindow && !isFullScreen) // Only console mode.
 	{
-		// store if window is maximized and where it is positioned
-		WINDOWPLACEMENT placement;
-		GetWindowPlacement(pWindow->hWindow, &placement);
-		Config.Graphics.Maximized = placement.showCmd == SW_SHOWMAXIMIZED;
-		Config.Graphics.PositionX = placement.rcNormalPosition.left;
-		Config.Graphics.PositionY = placement.rcNormalPosition.top;
+		pWindow->StorePosition();
 	}
-#endif
 	// Save config if there was no loading error
 	if (Config.fConfigLoaded) Config.Save();
 	// quit app
