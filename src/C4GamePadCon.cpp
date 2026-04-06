@@ -299,25 +299,7 @@ C4GamePadControl::C4GamePadControl()
 
 C4GamePadControl::~C4GamePadControl() {}
 
-void C4GamePadControl::Execute()
-{
-#ifndef USE_SDL_MAINLOOP
-	SDL_Event event;
-	while (SDL_PollEvent(&event))
-	{
-		switch (event.type)
-		{
-		case SDL_EVENT_JOYSTICK_AXIS_MOTION :
-		case SDL_EVENT_JOYSTICK_BALL_MOTION :
-		case SDL_EVENT_JOYSTICK_HAT_MOTION :
-		case SDL_EVENT_JOYSTICK_BUTTON_DOWN :
-		case SDL_EVENT_JOYSTICK_BUTTON_UP :
-			FeedEvent(event);
-			break;
-		}
-	}
-#endif
-}
+void C4GamePadControl::Execute() {}
 
 namespace
 {

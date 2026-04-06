@@ -474,12 +474,11 @@ void C4Application::Execute()
 			Game.DoSkipFrame = Game.Parameters.AutoFrameSkip && ((iPreGfxTime + iGameTickDelayMS) < timeGetTime());
 		}
 		else
+		{
 			Game.DoSkipFrame = false;
+		}
 		// Sound
 		SoundSystem->Execute();
-		// Gamepad
-		// TODO: Not used with sdl since it is handled in FeedEvent
-		if (pGamePadControl) pGamePadControl->Execute();
 		break;
 	}
 	case C4AS_None:
