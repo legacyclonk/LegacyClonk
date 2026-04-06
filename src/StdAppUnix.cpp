@@ -60,7 +60,7 @@ void CStdApp::Init(const int argc, char **const argv)
 	}
 #endif
 
-	Location = dir;
+	location = dir;
 
 	// Build command line.
 	static std::string s("\"");
@@ -95,7 +95,7 @@ void CStdApp::Init(const int argc, char **const argv)
 
 bool CStdApp::InitTimer()
 {
-	std::timespec_get(&LastExecute, TIME_UTC);
+	std::timespec_get(&lastExecute, TIME_UTC);
 	return true;
 }
 
@@ -119,32 +119,32 @@ void CStdApp::Quit()
 
 void CStdApp::Execute()
 {
-	const time_t seconds{LastExecute.tv_sec};
+	const time_t seconds{lastExecute.tv_sec};
 	std::timespec tv;
 	std:timespec_get(&tv, TIME_UTC);
 
-	if (DoNotDelay)
+	if (doNotDelay)
 	{
-		DoNotDelay = false;
-		LastExecute = tv;
+		doNotDelay = false;
+		lastExecute = tv;
 	}
-	else if (LastExecute.tv_sec < tv.tv_sec - 2)
+	else if (lastExecute.tv_sec < tv.tv_sec - 2)
 	{
-		LastExecute = tv;
+		lastExecute = tv;
 	}
 	else
 	{
-		LastExecute.tv_nsec += DelayNS;
-		if (LastExecute.tv_nsec > 1000000000)
+		lastExecute.tv_nsec += delayNs;
+		if (lastExecute.tv_nsec > 1000000000)
 		{
-			++LastExecute.tv_sec;
-			LastExecute.tv_nsec -= 1000000000;
+			++lastExecute.tv_sec;
+			lastExecute.tv_nsec -= 1000000000;
 		}
 	}
 
 	// This will make the FPS look "prettier" in some situations
 	// But who cares...
-	if (seconds != LastExecute.tv_sec)
+	if (seconds != lastExecute.tv_sec)
 	{
 		pWindow->Sec1Timer();
 	}
@@ -152,7 +152,7 @@ void CStdApp::Execute()
 
 void CStdApp::NextTick(bool)
 {
-	DoNotDelay = true;
+	doNotDelay = true;
 }
 
 void CStdApp::Run()
@@ -164,7 +164,7 @@ void CStdApp::Run()
 
 void CStdApp::ResetTimer(const unsigned int delayMS)
 {
-	DelayNS = delayMS * 1000000;
+	delayNs = delayMS * 1000000;
 }
 
 C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool checkTimer)
@@ -175,14 +175,14 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 	bool doExecute{checkTimer};
 
 	std::timespec tv;
-	if (DoNotDelay)
+	if (doNotDelay)
 	{
 		tv = {0, 0};
 	}
 	else if (checkTimer)
 	{
 		std::timespec_get(&tv, TIME_UTC);
-		tv.tv_nsec = LastExecute.tv_nsec - tv.tv_nsec + DelayNS - 1000000000 * (tv.tv_sec - LastExecute.tv_sec);
+		tv.tv_nsec = lastExecute.tv_nsec - tv.tv_nsec + delayNs - 1000000000 * (tv.tv_sec - lastExecute.tv_sec);
 
 		// Check if the given timeout comes first
 		// (don't call Execute then, because it assumes it has been called because of a timer event!)
@@ -280,7 +280,7 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 bool CStdApp::SignalNetworkEvent()
 {
 	char c{1};
-	write(Pipe[1], &c, 1);
+	write(pipe[1], &c, 1);
 	return true;
 }
 
@@ -317,7 +317,7 @@ bool CStdApp::IsClipboardFull(const bool clipboard)
 void CStdApp::OnPipeInput()
 {
 	char c;
-	read(Pipe[0], &c, 1);
+	read(pipe[0], &c, 1);
 	OnNetworkEvents();
 }
 
@@ -365,7 +365,7 @@ void CStdApp::HandleSDLEvent(SDL_Event &event)
 	case SDL_EVENT_KEY_DOWN :
 	case SDL_EVENT_KEY_UP :
 	{
-		KeyMask = event.key.mod;
+		keyMask = event.key.mod;
 		break;
 	}
 	}

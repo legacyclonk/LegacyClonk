@@ -198,29 +198,28 @@ public:
 
 #if defined(_WIN32)
 	CStdEvent NetworkEvent{CStdEvent::AutoReset()}; // set if a network event occured
-// TODO: Remove unused code
 #endif
 
-	const char *Location{""};
+	const char *location{""};
 	void Init(int argc, char *argv[]);
-	bool DoNotDelay{false};
+	bool doNotDelay{false};
 	void NextTick(bool fYield);
-	bool IsShiftDown() { return KeyMask & MK_SHIFT; }
-	bool IsControlDown() { return KeyMask & MK_CONTROL; }
-	bool IsAltDown() { return KeyMask & MK_ALT; }
-	unsigned int GetModifiers() const { return KeyMask; }
+	bool IsShiftDown() { return keyMask & MK_SHIFT; }
+	bool IsControlDown() { return keyMask & MK_CONTROL; }
+	bool IsAltDown() { return keyMask & MK_ALT; }
+	unsigned int GetModifiers() const { return keyMask; }
 	bool SignalNetworkEvent();
 
 	void OnPipeInput();
 	void OnStdInInput();
 
 protected:
-	std::uint32_t DelayNS{27777000}; // 36 FPS
-	std::timespec LastExecute;
+	std::uint32_t delayNs{27777000}; // 36 FPS
+	std::timespec lastExecute;
 	int argc;
 	char **argv;
-	int Pipe[2];
-	unsigned int KeyMask{0};
+	int pipe[2];
+	unsigned int keyMask{0};
 
 #if defined(USE_SDL_MAINLOOP)
 	int nextWidth, nextHeight, nextBPP;
@@ -236,7 +235,7 @@ protected:
 	virtual void OnNetworkEvents() = 0;
 
 	// commands from stdin (console only)
-	StdStrBuf CmdBuf;
+	StdStrBuf cmdBuf;
 	bool ReadStdInCommand();
 
 	friend class CStdGL;
