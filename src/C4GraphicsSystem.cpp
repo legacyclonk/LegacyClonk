@@ -111,19 +111,13 @@ bool C4GraphicsSystem::StartDrawing()
 
 void C4GraphicsSystem::FinishDrawing()
 {
-	if (Application.isFullScreen)
-	{
-		Application.DDraw->PageFlip();
-	}
+	if (Application.isFullScreen) Application.DDraw->PageFlip();
 }
 
 void C4GraphicsSystem::Execute()
 {
 	// activity check
-	if (!StartDrawing())
-	{
-		return;
-	}
+	if (!StartDrawing()) return;
 
 	bool fBGDrawn = false;
 
@@ -160,11 +154,7 @@ void C4GraphicsSystem::Execute()
 			DrawFullscreenBackground();
 
 	// Screen rate skip frame draw
-	ScreenTick++;
-	if (ScreenTick >= ScreenRate)
-	{
-		ScreenTick = 0;
-	}
+	ScreenTick++; if (ScreenTick >= ScreenRate)	ScreenTick = 0;
 
 	// Reset object audibility
 	Game.Objects.ResetAudibility();
@@ -176,9 +166,7 @@ void C4GraphicsSystem::Execute()
 
 	// Viewports
 	for (const auto &cvp : Viewports)
-	{
 		cvp->Execute();
-	}
 
 	if (Application.isFullScreen)
 	{
@@ -206,7 +194,7 @@ void C4GraphicsSystem::Execute()
 	// gamma update
 	if (fSetGamma)
 	{
-		//ApplyGamma();
+		ApplyGamma();
 		fSetGamma = false;
 	}
 
@@ -456,7 +444,7 @@ void C4GraphicsSystem::SortViewportsByPlayerControl()
 
 void C4GraphicsSystem::MouseMove(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam, class C4Viewport *pVP)
 {
-	const float scale{Application.GetScale()};
+	const auto scale = Application.GetScale();
 	iX = static_cast<int32_t>(ceilf(iX / scale));
 	iY = static_cast<int32_t>(ceilf(iY / scale));
 	// pass on to GUI
