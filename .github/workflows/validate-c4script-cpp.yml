@@ -16,10 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout legacyclonk repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Checkout docs repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
         with:
           repository: legacyclonk/lcdocs
           path: lcdocs
