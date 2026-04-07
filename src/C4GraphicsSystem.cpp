@@ -154,7 +154,7 @@ void C4GraphicsSystem::Execute()
 			DrawFullscreenBackground();
 
 	// Screen rate skip frame draw
-	ScreenTick++; if (ScreenTick >= ScreenRate)	ScreenTick = 0;
+	ScreenTick++; if (ScreenTick >= ScreenRate) ScreenTick = 0;
 
 	// Reset object audibility
 	Game.Objects.ResetAudibility();
