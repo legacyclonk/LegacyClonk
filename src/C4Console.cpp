@@ -1035,27 +1035,44 @@ void C4Console::Draw()
 		}
 		ImGui::EndDisabled();
 
-		ImGui::BeginDisabled(!Game.Network.isHost() || !Game.Network.isEnabled());
-
-		if (ImGui::BeginMenu(LoadResStr(C4ResStrTableKey::IDS_MNU_NET)))
+		if (Game.Network.isEnabled() && Game.Network.isHost())
 		{
-			constexpr auto removeClientMenuEntry = [](C4Client *const client, const char *const label)
+			if (ImGui::BeginMenu(LoadResStr(C4ResStrTableKey::IDS_MNU_NET)))
 			{
-				if (ImGui::MenuItem(label))
+				constexpr auto removeClientMenuEntry = [](C4Client *const client, const char *const label)
 				{
-					Game.Clients.CtrlRemove(client, LoadResStr(C4ResStrTableKey::IDS_MSG_KICKBYMENU));
+					if (ImGui::MenuItem(label))
+					{
+						Game.Clients.CtrlRemove(client, LoadResStr(C4ResStrTableKey::IDS_MSG_KICKBYMENU));
+					}
+				};
+
+				for (C4Network2Client *client{Game.Network.Clients.GetNextClient(nullptr)}; client; client = Game.Network.Clients.GetNextClient(client))
+				{
+					StdStrBuf clientFormat;
+					if (client->isHost())
+					{
+						clientFormat = LoadResStrV(C4ResStrTableKey::IDS_MNU_NETHOST);
+					}
+					else if(client->isActivated())
+					{
+						clientFormat = LoadResStrV(C4ResStrTableKey::IDS_MNU_NETCLIENT);
+					}
+					else
+					{
+						clientFormat = LoadResStrV(C4ResStrTableKey::IDS_MNU_NETCLIENTDE);
+					}
+					clientFormat.Replace("%s", "{}");
+					clientFormat.Replace("%i", "{}");
+
+					const std::string clientName{client->getName()};
+					const std::string clientId{std::to_string(client->getID())};
+					removeClientMenuEntry(client->getClient(), std::vformat(clientFormat.getData(), std::make_format_args( clientName, clientId)).c_str());
 				}
-			};
 
-			removeClientMenuEntry(Game.Clients.getLocal(), LoadResStrV(C4ResStrTableKey::IDS_MNU_NETHOST));
-
-			for (C4Network2Client *client{Game.Network.Clients.GetNextClient(nullptr)}; client; client = Game.Network.Clients.GetNextClient(client))
-			{
-				removeClientMenuEntry(client->getClient(), std::format("{} {} {}", LoadResStrV(client->isActivated() ? C4ResStrTableKey::IDS_MNU_NETCLIENT : C4ResStrTableKey::IDS_MNU_NETCLIENTDE), client->getName(), client->getID()).c_str());
+				ImGui::EndMenu();
 			}
 		}
-
-		ImGui::EndDisabled();
 
 		if (ImGui::BeginMenu("?"))
 		{
