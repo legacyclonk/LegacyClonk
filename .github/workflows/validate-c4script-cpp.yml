@@ -3,6 +3,8 @@ name: Validate C4Script functions
 on:
   push:
     branches: [ 'master' ]
+  pull_request:
+    branches: '*'
 
 defaults:
   run:
