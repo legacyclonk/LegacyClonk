@@ -24,6 +24,14 @@ jobs:
           repository: legacyclonk/lcdocs
           path: lcdocs
 
+      - name: "Ubuntu 18.04: Setup chroot"
+        run: |
+          curl -L https://github.com/legacyclonk/ubuntu-1804-x86-chroot/releases/download/2022-05-19/chroot.tar.xz | sudo tar -xJ
+          curl -L https://raw.githubusercontent.com/legacyclonk/ubuntu-1804-x86-chroot/master/setup_chroot.sh | sudo bash -e -
+          sudo mkdir -p chroot/$PWD
+          sudo mount --bind . chroot/$PWD
+          echo "CHROOT=$PWD/.github/workflows/Linux-x86-chroot.sh" >> $GITHUB_ENV
+
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
@@ -33,11 +41,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # npm install
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends xsltproc python-libxml2 gettext -y
+          npm install || true
+          $CHROOT sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends xsltproc python-libxml2 gettext -y
 
       - name: Build function list
-        run: make -C lcdocs -j$(nproc)
+        run: $CHROOT make -C lcdocs -j$(nproc)
 
       - name: Copy generated Functions.txt
         run: cp lcdocs/Functions.txt .github/workflows/C4ScriptDocAnalyzer/lcdocs_functions.txt
