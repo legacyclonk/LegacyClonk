@@ -41,7 +41,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install || true
+          (cd .github/workflows/C4ScriptDocAnalyzer && npm install)
           $CHROOT sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends xsltproc python-libxml2 gettext -y
 
       - name: Build function list
