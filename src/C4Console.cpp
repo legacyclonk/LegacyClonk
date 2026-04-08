@@ -337,16 +337,9 @@ void C4Console::SaveGame(bool fSaveGame)
 	}
 
 	// Save game to open scenario file
-	bool fOkay = true;
+	bool fOkay{true};
 
-#if 0 //def _WIN32
-	SetCursor(LoadCursor(0, IDC_WAIT));
-//#elif WITH_DEVELOPER_MODE
-	// Seems not to work. Don't know why...
-//	gdk_window_set_cursor(window->window, cursorWait);
-#endif
-	// TODO
-	//SDL_SetCursor()
+	ImGui::SetMouseCursor(ImGuiMouseCursor_Wait);
 
 	C4GameSave *pGameSave;
 	if (fSaveGame)
@@ -369,12 +362,7 @@ void C4Console::SaveGame(bool fSaveGame)
 		Out("ScenarioFile::Open failed"); fOkay = false;
 	}
 
-	// TODO: Use sdl cursor
-//#ifdef _WIN32
-//	SetCursor(LoadCursor(0, IDC_ARROW));
-//#elif WITH_DEVELOPER_MODE
-//	gdk_window_set_cursor(window->window, nullptr);
-//#endif
+	ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
 
 	// Initialize/script notification
 	if (Game.fScriptCreatedObjects)
@@ -387,8 +375,6 @@ void C4Console::SaveGame(bool fSaveGame)
 	// Status report
 	if (!fOkay) Message(LoadResStr(C4ResStrTableKey::IDS_CNS_SAVERROR));
 	else Out(LoadResStrChoice(fSaveGame, C4ResStrTableKey::IDS_CNS_GAMESAVED, C4ResStrTableKey::IDS_CNS_SCENARIOSAVED));
-
-
 }
 
 void C4Console::FileSave(bool fSaveGame)
