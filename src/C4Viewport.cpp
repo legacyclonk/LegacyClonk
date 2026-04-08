@@ -205,11 +205,10 @@ C4Viewport *C4ViewportWindow::GetViewport(SDL_Window *window)
 		return nullptr;
 	}
 }
-bool C4ViewportWindow::Init(CStdApp* app, const char* title, const C4Rect& bounds, CStdWindow* parent,
-	std::uint32_t AdditionalFlags, std::int32_t MinWidth, std::int32_t MinHeight)
+bool C4ViewportWindow::Init(CStdApp* app, const char* title, const C4Rect& bounds, CStdWindow* parent, const std::uint32_t additionalFlags, const std::int32_t minWidth, const std::int32_t minHeight)
 {
 	Active = true;
-	CStdWindow::Init(app, title, bounds, parent, AdditionalFlags, MinWidth, MinHeight);
+	CStdWindow::Init(app, title, bounds, parent, additionalFlags, minWidth, minHeight);
 
 	if (sdlWindow)
 	{

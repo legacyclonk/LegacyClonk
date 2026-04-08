@@ -40,7 +40,6 @@ public:
 	C4Viewport *cvp;
 	C4ViewportWindow(C4Viewport *cvp) : cvp(cvp) {}
 	~C4ViewportWindow();
-	bool Init(CStdApp* app, const char* title, const C4Rect& bounds, CStdWindow* parent, std::uint32_t AdditionalFlags = 0, std::int32_t MinWidth = 250, std::int32_t MinHeight = 250) override;
 #if defined(WITH_DEVELOPER_MODE)
 	virtual GtkWidget *InitGUI() override;
 
@@ -66,6 +65,7 @@ public:
 #elif defined(USE_X11) && !defined(WITH_DEVELOPER_MODE)
 	virtual void HandleMessage(XEvent &) override;
 #endif
+	bool Init(CStdApp* app, const char* title, const C4Rect& bounds, CStdWindow* parent, std::uint32_t additionalFlags = 0, std::int32_t minWidth = 250, std::int32_t minHeight = 250) override;
 	virtual void Close() override;
 	void DrawImGui(C4Viewport &ownerViewport);
 
