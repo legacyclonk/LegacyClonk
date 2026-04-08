@@ -234,24 +234,16 @@ C4ViewportWindow::~C4ViewportWindow()
 	}
 }
 
-/*
-bool C4Viewport::DropFiles(HANDLE hDrop)
+
+bool C4Viewport::DropFiles(const char *filename, const float positionX, const float positionY)
 {
 	if (!Console.Editing) { Console.Message(LoadResStr(C4ResStrTableKey::IDS_CNS_NONETEDIT)); return false; }
 
-	int32_t iFileNum = DragQueryFile((HDROP)hDrop, 0xFFFFFFFF, nullptr, 0);
-	POINT pntPoint;
-	char szFilename[500 + 1];
-	for (int32_t cnt = 0; cnt < iFileNum; cnt++)
-	{
-		DragQueryFile((HDROP)hDrop, cnt, szFilename, 500);
-		DragQueryPoint((HDROP)hDrop, &pntPoint);
-		Game.DropFile(szFilename, ViewX + pntPoint.x, ViewY + pntPoint.y);
-	}
-	DragFinish((HDROP)hDrop);
+	Game.DropFile(filename, ViewX + positionX, ViewY + positionY);
+
 	return true;
 }
-*/
+
 /*
 void UpdateWindowLayout(HWND hwnd)
 {
@@ -865,6 +857,8 @@ void C4ViewportWindow::DrawImGui(C4Viewport &ownerViewport)
 
 void C4ViewportWindow::HandleMessage(SDL_Event &sdl_event)
 {
+	const float scale{Application.GetScale()};
+
 	if(sdl_event.window.windowID == SDL_GetWindowID(sdlWindow))
 	{
 		switch (sdl_event.type)
@@ -875,6 +869,16 @@ void C4ViewportWindow::HandleMessage(SDL_Event &sdl_event)
 
 		case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
 			cvp->pWindow->Close();
+			break;
+
+		// SDL poll event calls this several times when more than file is dropped.
+		case SDL_EVENT_DROP_FILE:
+			// Local mouse position is updated too late so we have to use global mouse coordinates.
+			float globalX, globalY;
+			SDL_GetGlobalMouseState(&globalX, &globalY);
+			int windowX, windowY;
+			SDL_GetWindowPosition(sdlWindow, &windowX, &windowY);
+			cvp->DropFiles(sdl_event.drop.data, static_cast<int32_t>((globalX - windowX) / scale), static_cast<int32_t>((globalY - windowY) / scale));
 			break;
 		}
 	}
@@ -928,17 +932,11 @@ void C4ViewportWindow::HandleMessage(SDL_Event &sdl_event)
 			Application.IsShiftDown(), false, nullptr);
 		break;
 
-
-	case SDL_EVENT_DROP_FILE :
-		// TODO
-		//cvp->DropFiles(sdl_event.drop.file);
-		break;
 	// TODO: Drop Def custom message or alternative implementation
 	// TODO: Reload File custom message or alternative implementation
 
 	}
 
-	const float scale{Application.GetScale()};
 	if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 	{
 		switch (sdl_event.type)

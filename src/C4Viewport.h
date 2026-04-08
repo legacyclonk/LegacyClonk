@@ -110,9 +110,7 @@ public:
 	void UpdateViewPosition(); // update view position: Clip properly; update border variables
 	bool Init(int32_t iPlayer, bool fSetTempOnly);
 	bool Init(CStdWindow *pParent, CStdApp *pApp, int32_t iPlayer);
-#ifdef _WIN32
-	bool DropFiles(HANDLE hDrop);
-#endif
+	bool DropFiles(const char *filename, const float positionX, const float positionY);
 	bool TogglePlayerLock();
 	void NextPlayer();
 	C4Rect GetOutputRect() { return C4Rect(OutX, OutY, ViewWdt, ViewHgt); }
