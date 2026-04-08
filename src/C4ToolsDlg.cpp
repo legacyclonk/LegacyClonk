@@ -332,11 +332,11 @@ void C4ToolsDlg::Draw()
 	{
 		if (ImGui::BeginListBox("##MaterialBox", {200, 150}))
 		{
-			const auto addMaterialEntry = [this](const char *const material)
+			const auto addMaterialEntry = [this](const char *const materialEntry)
 			{
-				if (ImGui::Selectable(material, SEqual(material, material)))
+				if (ImGui::Selectable(materialEntry, SEqual(material, materialEntry)))
 				{
-					SetMaterial(material);
+					SetMaterial(materialEntry);
 					ImGui::SetItemDefaultFocus();
 				}
 			};
@@ -356,11 +356,11 @@ void C4ToolsDlg::Draw()
 	{
 		if (ImGui::BeginListBox("##TextureBox", {200, 150}))
 		{
-			const auto addTextureEntry = [this](const char *const texture)
+			const auto addTextureEntry = [this](const char *const textureEntry)
 			{
-				if (ImGui::Selectable(texture, SEqual(texture, texture)))
+				if (ImGui::Selectable(textureEntry, SEqual(texture, textureEntry)))
 				{
-					SetTexture(texture);
+					SetTexture(textureEntry);
 					ImGui::SetItemDefaultFocus();
 				}
 			};
