@@ -41,6 +41,8 @@
 #include <commdlg.h>
 #endif
 
+#include <complex.h>
+
 #include "imgui.h"
 #include "ImGuiTextselect.hpp"
 
@@ -90,6 +92,7 @@ void C4Console::HandleMessage(SDL_Event& sdl_event)
 			ViewportWindow->HandleMessage(sdl_event);
 		}
 	}
+	// TODO: Do we need the copy data event from ConsoleWinProc?
 }
 
 #if 0 //def _WIN32
@@ -149,98 +152,16 @@ LRESULT CALLBACK ConsoleWinProc(HWND wnd, UINT Msg, WPARAM wParam, LPARAM lParam
 
 	return DefWindowProc(wnd, Msg, wParam, lParam);
 }
-
-#elif defined(USE_X11) && !WITH_DEVELOPER_MODE
-
-void C4Console::HandleMessage(XEvent &e)
-{
-	// Parent handling
-	C4ConsoleBase::HandleMessage(e);
-
-	switch (e.type)
-	{
-	case FocusIn:
-		Application.Active = true;
-		break;
-	case FocusOut:
-		Application.Active = false;
-		break;
-	}
-}
-
 #endif // _WIN32/USE_X11
+
 
 bool C4Console::Init(CStdApp *app, const char *title, const C4Rect &bounds, CStdWindow *parent, std::uint32_t additionalFlags, std::int32_t minWidth, std::int32_t minHeight)
 {
-	// Active
 	Active = true;
 	// Editing (enable even if network)
 	Editing = true;
 	// Create dialog window
 	return CStdWindow::Init(app, title, bounds, parent, additionalFlags, minWidth, minHeight);
-#if 0 //def _WIN32
-	WNDCLASSEX WndClass{};
-	WndClass.cbSize = sizeof(WNDCLASSEX);
-	WndClass.style = CS_DBLCLKS;
-	WndClass.lpfnWndProc = ConsoleWinProc;
-	WndClass.cbClsExtra = 0;
-	WndClass.cbWndExtra = 0;
-	WndClass.hInstance = pApp->hInstance;
-	WndClass.hCursor = nullptr;
-	WndClass.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
-	WndClass.lpszMenuName = nullptr;
-	WndClass.lpszClassName = "C4Console";
-	WndClass.hIcon = nullptr; //LoadIcon(pApp->hInstance, MAKEINTRESOURCE(IDI_00_C4X));
-	WndClass.hIconSm = nullptr;//LoadIcon(pApp->hInstance, MAKEINTRESOURCE(IDI_00_C4X));
-	assert(RegisterClassEx(&WndClass));
-	if (!(hWindow = CreateWindowEx(
-		0,
-		"C4Console",
-		STD_PRODUCT,
-		WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME | WS_VISIBLE),
-		CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
-		nullptr, nullptr, pApp->hInstance, nullptr)))
-	{
-		char *lpMsgBuf;
-		FormatMessage(
-			FORMAT_MESSAGE_ALLOCATE_BUFFER |
-			FORMAT_MESSAGE_FROM_SYSTEM |
-			FORMAT_MESSAGE_IGNORE_INSERTS,
-			nullptr,
-			GetLastError(),
-			0,
-			(LPTSTR)&lpMsgBuf,
-			0,
-			nullptr);
-		LogF("Error creating dialog window: %s", lpMsgBuf);
-		// Free the buffer.
-		LocalFree(lpMsgBuf);
-		return nullptr;
-	}
-
-	// Restore window position
-	RestoreWindowPosition(hWindow, "Main", Config.GetSubkeyPath("Console"));
-	// Set text
-	SetCaption(LoadResStr("IDS_CNS_CONSOLE"));
-
-	// Hide title bar
-	SetWindowLong(hWindow, GWL_STYLE, GetWindowLong(hWindow, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME));
-	SetWindowLong(hWindow, GWL_EXSTYLE, GetWindowLong(hWindow, GWL_EXSTYLE) & ~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
-
-	// Load bitmaps
-	/*hbmMouse   = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_MOUSE));
-	hbmMouse2  = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_MOUSE2));
-	hbmCursor  = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_CURSOR));
-	hbmCursor2 = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_CURSOR2));
-	hbmBrush   = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_BRUSH));
-	hbmBrush2  = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_BRUSH2));
-	hbmPlay    = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_PLAY));
-	hbmPlay2   = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_PLAY2));
-	hbmHalt    = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_HALT));
-	hbmHalt2   = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_HALT2));*/
-#endif
-	// Success
-	return true;
 }
 
 void C4Console::InitGUI()
@@ -597,149 +518,6 @@ void C4Console::FileClose()
 	CloseGame();
 }
 
-// TODO: Obsolete. Remove.
-#ifdef _WIN32
-bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, DWORD    dwFlags, bool fSave)
-#else
-bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, uint32_t dwFlags, bool fSave)
-#endif
-{
-
-	return true;
-
-#if 0 //def _WIN32
-	OPENFILENAME ofn{};
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = hWindow;
-	ofn.lpstrFilter = szFilter;
-	ofn.lpstrFile = sFilename;
-	ofn.nMaxFile = iSize;
-	ofn.Flags = dwFlags;
-
-	bool fResult;
-	if (fSave)
-		fResult = GetSaveFileName(&ofn);
-	else
-		fResult = GetOpenFileName(&ofn);
-
-	// Reset working directory to exe path as Windows file dialog might have changed it
-	SetCurrentDirectory(Config.General.ExePath);
-	return fResult;
-#elif WITH_DEVELOPER_MODE
-	GtkWidget *dialog = gtk_file_chooser_dialog_new(fSave ? "Save file..." : "Load file...", GTK_WINDOW(window), fSave ? GTK_FILE_CHOOSER_ACTION_SAVE : GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, fSave ? GTK_STOCK_SAVE : GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, nullptr);
-
-	if (g_path_is_absolute(sFilename))
-		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog), sFilename);
-	else if (fSave)
-		gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), sFilename);
-
-	// Install file filter
-	while (*szFilter)
-	{
-		char pattern[16 + 1];
-
-		GtkFileFilter *filter = gtk_file_filter_new();
-		gtk_file_filter_set_name(filter, szFilter);
-		szFilter += SLen(szFilter) + 1;
-
-		while (true)
-		{
-			SCopyUntil(szFilter, pattern, ';', 16);
-
-			int len = SLen(pattern);
-			char last_c = szFilter[len];
-
-			szFilter += (len + 1);
-
-			// Got not all of the filter, try again.
-			if (last_c != ';' && last_c != '\0')
-				continue;
-
-			gtk_file_filter_add_pattern(filter, pattern);
-			if (last_c == '\0') break;
-		}
-
-		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
-	}
-
-	gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), (dwFlags & OFN_ALLOWMULTISELECT) != 0);
-	gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dialog), true);
-
-	int response;
-	while (true)
-	{
-		response = gtk_dialog_run(GTK_DIALOG(dialog));
-		if (response == GTK_RESPONSE_CANCEL || response == GTK_RESPONSE_DELETE_EVENT) break;
-
-		bool error = false;
-
-		// Check for OFN_FILEMUSTEXIST
-		if ((dwFlags & OFN_ALLOWMULTISELECT) == 0)
-		{
-			char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-
-			if ((dwFlags & OFN_FILEMUSTEXIST) && !g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-			{
-				Message(std::format("File \"{}\" does not exist", filename).c_str(), false);
-				error = true;
-			}
-
-			g_free(filename);
-		}
-
-		if (!error) break;
-	}
-
-	if (response != GTK_RESPONSE_ACCEPT)
-	{
-		gtk_widget_destroy(dialog);
-		return false;
-	}
-
-	// Build result string
-	if ((dwFlags & OFN_ALLOWMULTISELECT) == 0)
-	{
-		// Just the file name without multiselect
-		char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-		SCopy(filename, sFilename, iSize);
-		g_free(filename);
-	}
-	else
-	{
-		// Otherwise its the folder followed by the file names,
-		// separated by '\0'-bytes
-		char *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(dialog));
-		int len = SLen(folder);
-
-		if (iSize > 0) SCopy(folder, sFilename, (std::min)(len + 1, iSize));
-		iSize -= (len + 1); sFilename += (len + 1);
-		g_free(folder);
-
-		GSList *files = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
-		for (GSList *item = files; item != nullptr; item = item->next)
-		{
-			const char *file = static_cast<const char *>(item->data);
-			char *basefile = g_path_get_basename(file);
-
-			int len = SLen(basefile);
-			if (iSize > 0) SCopy(basefile, sFilename, (std::min)(len + 1, iSize));
-			iSize -= (len + 1); sFilename += (len + 1);
-
-			g_free(basefile);
-			g_free(item->data);
-		}
-
-		// End of list
-		*sFilename = '\0';
-		g_slist_free(files);
-	}
-
-	gtk_widget_destroy(dialog);
-	return true;
-#endif // WITH_DEVELOPER_MODE / _WIN32
-	return 0;
-}
-
 void C4Console::FileRecord()
 {
 	// only in running mode
@@ -865,7 +643,7 @@ void C4Console::SetCaption(const char *szCaption)
 #ifdef _WIN32
 	// Sorry, the window caption needs to be constant so
 	// the window can be found using FindWindow
-	SetTitle(C4ENGINECAPTION); // TODO: Still the case?
+	SetTitle(C4ENGINECAPTION);
 #else
 	SetTitle(szCaption);
 #endif

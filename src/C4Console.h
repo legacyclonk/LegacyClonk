@@ -77,15 +77,12 @@ protected:
 	void EditScript();
 	void EditTitle();
 	void ViewportNew();
-#ifdef _WIN32
-	bool FileSelect(char *sFilename, int iSize, const char *szFilter, DWORD    dwFlags, bool fSave = false);
-#else
-	bool FileSelect(char *sFilename, int iSize, const char *szFilter, uint32_t dwFlags, bool fSave = false);
-#endif
+
 public:
 	static void SDLCALL FileSaveGameAsCallback(void* userdata, const char* const* filelist, int filter);
 	static void SDLCALL FileSaveScenarioAsCallback(void* userdata, const char* const* filelist, int filter);
 	static void SDLCALL FileOpenCallback(void* userdata, const char* const* filelist, int filter);
+
 protected:
 	void SaveGame(bool fSaveGame);
 	void FileSaveAs(bool fSaveGame);
