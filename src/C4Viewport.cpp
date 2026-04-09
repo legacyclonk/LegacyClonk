@@ -901,14 +901,14 @@ void C4ViewportWindow::HandleMessage(SDL_Event &sdl_event)
 		case SDL_EVENT_MOUSE_MOTION :
 		{
 			// TODO: Hide Cursor when inside viewport and in play mode.
-			Game.GraphicsSystem.MouseMove(C4MC_Button_None, sdl_event.motion.x, sdl_event.motion.y, Application.GetModifiers(), nullptr);
+			Game.GraphicsSystem.MouseMove(C4MC_Button_None, sdl_event.motion.x, sdl_event.motion.y, Application.GetModifiers(), cvp);
 			break;
 		}
 		case SDL_EVENT_MOUSE_WHEEL :
 		{
 			float x, y;
 			SDL_GetMouseState(&x, &y);
-			Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, sdl_event.button.x, sdl_event.button.y, static_cast<std::int32_t>(sdl_event.wheel.y * 60) << 16, nullptr);
+			Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, sdl_event.button.x, sdl_event.button.y, static_cast<std::int32_t>(sdl_event.wheel.y * 60) << 16, cvp);
 			break;
 		}
 		case SDL_EVENT_MOUSE_BUTTON_UP :
@@ -916,7 +916,7 @@ void C4ViewportWindow::HandleMessage(SDL_Event &sdl_event)
 		{
 			int32_t button;
 			C4ViewportWindow::sdlToC4MCBtn(sdl_event.button, button);
-			Game.GraphicsSystem.MouseMove(button, sdl_event.button.x, sdl_event.button.y, Application.GetModifiers(), nullptr);
+			Game.GraphicsSystem.MouseMove(button, sdl_event.button.x, sdl_event.button.y, Application.GetModifiers(), cvp);
 			break;
 		}
 		}
