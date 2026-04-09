@@ -446,7 +446,11 @@ void C4FullScreen::CharIn(const char *c)
 {
 	if (Game.pGUI)
 	{
+#ifdef USE_SDL_MAINLOOP
+		Game.pGUI->CharIn(TextEncodingConverter.Utf8ToClonk(c).c_str());
+#else
 		Game.pGUI->CharIn(TextEncodingConverter.SystemToClonk(c).c_str());
+#endif
 	}
 }
 #endif
