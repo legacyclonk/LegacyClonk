@@ -78,8 +78,7 @@ option(USE_TESTS "Enable testing" OFF)
 CMAKE_DEPENDENT_OPTION(ENABLE_SOUND "Compile with sound support" ON
 	"NOT USE_CONSOLE" OFF)
 # USE_SDL_MIXER
-CMAKE_DEPENDENT_OPTION(USE_SDL_MIXER "Whether SDL2_mixer shall be used for sound" ON
-	"ENABLE_SOUND" OFF)
+CMAKE_DEPENDENT_OPTION(USE_SDL_MIXER "Whether SDL3_mixer shall be used for sound" ON "ENABLE_SOUND" OFF)
 # USE_SDL_MAINLOOP
 if (APPLE)
 	set(USE_SDL_MAINLOOP_DEFAULT ON)
@@ -445,10 +444,10 @@ if (USE_SDL_MAINLOOP OR USE_SDL_MIXER)
 	target_link_libraries(clonk SDL3::SDL3)
 endif ()
 
-# Link SDL2_mixer
+# Link SDL3_mixer
 if (USE_SDL_MIXER)
-	find_package(SDL2_mixer REQUIRED)
-	target_link_libraries(clonk SDL2_mixer::SDL2_mixer)
+	find_package(SDL3_mixer REQUIRED)
+	target_link_libraries(clonk SDL3_mixer::SDL3_mixer)
 endif ()
 
 # Link spdlog
