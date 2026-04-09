@@ -28,8 +28,6 @@
 #include <initializer_list>
 #include <utility>
 
-#include "C4AudioSystemNone.h"
-
 static constexpr std::initializer_list<const char *> MusicFileExtensions{
 	"it", "mid", "mod", "mp3", "ogg", "s3m", "xm"};
 
@@ -49,9 +47,7 @@ C4MusicSystem::C4MusicSystem()
 void C4MusicSystem::Execute()
 {
 	if (!Application.AudioSystem) return;
-
-	if (dynamic_cast<C4AudioSystemNone*>(Application.AudioSystem.get())) return;
-
+	
 	if (!Application.AudioSystem->IsMusicPlaying())
 	{
 		ClearPlayingSong();
