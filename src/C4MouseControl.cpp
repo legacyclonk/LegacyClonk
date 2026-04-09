@@ -217,32 +217,16 @@ void C4MouseControl::Move(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKe
 	fctViewport.Set(nullptr, rcViewport.x, rcViewport.y, rcViewport.Wdt, rcViewport.Hgt);
 	ViewX = Viewport->ViewX; ViewY = Viewport->ViewY;
 	// First time viewport attachment: center mouse
-#if FALSE //def _WIN32
 	if (!InitCentered || fCenter)
 	{
 		iX = Viewport->ViewWdt / 2;
 		iY = Viewport->ViewHgt / 2;
-		if (Application.isFullScreen)
+		if (Application.isFullScreen && Viewport->pWindow)
 		{
-			int32_t iMidX = Viewport->OutX + iX;
-			int32_t iMidY = Viewport->OutY + iY;
-			RECT rtWindow;
-			if (GetWindowRect(Application.pWindow->hWindow, &rtWindow))
-			{
-				iMidX += rtWindow.left; iMidY += rtWindow.top;
-			}
-			SetCursorPos(iMidX, iMidY);
+			Viewport->pWindow->CenterMouseInWindow();
 		}
 		InitCentered = true;
 	}
-#else
-	if (!InitCentered || fCenter)
-	{
-		iX = Viewport->ViewWdt / 2;
-		iY = Viewport->ViewHgt / 2;
-		InitCentered = true;
-	}
-#endif
 	// passive mode: scrolling and player buttons only
 	if (IsPassive())
 	{

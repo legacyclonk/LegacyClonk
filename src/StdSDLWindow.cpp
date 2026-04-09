@@ -195,6 +195,14 @@ void CStdWindow::SetDisplayMode(const DisplayMode mode)
 
 void CStdWindow::SetProgress(uint32_t) {} // stub
 
+void CStdWindow::CenterMouseInWindow()
+{
+	if (sdlWindow)
+	{
+		SDL_WarpMouseInWindow(sdlWindow, width/2, height/2);
+	}
+}
+
 float CStdWindow::GetInputScale()
 {
 	int width, height;

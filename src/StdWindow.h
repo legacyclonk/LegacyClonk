@@ -71,6 +71,7 @@ public:
 	void FlashWindow();
 	void SetDisplayMode(DisplayMode mode);
 	void SetProgress(uint32_t progress); // progress 100 disables the progress bar
+	void CenterMouseInWindow();
 
 protected:
 	virtual void Sec1Timer() {}
