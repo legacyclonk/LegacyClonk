@@ -132,7 +132,6 @@ void CStdWindow::SetDisplayMode(const DisplayMode mode)
 	}
 
 	displayMode = mode;
-	ThrowIfFailed("SDL_ShowCursor", !SDL_ShowCursor());
 }
 
 void CStdWindow::SetProgress(uint32_t) {} // stub
