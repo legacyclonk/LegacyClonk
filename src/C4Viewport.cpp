@@ -1159,7 +1159,10 @@ void C4Viewport::DrawMenu(C4FacetEx &cgo)
 	// Player eliminated
 	if (pPlr && pPlr->Eliminated)
 	{
-		Application.DDraw->TextOut(std::format("{} {}", LoadResStrV(pPlr->Surrendered ? C4ResStrTableKey::IDS_PLR_SURRENDERED : C4ResStrTableKey::IDS_PLR_ELIMINATED), pPlr->GetName()).c_str(),
+		StdStrBuf newPlayerFormat{LoadResStrV(pPlr->Surrendered ? C4ResStrTableKey::IDS_PLR_SURRENDERED : C4ResStrTableKey::IDS_PLR_ELIMINATED)};
+		newPlayerFormat.Replace("%s", "{}");
+		std::string playerName{pPlr->GetName()};
+		Application.DDraw->TextOut(std::vformat(newPlayerFormat.getData(), std::make_format_args(playerName)).c_str(),
 			Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + cgo.Wdt / 2, cgo.Y + 2 * cgo.Hgt / 3, 0xfaFF0000, ACenter);
 		return;
 	}
