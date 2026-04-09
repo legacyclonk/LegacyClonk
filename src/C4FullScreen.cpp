@@ -465,12 +465,12 @@ C4FullScreen::~C4FullScreen()
 	delete pMenu;
 }
 
-bool C4FullScreen::Init(CStdApp *const app)
+bool C4FullScreen::Init(CStdApp *const app, const C4Rect &bounds)
 {
 #ifdef _WIN32
 	return Init(app, STD_PRODUCT);
 #else
-	return CStdWindow::Init(app, STD_PRODUCT);
+	return CStdWindow::Init(app, STD_PRODUCT, bounds);
 #endif
 }
 

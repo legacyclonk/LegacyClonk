@@ -274,9 +274,9 @@ void C4Console::HandleMessage(XEvent &e)
 
 #endif // _WIN32/USE_X11
 
-bool C4Console::Init(CStdApp *const app)
+bool C4Console::Init(CStdApp *const app, const C4Rect &bounds)
 {
-	return Init(app, LoadResStr(C4ResStrTableKey::IDS_CNS_CONSOLE));
+	return Init(app, LoadResStr(C4ResStrTableKey::IDS_CNS_CONSOLE), bounds);
 }
 
 bool C4Console::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
