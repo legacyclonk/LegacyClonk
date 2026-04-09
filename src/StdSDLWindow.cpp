@@ -59,14 +59,14 @@ bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect 
 	displayMode = DisplayMode::Window;
 	this->app = app;
 
-	sdlWindow = SDL_CreateWindow(title, bounds.x, bounds.y, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+	sdlWindow = SDL_CreateWindow(title, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 	ThrowIfFailed("SDL_CreateWindow", !sdlWindow);
+	SDL_SetWindowPosition(sdlWindow, bounds.x, bounds.y);
 	SDL_StartTextInput(sdlWindow);
 
 	return true;
 }
 
-void CStdWindow::Clear() {}
 void CStdWindow::Clear()
 {
 	if (sdlWindow)

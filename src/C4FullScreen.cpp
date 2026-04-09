@@ -332,7 +332,7 @@ namespace
 		switch (e.button)
 		{
 		case SDL_BUTTON_LEFT:
-			if (e.state == SDL_EVENT_MOUSE_BUTTON_DOWN)
+			if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
 			{
 				button = e.clicks % 2 == 0 ? C4MC_Button_LeftDouble : C4MC_Button_LeftDown;
 			}
@@ -342,7 +342,7 @@ namespace
 			}
 			break;
 		case SDL_BUTTON_RIGHT:
-			if (e.state == SDL_EVENT_MOUSE_BUTTON_DOWN)
+			if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
 			{
 				button = e.clicks % 2 == 0 ? C4MC_Button_RightDouble : C4MC_Button_RightDown;
 			}
@@ -352,7 +352,7 @@ namespace
 			}
 			break;
 		case SDL_BUTTON_MIDDLE:
-			if (e.state == SDL_PRESSED)
+			if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
 			{
 				button = C4MC_Button_MiddleDown;
 			}
