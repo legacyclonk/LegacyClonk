@@ -62,6 +62,7 @@ bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect 
 	sdlWindow = SDL_CreateWindow(title, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 	ThrowIfFailed("SDL_CreateWindow", !sdlWindow);
 	SDL_SetWindowPosition(sdlWindow, bounds.x, bounds.y);
+	SDL_SyncWindow(sdlWindow);
 	SDL_StartTextInput(sdlWindow);
 
 	return true;
@@ -110,7 +111,7 @@ void CStdWindow::SetDisplayMode(const DisplayMode mode)
 	if (mode == DisplayMode::Fullscreen)
 	{
 		ThrowIfFailed("SDL_SetWindowFullscreen", !SDL_SetWindowFullscreen(sdlWindow, true));
-		SDL_SetWindowPosition(sdlWindow, 0, 0);
+		SDL_SyncWindow(sdlWindow);
 	}
 	else
 	{
@@ -129,6 +130,7 @@ void CStdWindow::SetDisplayMode(const DisplayMode mode)
 
 		ThrowIfFailed("SDL_SetWindowFullscreen", !SDL_SetWindowFullscreen(sdlWindow, false));
 		SDL_SetWindowSize(sdlWindow, width, height);
+		SDL_SyncWindow(sdlWindow);
 	}
 
 	displayMode = mode;
