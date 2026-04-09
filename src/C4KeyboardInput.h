@@ -125,12 +125,6 @@ inline bool Key_IsGamepadAxisHigh(C4KeyCode key)
 	return !!(key & 1);
 }
 
-#ifdef _WIN32
-#define TOUPPERIFX11(key) (key)
-#else
-#define TOUPPERIFX11(key) C4Strings::ToUpper(key)
-#endif
-
 enum C4KeyShiftState
 {
 	KEYS_None = 0,

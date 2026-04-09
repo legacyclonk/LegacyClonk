@@ -38,6 +38,9 @@
 #include "StdRegistry.h" // For DDraw emulation warning
 #endif
 
+#include "imgui.h"
+#include "backends/imgui_impl_sdl3.h"
+#include "backends/imgui_impl_opengl2.h"
 #include <cassert>
 #include <stdexcept>
 
@@ -52,7 +55,7 @@ C4Sec1TimerCallbackBase::C4Sec1TimerCallbackBase() : pNext(nullptr), iRefs(2)
 C4Application::C4Application() :
 	isFullScreen(true), UseStartupDialog(true), CheckForUpdates(false), launchEditor(false),
 	restartAtEnd(false), pGamePadControl(nullptr),
-	iLastGameTick(0), iGameTickDelay(defaultGameTickDelay), iExtraGameTickDelay(0), DDraw(nullptr),
+	iLastGameTick(0), iGameTickDelayMS(defaultGameTickDelay), iExtraGameTickDelay(0), DDraw(nullptr),
 	AppState(C4AS_None) {}
 
 C4Application::~C4Application()
@@ -175,30 +178,30 @@ void C4Application::DoInit()
 	// Init carrier window
 	if (isFullScreen)
 	{
-		if (!FullScreen.Init(this))
+		C4Rect bounds{0, 0, static_cast<int32_t>(Config.Graphics.ResX * GetScale()), static_cast<int32_t>(Config.Graphics.ResY * GetScale())};
+		if (!FullScreen.Init(this, STD_PRODUCT, bounds))
 		{
 			Clear(); return;
 		}
 		pWindow = &FullScreen;
-		pWindow->SetSize(static_cast<int32_t>(Config.Graphics.ResX * GetScale()), static_cast<int32_t>(Config.Graphics.ResY * GetScale()));
 		SetDisplayMode(Config.Graphics.UseDisplayMode);
-
-#ifdef _WIN32
-		if (Config.Graphics.UseDisplayMode == DisplayMode::Window)
-		{
-			if (Config.Graphics.Maximized) pWindow->Maximize();
-			else pWindow->SetPosition(Config.Graphics.PositionX, Config.Graphics.PositionY);
-		}
-#endif
+		FullScreen.CenterMouseInWindow();
 	}
 	else
 	{
-		if (!Console.Init(this))
+		std::int32_t minWidth{450};
+		C4Rect bounds{25, 200, minWidth, 450};
+		if (!Console.Init(this, LoadResStr(C4ResStrTableKey::IDS_CNS_CONSOLE), bounds, nullptr, SDL_WINDOW_ALWAYS_ON_TOP, minWidth, 250))
 		{
 			Clear(); return;
 		}
 
 		pWindow = &Console;
+
+		if(Config.Graphics.PositionX != 0 && Config.Graphics.PositionY != 0)
+		{
+			pWindow->RestorePosition();
+		}
 	}
 
 	// init timers (needs window)
@@ -212,9 +215,14 @@ void C4Application::DoInit()
 	spdlog::info(C4ENGINEINFOLONG);
 	spdlog::info("Version: " C4VERSION " " C4_OS);
 
-	// Initialize OpenGL
+	// Initialize OpenGL 2.1
 	DDraw = DDrawInit(this, LogSystem, Config.Graphics.Engine);
 	if (!DDraw) { LogFatal(C4ResStrTableKey::IDS_ERR_DDRAW); Clear(); throw StartupException{LogSystem.GetFatalErrorString()}; }
+
+	if (!isFullScreen)
+	{
+		Console.InitGUI();
+	}
 
 #if defined(_WIN32) && !defined(USE_CONSOLE)
 	// Register clonk file classes - notice: this will only work if we have administrator rights
@@ -322,6 +330,7 @@ void C4Application::Clear()
 	MusicSystem.reset();
 	AudioSystem.reset();
 	ToastSystem.reset();
+
 	// Clear direct draw (late, because it's needed for e.g. Log)
 	delete DDraw; DDraw = nullptr;
 	// Close window
@@ -352,17 +361,10 @@ void C4Application::Quit()
 {
 	// Clear definitions passed by frontend for this round
 	Config.General.Definitions[0] = 0;
-#ifdef _WIN32
-	if (pWindow)
+	if (pWindow && !isFullScreen) // Only console mode.
 	{
-		// store if window is maximized and where it is positioned
-		WINDOWPLACEMENT placement;
-		GetWindowPlacement(pWindow->hWindow, &placement);
-		Config.Graphics.Maximized = placement.showCmd == SW_SHOWMAXIMIZED;
-		Config.Graphics.PositionX = placement.rcNormalPosition.left;
-		Config.Graphics.PositionY = placement.rcNormalPosition.top;
+		pWindow->StorePosition();
 	}
-#endif
 	// Save config if there was no loading error
 	if (Config.fConfigLoaded) Config.Save();
 	// quit app
@@ -470,14 +472,14 @@ void C4Application::Execute()
 			else
 				Console.Execute();
 			// Automatic frame skip if graphics are slowing down the game (skip max. every 2nd frame)
-			Game.DoSkipFrame = Game.Parameters.AutoFrameSkip && ((iPreGfxTime + iGameTickDelay) < timeGetTime());
+			Game.DoSkipFrame = Game.Parameters.AutoFrameSkip && ((iPreGfxTime + iGameTickDelayMS) < timeGetTime());
 		}
 		else
+		{
 			Game.DoSkipFrame = false;
+		}
 		// Sound
 		SoundSystem->Execute();
-		// Gamepad
-		if (pGamePadControl) pGamePadControl->Execute();
 		break;
 	}
 	case C4AS_None:
@@ -507,27 +509,27 @@ void C4Application::DoSec1Timers()
 	}
 }
 
-void C4Application::SetGameTickDelay(int iDelay)
+void C4Application::SetGameTickDelay(int iDelayMS)
 {
 	// Remember delay
-	iGameTickDelay = iDelay;
+	iGameTickDelayMS = iDelayMS;
 	// Smaller than minimum refresh delay?
-	if (iDelay < Config.Graphics.MaxRefreshDelay)
+	if (iDelayMS < Config.Graphics.MaxRefreshDelayMS)
 	{
 		// Set critical timer
-		ResetTimer(iDelay);
+		ResetTimer(iDelayMS);
 		// No additional breaking needed
 		iExtraGameTickDelay = 0;
 	}
 	else
 	{
 		// Do some magic to get as near as possible to the requested delay
-		int iGraphDelay = (std::max)(1, iDelay);
-		iGraphDelay /= (iGraphDelay + Config.Graphics.MaxRefreshDelay - 1) / Config.Graphics.MaxRefreshDelay;
+		int iGraphDelay = (std::max)(1, iDelayMS);
+		iGraphDelay /= (iGraphDelay + Config.Graphics.MaxRefreshDelayMS - 1) / Config.Graphics.MaxRefreshDelayMS;
 		// Set critical timer
 		ResetTimer(iGraphDelay);
 		// Slow down game tick
-		iExtraGameTickDelay = iDelay - iGraphDelay / 2;
+		iExtraGameTickDelay = iDelayMS - iGraphDelay / 2;
 	}
 }
 

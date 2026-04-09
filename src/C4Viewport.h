@@ -18,12 +18,12 @@
 
 #pragma once
 
-#include "C4ForwardDeclarations.h"
-#include "C4Rect.h"
+#include "C4MouseControl.h"
 #include <C4Region.h>
-#include "Fixed.h"
-#include "StdColors.h"
+
 #include <StdWindow.h>
+
+#include <C4Shape.h>
 
 #ifdef WITH_DEVELOPER_MODE
 #include <StdGtkWindow.h>
@@ -36,18 +36,11 @@ class C4Viewport;
 
 class C4ViewportWindow : public C4ViewportBase
 {
-#ifdef _WIN32
-public:
-	static constexpr auto WindowStyle = WS_VISIBLE | WS_POPUP | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX;
-#endif
 public:
 	C4Viewport *cvp;
 	C4ViewportWindow(C4Viewport *cvp) : cvp(cvp) {}
-#ifdef _WIN32
-	std::pair<DWORD, DWORD> GetWindowStyle() const override { return {WindowStyle, WS_EX_ACCEPTFILES}; }
-	WNDCLASSEX GetWindowClass(HINSTANCE instance) const override;
-	bool GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const override;
-#elif defined(WITH_DEVELOPER_MODE)
+	~C4ViewportWindow();
+#if defined(WITH_DEVELOPER_MODE)
 	virtual GtkWidget *InitGUI() override;
 
 	static gboolean OnKeyPressStatic(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
@@ -70,14 +63,26 @@ public:
 	GtkWidget *v_scrollbar;
 	GtkWidget *drawing_area;
 #elif defined(USE_X11) && !defined(WITH_DEVELOPER_MODE)
-	bool HideCursor() const override { return true; }
 	virtual void HandleMessage(XEvent &) override;
 #endif
+	bool Init(CStdApp* app, const char* title, const C4Rect& bounds, CStdWindow* parent, std::uint32_t additionalFlags = 0, std::int32_t minWidth = 250, std::int32_t minHeight = 250) override;
 	virtual void Close() override;
+	void DrawImGui(C4Viewport &ownerViewport);
 
-#ifdef _WIN32
-	static LRESULT APIENTRY WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-#endif
+	void HandleMessage(SDL_Event&) override;
+
+	float ScrollH;
+	float ScrollV;
+
+private:
+	static C4Viewport *GetViewport(SDL_Window *window);
+	struct ViewportHandle
+	{
+		SDL_Window *window;
+		C4Viewport *viewport;
+	};
+	static std::vector<ViewportHandle> viewportHandles;
+
 };
 
 class C4Viewport
@@ -94,6 +99,7 @@ public:
 	int32_t BorderLeft, BorderTop, BorderRight, BorderBottom;
 	int32_t ViewOffsX, ViewOffsY;
 	int32_t DrawX, DrawY;
+	C4MouseControl MouseControl;
 	bool fIsNoOwnerViewport; // this viewport is found for searches of NO_OWNER-viewports; even if it has a player assigned (for network obs)
 	void Default();
 	void Clear();
@@ -103,15 +109,15 @@ public:
 	void UpdateViewPosition(); // update view position: Clip properly; update border variables
 	bool Init(int32_t iPlayer, bool fSetTempOnly);
 	bool Init(CStdWindow *pParent, CStdApp *pApp, int32_t iPlayer);
-#ifdef _WIN32
-	bool DropFiles(HANDLE hDrop);
-#endif
+	bool DropFiles(const char *filename, const float positionX, const float positionY);
 	bool TogglePlayerLock();
 	void NextPlayer();
 	C4Rect GetOutputRect() { return C4Rect(OutX, OutY, ViewWdt, ViewHgt); }
 	bool IsViewportMenu(class C4Menu *pMenu);
 	int32_t GetPlayer() { return Player; }
 	void CenterPosition();
+	void FocusPosition(std::int32_t x, std::int32_t y);
+	C4ViewportWindow* GetViewportWindow() { return pWindow; }
 
 protected:
 	int32_t Player;
@@ -133,8 +139,9 @@ protected:
 	void BlitOutput();
 	void AdjustPosition();
 	bool UpdateOutputSize();
-	bool ViewPositionByScrollBars();
-	bool ScrollBarsByViewPosition();
 
 	friend class C4ViewportWindow;
 };
+
+#define C4ViewportClassName "C4Viewport"
+#define C4ViewportWindowStyle (WS_VISIBLE | WS_POPUP | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX)

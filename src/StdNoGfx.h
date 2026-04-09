@@ -47,4 +47,5 @@ public:
 	virtual bool InvalidateDeviceObjects() override { return true; }
 	virtual bool DeviceReady() override { return true; }
 	virtual bool CreatePrimarySurfaces() override;
+	std::uint32_t LoadPNGFromMemory(const void *data, const std::uint32_t data_size) override { return false; }
 };

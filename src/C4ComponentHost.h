@@ -41,7 +41,8 @@ public:
 	bool GetLanguageString(const char *szLanguage, class StdStrBuf &rTarget);
 	void TrimSpaces();
 
-#ifdef _WIN32
+	// TODO: Is there an equivalent on other platforms?
+#if FALSE //def _WIN32
 	void ShowDialog(HWND parent);
 
 private:

@@ -269,7 +269,8 @@ void C4ComponentHost::TrimSpaces()
 	Modified = true;
 }
 
-#ifdef _WIN32
+// TODO: Should delete code?
+#if FALSE //def _WIN32
 INT_PTR CALLBACK C4ComponentHost::ComponentDlgProc(const HWND hDlg, const UINT msg, const WPARAM wParam, const LPARAM lParam)
 {
 	const auto close = [hDlg](C4ComponentHost &host)

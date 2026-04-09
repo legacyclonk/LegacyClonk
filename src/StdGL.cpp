@@ -793,7 +793,7 @@ CStdGLCtx *CStdGL::CreateContext(CStdWindow *const pWindow, CStdApp *const pApp)
 	if (!pWindow) return nullptr;
 
 #ifdef USE_SDL_MAINLOOP
-	if (SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1) != 0)
+	if (!SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1))
 	{
 		logger->error("SDL: Enabling context sharing failed: {}", SDL_GetError());
 	}
@@ -809,7 +809,8 @@ CStdGLCtx *CStdGL::CreateContext(CStdWindow *const pWindow, CStdApp *const pApp)
 	return pCtx;
 }
 
-#ifdef _WIN32
+// TODO: Removed unused code.
+#if FALSE //def _WIN32
 CStdGLCtx *CStdGL::CreateContext(const HWND hWindow, CStdApp *const pApp)
 {
 	// safety
@@ -996,7 +997,8 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool force)
 		return true;
 	}
 
-	return ApplyGammaRampToMonitor(ramp, force);
+	// TODO: Remove
+	//return ApplyGammaRampToMonitor(ramp, force);
 }
 
 bool CStdGL::SaveDefaultGammaRamp(CStdWindow *window)
@@ -1357,4 +1359,30 @@ void CStdGL::BindGammaTextures()
 	GammaBlueTexture.Bind(5);
 	glActiveTexture(GL_TEXTURE0);
 }
+
+// Simple helper function to load an image into a OpenGL texture with common settings.
+// Reference (https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples#example-for-opengl-users)
+std::uint32_t CStdGL::LoadPNGFromMemory(const void *data, const std::uint32_t dataSize)
+{
+	CPNGFile pngLoader{data, dataSize, false};
+	StdBitmap bmp{pngLoader.Width(), pngLoader.Height(), pngLoader.UsesAlpha()};
+	pngLoader.Decode(bmp.GetBytes());
+	if (bmp.GetBytes() == nullptr)
+	{
+		return -1;
+	}
+
+	GLuint imageTexture;
+	glGenTextures(1, &imageTexture);
+	glBindTexture(GL_TEXTURE_2D, imageTexture);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, pngLoader.UsesAlpha() ? 4 : 3, pngLoader.Width(), pngLoader.Height(), 0, pngLoader.UsesAlpha() ? GL_BGRA : GL_BGR, GL_UNSIGNED_INT_8_8_8_8_REV, bmp.GetBytes());
+
+	return imageTexture;
+}
+
+
 #endif

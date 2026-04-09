@@ -36,41 +36,31 @@
 #include <C4ObjectMenu.h>
 
 #include <StdGL.h>
+#include "imgui.h"
 
-#ifdef _WIN32
-#include "StdRegistry.h"
-#include "res/engine_resource.h"
-#elif defined(USE_X11)
-#include <X11/Xlib.h>
-#include <X11/XKBlib.h>
-#ifdef WITH_DEVELOPER_MODE
-#include <gdk/gdkx.h>
-#include <gdk/gdkkeysyms.h>
-#include <gtk/gtk.h>
-#endif
-#endif
-
-#include <format>
 
 namespace
 {
 	const int32_t ViewportScrollSpeed = 10;
 }
 
-#ifdef _WIN32
 
-#include <shellapi.h>
 
+std::vector<C4ViewportWindow::ViewportHandle> C4ViewportWindow::viewportHandles;
+
+
+#if 0
 LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	// Determine viewport
-	auto *const window = reinterpret_cast<C4ViewportWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-	if (!window)
-	{
-		return CStdWindow::DefaultWindowProc(hwnd, uMsg, wParam, lParam);
-	}
+	C4Viewport *cvp;
+	if (cvp = GetViewport(hwnd); !cvp)
+		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 
-	C4Viewport *const cvp{window->cvp};
+	if (cvp->pWindow->ImGui && cvp->pWindow->ImGui->HandleMessage(hwnd, uMsg, wParam, lParam))
+	{
+		return 0;
+	}
 
 	const auto scale = Application.GetScale();
 
@@ -96,8 +86,12 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 		break;
 
 	case WM_SYSKEYDOWN:
-		if (wParam == 18) break;
+		if (wParam == VK_MENU) break;
 		if (Game.DoKeyboardInput(wParam, KEYEV_Down, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), nullptr)) return 0;
+		break;
+
+	case WM_DESTROY:
+		StoreWindowPosition(hwnd, FormatString("Viewport%i", cvp->Player + 1).getData(), Config.GetSubkeyPath("Console"));
 		break;
 
 	case WM_CLOSE:
@@ -117,7 +111,7 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 		break;
 
 	case WM_PAINT:
-		Game.GraphicsSystem.Execute();
+		Game.GraphicsSystem.DrawViewport(cvp);
 		break;
 
 	case WM_HSCROLL:
@@ -148,7 +142,7 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 	}
 
 	// Viewport mouse control
-	if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+	if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 	{
 		switch (uMsg)
 		{
@@ -193,58 +187,60 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 		}
 	}
 
-	return CStdWindow::DefaultWindowProc(hwnd, uMsg, wParam, lParam);
+	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
+#endif
 
-WNDCLASSEX C4ViewportWindow::GetWindowClass(const HINSTANCE instance) const
+C4Viewport *C4ViewportWindow::GetViewport(SDL_Window *window)
 {
-	return {
-		.cbSize = sizeof(WNDCLASSEX),
-		.style = CS_DBLCLKS | CS_BYTEALIGNCLIENT,
-		.lpfnWndProc = &C4ViewportWindow::WinProc,
-		.cbClsExtra = 0,
-		.cbWndExtra = 0,
-		.hInstance = instance,
-		.hIcon = LoadIcon(instance, MAKEINTRESOURCE(IDI_01_C4S)),
-		.hCursor = LoadCursor(nullptr, IDC_ARROW),
-		.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BACKGROUND),
-		.lpszMenuName = nullptr,
-		.lpszClassName = L"C4Viewport",
-		.hIconSm = LoadIcon(instance, MAKEINTRESOURCE(IDI_01_C4S))
-	};
+	if (const auto it = std::find_if(viewportHandles.cbegin(), viewportHandles.cend(), [window](const auto &handle)
+		{
+			return handle.window == window;
+		}); it != viewportHandles.cend())
+	{
+		return it->viewport;
+	}
+	else
+	{
+		return nullptr;
+	}
 }
-
-bool C4ViewportWindow::GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const
+bool C4ViewportWindow::Init(CStdApp* app, const char* title, const C4Rect& bounds, CStdWindow* parent, const std::uint32_t additionalFlags, const std::int32_t minWidth, const std::int32_t minHeight)
 {
-	id = std::format("Viewport{}", cvp->Player + 1);
-	subKey = Config.GetSubkeyPath("Console");
-	storeSize = true;
-	return true;
+	Active = true;
+	CStdWindow::Init(app, title, bounds, parent, additionalFlags, minWidth, minHeight);
+
+	if (sdlWindow)
+	{
+		viewportHandles.push_back({sdlWindow, cvp});
+		InitImGui();
+		return true;
+	}
+
+	return false;
 }
 
-bool C4Viewport::DropFiles(HANDLE hDrop)
+C4ViewportWindow::~C4ViewportWindow()
+{
+	if (sdlWindow)
+	{
+		viewportHandles.erase(std::remove_if(viewportHandles.begin(), viewportHandles.end(), [this](const auto &handle)
+			{
+				return handle.window == sdlWindow;
+			}), viewportHandles.end());
+
+		SDL_DestroyWindow(sdlWindow);
+	}
+}
+
+
+bool C4Viewport::DropFiles(const char *filename, const float positionX, const float positionY)
 {
 	if (!Console.Editing) { Console.Message(LoadResStr(C4ResStrTableKey::IDS_CNS_NONETEDIT)); return false; }
 
-	int32_t iFileNum = DragQueryFile((HDROP)hDrop, 0xFFFFFFFF, nullptr, 0);
-	POINT pntPoint;
-	char szFilename[500 + 1];
-	for (int32_t cnt = 0; cnt < iFileNum; cnt++)
-	{
-		DragQueryFileA((HDROP)hDrop, cnt, szFilename, 500);
-		DragQueryPoint((HDROP)hDrop, &pntPoint);
-		Game.DropFile(szFilename, ViewX + pntPoint.x, ViewY + pntPoint.y);
-	}
-	DragFinish((HDROP)hDrop);
-	return true;
-}
+	Game.DropFile(filename, ViewX + positionX, ViewY + positionY);
 
-void UpdateWindowLayout(HWND hwnd)
-{
-	RECT rect;
-	GetWindowRect(hwnd, &rect);
-	MoveWindow(hwnd, rect.left, rect.top, rect.right - rect.left - 1, rect.bottom - rect.top, TRUE);
-	MoveWindow(hwnd, rect.left, rect.top, rect.right - rect.left,     rect.bottom - rect.top, TRUE);
+	return true;
 }
 
 bool C4Viewport::TogglePlayerLock()
@@ -253,43 +249,16 @@ bool C4Viewport::TogglePlayerLock()
 	if (PlayerLock)
 	{
 		PlayerLock = false;
-		SetWindowLong(pWindow->hWindow, GWL_STYLE, GetWindowLong(pWindow->hWindow, GWL_STYLE) | WS_HSCROLL | WS_VSCROLL);
-		UpdateWindowLayout(pWindow->hWindow);
-		ScrollBarsByViewPosition();
 	}
 	// Enable player lock
 	else if (ValidPlr(Player))
 	{
 		PlayerLock = true;
-		SetWindowLong(pWindow->hWindow, GWL_STYLE, GetWindowLong(pWindow->hWindow, GWL_STYLE) & ~(WS_HSCROLL | WS_VSCROLL));
-		UpdateWindowLayout(pWindow->hWindow);
 	}
 	return true;
 }
 
-bool C4Viewport::ScrollBarsByViewPosition()
-{
-	if (PlayerLock) return false;
-	SCROLLINFO scroll;
-	scroll.cbSize = sizeof(SCROLLINFO);
-	// Vertical
-	scroll.fMask = SIF_ALL;
-	scroll.nMin = 0;
-	scroll.nMax = GBackHgt;
-	scroll.nPage = ViewHgt;
-	scroll.nPos = ViewY;
-	SetScrollInfo(pWindow->hWindow, SB_VERT, &scroll, TRUE);
-	// Horizontal
-	scroll.fMask = SIF_ALL;
-	scroll.nMin = 0;
-	scroll.nMax = GBackWdt;
-	scroll.nPage = ViewWdt;
-	scroll.nPos = ViewX;
-	SetScrollInfo(pWindow->hWindow, SB_HORZ, &scroll, TRUE);
-	return true;
-}
-
-#elif defined(WITH_DEVELOPER_MODE)
+#if defined(WITH_DEVELOPER_MODE)
 static GtkTargetEntry drag_drop_entries[] =
 {
 	{ const_cast<char *>("text/uri-list"), 0, 0 }
@@ -483,7 +452,7 @@ gboolean C4ViewportWindow::OnScrollStatic(GtkWidget *widget, GdkEventScroll *eve
 {
 	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
 
-	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 	{
 		switch (event->direction)
 		{
@@ -506,7 +475,7 @@ gboolean C4ViewportWindow::OnButtonPressStatic(GtkWidget *widget, GdkEventButton
 {
 	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
 
-	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 	{
 		switch (event->button)
 		{
@@ -547,7 +516,7 @@ gboolean C4ViewportWindow::OnButtonReleaseStatic(GtkWidget *widget, GdkEventButt
 {
 	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
 
-	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 	{
 		switch (event->button)
 		{
@@ -585,7 +554,7 @@ gboolean C4ViewportWindow::OnMotionNotifyStatic(GtkWidget *widget, GdkEventMotio
 {
 	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
 
-	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 	{
 		Game.GraphicsSystem.MouseMove(C4MC_Button_None, static_cast<int32_t>(event->x), static_cast<int32_t>(event->y), event->state, window->cvp);
 	}
@@ -631,8 +600,8 @@ void C4ViewportWindow::OnHScrollStatic(GtkAdjustment *adjustment, gpointer user_
 
 #else // WITH_DEVELOPER_MODE
 
-bool C4Viewport::TogglePlayerLock() { return false; }
-bool C4Viewport::ScrollBarsByViewPosition() { return false; }
+//bool C4Viewport::TogglePlayerLock() { return false; }
+//bool C4Viewport::ScrollBarsByViewPosition() { return false; }
 
 #if defined(USE_X11)
 
@@ -657,7 +626,7 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 	case ButtonPress:
 	{
 		static int last_left_click, last_right_click;
-		if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+		if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 		{
 			switch (e.xbutton.button)
 			{
@@ -720,7 +689,7 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 	}
 	break;
 	case ButtonRelease:
-		if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+		if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 		{
 			switch (e.xbutton.button)
 			{
@@ -751,7 +720,7 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 		}
 		break;
 	case MotionNotify:
-		if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+		if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 		{
 			Game.GraphicsSystem.MouseMove(C4MC_Button_None, e.xbutton.x, e.xbutton.y, e.xbutton.state, cvp);
 		}
@@ -777,32 +746,252 @@ void C4ViewportWindow::Close()
 	Game.GraphicsSystem.CloseViewport(cvp);
 }
 
+void C4ViewportWindow::DrawImGui(C4Viewport &ownerViewport)
+{
+	if (!imGui.has_value())
+	{
+		return;
+	}
+
+	if(imGui->NewFrame())
+	{
+		ImGui::ShowDemoWindow();
+		//Console.PropertyDlg.Open(); // TODO: Make dialogues open based on tool mode.
+		Console.PropertyDlg.Draw();
+		Console.ToolsDlg.Draw();
+		Console.ObjectListDlg.Draw(&ownerViewport);
+
+		Console.EditCursor.DrawContextMenu();
+
+		if(ownerViewport.fIsNoOwnerViewport)
+		{
+			std::int32_t x, y;
+			const float scrollbarWidth{18.0f};
+			SDL_GetWindowSizeInPixels(sdlWindow, &x, &y);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0,0});
+			ImGui::PushStyleColor(ImGuiCol_SliderGrab, {0.7f, 0.7f, 0.7f, 0.9f});
+			ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, {0.9f, 0.9f, 0.9f, 1.0f});
+			ImGui::PushStyleColor(ImGuiCol_FrameBgActive, {0.2f, 0.2f, 0.2f, 0.4f});
+			ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, {0.0f, 0.0f, 0.0f, 0.4f});
+			ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.0f, 0.0f, 0.0f, 0.2f});
+			ImGuiWindowFlags scrollBarWindowFlags{ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoSavedSettings};
+
+			if(GBackHgt - ownerViewport.ViewHgt > 0)
+			{
+				ImGui::SetNextWindowPos({float(x - scrollbarWidth), -1.0f});
+				ImGui::SetNextWindowSize({scrollbarWidth, float(y) - scrollbarWidth});
+				ImGui::Begin("VScroll", nullptr, scrollBarWindowFlags);
+				//ScrollV = float(OwnerViewport.ViewY); // TODO: Increase slider length which is dependent on value range. So we could use another value for the range.
+				if(ImGui::VSliderInt("", {scrollbarWidth,float(y) - scrollbarWidth}, &ownerViewport.ViewY, GBackHgt - ownerViewport.ViewHgt, 0, ""))
+				{
+					//OwnerViewport.ViewY = int(ScrollV);
+					ownerViewport.AdjustPosition();
+				}
+				ImGui::End();
+			}
+
+			if(GBackWdt - ownerViewport.ViewWdt > 0)
+			{
+				ImGui::SetNextWindowPos({-1.0f, float(y) - scrollbarWidth});
+				ImGui::SetNextWindowSize({float(x) - scrollbarWidth, scrollbarWidth});
+				ImGui::SetNextItemWidth(float(x) - scrollbarWidth);
+				ImGui::Begin("HScroll", nullptr, scrollBarWindowFlags);
+
+				if(ImGui::SliderInt("", &ownerViewport.ViewX, 0, GBackWdt - ownerViewport.ViewWdt, ""))
+				{
+					ownerViewport.AdjustPosition();
+				}
+				ImGui::End();
+			}
+			//Console.Message(std::format("width {} x{}, height {} y {}", OwnerViewport.ViewWdt, OwnerViewport.ViewX, OwnerViewport.ViewHgt, OwnerViewport.ViewY).c_str());
+			ImGui::PopStyleVar(1);
+			ImGui::PopStyleColor(5);
+		}
+
+		imGui->Render();
+	}
+}
+
+void C4ViewportWindow::HandleMessage(SDL_Event &sdl_event)
+{
+	const float scale{Application.GetScale()};
+
+	if(sdl_event.window.windowID == SDL_GetWindowID(sdlWindow))
+	{
+		switch (sdl_event.type)
+		{
+		case SDL_EVENT_WINDOW_RESIZED :
+			cvp->UpdateOutputSize();
+			break;
+
+		case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+			cvp->pWindow->Close();
+			break;
+
+		// SDL poll event calls this several times when more than file is dropped.
+		case SDL_EVENT_DROP_FILE:
+			// Local mouse position is updated too late so we have to use global mouse coordinates.
+			float globalX, globalY;
+			SDL_GetGlobalMouseState(&globalX, &globalY);
+			int windowX, windowY;
+			SDL_GetWindowPosition(sdlWindow, &windowX, &windowY);
+			cvp->DropFiles(sdl_event.drop.data, static_cast<int32_t>((globalX - windowX) / scale), static_cast<int32_t>((globalY - windowY) / scale));
+			break;
+		}
+	}
+
+	if(SDL_GetMouseFocus() != sdlWindow)
+	{
+		return;
+	}
+
+	// Make sure the cursor stays inside the window when dragging.
+	// This makes interaction with elements close to the window border way smoother (e.g scrollbars)
+	// since mouse events can't accidentally be interrupted when moving outside the window.
+	switch (sdl_event.type)
+	{
+	case SDL_EVENT_MOUSE_BUTTON_UP :
+		SDL_SetWindowMouseGrab(sdlWindow, false);
+		break;
+	case SDL_EVENT_MOUSE_BUTTON_DOWN :
+		SDL_SetWindowMouseGrab(sdlWindow, true);
+		break;
+	}
+
+	if (imGui)
+	{
+		imGui->Select();
+		ImGui_ImplSDL3_ProcessEvent(&sdl_event);
+	}
+
+	ImGuiIO& io{ImGui::GetIO()};
+	if(io.WantCaptureMouse)
+	{
+		return;
+	}
+	// TODO: What is PlayerLock for?
+	switch (sdl_event.type)
+	{
+
+	case SDL_EVENT_KEY_DOWN :
+	{
+		Game.DoKeyboardInput(sdl_event.key.scancode, KEYEV_Down,
+			Application.IsAltDown(),
+			Application.IsControlDown(),
+			Application.IsShiftDown(),
+			false, nullptr);
+		break;
+	}
+	case SDL_EVENT_KEY_UP :
+		Game.DoKeyboardInput(sdl_event.key.scancode, KEYEV_Up,
+			Application.IsAltDown(),
+			Application.IsControlDown(),
+			Application.IsShiftDown(), false, nullptr);
+		break;
+
+	// TODO: Drop Def custom message or alternative implementation
+	// TODO: Reload File custom message or alternative implementation
+
+	}
+
+	if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
+	{
+		switch (sdl_event.type)
+		{
+		case SDL_EVENT_MOUSE_MOTION :
+		{
+			// TODO: Hide Cursor when inside viewport and in play mode.
+			Game.GraphicsSystem.MouseMove(C4MC_Button_None, sdl_event.motion.x, sdl_event.motion.y, Application.GetModifiers(), cvp);
+			break;
+		}
+		case SDL_EVENT_MOUSE_WHEEL :
+		{
+			float x, y;
+			SDL_GetMouseState(&x, &y);
+			Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, sdl_event.button.x, sdl_event.button.y, static_cast<std::int32_t>(sdl_event.wheel.y * 60) << 16, cvp);
+			break;
+		}
+		case SDL_EVENT_MOUSE_BUTTON_UP :
+		case SDL_EVENT_MOUSE_BUTTON_DOWN :
+		{
+			int32_t button;
+			C4ViewportWindow::sdlToC4MCBtn(sdl_event.button, button);
+			Game.GraphicsSystem.MouseMove(button, sdl_event.button.x, sdl_event.button.y, Application.GetModifiers(), cvp);
+			break;
+		}
+		}
+	}
+	else
+	{
+		switch (sdl_event.type)
+		{
+		case SDL_EVENT_MOUSE_MOTION :
+		{
+			float x, y;
+			SDL_GetMouseState(&x, &y);
+			Console.EditCursor.Move(cvp->ViewX + x / scale, cvp->ViewY + y / scale, Application.GetModifiers());
+			break;
+		}
+		case SDL_EVENT_MOUSE_WHEEL :
+		{
+			// TODO: Grade (Brush size) change
+			break;
+		}
+		case SDL_EVENT_MOUSE_BUTTON_UP :
+		case SDL_EVENT_MOUSE_BUTTON_DOWN :
+		{
+			float x, y;
+			SDL_GetMouseState(&x, &y);
+			int32_t button;
+			C4ViewportWindow::sdlToC4MCBtn(sdl_event.button, button);
+			switch (button)
+			{
+			case C4MC_Button_LeftDown:
+				Console.EditCursor.Move(cvp->ViewX + x / scale, cvp->ViewY + y / scale, Application.GetModifiers());
+				Console.EditCursor.LeftButtonDown(Application.IsControlDown());
+				break;
+			case C4MC_Button_LeftUp:
+				Console.EditCursor.LeftButtonUp();
+				break;
+			case C4MC_Button_RightDown:
+				Console.EditCursor.RightButtonDown(Application.IsControlDown());
+				break;
+			case C4MC_Button_RightUp:
+				Console.EditCursor.RightButtonUp();
+				break;
+			case C4MC_Button_MiddleUp:
+				Console.EditCursor.MiddleButtonUp();
+				break;
+			}
+			break;
+		}
+		}
+	}
+}
+
 bool C4Viewport::UpdateOutputSize()
 {
-	if (!pWindow) return false;
+	if (!pWindow)
+	{
+		return false;
+	}
 	// Output size
 	C4Rect rect;
-#ifdef WITH_DEVELOPER_MODE
-	GtkAllocation allocation;
-	gtk_widget_get_allocation(pWindow->drawing_area, &allocation);
-	// Use only size of drawing area without scrollbars
-	rect.x = allocation.x;
-	rect.y = allocation.y;
-	rect.Wdt = allocation.x + allocation.width;
-	rect.Hgt = allocation.y + allocation.height;
-#else
-	if (!pWindow->GetSize(rect)) return false;
-#endif
+	if (!pWindow->GetSize(rect))
+	{
+		return false;
+	}
 	OutX = rect.x; OutY = rect.y;
-	const auto scale = Application.GetScale();
+	const float scale{Application.GetScale()};
 	ViewWdt = static_cast<int32_t>(ceilf(rect.Wdt / scale)); ViewHgt = static_cast<int32_t>(ceilf(rect.Hgt / scale));
-	// Scroll bars
-	ScrollBarsByViewPosition();
 	// Reset menus
 	ResetMenuPositions = true;
 #ifndef USE_CONSOLE
 	// update internal GL size
-	if (pCtx) pCtx->UpdateSize();
+	if (pCtx)
+	{
+		pCtx->UpdateSize();
+	}
 #endif
 	// Done
 	return true;
@@ -970,7 +1159,10 @@ void C4Viewport::DrawMenu(C4FacetEx &cgo)
 	// Player eliminated
 	if (pPlr && pPlr->Eliminated)
 	{
-		Application.DDraw->TextOut((pPlr->Surrendered ? LoadResStr(C4ResStrTableKey::IDS_PLR_SURRENDERED, pPlr->GetName()) : LoadResStr(C4ResStrTableKey::IDS_PLR_ELIMINATED, pPlr->GetName())).c_str(),
+		StdStrBuf newPlayerFormat{LoadResStrV(pPlr->Surrendered ? C4ResStrTableKey::IDS_PLR_SURRENDERED : C4ResStrTableKey::IDS_PLR_ELIMINATED)};
+		newPlayerFormat.Replace("%s", "{}");
+		std::string playerName{pPlr->GetName()};
+		Application.DDraw->TextOut(std::vformat(newPlayerFormat.getData(), std::make_format_args(playerName)).c_str(),
 			Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + cgo.Wdt / 2, cgo.Y + 2 * cgo.Hgt / 3, 0xfaFF0000, ACenter);
 		return;
 	}
@@ -1017,7 +1209,7 @@ void C4Viewport::DrawMenu(C4FacetEx &cgo)
 	cgo.TargetX = iOldTx; cgo.TargetY = iOldTy;
 }
 
-extern int32_t iLastControlSize, iPacketDelay, ScreenRate;
+extern int32_t iLastControlSize, iPacketDelay;
 extern int32_t ControlQueueSize, ControlQueueDataSize;
 
 void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
@@ -1104,7 +1296,10 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 	// Draw overlay
 	C4ST_STARTNEW(OvrStat, "C4Viewport::Draw: Overlay")
 
-	if (!Application.isFullScreen) Console.EditCursor.Draw(cgo);
+	if (!Application.isFullScreen)
+	{
+		Console.EditCursor.Draw(cgo);
+	}
 
 	if (fDrawOverlay) DrawOverlay(cgo);
 
@@ -1113,6 +1308,11 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 		Game.Network.DrawStatus(cgo);
 
 	C4ST_STOP(OvrStat)
+
+	if (fDrawOverlay && !Application.isFullScreen)
+	{
+		pWindow->DrawImGui(*this);
+	}
 
 	// Remove clippers
 	if (fDrawOverlay) Application.DDraw->NoPrimaryClipper();
@@ -1229,12 +1429,19 @@ void C4Viewport::CenterPosition()
 	UpdateViewPosition();
 }
 
+void C4Viewport::FocusPosition(std::int32_t x, std::int32_t y)
+{
+	ViewX = x - (ViewWdt / 2);
+	ViewY = y - (ViewHgt / 2);
+	UpdateViewPosition();
+}
+
 void C4Viewport::UpdateViewPosition()
 {
 	// no-owner viewports should not scroll outside viewing area
 	if (fIsNoOwnerViewport)
 	{
-		if (Application.isFullScreen && GBackWdt < ViewWdt)
+		if (GBackWdt < ViewWdt)
 		{
 			ViewX = (GBackWdt - ViewWdt) / 2;
 		}
@@ -1243,7 +1450,7 @@ void C4Viewport::UpdateViewPosition()
 			ViewX = std::min<int32_t>(ViewX, GBackWdt - ViewWdt);
 			ViewX = std::max<int32_t>(ViewX, 0);
 		}
-		if (Application.isFullScreen && GBackHgt < ViewHgt)
+		if (GBackHgt < ViewHgt)
 		{
 			ViewY = (GBackHgt - ViewHgt) / 2;
 		}
@@ -1346,16 +1553,33 @@ bool C4Viewport::Init(CStdWindow *pParent, CStdApp *pApp, int32_t iPlayer)
 	fIsNoOwnerViewport = (Player == NO_OWNER);
 	// Create window
 	pWindow = new C4ViewportWindow(this);
-	const auto scale = Application.GetScale();
-	const C4Rect bounds{CStdWindow::DefaultBounds.x, CStdWindow::DefaultBounds.y, static_cast<int32_t>(ceilf(400 * scale)), static_cast<int32_t>(ceilf(250 * scale))};
-	if (!pWindow->Init(pApp, (Player == NO_OWNER) ? LoadResStr(C4ResStrTableKey::IDS_CNS_VIEWPORT) : Game.Players.Get(Player)->GetName(), bounds, pParent))
+	const SDL_DisplayMode *sdlDisplayMode{SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay())};
+	std::int32_t width = 512;
+	std::int32_t height = 512;
+	if(sdlDisplayMode)
+	{
+		width = sdlDisplayMode->w;
+		height = sdlDisplayMode->h;
+	}
+	if (!pWindow->Init(pApp, (Player == NO_OWNER) ? LoadResStrV(C4ResStrTableKey::IDS_CNS_VIEWPORT) : Game.Players.Get(Player)->GetName(), C4Rect{500, 200, width - 1000, height - 400}, pParent))
+	{
 		return false;
+	}
+	// Position and size
+	// TODO: This probably doesn't work with wayland
+	//pWindow->RestorePosition(std::format("Viewport {}", Player + 1).c_str(), Config.GetSubkeyPath("Console"));
 	// Updates
 	UpdateOutputSize();
 	// Disable player lock on unowned viewports
-	if (!ValidPlr(Player)) TogglePlayerLock();
+	if (!ValidPlr(Player))
+	{
+		TogglePlayerLock();
+	}
 	// create rendering context
-	if (lpDDraw) pCtx = lpDDraw->CreateContext(pWindow, pApp);
+	if (lpDDraw)
+	{
+		pCtx = lpDDraw->CreateContext(pWindow, pApp);
+	}
 	// Success
 	return true;
 }

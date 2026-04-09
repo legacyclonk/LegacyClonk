@@ -48,15 +48,6 @@ bool SetRegFileClass(const char *szClassRoot,
 	const char *szIconPath, int iIconNum,
 	const char *szContentType);
 
-bool StoreWindowPosition(HWND hwnd,
-	const char *szWindowName,
-	const char *szSubKey,
-	bool fStoreSize = true);
-
-bool RestoreWindowPosition(HWND hwnd,
-	const char *szWindowName,
-	const char *szSubKey);
-
 // config writer
 class StdCompilerConfigWrite : public StdCompiler
 {

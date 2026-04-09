@@ -64,7 +64,8 @@ public:
 
 	virtual void Close() override;
 
-#ifdef _WIN32
+// TODO: Remove unused code
+#if FALSE //def _WIN32
 	bool Init(CStdApp *app, const char *title, const class C4Rect &bounds, CStdWindow *parent = nullptr) override;
 
 	std::pair<DWORD, DWORD> GetWindowStyle() const override { return {WindowStyle, 0}; }
@@ -203,7 +204,7 @@ void FrameDecoration::Draw(C4FacetEx &cgo, C4Rect &rcBounds)
 
 // DialogWindow
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 
 bool DialogWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
 {
@@ -576,7 +577,7 @@ bool Dialog::KeyHotkey(C4KeyCodeEx key)
 	// do hotkey procs for standard alphanumerics only
 	if (key.IsStandardAlphaNumeric())
 	{
-		return OnHotkey(static_cast<char>(TOUPPERIFX11(static_cast<unsigned char>(key.Key))));
+		return OnHotkey(static_cast<char>(C4Strings::ToUpper(static_cast<unsigned char>(key.Key))));
 	}
 
 	return false;

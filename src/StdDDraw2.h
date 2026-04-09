@@ -307,7 +307,8 @@ public:
 	virtual void Clear();
 	virtual void Default();
 	virtual CStdGLCtx *CreateContext(CStdWindow *, CStdApp *) { return nullptr; }
-#ifdef _WIN32
+// TODO: Remove
+#if FALSE //def _WIN32
 	virtual CStdGLCtx *CreateContext(HWND, CStdApp *) { return nullptr; }
 #endif
 	virtual void PageFlip() = 0;
@@ -413,6 +414,9 @@ public:
 	virtual bool RestoreDeviceObjects() = 0; // init/restore device dependent objects
 	virtual bool InvalidateDeviceObjects() = 0; // free device dependent objects
 	virtual bool DeviceReady() = 0; // return whether device exists
+
+	// Developer mode images
+	virtual std::uint32_t LoadPNGFromMemory(const void *data, const std::uint32_t data_size) = 0;
 
 protected:
 	bool StringOut(const char *szText, C4Surface *sfcDest, int iTx, int iTy, uint32_t dwFCol, uint8_t byForm, bool fDoMarkup, CMarkup &Markup, CStdFont *pFont, float fZoom);

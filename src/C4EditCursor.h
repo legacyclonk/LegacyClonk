@@ -21,9 +21,13 @@
 #include "C4ObjectList.h"
 #include "C4Control.h"
 
-#ifdef WITH_DEVELOPER_MODE
-#include <gtk/gtk.h>
-#endif
+
+enum class ConsoleMode
+{
+	Play,
+	Edit,
+	Draw
+};
 
 class C4EditCursor
 {
@@ -34,20 +38,11 @@ public:
 protected:
 	bool fAltWasDown;
 	bool fSelectionChanged;
-	int32_t Mode;
+	ConsoleMode Mode;
 	int32_t X, Y, X2, Y2;
 	bool Hold, DragFrame, DragLine;
 	C4Object *Target, *DropTarget;
-#ifdef _WIN32
-	HMENU hMenu;
-#elif defined(WITH_DEVELOPER_MODE)
-	GtkWidget *menuContext;
-
-	GtkWidget *itemDelete;
-	GtkWidget *itemDuplicate;
-	GtkWidget *itemGrabContents;
-	GtkWidget *itemProperties;
-#endif // _WIN32/WITH_DEVELOPER_MODE
+	ImGuiContext* ContextMenuOpenIn;
 	C4ObjectList Selection;
 
 public:
@@ -57,9 +52,9 @@ public:
 	void ClearPointers(C4Object *pObj);
 	bool ToggleMode();
 	void Draw(C4FacetEx &cgo);
-	int32_t GetMode();
+	ConsoleMode GetMode() const;
 	C4Object *GetTarget();
-	bool SetMode(int32_t iMode);
+	bool SetMode(ConsoleMode mode);
 	bool In(const char *szText);
 	bool Duplicate();
 	bool OpenPropTools();
@@ -73,18 +68,21 @@ public:
 	bool Init();
 	bool EditingOK();
 	C4ObjectList &GetSelection() { return Selection; }
+	void SelectAll();
 	void SetHold(bool fToState) { Hold = fToState; }
 	void OnSelectionChanged();
+	void ToggleTargetSelection(C4Object* Target);
 	bool AltDown();
 	bool AltUp();
+	StdStrBuf GetStatusBarText() const;
+	void DrawContextMenu();
 
 protected:
-	bool UpdateStatusBar();
 	void ApplyToolPicker();
 	void PutContents();
 	void UpdateDropTarget(uint16_t wKeyFlags);
 	void GrabContents();
-	bool DoContextMenu();
+	bool OpenContextMenu();
 	void ApplyToolFill();
 	void ApplyToolRect();
 	void ApplyToolLine();
@@ -94,11 +92,4 @@ protected:
 	void MoveSelection(int32_t iXOff, int32_t iYOff);
 	void EMMoveObject(enum C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj, const C4ObjectList *pObjs = nullptr, const char *szScript = nullptr);
 	void EMControl(enum C4PacketType eCtrlType, class C4ControlPacket *pCtrl);
-
-#ifdef WITH_DEVELOPER_MODE
-	static void OnDelete(GtkWidget *widget, gpointer data);
-	static void OnDuplicate(GtkWidget *widget, gpointer data);
-	static void OnGrabContents(GtkWidget *widget, gpointer data);
-	static void OnProperties(GtkWidget *widget, gpointer data);
-#endif
 };
