@@ -185,6 +185,7 @@ void C4Application::DoInit()
 		}
 		pWindow = &FullScreen;
 		SetDisplayMode(Config.Graphics.UseDisplayMode);
+		FullScreen.CenterMouseInWindow();
 	}
 	else
 	{
