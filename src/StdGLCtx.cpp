@@ -532,22 +532,14 @@ bool CStdGLCtx::PageFlip()
 	return true;
 }
 
-// TODO: Remove
 bool CStdGL::ApplyGammaRampToMonitor(CGammaControl &ramp, bool fForce)
 {
 	return false;
-	//assert(ramp.size == 256);
-	// Removed from SDL3 due to poor support in operating systems.
-	//return SDL_SetWindowGammaRamp(MainCtx.pWindow->sdlWindow, ramp.red, ramp.green, ramp.blue) == 0;
 }
 
-// TODO: Remove
 bool CStdGL::SaveDefaultGammaRampToMonitor(CStdWindow *pWindow)
 {
 	return false;
-	//assert(DefRamp.size == 256);
-	// Removed from SDL3 due to poor support in operating systems.
-	//return SDL_GetWindowGammaRamp(MainCtx.pWindow->sdlWindow, DefRamp.red, DefRamp.green, DefRamp.blue) == 0;
 }
 
 #endif // USE_X11/USE_SDL_MAINLOOP
