@@ -371,6 +371,12 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 {
 	switch (e.type)
 	{
+	case SDL_EVENT_WINDOW_MOUSE_ENTER:
+		SDL_HideCursor();
+		break;
+	case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+		SDL_ShowCursor();
+		break;
 	case SDL_EVENT_TEXT_INPUT :
 	{
 		CharIn(e.text.text);
