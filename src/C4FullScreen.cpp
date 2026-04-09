@@ -318,11 +318,10 @@ void C4FullScreen::HandleMessage(XEvent &e)
 		break;
 	}
 }
-
-#elif defined(USE_SDL_MAINLOOP)
-// SDL version
+#endif
 
 
+#if defined(USE_SDL_MAINLOOP)
 
 #include "StdGL.h"
 
@@ -403,11 +402,8 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 
 	}
 }
+#endif
 
-#endif // _WIN32, USE_X11, USE_SDL_MAINLOOP
-
-// TODO: Remove unused code
-#if 1 // ndef _WIN32
 void C4FullScreen::CharIn(const char *c)
 {
 	if (Game.pGUI)
@@ -415,7 +411,6 @@ void C4FullScreen::CharIn(const char *c)
 		Game.pGUI->CharIn(TextEncodingConverter.Utf8ToClonk(c).c_str());
 	}
 }
-#endif
 
 C4FullScreen::C4FullScreen()
 {
