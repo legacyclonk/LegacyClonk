@@ -21,8 +21,6 @@
 #include "C4ObjectList.h"
 #include "C4Control.h"
 
-#ifdef WITH_DEVELOPER_MODE
-#endif
 
 enum class ConsoleMode
 {
@@ -45,16 +43,6 @@ protected:
 	bool Hold, DragFrame, DragLine;
 	C4Object *Target, *DropTarget;
 	ImGuiContext* ContextMenuOpenIn;
-#ifdef _WIN32
-	HMENU hMenu;
-#elif defined(WITH_DEVELOPER_MODE)
-	GtkWidget *menuContext;
-
-	GtkWidget *itemDelete;
-	GtkWidget *itemDuplicate;
-	GtkWidget *itemGrabContents;
-	GtkWidget *itemProperties;
-#endif // _WIN32/WITH_DEVELOPER_MODE
 	C4ObjectList Selection;
 
 public:
@@ -104,11 +92,4 @@ protected:
 	void MoveSelection(int32_t iXOff, int32_t iYOff);
 	void EMMoveObject(enum C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj, const C4ObjectList *pObjs = nullptr, const char *szScript = nullptr);
 	void EMControl(enum C4PacketType eCtrlType, class C4ControlPacket *pCtrl);
-
-#ifdef WITH_DEVELOPER_MODE
-	static void OnDelete(GtkWidget *widget, gpointer data);
-	static void OnDuplicate(GtkWidget *widget, gpointer data);
-	static void OnGrabContents(GtkWidget *widget, gpointer data);
-	static void OnProperties(GtkWidget *widget, gpointer data);
-#endif
 };

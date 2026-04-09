@@ -26,10 +26,6 @@
 #include <C4Random.h>
 #include <C4Wrappers.h>
 
-#ifdef WITH_DEVELOPER_MODE
-#include <C4Language.h>
-
-#endif
 
 C4EditCursor::C4EditCursor()
 {
@@ -84,33 +80,6 @@ void C4EditCursor::Execute()
 
 bool C4EditCursor::Init()
 {
-	// TODO
-#ifdef _WIN32
-//	if (!(hMenu = LoadMenu(Application.hInstance, MAKEINTRESOURCE(IDR_CONTEXTMENUS))))
-		return true;
-#else // _WIN32
-#ifdef WITH_DEVELOPER_MODE
-	menuContext = gtk_menu_new();
-
-	itemDelete =       gtk_menu_item_new_with_label(LoadResStrUtf8("IDS_MNU_DELETE").getData());
-	itemDuplicate =    gtk_menu_item_new_with_label(LoadResStrUtf8("IDS_MNU_DUPLICATE").getData());
-	itemGrabContents = gtk_menu_item_new_with_label(LoadResStrUtf8("IDS_MNU_CONTENTS").getData());
-	itemProperties =   gtk_menu_item_new_with_label(""); // Set dynamically in DoContextMenu
-
-	gtk_menu_shell_append(GTK_MENU_SHELL(menuContext), itemDelete);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menuContext), itemDuplicate);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menuContext), itemGrabContents);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menuContext), GTK_WIDGET(gtk_separator_menu_item_new()));
-	gtk_menu_shell_append(GTK_MENU_SHELL(menuContext), itemProperties);
-
-	g_signal_connect(G_OBJECT(itemDelete),       "activate", G_CALLBACK(OnDelete),       this);
-	g_signal_connect(G_OBJECT(itemDuplicate),    "activate", G_CALLBACK(OnDuplicate),    this);
-	g_signal_connect(G_OBJECT(itemGrabContents), "activate", G_CALLBACK(OnGrabContents), this);
-	g_signal_connect(G_OBJECT(itemProperties),   "activate", G_CALLBACK(OnProperties),   this);
-
-	gtk_widget_show_all(menuContext);
-#endif // WITH_DEVELOPER_MODe
-#endif // _WIN32
 	return true;
 }
 
@@ -329,27 +298,6 @@ bool C4EditCursor::LeftButtonUp()
 	return true;
 }
 
-#if 0 //def _WIN32
-
-bool SetMenuItemEnable(HMENU hMenu, WORD id, bool fEnable)
-{
-	return EnableMenuItem(hMenu, id, MF_BYCOMMAND | MF_ENABLED | (fEnable ? 0 : MF_GRAYED));
-}
-
-bool SetMenuItemText(HMENU hMenu, WORD id, const char *szText)
-{
-	MENUITEMINFO minfo{};
-	minfo.cbSize = sizeof(minfo);
-	minfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA;
-	minfo.fType = MFT_STRING;
-	minfo.wID = id;
-	minfo.dwTypeData = (char *)szText;
-	minfo.cch = checked_cast<UINT>(SLen(szText));
-	return SetMenuItemInfo(hMenu, id, FALSE, &minfo);
-}
-
-#endif
-
 bool C4EditCursor::RightButtonUp()
 {
 	Target = nullptr;
@@ -491,9 +439,6 @@ void C4EditCursor::Default()
 	Mode = ConsoleMode::Play;
 	X = Y = X2 = Y2 = 0;
 	Target = DropTarget = nullptr;
-#ifdef _WIN32
-	hMenu = nullptr;
-#endif
 	Hold = DragFrame = DragLine = false;
 	Selection.Default();
 	fSelectionChanged = false;
@@ -501,18 +446,11 @@ void C4EditCursor::Default()
 
 void C4EditCursor::Clear()
 {
-#ifdef _WIN32
-	if (hMenu) DestroyMenu(hMenu); hMenu = nullptr;
-#endif
 	Selection.Clear();
 }
 
 bool C4EditCursor::SetMode(const ConsoleMode mode)
 {
-	// Store focus
-#ifdef _WIN32
-	HWND hFocus = GetFocus();
-#endif
 	// No change
 	if (mode == Mode) return true;
 	// Set mode
@@ -536,10 +474,6 @@ bool C4EditCursor::SetMode(const ConsoleMode mode)
 	// Update cursor
 	if (Mode == ConsoleMode::Play) Game.MouseControl.ShowCursor();
 	else Game.MouseControl.HideCursor();
-	// Restore focus
-#ifdef _WIN32
-	SetFocus(hFocus);
-#endif
 	// Done
 	return true;
 }
