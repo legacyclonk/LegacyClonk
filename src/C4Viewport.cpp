@@ -243,60 +243,18 @@ bool C4Viewport::DropFiles(const char *filename, const float positionX, const fl
 	return true;
 }
 
-/*
-void UpdateWindowLayout(HWND hwnd)
-{
-	RECT rect;
-	GetWindowRect(hwnd, &rect);
-	MoveWindow(hwnd, rect.left, rect.top, rect.right - rect.left - 1, rect.bottom - rect.top, TRUE);
-	MoveWindow(hwnd, rect.left, rect.top, rect.right - rect.left,     rect.bottom - rect.top, TRUE);
-}
-*/
-
 bool C4Viewport::TogglePlayerLock()
 {
 	// Disable player lock
 	if (PlayerLock)
 	{
 		PlayerLock = false;
-		//SetWindowLong(pWindow->hWindow, GWL_STYLE, C4ViewportWindowStyle | WS_HSCROLL | WS_VSCROLL);
-		// TODO: Check
-		//UpdateWindowLayout(pWindow->hWindow);
-		ScrollBarsByViewPosition();
 	}
 	// Enable player lock
 	else if (ValidPlr(Player))
 	{
 		PlayerLock = true;
-		//SetWindowLong(pWindow->hWindow, GWL_STYLE, C4ViewportWindowStyle);
-		// TODO: Check
-		//UpdateWindowLayout(pWindow->hWindow);
 	}
-	return true;
-}
-
-bool C4Viewport::ScrollBarsByViewPosition()
-{
-	if (PlayerLock) return false;
-	// TODO: Still needed?
-	/*
-	SCROLLINFO scroll;
-	scroll.cbSize = sizeof(SCROLLINFO);
-	// Vertical
-	scroll.fMask = SIF_ALL;
-	scroll.nMin = 0;
-	scroll.nMax = GBackHgt;
-	scroll.nPage = ViewHgt;
-	scroll.nPos = ViewY;
-	//SetScrollInfo(pWindow-, SB_VERT, &scroll, TRUE);
-	// Horizontal
-	scroll.fMask = SIF_ALL;
-	scroll.nMin = 0;
-	scroll.nMax = GBackWdt;
-	scroll.nPage = ViewWdt;
-	scroll.nPos = ViewX;
-	*/
-	//SetScrollInfo(pWindow->hWindow, SB_HORZ, &scroll, TRUE);
 	return true;
 }
 
@@ -1026,8 +984,6 @@ bool C4Viewport::UpdateOutputSize()
 	OutX = rect.x; OutY = rect.y;
 	const float scale{Application.GetScale()};
 	ViewWdt = static_cast<int32_t>(ceilf(rect.Wdt / scale)); ViewHgt = static_cast<int32_t>(ceilf(rect.Hgt / scale));
-	// Scroll bars
-	ScrollBarsByViewPosition();
 	// Reset menus
 	ResetMenuPositions = true;
 #ifndef USE_CONSOLE

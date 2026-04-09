@@ -74,7 +74,6 @@ public:
 	float ScrollH;
 	float ScrollV;
 
-	//static LRESULT APIENTRY WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 private:
 	static C4Viewport *GetViewport(SDL_Window *window);
 	struct ViewportHandle
@@ -140,8 +139,6 @@ protected:
 	void BlitOutput();
 	void AdjustPosition();
 	bool UpdateOutputSize();
-	bool ViewPositionByScrollBars();
-	bool ScrollBarsByViewPosition();
 
 	friend class C4ViewportWindow;
 };
