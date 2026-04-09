@@ -293,7 +293,10 @@ C4GamePadControl::C4GamePadControl()
 		throw;
 	}
 	SDL_JoystickEventsEnabled();
-	if (!SDL_HasJoystick()) LogNTr("No Gamepad found");
+	if (!SDL_HasJoystick())
+	{
+		LogNTr("No Gamepad found");
+	}
 }
 
 C4GamePadControl::~C4GamePadControl() {}
@@ -436,9 +439,9 @@ void C4GamePadControl::FeedEvent(SDL_Event &event)
 
 int C4GamePadControl::GetGamePadCount()
 {
-	std::int32_t JoystickNum = 0;
-	SDL_GetJoysticks(&JoystickNum);
-	return JoystickNum;
+	std::int32_t joystickNum{0};
+	SDL_GetJoysticks(&joystickNum);
+	return joystickNum;
 }
 
 C4GamePadOpener::C4GamePadOpener(int iGamepad)
