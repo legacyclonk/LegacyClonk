@@ -47,7 +47,7 @@ C4MusicSystem::C4MusicSystem()
 void C4MusicSystem::Execute()
 {
 	if (!Application.AudioSystem) return;
-	
+
 	if (!Application.AudioSystem->IsMusicPlaying())
 	{
 		ClearPlayingSong();
