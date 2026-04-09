@@ -110,6 +110,7 @@ void CStdWindow::SetDisplayMode(const DisplayMode mode)
 	if (mode == DisplayMode::Fullscreen)
 	{
 		ThrowIfFailed("SDL_SetWindowFullscreen", !SDL_SetWindowFullscreen(sdlWindow, true));
+		SDL_SetWindowPosition(sdlWindow, 0, 0);
 	}
 	else
 	{
