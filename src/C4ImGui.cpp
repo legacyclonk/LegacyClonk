@@ -172,31 +172,3 @@ void C4ImGui::SetStyle()
 	colors[ImGuiCol_ScrollbarGrab]          = ImVec4(0.27f, 0.3f, 0.34f, 1.00f);
 	// TODO: Add more styling
 }
-
-// TODO: Remove unused code
-/*
-#ifdef _WIN32
-bool C4ImGui::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-	const auto select = SelectTemporary();
-	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
-	{
-		return true;
-	}
-
-	if (msg >= WM_KEYFIRST && msg <= WM_KEYLAST && WantsKeyboard())
-	{
-		return true;
-	}
-
-	if (msg >= WM_MOUSEFIRST && msg <= WM_MOUSELAST && WantsMouse())
-	{
-		return true;
-	}
-
-	return false;
-}
-#endif
-*/
