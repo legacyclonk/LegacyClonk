@@ -429,18 +429,40 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 		break;
 
 	case SDL_EVENT_WINDOW_RESIZED :
+	{
+
 		int width, height;
 		SDL_GetWindowSizeInPixels(sdlWindow, &width, &height);
-		Application.SetResolution(width, height);
+		if (width != 0 && height != 0)
+		{
+			Application.SetResolution(width, height);
+		}
 		break;
+	}
 	case SDL_EVENT_WINDOW_MINIMIZED :
 	case SDL_EVENT_WINDOW_HIDDEN :
+	{
+		const auto oldActive = Application.Active;
 		Application.Active = false;
+
+		if (Application.DDraw && oldActive)
+		{
+			Application.DDraw->InvalidateDeviceObjects();
+		}
 		break;
+	}
 	case SDL_EVENT_WINDOW_SHOWN :
 	case SDL_EVENT_WINDOW_EXPOSED :
+	{
+		const auto oldActive = Application.Active;
 		Application.Active = true;
+
+		if (Application.DDraw && !oldActive)
+		{
+			Application.DDraw->RestoreDeviceObjects();
+		}
 		break;
+	}
 
 	}
 }
