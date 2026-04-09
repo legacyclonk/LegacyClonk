@@ -83,7 +83,7 @@ bool C4InteractiveThread::PushEvent(C4InteractiveEventType eEvent, std::any data
 	pLastEvent->Next = pEvent;
 	pLastEvent = pEvent;
 	PushLock.Clear();
-#if defined(_WIN32)
+#ifdef _WIN32
 	// post message to main thread
 	try
 	{
