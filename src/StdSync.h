@@ -27,7 +27,7 @@
 #include <chrono>
 #include <condition_variable>
 
-#if !defined(_WIN32)
+#ifndef _WIN32
 #include <ranges>
 #include <span>
 
@@ -38,7 +38,7 @@ namespace StdSync
 {
 	static inline constexpr auto Infinite = std::numeric_limits<std::uint32_t>::max();
 
-#if !defined(_WIN32)
+#ifndef _WIN32
 	template<typename T> requires std::ranges::contiguous_range<T> && std::ranges::sized_range<T>
 	int Poll(T &&fds, const std::uint32_t timeout) noexcept
 	{
