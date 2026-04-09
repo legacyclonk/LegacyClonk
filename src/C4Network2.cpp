@@ -469,7 +469,7 @@ bool C4Network2::DoLobby()
 	{
 		// console lobby - update console
 		// TODO: imgui
-		//if (Console.Active) Console.UpdateMenus();
+		if (Console.Active) Console.UpdateMenus();
 		// init lobby countdown if specified
 		if (Game.iLobbyTimeout) StartLobbyCountdown(Game.iLobbyTimeout);
 		// do console lobby

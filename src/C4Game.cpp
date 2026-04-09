@@ -3518,11 +3518,8 @@ C4Player *C4Game::JoinPlayer(const char *szFilename, int32_t iAtClient, const ch
 	if (pPlr->LocalControl) CreateViewport(pPlr->Number);
 	// Check fullscreen viewports
 	FullScreen.ViewportCheck();
-
-	// TODO
 	// Update menus
-	//Console.UpdateMenus();
-
+	Console.UpdateMenus();
 	// Append player name to list of session player names (no duplicates)
 	if (!SIsModule(PlayerNames.getData(), pPlr->GetName()))
 	{

@@ -65,6 +65,7 @@ public:
 	void UpdateHaltCtrls(bool fHalt);
 	bool OpenGame(const char *szCmdLine = nullptr);
 	bool TogglePause(); // key callpack: pause
+	void UpdateMenus() {};
 
 protected:
 	void CloseGame();

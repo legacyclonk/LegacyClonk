@@ -563,10 +563,8 @@ void C4ControlClientJoin::Execute(const std::shared_ptr<spdlog::logger> &) const
 	// lobby callback
 	C4GameLobby::MainDlg *pLobby = Game.Network.GetLobby();
 	if (pLobby) pLobby->OnClientJoin(pClient);
-
-	// TODO: imgui
 	// console callback
-	//if (Console.Active) Console.UpdateMenus();
+	if (Console.Active) Console.UpdateMenus();
 }
 
 void C4ControlClientJoin::CompileFunc(StdCompiler *pComp)
@@ -674,10 +672,8 @@ void C4ControlClientRemove::Execute(const std::shared_ptr<spdlog::logger> &) con
 	if (pLobby && Game.pGUI) pLobby->OnClientPart(pClient);
 	// player list callback
 	Game.Network.Players.OnClientPart(pClient);
-
-	// TODO: imgui
 	// console callback
-	//if (Console.Active) Console.UpdateMenus();
+	if (Console.Active) Console.UpdateMenus();
 
 	// delete
 	delete pClient;
