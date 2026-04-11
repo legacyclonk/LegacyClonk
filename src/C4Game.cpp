@@ -1024,7 +1024,9 @@ bool C4Game::Pause()
 	if (Network.isEnabled())
 	{
 		// Vote?
-		if (Network.IsVotingEnabled() && !Evaluated)
+		// Currently only in league as repeated pausing / unpausing is a workaround
+		// against network games freezing up
+		if (Game.Parameters.isLeague() && !Evaluated)
 		{
 			Network.Vote(VT_Pause, true, true);
 			return false;
