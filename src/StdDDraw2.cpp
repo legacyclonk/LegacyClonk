@@ -1220,10 +1220,10 @@ void CStdDDraw::DrawFrameDw(C4Surface *sfcDest, int x1, int y1, int x2, int y2, 
 	DrawLineDw(sfcDest, static_cast<float>(x1), static_cast<float>(y2), static_cast<float>(x1), static_cast<float>(y1), dwClr);
 }
 
-void CStdDDraw::DrawCircleOutline(C4Surface *sfcDest, int32_t x1, int32_t y1, int32_t r, uint8_t byCol, bool half, float additionalAngleRad)
+void CStdDDraw::DrawCircleOutline(C4Surface *sfcDest, const int32_t x1, const int32_t y1, const int32_t r, const uint8_t byCol, const bool half, const float additionalAngleRad)
 {
-	std::int32_t resolution {static_cast<std::int32_t>(std::round(6.0f * static_cast<float>(r) / 4.0f))};
-	std::int32_t resolutionClamped {std::clamp(resolution, 12, 32)};
+	const std::int32_t resolution {static_cast<std::int32_t>(std::round(6.0f * static_cast<float>(r) / 4.0f))};
+	const std::int32_t resolutionClamped {std::clamp(resolution, 12, 32)};
 
 	for (std::int32_t index {0}; index < static_cast<std::int32_t>(std::round(static_cast<float>(resolutionClamped) / (half ? 2.0f : 1.0f))); ++index)
 	{
@@ -1238,7 +1238,7 @@ void CStdDDraw::DrawCircleOutline(C4Surface *sfcDest, int32_t x1, int32_t y1, in
 	}
 }
 
-void CStdDDraw::DrawCapsuleOutline(C4Surface *sfcDest, int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t r, uint8_t byCol)
+void CStdDDraw::DrawCapsuleOutline(C4Surface *sfcDest, const int32_t x1, const int32_t y1, const int32_t x2, const int32_t y2, const int32_t r, const uint8_t byCol)
 {
 	const float angleRad {-atan2f(static_cast<float>(y1-y2), static_cast<float>(x1-x2))};
 	DrawCircleOutline(sfcDest, x1, y1, r, byCol, true, angleRad);

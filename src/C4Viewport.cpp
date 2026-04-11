@@ -852,19 +852,19 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 
 #endif // WITH_DEVELOPER_MODE/_WIN32
 
-void C4Viewport::IncrementBrushSize(std::int32_t Direction)
+void C4Viewport::IncrementBrushSize(const std::int32_t direction)
 {
 	const std::int32_t PreviousBrushSize {Console.ToolsDlg.grade};
 	if (Game.Landscape.Mode == C4LSC_Exact)
 	{
-		Console.ToolsDlg.ChangeGrade(Direction);
+		Console.ToolsDlg.ChangeGrade(direction);
 	}
 	else
 	{
-		const std::int32_t ZoomHalf {Game.Landscape.MapZoom / 2};
+		const std::int32_t zoomHalf {Game.Landscape.MapZoom / 2};
 		// Snap to grid for static landscapes.
-		const std::int32_t BrushSizeIncrements {Direction * ZoomHalf};
-		Console.ToolsDlg.ChangeGrade(BrushSizeIncrements);
+		const std::int32_t brushSizeIncrements {direction * zoomHalf};
+		Console.ToolsDlg.ChangeGrade(brushSizeIncrements);
 	}
 #ifndef NDEBUG
 	if(PreviousBrushSize != Console.ToolsDlg.Grade)
