@@ -866,10 +866,12 @@ void C4Viewport::IncrementBrushSize(std::int32_t Direction)
 		const std::int32_t BrushSizeIncrements {Direction * ZoomHalf};
 		Console.ToolsDlg.ChangeGrade(BrushSizeIncrements);
 	}
+#ifndef NDEBUG
 	if(PreviousBrushSize != Console.ToolsDlg.Grade)
 	{
 		DebugLog(spdlog::level::info, "Current brush size: {}", Console.ToolsDlg.Grade);
 	}
+#endif
 }
 
 void C4ViewportWindow::Close()
