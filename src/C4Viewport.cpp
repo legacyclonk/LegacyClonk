@@ -854,7 +854,7 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 
 void C4Viewport::IncrementBrushSize(std::int32_t Direction)
 {
-	const std::int32_t PreviousBrushSize {Console.ToolsDlg.Grade};
+	const std::int32_t PreviousBrushSize {Console.ToolsDlg.grade};
 	if (Game.Landscape.Mode == C4LSC_Exact)
 	{
 		Console.ToolsDlg.ChangeGrade(Direction);

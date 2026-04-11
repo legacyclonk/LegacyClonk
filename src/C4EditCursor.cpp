@@ -69,7 +69,7 @@ void C4EditCursor::Execute()
 		break;
 
 	case ConsoleMode::Draw:
-		switch (Console.ToolsDlg.Tool)
+		switch (Console.ToolsDlg.tool)
 		{
 		case ToolMode::Fill:
 			if (holdLeft) if (!Game.HaltCount) if (Console.Editing) ApplyToolFill();
@@ -178,7 +178,7 @@ bool C4EditCursor::Move(C4Viewport *const cvp, int32_t iX, int32_t iY, uint16_t 
 		break;
 
 	case ConsoleMode::Draw:
-		switch (Console.ToolsDlg.Tool)
+		switch (Console.ToolsDlg.tool)
 		{
 		case ToolMode::Brush:
 			if (holdLeft) ApplyToolBrush();
@@ -272,7 +272,7 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 		break;
 
 	case ConsoleMode::Draw:
-		switch (Console.ToolsDlg.Tool)
+		switch (Console.ToolsDlg.tool)
 		{
 		case ToolMode::Brush: ApplyToolBrush(); break;
 		case ToolMode::Line: dragLine  = true; X2 = X; Y2 = Y; break;
@@ -325,7 +325,7 @@ bool C4EditCursor::LeftButtonUp()
 		break;
 
 	case ConsoleMode::Draw:
-		switch (Console.ToolsDlg.Tool)
+		switch (Console.ToolsDlg.tool)
 		{
 		case ToolMode::Line:
 			if (dragLine) ApplyToolLine();
@@ -487,7 +487,7 @@ void C4EditCursor::Draw(C4FacetEx &cgo)
 		{
 			std::int32_t screenPosX1 {viewSpaceX};
 			std::int32_t screenPosY1 {viewSpaceY};
-			std::int32_t radius {pTools->Grade};
+			std::int32_t radius {pTools->grade};
 			const std::int32_t viewportOffsetX {X - viewSpaceX};
 			const std::int32_t viewportOffsetY {Y - viewSpaceY};
 			std::int32_t screenPosX2 {X2 - viewportOffsetX};
@@ -502,9 +502,9 @@ void C4EditCursor::Draw(C4FacetEx &cgo)
 				screenPosX2 = std::round(X2 / zoom) * zoom - (viewportOffsetX);
 				screenPosY2 = std::round(Y2 / zoom) * zoom - (viewportOffsetY);
 
-				radius = pTools->Grade + ((pTools->Grade / (zoom / 2)) - 1) * (zoom / 2);
+				radius = pTools->grade + ((pTools->grade / (zoom / 2)) - 1) * (zoom / 2);
 
-				if(Console.ToolsDlg.SelectedTool == ToolMode::Brush || Console.ToolsDlg.SelectedTool == ToolMode::Line)
+				if(Console.ToolsDlg.selectedTool == ToolMode::Brush || Console.ToolsDlg.selectedTool == ToolMode::Line)
 				{
 					// Drawn circles are offset to the left when the radius is greater than one grid unit.
 					screenPosX1 += (radius > zoom / 2 ? 0 : zoom / 2);
@@ -515,7 +515,7 @@ void C4EditCursor::Draw(C4FacetEx &cgo)
 					screenPosY2 += zoom / 2;
 				}
 			}
-			switch (Console.ToolsDlg.SelectedTool)
+			switch (Console.ToolsDlg.selectedTool)
 			{
 			case ToolMode::Brush:
 				Application.DDraw->DrawCircleOutline(cgo.Surface, screenPosX1, screenPosY1, radius, CWhite);
@@ -703,7 +703,7 @@ void C4EditCursor::ApplyToolBrush()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Brush, Game.Landscape.Mode, X, Y, 0, 0, pTools->Grade, !!pTools->ModeIFT, pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Brush, Game.Landscape.Mode, X, Y, 0, 0, pTools->grade, !!pTools->modeIft, pTools->material, pTools->texture));
 }
 
 void C4EditCursor::ApplyToolLine()
@@ -711,7 +711,7 @@ void C4EditCursor::ApplyToolLine()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Line, Game.Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Line, Game.Landscape.Mode, X, Y, X2, Y2, pTools->grade, !!pTools->modeIft, pTools->material, pTools->texture));
 }
 
 void C4EditCursor::ApplyToolRect()
@@ -719,7 +719,7 @@ void C4EditCursor::ApplyToolRect()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Rect, Game.Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Rect, Game.Landscape.Mode, X, Y, X2, Y2, pTools->grade, !!pTools->modeIft, pTools->material, pTools->texture));
 }
 
 void C4EditCursor::ApplyToolFill()
@@ -727,7 +727,7 @@ void C4EditCursor::ApplyToolFill()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Fill, Game.Landscape.Mode, X, Y, 0, Y2, pTools->Grade, false, pTools->Material));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Fill, Game.Landscape.Mode, X, Y, 0, Y2, pTools->grade, false, pTools->material));
 }
 
 bool C4EditCursor::DoContextMenu()

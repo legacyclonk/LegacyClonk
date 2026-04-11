@@ -119,11 +119,11 @@ public:
 	static void OnGrade(GtkWidget *widget, gpointer data);
 	static void OnWindowHide(GtkWidget *widget, gpointer data);
 #endif
-	ToolMode Tool, SelectedTool;
-	int32_t Grade;
-	bool ModeIFT;
-	char Material[C4M_MaxName + 1];
-	char Texture[C4M_MaxName + 1];
+	ToolMode tool, selectedTool;
+	int32_t grade;
+	bool modeIft;
+	char material[C4M_MaxName + 1];
+	char texture[C4M_MaxName + 1];
 
 protected:
 #ifdef _WIN32
@@ -152,7 +152,7 @@ public:
 	bool ToggleTool();
 	bool SetLandscapeMode(int32_t iMode, bool fThroughControl = false);
 	bool SetIFT(bool fIFT);
-	bool ToggleIFT() { return !!SetIFT(!ModeIFT); }
+	bool ToggleIFT() { return !!SetIFT(!modeIft); }
 	bool SelectTexture(const char *szTexture);
 	bool SelectMaterial(const char *szMaterial);
 	void SetAlternateTool();

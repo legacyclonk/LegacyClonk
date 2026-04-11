@@ -418,11 +418,11 @@ void C4ToolsDlg::Default()
 	hbox = nullptr;
 #endif
 	Active = false;
-	Tool = SelectedTool = ToolMode::Brush;
-	Grade = C4ToolsDlg::GradeDefault;
-	ModeIFT = true;
-	SCopy("Earth", Material);
-	SCopy("Rough", Texture);
+	tool = selectedTool = ToolMode::Brush;
+	grade = C4ToolsDlg::GradeDefault;
+	modeIft = true;
+	SCopy("Earth", material);
+	SCopy("Rough", texture);
 }
 
 void C4ToolsDlg::Clear()
@@ -438,8 +438,8 @@ void C4ToolsDlg::Clear()
 
 bool C4ToolsDlg::SetTool(ToolMode iTool, bool fTemp)
 {
-	Tool = iTool;
-	if (!fTemp) SelectedTool = Tool;
+	tool = iTool;
+	if (!fTemp) selectedTool = tool;
 	UpdateToolCtrls();
 	UpdatePreview();
 	return true;
@@ -448,15 +448,15 @@ bool C4ToolsDlg::SetTool(ToolMode iTool, bool fTemp)
 void C4ToolsDlg::UpdateToolCtrls()
 {
 #ifdef _WIN32
-	SendDlgItemMessage(hDialog, IDC_BUTTONBRUSH,  BM_SETSTATE, (Tool == ToolMode::Brush),  0);
+	SendDlgItemMessage(hDialog, IDC_BUTTONBRUSH,  BM_SETSTATE, (tool == ToolMode::Brush),  0);
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONBRUSH));
-	SendDlgItemMessage(hDialog, IDC_BUTTONLINE,   BM_SETSTATE, (Tool == ToolMode::Line),   0);
+	SendDlgItemMessage(hDialog, IDC_BUTTONLINE,   BM_SETSTATE, (tool == ToolMode::Line),   0);
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONLINE));
-	SendDlgItemMessage(hDialog, IDC_BUTTONRECT,   BM_SETSTATE, (Tool == ToolMode::Rect),   0);
+	SendDlgItemMessage(hDialog, IDC_BUTTONRECT,   BM_SETSTATE, (tool == ToolMode::Rect),   0);
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONRECT));
-	SendDlgItemMessage(hDialog, IDC_BUTTONFILL,   BM_SETSTATE, (Tool == ToolMode::Fill),   0);
+	SendDlgItemMessage(hDialog, IDC_BUTTONFILL,   BM_SETSTATE, (tool == ToolMode::Fill),   0);
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONFILL));
-	SendDlgItemMessage(hDialog, IDC_BUTTONPICKER, BM_SETSTATE, (Tool == ToolMode::Picker), 0);
+	SendDlgItemMessage(hDialog, IDC_BUTTONPICKER, BM_SETSTATE, (tool == ToolMode::Picker), 0);
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONPICKER));
 #elif defined(WITH_DEVELOPER_MODE)
 	g_signal_handler_block(brush,  handlerBrush);
@@ -486,7 +486,7 @@ void C4ToolsDlg::InitMaterialCtrls()
 	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(_CRT_WIDE(C4TLS_MatSky)));
 	for (int32_t cnt = 0; cnt < Game.Material.Num; cnt++)
 		SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(Game.Material.Map[cnt].Name).c_str()));
-	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(Material).c_str()));
+	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(material).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 	GtkListStore *list = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(materials)));
 
@@ -519,7 +519,7 @@ void C4ToolsDlg::UpdateTextures()
 	if (Game.Landscape.Mode != C4LSC_Exact)
 		for (cnt = 0; (szTexture = Game.TextureMap.GetTexture(cnt)); cnt++)
 		{
-			if (!Game.TextureMap.GetIndex(Material, szTexture, false))
+			if (!Game.TextureMap.GetIndex(material, szTexture, false))
 			{
 				fAnyEntry = true;
 #ifdef _WIN32
@@ -543,7 +543,7 @@ void C4ToolsDlg::UpdateTextures()
 	for (cnt = 0; (szTexture = Game.TextureMap.GetTexture(cnt)); cnt++)
 	{
 		// Current material-texture valid? Always valid for exact mode
-		if (Game.TextureMap.GetIndex(Material, szTexture, false) || Game.Landscape.Mode == C4LSC_Exact)
+		if (Game.TextureMap.GetIndex(material, szTexture, false) || Game.Landscape.Mode == C4LSC_Exact)
 		{
 #ifdef _WIN32
 			SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(szTexture).c_str()));
@@ -554,7 +554,7 @@ void C4ToolsDlg::UpdateTextures()
 	}
 	// reselect current
 #ifdef _WIN32
-	SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(Texture).c_str()));
+	SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(texture).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 	g_signal_handler_block(textures, handlerTextures);
 	SelectComboBoxText(GTK_COMBO_BOX(textures), Texture);
@@ -564,7 +564,7 @@ void C4ToolsDlg::UpdateTextures()
 
 void C4ToolsDlg::SetMaterial(const char *szMaterial)
 {
-	SCopy(szMaterial, Material, C4M_MaxName);
+	SCopy(szMaterial, material, C4M_MaxName);
 	AssertValidTexture();
 	EnableControls();
 	if (Game.Landscape.Mode == C4LSC_Static) UpdateTextures();
@@ -578,7 +578,7 @@ void C4ToolsDlg::SetTexture(const char *szTexture)
 	{
 		// ensure correct texture is in dlg
 #ifdef _WIN32
-		SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(Texture).c_str()));
+		SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(texture).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 		g_signal_handler_block(textures, handlerTextures);
 		SelectComboBoxText(GTK_COMBO_BOX(textures), Texture);
@@ -586,13 +586,13 @@ void C4ToolsDlg::SetTexture(const char *szTexture)
 #endif
 		return;
 	}
-	SCopy(szTexture, Texture, C4M_MaxName);
+	SCopy(szTexture, texture, C4M_MaxName);
 	UpdatePreview();
 }
 
 bool C4ToolsDlg::SetIFT(bool fIFT)
 {
-	if (fIFT) ModeIFT = 1; else ModeIFT = 0;
+	if (fIFT) modeIft = 1; else modeIft = 0;
 	UpdateIFTControls();
 	UpdatePreview();
 	return true;
@@ -637,7 +637,7 @@ void C4ToolsDlg::UpdatePreview()
 	CPattern Pattern1;
 	CPattern Pattern2;
 	// Sky material: sky as pattern only
-	if (SEqual(Material, C4TLS_MatSky))
+	if (SEqual(material, C4TLS_MatSky))
 	{
 		Pattern1.SetColors(nullptr, nullptr);
 		Pattern1.Set(Game.Landscape.Sky.Surface, 0, false);
@@ -645,9 +645,9 @@ void C4ToolsDlg::UpdatePreview()
 	// Material-Texture
 	else
 	{
-		bCol = Mat2PixColDefault(Game.Material.Get(Material));
+		bCol = Mat2PixColDefault(Game.Material.Get(material));
 		// Get/Create TexMap entry
-		uint8_t iTex = Game.TextureMap.GetIndex(Material, Texture, true);
+		uint8_t iTex = Game.TextureMap.GetIndex(material, texture, true);
 		if (iTex)
 		{
 			// Define texture pattern
@@ -673,7 +673,7 @@ void C4ToolsDlg::UpdatePreview()
 #endif
 		Application.DDraw->DrawPatternedCircle(surfacePreview.get(),
 			previewWidth / 2, previewHeight / 2,
-			Grade,
+			grade,
 			bCol, Pattern1, Pattern2, *Game.Landscape.GetPal());
 
 	Application.DDraw->AttachPrimaryPalette(surfacePreview.get());
@@ -716,7 +716,7 @@ void C4ToolsDlg::InitGradeCtrl()
 	SendMessage(hwndTrack, TBM_SETLINESIZE, 0, 1);
 	SendMessage(hwndTrack, TBM_SETRANGE, FALSE,
 		MAKELONG(C4ToolsDlg::GradeMin, C4ToolsDlg::GradeMax));
-	SendMessage(hwndTrack, TBM_SETPOS, TRUE, C4ToolsDlg::GradeMax - Grade);
+	SendMessage(hwndTrack, TBM_SETPOS, TRUE, C4ToolsDlg::GradeMax - grade);
 	UpdateWindow(hwndTrack);
 #elif defined(WITH_DEVELOPER_MODE)
 	if (!hbox) return;
@@ -733,11 +733,11 @@ bool C4ToolsDlg::SetGrade(int32_t iGrade)
 {
 	if(Game.Landscape.Mode == C4LSC_Exact)
 	{
-		Grade = BoundBy(iGrade, C4ToolsDlg::GradeMin, C4ToolsDlg::GradeMax);
+		grade = BoundBy(iGrade, C4ToolsDlg::GradeMin, C4ToolsDlg::GradeMax);
 	}
 	else
 	{
-		Grade = BoundBy(iGrade - ((iGrade) % (Game.Landscape.MapZoom / 2)), Game.Landscape.MapZoom / 2, C4ToolsDlg::GradeMax);
+		grade = BoundBy(iGrade - ((iGrade) % (Game.Landscape.MapZoom / 2)), Game.Landscape.MapZoom / 2, C4ToolsDlg::GradeMax);
 	}
 	UpdatePreview();
 	return true;
@@ -745,7 +745,7 @@ bool C4ToolsDlg::SetGrade(int32_t iGrade)
 
 bool C4ToolsDlg::ChangeGrade(int32_t iChange)
 {
-	std::int32_t iGrade {Grade + iChange};
+	std::int32_t iGrade {grade + iChange};
 	SetGrade(iGrade);
 	InitGradeCtrl();
 	return true;
@@ -783,9 +783,9 @@ void C4ToolsDlg::UpdateIFTControls()
 {
 #ifdef _WIN32
 	if (!hDialog) return;
-	SendDlgItemMessage(hDialog, IDC_BUTTONNOIFT, BM_SETSTATE, (ModeIFT == 0), 0);
+	SendDlgItemMessage(hDialog, IDC_BUTTONNOIFT, BM_SETSTATE, (modeIft == 0), 0);
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONNOIFT));
-	SendDlgItemMessage(hDialog, IDC_BUTTONIFT,   BM_SETSTATE, (ModeIFT == 1), 0);
+	SendDlgItemMessage(hDialog, IDC_BUTTONIFT,   BM_SETSTATE, (modeIft == 1), 0);
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONIFT));
 #elif defined(WITH_DEVELOPER_MODE)
 	if (!hbox) return;
@@ -871,7 +871,7 @@ void C4ToolsDlg::UpdateLandscapeModeCtrls()
 
 bool C4ToolsDlg::ToggleTool()
 {
-	SetTool(static_cast<ToolMode>((static_cast<std::int32_t>(Tool) + 1) % 4), false);
+	SetTool(static_cast<ToolMode>((static_cast<std::int32_t>(tool) + 1) % 4), false);
 	return true;
 }
 
@@ -898,7 +898,7 @@ bool C4ToolsDlg::SetLandscapeMode(int32_t iMode, bool fThroughControl)
 			Game.Landscape.MapToLandscape();
 	// Assert valid tool
 	if (iMode != C4LSC_Exact)
-		if (SelectedTool == ToolMode::Fill)
+		if (selectedTool == ToolMode::Fill)
 			SetTool(ToolMode::Brush, false);
 	// Update controls
 	UpdateLandscapeModeCtrls();
@@ -932,9 +932,9 @@ void C4ToolsDlg::EnableControls()
 	EnableWindow(GetDlgItem(hDialog, IDC_BUTTONIFT),      (iLandscapeMode >= C4LSC_Static));
 	EnableWindow(GetDlgItem(hDialog, IDC_BUTTONNOIFT),    (iLandscapeMode >= C4LSC_Static));
 	EnableWindow(GetDlgItem(hDialog, IDC_COMBOMATERIAL),  (iLandscapeMode >= C4LSC_Static));
-	EnableWindow(GetDlgItem(hDialog, IDC_COMBOTEXTURE),   (iLandscapeMode >= C4LSC_Static) && !SEqual(Material, C4TLS_MatSky));
+	EnableWindow(GetDlgItem(hDialog, IDC_COMBOTEXTURE),   (iLandscapeMode >= C4LSC_Static) && !SEqual(material, C4TLS_MatSky));
 	EnableWindow(GetDlgItem(hDialog, IDC_STATICMATERIAL), (iLandscapeMode >= C4LSC_Static));
-	EnableWindow(GetDlgItem(hDialog, IDC_STATICTEXTURE),  (iLandscapeMode >= C4LSC_Static) && !SEqual(Material, C4TLS_MatSky));
+	EnableWindow(GetDlgItem(hDialog, IDC_STATICTEXTURE),  (iLandscapeMode >= C4LSC_Static) && !SEqual(material, C4TLS_MatSky));
 	EnableWindow(GetDlgItem(hDialog, IDC_SLIDERGRADE),    (iLandscapeMode >= C4LSC_Static));
 	EnableWindow(GetDlgItem(hDialog, IDC_PREVIEW),        (iLandscapeMode >= C4LSC_Static));
 #elif defined(WITH_DEVELOPER_MODE)
@@ -980,14 +980,14 @@ void C4ToolsDlg::AssertValidTexture()
 	// Static map mode only
 	if (Game.Landscape.Mode != C4LSC_Static) return;
 	// Ignore if sky
-	if (SEqual(Material, C4TLS_MatSky)) return;
+	if (SEqual(material, C4TLS_MatSky)) return;
 	// Current material-texture valid
-	if (Game.TextureMap.GetIndex(Material, Texture, false)) return;
+	if (Game.TextureMap.GetIndex(material, texture, false)) return;
 	// Find valid material-texture
 	const char *szTexture;
 	for (int32_t iTexture = 0; (szTexture = Game.TextureMap.GetTexture(iTexture)); iTexture++)
 	{
-		if (Game.TextureMap.GetIndex(Material, szTexture, false))
+		if (Game.TextureMap.GetIndex(material, szTexture, false))
 		{
 			SelectTexture(szTexture); return;
 		}
@@ -1030,7 +1030,7 @@ void C4ToolsDlg::SetAlternateTool()
 void C4ToolsDlg::ResetAlternateTool()
 {
 	// reset tool to selected tool in case alternate tool was set
-	SetTool(SelectedTool, true);
+	SetTool(selectedTool, true);
 }
 
 #ifdef WITH_DEVELOPER_MODE
