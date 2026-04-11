@@ -337,6 +337,7 @@ public:
 	void OpenVoteDialog();
 	void OpenSurrenderDialog(C4ControlVoteType eType, int32_t iData);
 	void OnVoteDialogClosed();
+	bool IsVotingEnabled() const;
 
 	// lobby countdown
 	void StartLobbyCountdown(int32_t iCountdownTime);

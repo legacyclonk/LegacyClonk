@@ -240,6 +240,15 @@ void C4ControlSet::Execute(const std::shared_ptr<spdlog::logger> &) const
 			Game.Network.InvalidateReference();
 		break;
 
+	case C4CVT_Vote:
+		// host only
+		if (!HostControl()) break;
+
+		if (!Game.Network.isEnabled() || Game.Parameters.isLeague()) break;
+
+		Game.Parameters.Vote = !!iData;
+		break;
+
 	case C4CVT_None:
 		assert(!"C4ControlSet of type C4CVT_None");
 		break;

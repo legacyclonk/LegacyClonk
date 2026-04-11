@@ -151,6 +151,9 @@ public:
 	// Allow debug mode?
 	bool AllowDebug;
 
+	// Allow voting?
+	bool Vote;
+
 	// Scenario title
 	ValidatedStdStrBuf<C4InVal::VAL_NameExNoEmpty> ScenarioTitle;
 

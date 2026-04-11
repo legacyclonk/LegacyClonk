@@ -573,8 +573,8 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 				Log(C4ResStrTableKey::IDS_MSG_CMD_NOCLIENT, pCmdPar);
 				return false;
 			}
-			// league: Kick needs voting
-			if (Game.Parameters.isLeague() && Game.Players.GetAtClient(pClient->getID()))
+			// votes: Kick needs voting
+			if (Game.Network.IsVotingEnabled() && Game.Players.GetAtClient(pClient->getID()))
 				Game.Network.Vote(VT_Kick, true, pClient->getID());
 			else
 				// add control

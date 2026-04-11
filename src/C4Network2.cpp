@@ -3002,6 +3002,17 @@ void C4Network2::OnVoteDialogClosed()
 	pVoteDialog = nullptr;
 }
 
+bool C4Network2::IsVotingEnabled() const
+{
+	// No network?
+	if (!isEnabled()) return false;
+
+	// No need to vote if only one client present
+	if (Game.Clients.getClientCnt() == 1) return false;
+
+	return Game.Parameters.Vote;
+}
+
 // *** C4VoteDialog
 
 C4VoteDialog::C4VoteDialog(const char *szText, C4ControlVoteType eVoteType, int32_t iVoteData, bool fSurrender)
@@ -3022,7 +3033,10 @@ void C4VoteDialog::OnClosed(bool fOK)
 			// set game leave reason, although round results dialog isn't showing it ATM
 			Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, LoadResStr(C4ResStrTableKey::IDS_ERR_YOUSURRENDEREDTHELEAGUEGA));
 			// leave game
-			Game.Network.LeagueSurrender();
+			if (Game.Parameters.isLeague())
+			{
+				Game.Network.LeagueSurrender();
+			}
 			Game.Network.Clear();
 			// We have just league-surrendered. Abort the game - that is what we originally wanted.
 			// Note: as we are losing league points and this is a relevant game, it would actually be

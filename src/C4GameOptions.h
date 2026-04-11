@@ -158,6 +158,18 @@ private:
 		virtual void Update() override; // update data to current runtime join state
 	};
 
+	class OptionVote : public OptionDropdown
+	{
+	public:
+		OptionVote(C4GameOptionsList *forDlg);
+
+	protected:
+		virtual void DoDropdownFill(C4GUI::ComboBox_FillCB *filler) override;
+		virtual void DoDropdownSelChange(int32_t newSelection) override;
+
+		virtual void Update() override; // update data to current vote state
+	};
+
 public:
 	C4GameOptionsList(const C4Rect &rcBounds, bool fActive, bool fRuntime);
 	~C4GameOptionsList() { Deactivate(); }

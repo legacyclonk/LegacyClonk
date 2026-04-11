@@ -1023,8 +1023,8 @@ bool C4Game::Pause()
 	// pause by net?
 	if (Network.isEnabled())
 	{
-		// league? Vote...
-		if (Parameters.isLeague() && !Evaluated)
+		// Vote?
+		if (Network.IsVotingEnabled() && !Evaluated)
 		{
 			Network.Vote(VT_Pause, true, true);
 			return false;
@@ -1049,8 +1049,8 @@ bool C4Game::Unpause()
 	// pause by net?
 	if (Network.isEnabled())
 	{
-		// league? Vote...
-		if (Parameters.isLeague() && !Evaluated)
+		// Vote?
+		if (Network.IsVotingEnabled() && !Evaluated)
 		{
 			Network.Vote(VT_Pause, true, false);
 			return false;
@@ -4262,8 +4262,8 @@ bool C4Game::ToggleChart()
 
 void C4Game::Abort(bool fApproved)
 {
-	// league needs approval
-	if (Network.isEnabled() && Parameters.isLeague() && !fApproved)
+	// votes need approval
+	if (Network.isEnabled() && Network.IsVotingEnabled() && !fApproved)
 	{
 		if (Control.isCtrlHost() && !GameOver)
 		{

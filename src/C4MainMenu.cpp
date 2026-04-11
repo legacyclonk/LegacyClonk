@@ -808,7 +808,7 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 		int iClientID = atoi(szCommand + 10);
 		if (iClientID && Game.Network.isEnabled())
 		{
-			if (Game.Parameters.isLeague() && Game.Players.GetAtClient(iClientID))
+			if (Game.Network.IsVotingEnabled() && Game.Players.GetAtClient(iClientID))
 			{
 				Game.Network.Vote(VT_Kick, true, iClientID);
 			}
@@ -826,7 +826,7 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 	{
 		if (Game.Network.isEnabled())
 		{
-			if (Game.Parameters.isLeague() && Game.Players.GetLocalByIndex(0))
+			if (Game.Network.IsVotingEnabled() && Game.Players.GetLocalByIndex(0))
 			{
 				Game.Network.Vote(VT_Kick, true, Game.Control.ClientID());
 			}

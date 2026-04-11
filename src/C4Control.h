@@ -107,6 +107,7 @@ enum C4CtrlValueType
 	C4CVT_TeamDistribution = 3,
 	C4CVT_TeamColors = 4,
 	C4CVT_FairCrew = 5,
+	C4CVT_Vote = 6,
 };
 
 class C4ControlSet : public C4ControlPacket // sync, lobby
