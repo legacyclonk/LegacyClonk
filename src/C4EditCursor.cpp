@@ -551,6 +551,7 @@ void C4EditCursor::Draw(C4FacetEx &cgo)
 					}
 					Application.DDraw->DrawFrame(cgo.Surface, screenPosX1, screenPosY1, screenPosX1 + boxSize, screenPosY1 + boxSize, CWhite);
 				}
+				break;
 			default:
 				break;
 			}
@@ -655,11 +656,11 @@ bool C4EditCursor::SetMode(int32_t iMode)
 		{
 			Console.PropertyDlg.Clear();
 		}
+		break;
 	case C4CNS_ModeEdit:
 		Console.ToolsDlg.Clear();
 		OpenPropTools();
 		break;
-
 	case C4CNS_ModeDraw:
 		Console.PropertyDlg.Clear();
 		OpenPropTools();
