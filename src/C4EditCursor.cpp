@@ -74,8 +74,10 @@ void C4EditCursor::Execute()
 		case ToolMode::Fill:
 			if (holdLeft) if (!Game.HaltCount) if (Console.Editing) ApplyToolFill();
 			break;
+		default: break;
 		}
 		break;
+	default: break;
 	}
 	// selection update
 	if (fSelectionChanged)
@@ -185,8 +187,10 @@ bool C4EditCursor::Move(C4Viewport *const cvp, int32_t iX, int32_t iY, uint16_t 
 			break;
 		case ToolMode::Line: case ToolMode::Rect:
 			break;
+		default: break;
 		}
 		break;
+	default: break;
 	}
 
 	// Update
@@ -286,6 +290,7 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 		case ToolMode::Picker: ApplyToolPicker(); break;
 		}
 		break;
+	default: break;
 	}
 
 	dropTarget = nullptr;
@@ -309,6 +314,7 @@ bool C4EditCursor::RightButtonDown(bool fControl)
 			}
 		}
 		break;
+	default: break;
 	}
 
 	return true;
@@ -333,8 +339,10 @@ bool C4EditCursor::LeftButtonUp()
 		case ToolMode::Rect:
 			if (dragFrame) ApplyToolRect();
 			break;
+		default: break;
 		}
 		break;
+	default: break;
 	}
 
 	// Release
@@ -418,6 +426,7 @@ bool C4EditCursor::OpenPropTools()
 	case ConsoleMode::Draw:
 		Console.ToolsDlg.Open();
 		break;
+	default: break;
 	}
 	return true;
 }
