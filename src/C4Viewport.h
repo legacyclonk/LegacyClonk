@@ -69,6 +69,7 @@ public:
 	GtkWidget *h_scrollbar;
 	GtkWidget *v_scrollbar;
 	GtkWidget *drawing_area;
+	bool processScrollSignal = true;
 #elif defined(USE_X11) && !defined(WITH_DEVELOPER_MODE)
 	bool HideCursor() const override { return true; }
 	virtual void HandleMessage(XEvent &) override;

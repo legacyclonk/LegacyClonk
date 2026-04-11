@@ -411,6 +411,12 @@ bool C4Viewport::ScrollBarsByViewPosition()
 {
 	if (PlayerLock) return false;
 
+	if (pWindow)
+	{
+	// When setting the scrollbar value we want to avoid calling ViewPositionByScrollbars indirectly so we prevent the value-change signal being processed.
+		pWindow->processScrollSignal = false;
+	}
+
 	GtkAllocation allocation;
 	gtk_widget_get_allocation(pWindow->drawing_area, &allocation);
 	GtkAdjustment *adjustment = gtk_range_get_adjustment(GTK_RANGE(pWindow->h_scrollbar));
@@ -422,6 +428,11 @@ bool C4Viewport::ScrollBarsByViewPosition()
 	gtk_adjustment_set_page_increment(adjustment, allocation.height);
 	gtk_adjustment_set_page_size(adjustment, allocation.height);
 	gtk_adjustment_set_value(adjustment, ViewY);
+
+	if (pWindow)
+	{
+		pWindow->processScrollSignal = true;
+	}
 
 	return true;
 }
@@ -695,12 +706,20 @@ gboolean C4ViewportWindow::OnConfigureDareaStatic(GtkWidget *widget, GdkEventCon
 
 void C4ViewportWindow::OnVScrollStatic(GtkAdjustment *adjustment, gpointer user_data)
 {
-	static_cast<C4ViewportWindow *>(user_data)->cvp->ViewPositionByScrollBars();
+	const C4ViewportWindow *viewport{static_cast<C4ViewportWindow *>(user_data)};
+	if (viewport && viewport->processScrollSignal)
+	{
+		viewport->cvp->ViewPositionByScrollBars();
+	}
 }
 
 void C4ViewportWindow::OnHScrollStatic(GtkAdjustment *adjustment, gpointer user_data)
 {
-	static_cast<C4ViewportWindow *>(user_data)->cvp->ViewPositionByScrollBars();
+	const C4ViewportWindow *viewport{static_cast<C4ViewportWindow *>(user_data)};
+	if (viewport && viewport->processScrollSignal)
+	{
+		viewport->cvp->ViewPositionByScrollBars();
+	}
 }
 
 #else // WITH_DEVELOPER_MODE
