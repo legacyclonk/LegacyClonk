@@ -35,12 +35,12 @@ public:
 protected:
 	bool fAltWasDown;
 	bool fSelectionChanged;
-	int32_t Mode;
+	int32_t mode;
 	int32_t X, Y, X2, Y2; // Cursor position in map space
-	int32_t ViewSpaceX, ViewSpaceY; // Cursor position in viewport space
-	bool HoldLeft, DragFrame, DragLine;
-	bool HoldRight, DragViewport;
-	C4Object *Target, *DropTarget;
+	int32_t viewSpaceX, viewSpaceY; // Cursor position in viewport space
+	bool holdLeft, holdRight;
+	bool dragFrame, dragLine, dragViewport;
+	C4Object *target, *dropTarget;
 #ifdef _WIN32
 	HMENU hMenu;
 #elif defined(WITH_DEVELOPER_MODE)
@@ -51,7 +51,7 @@ protected:
 	GtkWidget *itemGrabContents;
 	GtkWidget *itemProperties;
 #endif // _WIN32/WITH_DEVELOPER_MODE
-	C4ObjectList Selection;
+	C4ObjectList selection;
 
 public:
 	void Default();
@@ -75,8 +75,8 @@ public:
 	bool Move(C4Viewport *const cvp, int32_t iX, int32_t iY, uint16_t wKeyFlags);
 	bool Init();
 	bool EditingOK();
-	C4ObjectList &GetSelection() { return Selection; }
-	void SetHold(bool fToState) { HoldLeft = fToState; }
+	C4ObjectList &GetSelection() { return selection; }
+	void SetHold(bool fToState) { holdLeft = fToState; }
 	void OnSelectionChanged();
 	bool AltDown();
 	bool AltUp();
