@@ -760,11 +760,11 @@ bool C4EditCursor::DoContextMenu()
 #elif defined(WITH_DEVELOPER_MODE)
 	gtk_widget_set_sensitive(itemDelete,       fObjectSelected && Console.Editing);
 	gtk_widget_set_sensitive(itemDuplicate,    fObjectSelected && Console.Editing);
-	gtk_widget_set_sensitive(itemGrabContents, fObjectSelected && Selection.GetObject()->Contents.ObjectCount() && Console.Editing);
-	gtk_widget_set_sensitive(itemProperties,   Mode != ConsoleMode::Play);
+	gtk_widget_set_sensitive(itemGrabContents, fObjectSelected && selection.GetObject()->Contents.ObjectCount() && Console.Editing);
+	gtk_widget_set_sensitive(itemProperties,   mode != ConsoleMode::Play);
 
 	GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(itemProperties)));
-	if (Mode == ConsoleMode::Edit)
+	if (mode == ConsoleMode::Edit)
 	{
 		gtk_label_set_text(label, LoadResStrGtk(C4ResStrTableKey::IDS_CNS_PROPERTIES).c_str());
 	}

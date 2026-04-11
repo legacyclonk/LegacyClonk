@@ -503,7 +503,7 @@ gboolean C4ViewportWindow::OnKeyPressStatic(GtkWidget *widget, GdkEventKey *even
 	std::uint32_t key = XkbKeycodeToKeysym(GDK_WINDOW_XDISPLAY(event->window), event->hardware_keycode, 0, 0);
 	Game.DoKeyboardInput(key, KEYEV_Down, !!(event->state & GDK_MOD1_MASK), !!(event->state & GDK_CONTROL_MASK), !!(event->state & GDK_SHIFT_MASK), false, nullptr);
 
-	if (Console.EditCursor.GetMode() != C4CNS_ModePlay)
+	if (Console.EditCursor.GetMode() != ConsoleMode::Play)
 	{
 		switch (event->keyval)
 		{
@@ -545,7 +545,7 @@ gboolean C4ViewportWindow::OnScrollStatic(GtkWidget *widget, GdkEventScroll *eve
 	{
 		return TRUE;
 	}
-	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 	{
 		switch (event->direction)
 		{
@@ -580,7 +580,7 @@ gboolean C4ViewportWindow::OnButtonPressStatic(GtkWidget *widget, GdkEventButton
 {
 	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
 
-	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 	{
 		switch (event->button)
 		{
@@ -621,7 +621,7 @@ gboolean C4ViewportWindow::OnButtonReleaseStatic(GtkWidget *widget, GdkEventButt
 {
 	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
 
-	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 	{
 		switch (event->button)
 		{
@@ -659,7 +659,7 @@ gboolean C4ViewportWindow::OnMotionNotifyStatic(GtkWidget *widget, GdkEventMotio
 {
 	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
 
-	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 	{
 		Game.GraphicsSystem.MouseMove(C4MC_Button_None, static_cast<int32_t>(event->x), static_cast<int32_t>(event->y), event->state, window->cvp);
 	}
@@ -854,7 +854,9 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 
 void C4Viewport::IncrementBrushSize(const std::int32_t direction)
 {
-	const std::int32_t PreviousBrushSize {Console.ToolsDlg.grade};
+#ifndef NDEBUG
+	const std::int32_t previousBrushSize {Console.ToolsDlg.grade};
+#endif
 	if (Game.Landscape.Mode == C4LSC_Exact)
 	{
 		Console.ToolsDlg.ChangeGrade(direction);
@@ -867,7 +869,7 @@ void C4Viewport::IncrementBrushSize(const std::int32_t direction)
 		Console.ToolsDlg.ChangeGrade(brushSizeIncrements);
 	}
 #ifndef NDEBUG
-	if(PreviousBrushSize != Console.ToolsDlg.Grade)
+	if(previousBrushSize != Console.ToolsDlg.Grade)
 	{
 		DebugLog(spdlog::level::info, "Current brush size: {}", Console.ToolsDlg.Grade);
 	}

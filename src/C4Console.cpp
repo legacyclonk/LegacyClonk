@@ -1730,17 +1730,17 @@ void C4Console::OnHalt(GtkWidget *button, gpointer data)
 
 void C4Console::OnModePlay(GtkWidget *button, gpointer data)
 {
-	static_cast<C4Console *>(data)->EditCursor.SetMode(C4CNS_ModePlay);
+	static_cast<C4Console *>(data)->EditCursor.SetMode(ConsoleMode::Play);
 }
 
 void C4Console::OnModeEdit(GtkWidget *button, gpointer data)
 {
-	static_cast<C4Console *>(data)->EditCursor.SetMode(C4CNS_ModeEdit);
+	static_cast<C4Console *>(data)->EditCursor.SetMode(ConsoleMode::Edit);
 }
 
 void C4Console::OnModeDraw(GtkWidget *button, gpointer data)
 {
-	static_cast<C4Console *>(data)->EditCursor.SetMode(C4CNS_ModeDraw);
+	static_cast<C4Console *>(data)->EditCursor.SetMode(ConsoleMode::Draw);
 }
 
 void C4Console::OnFileOpen(GtkWidget *item, gpointer data)

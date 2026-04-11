@@ -465,11 +465,11 @@ void C4ToolsDlg::UpdateToolCtrls()
 	g_signal_handler_block(fill,   handlerFill);
 	g_signal_handler_block(picker, handlerPicker);
 
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(brush),  Tool == ToolMode::Brush);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(line),   Tool == ToolMode::Line);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rect),   Tool == ToolMode::Rect);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(fill),   Tool == ToolMode::Fill);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(picker), Tool == ToolMode::Picker);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(brush),  tool == ToolMode::Brush);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(line),   tool == ToolMode::Line);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rect),   tool == ToolMode::Rect);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(fill),   tool == ToolMode::Fill);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(picker), tool == ToolMode::Picker);
 
 	g_signal_handler_unblock(brush,  handlerBrush);
 	g_signal_handler_unblock(line,   handlerLine);
@@ -499,7 +499,7 @@ void C4ToolsDlg::InitMaterialCtrls()
 		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(materials), Game.Material.Map[cnt].Name);
 	}
 	g_signal_handler_unblock(materials, handlerMaterials);
-	SelectComboBoxText(GTK_COMBO_BOX(materials), Material);
+	SelectComboBoxText(GTK_COMBO_BOX(materials), material);
 #endif
 	// Textures
 	UpdateTextures();
@@ -557,7 +557,7 @@ void C4ToolsDlg::UpdateTextures()
 	SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(texture).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 	g_signal_handler_block(textures, handlerTextures);
-	SelectComboBoxText(GTK_COMBO_BOX(textures), Texture);
+	SelectComboBoxText(GTK_COMBO_BOX(textures), texture);
 	g_signal_handler_unblock(textures, handlerTextures);
 #endif
 }
@@ -581,7 +581,7 @@ void C4ToolsDlg::SetTexture(const char *szTexture)
 		SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(texture).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 		g_signal_handler_block(textures, handlerTextures);
-		SelectComboBoxText(GTK_COMBO_BOX(textures), Texture);
+		SelectComboBoxText(GTK_COMBO_BOX(textures), texture);
 		g_signal_handler_unblock(textures, handlerTextures);
 #endif
 		return;
@@ -724,7 +724,7 @@ void C4ToolsDlg::InitGradeCtrl()
 	gtk_range_set_increments(GTK_RANGE(scale), 1, 5);
 	gtk_range_set_range(GTK_RANGE(scale), C4ToolsDlg::GradeMin, C4ToolsDlg::GradeMax);
 	gtk_scale_set_draw_value(GTK_SCALE(scale), FALSE);
-	gtk_range_set_value(GTK_RANGE(scale), C4ToolsDlg::GradeMax - Grade);
+	gtk_range_set_value(GTK_RANGE(scale), C4ToolsDlg::GradeMax - grade);
 	g_signal_handler_unblock(scale, handlerScale);
 #endif
 }
@@ -792,8 +792,8 @@ void C4ToolsDlg::UpdateIFTControls()
 	g_signal_handler_block(no_ift, handlerNoIft);
 	g_signal_handler_block(ift,    handlerIft);
 
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(no_ift), ModeIFT == 0);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ift),    ModeIFT == 1);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(no_ift), modeIft == 0);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ift),    modeIft == 1);
 
 	g_signal_handler_unblock(no_ift, handlerNoIft);
 	g_signal_handler_unblock(ift,    handlerIft);
@@ -946,7 +946,7 @@ void C4ToolsDlg::EnableControls()
 	gtk_widget_set_sensitive(ift,       iLandscapeMode >= C4LSC_Static);
 	gtk_widget_set_sensitive(no_ift,    iLandscapeMode >= C4LSC_Static);
 	gtk_widget_set_sensitive(materials, iLandscapeMode >= C4LSC_Static);
-	gtk_widget_set_sensitive(textures,  iLandscapeMode >= C4LSC_Static && !SEqual(Material, C4TLS_MatSky));
+	gtk_widget_set_sensitive(textures,  iLandscapeMode >= C4LSC_Static && !SEqual(material, C4TLS_MatSky));
 	gtk_widget_set_sensitive(scale,     iLandscapeMode >= C4LSC_Static);
 	gtk_widget_set_sensitive(preview,   iLandscapeMode >= C4LSC_Static);
 #endif // _WIN32/WITH_DEVELOPER_MODE
@@ -1105,7 +1105,7 @@ void C4ToolsDlg::OnGrade(GtkWidget *widget, gpointer data)
 {
 	C4ToolsDlg *dlg = static_cast<C4ToolsDlg *>(data);
 	int value = static_cast<int>(gtk_range_get_value(GTK_RANGE(dlg->scale)) + 0.5);
-	dlg->SetGrade(C4TLS_GradeMax - value);
+	dlg->SetGrade(C4ToolsDlg::GradeMax - value);
 }
 
 void C4ToolsDlg::OnWindowHide(GtkWidget *widget, gpointer data)
