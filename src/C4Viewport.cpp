@@ -148,7 +148,7 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 	}
 
 	// Viewport mouse control
-	if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+	if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 	{
 		switch (uMsg)
 		{

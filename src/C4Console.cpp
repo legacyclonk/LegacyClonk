@@ -189,16 +189,16 @@ INT_PTR CALLBACK ConsoleDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 			Console.DoPlay();
 			return TRUE;
 
-		case IDC_BUTTONMODEPLAY:
-			Console.EditCursor.SetMode(C4CNS_ModePlay);
+	case IDC_BUTTONMODEPLAY:
+			Console.EditCursor.SetMode(ConsoleMode::Play);
 			return TRUE;
 
 		case IDC_BUTTONMODEEDIT:
-			Console.EditCursor.SetMode(C4CNS_ModeEdit);
+			Console.EditCursor.SetMode(ConsoleMode::Play);
 			return TRUE;
 
 		case IDC_BUTTONMODEDRAW:
-			Console.EditCursor.SetMode(C4CNS_ModeDraw);
+			Console.EditCursor.SetMode(ConsoleMode::Draw);
 			return TRUE;
 
 		case IDM_FILE_QUIT:         Console.FileQuit();        return TRUE;
@@ -1297,16 +1297,16 @@ std::wstring C4Console::GetDialogItemText(const HWND dlg, const int item)
 }
 #endif // _WIN32
 
-bool C4Console::UpdateModeCtrls(int iMode)
+bool C4Console::UpdateModeCtrls(ConsoleMode iMode)
 {
 	if (!Active) return false;
 
 #ifdef _WIN32
-	SendDlgItemMessage(hWindow, IDC_BUTTONMODEPLAY, BM_SETSTATE, (iMode == C4CNS_ModePlay), 0);
+	SendDlgItemMessage(hWindow, IDC_BUTTONMODEPLAY, BM_SETSTATE, (iMode == ConsoleMode::Play), 0);
 	UpdateWindow(GetDlgItem(hWindow, IDC_BUTTONMODEPLAY));
-	SendDlgItemMessage(hWindow, IDC_BUTTONMODEEDIT, BM_SETSTATE, (iMode == C4CNS_ModeEdit), 0);
+	SendDlgItemMessage(hWindow, IDC_BUTTONMODEEDIT, BM_SETSTATE, (iMode == ConsoleMode::Edit), 0);
 	UpdateWindow(GetDlgItem(hWindow, IDC_BUTTONMODEEDIT));
-	SendDlgItemMessage(hWindow, IDC_BUTTONMODEDRAW, BM_SETSTATE, (iMode == C4CNS_ModeDraw), 0);
+	SendDlgItemMessage(hWindow, IDC_BUTTONMODEDRAW, BM_SETSTATE, (iMode == ConsoleMode::Draw), 0);
 	UpdateWindow(GetDlgItem(hWindow, IDC_BUTTONMODEDRAW));
 #elif WITH_DEVELOPER_MODE
 	// Prevents recursion
@@ -1314,9 +1314,9 @@ bool C4Console::UpdateModeCtrls(int iMode)
 	g_signal_handler_block(btnModeEdit, handlerModeEdit);
 	g_signal_handler_block(btnModeDraw, handlerModeDraw);
 
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btnModePlay), iMode == C4CNS_ModePlay);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btnModeEdit), iMode == C4CNS_ModeEdit);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btnModeDraw), iMode == C4CNS_ModeDraw);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btnModePlay), iMode == ConsoleMode::Play);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btnModeEdit), iMode == ConsoleMode::Edit);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btnModeDraw), iMode == ConsoleMode::Draw);
 
 	g_signal_handler_unblock(btnModePlay, handlerModePlay);
 	g_signal_handler_unblock(btnModeEdit, handlerModeEdit);

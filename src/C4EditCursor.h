@@ -26,6 +26,13 @@
 #include <gtk/gtk.h>
 #endif
 
+enum class ConsoleMode
+{
+	Play,
+	Edit,
+	Draw
+};
+
 class C4EditCursor
 {
 public:
@@ -35,7 +42,7 @@ public:
 protected:
 	bool fAltWasDown;
 	bool fSelectionChanged;
-	int32_t mode;
+	ConsoleMode mode;
 	int32_t X, Y, X2, Y2; // Cursor position in map space
 	int32_t viewSpaceX, viewSpaceY; // Cursor position in viewport space
 	bool holdLeft, holdRight;
@@ -60,9 +67,9 @@ public:
 	void ClearPointers(C4Object *pObj);
 	bool ToggleMode();
 	void Draw(C4FacetEx &cgo);
-	int32_t GetMode();
+	ConsoleMode GetMode() const;
 	C4Object *GetTarget();
-	bool SetMode(int32_t iMode);
+	bool SetMode(ConsoleMode iMode);
 	bool In(const char *szText);
 	bool Duplicate();
 	bool OpenPropTools();

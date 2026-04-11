@@ -127,12 +127,12 @@ INT_PTR CALLBACK ToolsDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 		{
 		case SB_THUMBTRACK: case SB_THUMBPOSITION:
 			iValue = HIWORD(wParam);
-			Console.ToolsDlg.SetGrade(C4TLS_GradeMax - iValue);
+			Console.ToolsDlg.SetGrade(C4ToolsDlg::GradeMax - iValue);
 			break;
 		case SB_PAGEUP: case SB_PAGEDOWN:
 		case SB_LINEUP: case SB_LINEDOWN:
 			iValue = SendDlgItemMessage(hDlg, IDC_SLIDERGRADE, TBM_GETPOS, 0, 0);
-			Console.ToolsDlg.SetGrade(C4TLS_GradeMax - iValue);
+			Console.ToolsDlg.SetGrade(C4ToolsDlg::GradeMax - iValue);
 			break;
 		}
 		return TRUE;
@@ -156,24 +156,24 @@ INT_PTR CALLBACK ToolsDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 			Console.ToolsDlg.SetLandscapeMode(C4LSC_Exact);
 			return TRUE;
 
-		case IDC_BUTTONBRUSH:
-			Console.ToolsDlg.SetTool(C4TLS_Brush, false);
+	case IDC_BUTTONBRUSH:
+			Console.ToolsDlg.SetTool(ToolMode::Brush, false);
 			return TRUE;
 
 		case IDC_BUTTONLINE:
-			Console.ToolsDlg.SetTool(C4TLS_Line, false);
+			Console.ToolsDlg.SetTool(ToolMode::Line, false);
 			return TRUE;
 
 		case IDC_BUTTONRECT:
-			Console.ToolsDlg.SetTool(C4TLS_Rect, false);
+			Console.ToolsDlg.SetTool(ToolMode::Rect, false);
 			return TRUE;
 
 		case IDC_BUTTONFILL:
-			Console.ToolsDlg.SetTool(C4TLS_Fill, false);
+			Console.ToolsDlg.SetTool(ToolMode::Fill, false);
 			return TRUE;
 
 		case IDC_BUTTONPICKER:
-			Console.ToolsDlg.SetTool(C4TLS_Picker, false);
+			Console.ToolsDlg.SetTool(ToolMode::Picker, false);
 			return TRUE;
 
 		case IDC_BUTTONIFT:
@@ -418,8 +418,8 @@ void C4ToolsDlg::Default()
 	hbox = nullptr;
 #endif
 	Active = false;
-	Tool = SelectedTool = C4TLS_Brush;
-	Grade = C4TLS_GradeDefault;
+	Tool = SelectedTool = ToolMode::Brush;
+	Grade = C4ToolsDlg::GradeDefault;
 	ModeIFT = true;
 	SCopy("Earth", Material);
 	SCopy("Rough", Texture);
@@ -436,7 +436,7 @@ void C4ToolsDlg::Clear()
 	Active = false;
 }
 
-bool C4ToolsDlg::SetTool(int32_t iTool, bool fTemp)
+bool C4ToolsDlg::SetTool(ToolMode iTool, bool fTemp)
 {
 	Tool = iTool;
 	if (!fTemp) SelectedTool = Tool;
@@ -448,15 +448,15 @@ bool C4ToolsDlg::SetTool(int32_t iTool, bool fTemp)
 void C4ToolsDlg::UpdateToolCtrls()
 {
 #ifdef _WIN32
-	SendDlgItemMessage(hDialog, IDC_BUTTONBRUSH,  BM_SETSTATE, (Tool == C4TLS_Brush),  0);
+	SendDlgItemMessage(hDialog, IDC_BUTTONBRUSH,  BM_SETSTATE, (Tool == ToolMode::Brush),  0);
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONBRUSH));
-	SendDlgItemMessage(hDialog, IDC_BUTTONLINE,   BM_SETSTATE, (Tool == C4TLS_Line),   0);
+	SendDlgItemMessage(hDialog, IDC_BUTTONLINE,   BM_SETSTATE, (Tool == ToolMode::Line),   0);
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONLINE));
-	SendDlgItemMessage(hDialog, IDC_BUTTONRECT,   BM_SETSTATE, (Tool == C4TLS_Rect),   0);
+	SendDlgItemMessage(hDialog, IDC_BUTTONRECT,   BM_SETSTATE, (Tool == ToolMode::Rect),   0);
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONRECT));
-	SendDlgItemMessage(hDialog, IDC_BUTTONFILL,   BM_SETSTATE, (Tool == C4TLS_Fill),   0);
+	SendDlgItemMessage(hDialog, IDC_BUTTONFILL,   BM_SETSTATE, (Tool == ToolMode::Fill),   0);
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONFILL));
-	SendDlgItemMessage(hDialog, IDC_BUTTONPICKER, BM_SETSTATE, (Tool == C4TLS_Picker), 0);
+	SendDlgItemMessage(hDialog, IDC_BUTTONPICKER, BM_SETSTATE, (Tool == ToolMode::Picker), 0);
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONPICKER));
 #elif defined(WITH_DEVELOPER_MODE)
 	g_signal_handler_block(brush,  handlerBrush);
@@ -465,11 +465,11 @@ void C4ToolsDlg::UpdateToolCtrls()
 	g_signal_handler_block(fill,   handlerFill);
 	g_signal_handler_block(picker, handlerPicker);
 
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(brush),  Tool == C4TLS_Brush);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(line),   Tool == C4TLS_Line);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rect),   Tool == C4TLS_Rect);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(fill),   Tool == C4TLS_Fill);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(picker), Tool == C4TLS_Picker);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(brush),  Tool == ToolMode::Brush);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(line),   Tool == ToolMode::Line);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rect),   Tool == ToolMode::Rect);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(fill),   Tool == ToolMode::Fill);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(picker), Tool == ToolMode::Picker);
 
 	g_signal_handler_unblock(brush,  handlerBrush);
 	g_signal_handler_unblock(line,   handlerLine);
@@ -715,16 +715,16 @@ void C4ToolsDlg::InitGradeCtrl()
 	SendMessage(hwndTrack, TBM_SETPAGESIZE, 0, 5);
 	SendMessage(hwndTrack, TBM_SETLINESIZE, 0, 1);
 	SendMessage(hwndTrack, TBM_SETRANGE, FALSE,
-		MAKELONG(C4TLS_GradeMin, C4TLS_GradeMax));
-	SendMessage(hwndTrack, TBM_SETPOS, TRUE, C4TLS_GradeMax - Grade);
+		MAKELONG(C4ToolsDlg::GradeMin, C4ToolsDlg::GradeMax));
+	SendMessage(hwndTrack, TBM_SETPOS, TRUE, C4ToolsDlg::GradeMax - Grade);
 	UpdateWindow(hwndTrack);
 #elif defined(WITH_DEVELOPER_MODE)
 	if (!hbox) return;
 	g_signal_handler_block(scale, handlerScale);
 	gtk_range_set_increments(GTK_RANGE(scale), 1, 5);
-	gtk_range_set_range(GTK_RANGE(scale), C4TLS_GradeMin, C4TLS_GradeMax);
+	gtk_range_set_range(GTK_RANGE(scale), C4ToolsDlg::GradeMin, C4ToolsDlg::GradeMax);
 	gtk_scale_set_draw_value(GTK_SCALE(scale), FALSE);
-	gtk_range_set_value(GTK_RANGE(scale), C4TLS_GradeMax - Grade);
+	gtk_range_set_value(GTK_RANGE(scale), C4ToolsDlg::GradeMax - Grade);
 	g_signal_handler_unblock(scale, handlerScale);
 #endif
 }
@@ -733,11 +733,11 @@ bool C4ToolsDlg::SetGrade(int32_t iGrade)
 {
 	if(Game.Landscape.Mode == C4LSC_Exact)
 	{
-		Grade = BoundBy(iGrade, C4TLS_GradeMin, C4TLS_GradeMax);
+		Grade = BoundBy(iGrade, C4ToolsDlg::GradeMin, C4ToolsDlg::GradeMax);
 	}
 	else
 	{
-		Grade = BoundBy(iGrade - ((iGrade) % (Game.Landscape.MapZoom / 2)), Game.Landscape.MapZoom / 2, C4TLS_GradeMax);
+		Grade = BoundBy(iGrade - ((iGrade) % (Game.Landscape.MapZoom / 2)), Game.Landscape.MapZoom / 2, C4ToolsDlg::GradeMax);
 	}
 	UpdatePreview();
 	return true;
@@ -869,6 +869,12 @@ void C4ToolsDlg::UpdateLandscapeModeCtrls()
 #endif
 }
 
+bool C4ToolsDlg::ToggleTool()
+{
+	SetTool(static_cast<ToolMode>((static_cast<std::int32_t>(Tool) + 1) % 4), false);
+	return true;
+}
+
 bool C4ToolsDlg::SetLandscapeMode(int32_t iMode, bool fThroughControl)
 {
 	int32_t iLastMode = Game.Landscape.Mode;
@@ -892,8 +898,8 @@ bool C4ToolsDlg::SetLandscapeMode(int32_t iMode, bool fThroughControl)
 			Game.Landscape.MapToLandscape();
 	// Assert valid tool
 	if (iMode != C4LSC_Exact)
-		if (SelectedTool == C4TLS_Fill)
-			SetTool(C4TLS_Brush, false);
+		if (SelectedTool == ToolMode::Fill)
+			SetTool(ToolMode::Brush, false);
 	// Update controls
 	UpdateLandscapeModeCtrls();
 	EnableControls();
@@ -1018,7 +1024,7 @@ bool C4ToolsDlg::SelectMaterial(const char *szMaterial)
 void C4ToolsDlg::SetAlternateTool()
 {
 	// alternate tool is the picker in any mode
-	SetTool(C4TLS_Picker, true);
+	SetTool(ToolMode::Picker, true);
 }
 
 void C4ToolsDlg::ResetAlternateTool()
@@ -1048,27 +1054,27 @@ void C4ToolsDlg::OnButtonModeExact(GtkWidget *widget, gpointer data)
 
 void C4ToolsDlg::OnButtonBrush(GtkWidget *widget, gpointer data)
 {
-	static_cast<C4ToolsDlg *>(data)->SetTool(C4TLS_Brush, false);
+	static_cast<C4ToolsDlg *>(data)->SetTool(ToolMode::Brush, false);
 }
 
 void C4ToolsDlg::OnButtonLine(GtkWidget *widget, gpointer data)
 {
-	static_cast<C4ToolsDlg *>(data)->SetTool(C4TLS_Line, false);
+	static_cast<C4ToolsDlg *>(data)->SetTool(ToolMode::Line, false);
 }
 
 void C4ToolsDlg::OnButtonRect(GtkWidget *widget, gpointer data)
 {
-	static_cast<C4ToolsDlg *>(data)->SetTool(C4TLS_Rect, false);
+	static_cast<C4ToolsDlg *>(data)->SetTool(ToolMode::Rect, false);
 }
 
 void C4ToolsDlg::OnButtonFill(GtkWidget *widget, gpointer data)
 {
-	static_cast<C4ToolsDlg *>(data)->SetTool(C4TLS_Fill, false);
+	static_cast<C4ToolsDlg *>(data)->SetTool(ToolMode::Fill, false);
 }
 
 void C4ToolsDlg::OnButtonPicker(GtkWidget *widget, gpointer data)
 {
-	static_cast<C4ToolsDlg *>(data)->SetTool(C4TLS_Picker, false);
+	static_cast<C4ToolsDlg *>(data)->SetTool(ToolMode::Picker, false);
 }
 
 void C4ToolsDlg::OnButtonIft(GtkWidget *widget, gpointer data)
