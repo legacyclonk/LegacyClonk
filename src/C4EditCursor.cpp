@@ -411,7 +411,7 @@ bool C4EditCursor::OpenPropTools()
 {
 	switch (Mode)
 	{
-	case C4CNS_ModeEdit: case C4CNS_ModePlay:
+	case C4CNS_ModeEdit:
 		Console.PropertyDlg.Open();
 		Console.PropertyDlg.Update(Selection);
 		break;
