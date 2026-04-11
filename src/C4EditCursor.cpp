@@ -148,7 +148,6 @@ bool C4EditCursor::Move(C4Viewport *const cvp, int32_t iX, int32_t iY, uint16_t 
 		{
 			cvp->ViewX -= viewOffsetX;
 			cvp->ViewY -= viewOffsetY;
-			cvp->UpdateViewPosition();
 			cvp->ScrollBarsByViewPosition();
 			// Allow the context menu on right click to be opened when we didn't drag the viewport.
 			if(std::abs(viewOffsetX) > 1 || std::abs(viewOffsetY) > 1)
