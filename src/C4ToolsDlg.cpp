@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -601,7 +601,7 @@ bool C4ToolsDlg::SetIFT(bool fIFT)
 void C4ToolsDlg::UpdatePreview()
 {
 	// TODO: Set size request for image to read size from image's size request?
-	std::int32_t left{0}, top{0}, previewWidth{64}, previewHeight{64};
+	std::int32_t previewWidth{64}, previewHeight{64};
 
 #ifdef _WIN32
 	if (!hDialog) return;
@@ -609,8 +609,8 @@ void C4ToolsDlg::UpdatePreview()
 	if (!previewHandle) return;
 	RECT clientRect;
 	if (!GetClientRect(previewHandle, &clientRect)) return;
-	left = clientRect.left;
-	top = clientRect.top;
+	const std::int32_t left{clientRect.left};
+	const std::int32_t top{clientRect.top};
 	previewWidth = clientRect.right - clientRect.left;
 	previewHeight = clientRect.bottom - clientRect.top;
 
@@ -659,7 +659,7 @@ void C4ToolsDlg::UpdatePreview()
 				Pattern2 = pTex->getPattern();
 				// get and set extended texture of material
 				C4Material *pMat = pTex->GetMaterial();
-				if (pMat && !(pMat->OverlayType & C4MatOv_None))
+				if (pMat && !(pMat->OverlayType & (C4MatOv_NoConsole | C4MatOv_None)))
 				{
 					Pattern1 = pMat->MatPattern;
 				}
@@ -979,7 +979,7 @@ void C4ToolsDlg::AssertValidTexture()
 	if (Game.TextureMap.GetIndex(Material, Texture, false)) return;
 	// Find valid material-texture
 	const char *szTexture;
-	for (int32_t iTexture = 0; szTexture = Game.TextureMap.GetTexture(iTexture); iTexture++)
+	for (int32_t iTexture = 0; (szTexture = Game.TextureMap.GetTexture(iTexture)); iTexture++)
 	{
 		if (Game.TextureMap.GetIndex(Material, szTexture, false))
 		{

@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2001-2009, RedWolf Design GmbH, http://www.clonk.de/
  * Copyright (c) 2013-2017, The OpenClonk Team and contributors
- * Copyright (c) 2019, The LegacyClonk Team and contributors
+ * Copyright (c) 2019-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -117,6 +117,12 @@ public:
 	C4Network2EndpointAddress(const C4Network2HostAddress &host, const std::uint16_t port = IPPORT_NONE) : C4Network2HostAddress{host} { SetPort(port); }
 	C4Network2EndpointAddress(const C4Network2HostAddress::SpecialAddress addr, const std::uint16_t port = IPPORT_NONE) : C4Network2HostAddress{addr} { SetPort(port); }
 	explicit C4Network2EndpointAddress(const StdStrBuf &addr) { SetAddress(addr); }
+
+	C4Network2EndpointAddress &operator=(const C4Network2EndpointAddress &other)
+	{
+		SetAddress(other);
+		return *this;
+	}
 
 public:
 	std::string ToString(int flags = 0) const;

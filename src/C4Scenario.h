@@ -242,11 +242,12 @@ public:
 	int32_t NewStyleLandscape; // if set to 2, the landscape uses up to 125 mat/texture pairs
 	int32_t FoWRes; // chunk size of FoGOfWar
 	bool ShadeMaterials;
+	bool EnableTextureOverlays;
 
 public:
 	void Default();
 	void GetMapSize(int32_t &rWdt, int32_t &rHgt, int32_t iPlayerNum);
-	void CompileFunc(StdCompiler *pComp, bool newScenario = true);
+	void CompileFunc(StdCompiler *pComp, bool shadeMaterialsDefault = true, bool enableTextureOverlaysDefault = true);
 };
 
 class C4SWeather

@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2008, Sven2
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -32,7 +32,7 @@
 // C4GoalDisplay
 
 C4GoalDisplay::GoalPicture::GoalPicture(const C4Rect &rcBounds, C4ID idGoal, bool fFulfilled)
-	: idGoal(idGoal), fFulfilled(fFulfilled), C4GUI::Window()
+	: C4GUI::Window(), idGoal(idGoal), fFulfilled(fFulfilled)
 {
 	// bounds
 	SetBounds(rcBounds);

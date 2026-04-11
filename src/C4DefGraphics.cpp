@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2004, Sven2
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -51,7 +51,12 @@ void C4DefGraphics::Clear()
 	delete Bitmap;    Bitmap    = nullptr;
 	// delete additonal graphics
 	C4AdditionalDefGraphics *pGrp2N = pNext, *pGrp2;
-	while (pGrp2 = pGrp2N) { pGrp2N = pGrp2->pNext; pGrp2->pNext = nullptr; delete pGrp2; }
+	while ((pGrp2 = pGrp2N))
+	{
+		pGrp2N = pGrp2->pNext;
+		pGrp2->pNext = nullptr;
+		delete pGrp2;
+	}
 	pNext = nullptr; fColorBitmapAutoCreated = false;
 }
 
@@ -356,7 +361,7 @@ void C4DefGraphicsPtrBackup::AssignUpdate(C4DefGraphics *pNewGraphics)
 		// check all objects
 		C4Object *pObj;
 		for (C4ObjectLink *pLnk = Game.Objects.First; pLnk; pLnk = pLnk->Next)
-			if (pObj = pLnk->Obj) if (pObj->Status)
+			if ((pObj = pLnk->Obj)) if (pObj->Status)
 			{
 				if (pObj->pGraphics == pGraphicsPtr)
 				{
@@ -451,7 +456,7 @@ void C4DefGraphicsPtrBackup::AssignRemoval()
 		// check all objects
 		C4Object *pObj;
 		for (C4ObjectLink *pLnk = Game.Objects.First; pLnk; pLnk = pLnk->Next)
-			if (pObj = pLnk->Obj) if (pObj->Status)
+			if ((pObj = pLnk->Obj)) if (pObj->Status)
 			{
 				if (pObj->pGraphics == pGraphicsPtr)
 					// same graphics found: reset them
@@ -554,7 +559,7 @@ bool C4Portrait::CopyFrom(C4Portrait &rCopy)
 {
 	// clear previous
 	Clear();
-	if (fGraphicsOwned = rCopy.fGraphicsOwned)
+	if ((fGraphicsOwned = rCopy.fGraphicsOwned))
 	{
 		// gfx copy
 		pGfxPortrait = new C4DefGraphics();
@@ -609,7 +614,7 @@ C4GraphicsOverlay::~C4GraphicsOverlay()
 {
 	// free any additional overlays
 	C4GraphicsOverlay *pNextOther = pNext, *pOther;
-	while (pOther = pNextOther)
+	while ((pOther = pNextOther))
 	{
 		pNextOther = pOther->pNext;
 		pOther->pNext = nullptr;
@@ -927,10 +932,16 @@ void C4GraphicsOverlayListAdapt::CompileFunc(StdCompiler *pComp)
 		{
 			// separate
 			if (pPos != pOverlay)
+			{
 				if (fNaming)
+				{
 					pComp->Separator(StdCompiler::SEP_SEP2);
+				}
 				else
+				{
 					pComp->Value(fContinue);
+				}
+			}
 			// write
 			pComp->Value(*pPos);
 		}

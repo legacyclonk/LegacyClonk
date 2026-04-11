@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -76,6 +76,6 @@ const char *LoadResStrV(const C4ResStrTableKey id)
 std::string LoadResStrNoAmpV(const C4ResStrTableKey id)
 {
 	std::string result{LoadResStrV(id)};
-	result.erase(std::remove(result.begin(), result.end(), '&'), result.end());
+	std::erase(result, '&');
 	return result;
 }

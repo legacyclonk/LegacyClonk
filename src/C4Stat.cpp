@@ -113,7 +113,9 @@ void C4MainStat::Show()
 		unsigned int iBestNr = ~0u;
 
 		for (ii = 0, pAkt = pFirst; ii < iCnt; ii++, pAkt = pAkt->pNext)
+		{
 			if (!bHS[ii])
+			{
 				if (iBestNr == ~0u)
 				{
 					iBestNr = ii;
@@ -124,6 +126,8 @@ void C4MainStat::Show()
 					iBestNr = ii;
 					pBestStat = pAkt;
 				}
+			}
+		}
 
 		if (iBestNr == ~0u)
 			break;

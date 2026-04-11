@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -176,11 +176,11 @@ int32_t C4IDList::GetNumberOfIDs(C4DefList &defs, int32_t category) const
 
 void C4IDList::ConsolidateValids(C4DefList &defs, int32_t category)
 {
-	content.erase(std::remove_if(content.begin(), content.end(), [&defs, category](const auto &entry)
+	std::erase_if(content, [&defs, category](const auto &entry)
 	{
 		const auto def = defs.ID2Def(entry.id);
 		return !def || (category && !(def->Category & category));
-	}), content.end());
+	});
 }
 
 void C4IDList::SortByValue(C4DefList &defs)

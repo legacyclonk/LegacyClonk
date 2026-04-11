@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2005, Sven2
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -77,9 +77,9 @@ public:
 		const C4Facet &GetIconFacet() const { return fctIcon; }
 		const C4Facet &GetTitlePicture() const { return fctTitle; }
 		const StdStrBuf &GetDesc() const { return sDesc; }
-		const int GetIconIndex() { return iIconIndex; }
-		const int GetDifficulty() { return iDifficulty; }
-		const int GetFolderIndex() { return iFolderIndex; }
+		int GetIconIndex() { return iIconIndex; }
+		int GetDifficulty() { return iDifficulty; }
+		int GetFolderIndex() { return iFolderIndex; }
 		Entry *GetNext() const { return pNext; }
 		class Folder *GetParent() const { return pParent; }
 		virtual StdStrBuf GetTypeName() = 0;
@@ -305,7 +305,7 @@ private:
 	class C4StartupScenSelDlg *pMainDlg;
 
 public:
-	C4MapFolderData() : fCoordinatesAdjusted(false), iScenCount(0), ppScenList(nullptr), iAccessGfxCount(0), ppAccessGfxList(nullptr), pMainDlg(nullptr) {}
+	C4MapFolderData() : fCoordinatesAdjusted(false), ppScenList(nullptr), iScenCount(0), ppAccessGfxList(nullptr), iAccessGfxCount(0), pMainDlg(nullptr) {}
 	~C4MapFolderData() { Clear(); }
 
 private:

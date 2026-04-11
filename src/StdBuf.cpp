@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -134,7 +134,7 @@ int StdStrBuf::Replace(const char *szOld, const char *szNew, size_t iStartSearch
 		// count number of occurences to calculate new string length
 		size_t iResultLen = getLength();
 		const char *szPos = getPtr(iStartSearch);
-		while (szPos = SSearch(szPos, szOld))
+		while ((szPos = SSearch(szPos, szOld)))
 		{
 			iResultLen += iNewLen - iOldLen;
 			++cnt;
@@ -151,7 +151,7 @@ int StdStrBuf::Replace(const char *szOld, const char *szNew, size_t iStartSearch
 			szRPos += iStartSearch;
 			szWrite += iStartSearch;
 		}
-		while (szRNextPos = SSearch(szRPos, szOld))
+		while ((szRNextPos = SSearch(szRPos, szOld)))
 		{
 			memcpy(szWrite, szRPos, (szRNextPos - szRPos - iOldLen) * sizeof(char));
 			szWrite += (szRNextPos - szRPos - iOldLen);
@@ -166,7 +166,7 @@ int StdStrBuf::Replace(const char *szOld, const char *szNew, size_t iStartSearch
 	{
 		// replace directly in this string
 		char *szRPos = getMPtr(iStartSearch);
-		while (szRPos = const_cast<char *>(SSearch(szRPos, szOld)))
+		while ((szRPos = const_cast<char *>(SSearch(szRPos, szOld))))
 		{
 			memcpy(szRPos - iOldLen, szNew, iOldLen * sizeof(char));
 			++cnt;
@@ -182,7 +182,7 @@ int StdStrBuf::ReplaceChar(char cOld, char cNew, size_t iStartSearch)
 	if (!cOld) return 0;
 	if (!cNew) cNew = '_';
 	int cnt = 0;
-	while (szPos = strchr(szPos, cOld))
+	while ((szPos = strchr(szPos, cOld)))
 	{
 		*szPos++ = cNew;
 		++cnt;
@@ -296,7 +296,7 @@ void StdStrBuf::EnsureUnicode()
 				if (j + 1 >= buf.getLength())
 					buf.Grow(GROWSIZE);
 				*buf.getMPtr(j++) = (0xC0 | c >> 6);
-				*buf.getMPtr(j++) = (0x80 | c & 0x3F);
+				*buf.getMPtr(j++) = (0x80 | (c & 0x3F));
 				continue;
 			}
 			// Extra windows-1252-characters

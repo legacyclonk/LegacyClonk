@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2026, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -304,11 +304,11 @@ bool ContextMenu::KeyHotkey(C4KeyCodeEx key)
 	// not if focus is in submenu
 	if (pSubmenu) return false;
 	Element *pPrevSelectedItem = pSelectedItem;
-	C4KeyCode wKey = TOUPPERIFX11(key.Key);
-	if (Inside<C4KeyCode>(wKey, 'A', 'Z') || Inside<C4KeyCode>(wKey, '0', '9'))
+	if (key.IsStandardAlphaNumeric())
 	{
+		const auto ch = static_cast<char>(TOUPPERIFX11(static_cast<unsigned char>(key.Key)));
+
 		// process hotkeys
-		char ch = char(wKey);
 		for (Element *pCurr = GetFirst(); pCurr; pCurr = pCurr->GetNext())
 			if (pCurr->OnHotkey(ch))
 			{
@@ -333,7 +333,7 @@ void ContextMenu::UpdateElementPositions()
 	int32_t iMinWdt = std::max<int32_t>(20, pCurr->GetBounds().Wdt);
 	int32_t iOverallHgt = pCurr->GetBounds().Hgt;
 	// others stacked under it
-	while (pCurr = pCurr->GetNext())
+	while ((pCurr = pCurr->GetNext()))
 	{
 		iMinWdt = (std::max)(iMinWdt, pCurr->GetBounds().Wdt);
 		int32_t iYSpace = pCurr->GetListItemTopSpacing();

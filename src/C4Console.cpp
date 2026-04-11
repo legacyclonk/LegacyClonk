@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -1396,7 +1396,7 @@ void C4Console::UpdateInputCtrl()
 	if (pRef = Game.Script.GetSFunc(0))
 		SendMessage(hCombo, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(L"----------"));
 #endif
-	for (cnt = 0; pRef = Game.Script.GetSFunc(cnt); cnt++)
+	for (cnt = 0; (pRef = Game.Script.GetSFunc(cnt)); cnt++)
 	{
 #ifdef _WIN32
 		SendMessage(hCombo, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(std::format(L"{}()", StdStringEncodingConverter::WinAcpToUtf16(pRef->Name)).c_str()));
@@ -1493,11 +1493,19 @@ void C4Console::PlayerJoin()
 	// Join players (via network/ctrl queue)
 	char szPlayerFilename[_MAX_PATH + 1];
 	for (int iPar = 0; SCopySegment(c4plist, iPar, szPlayerFilename, ';', _MAX_PATH); iPar++)
+	{
 		if (szPlayerFilename[0])
+		{
 			if (Game.Network.isEnabled())
+			{
 				Game.Network.Players.JoinLocalPlayer(szPlayerFilename, true);
+			}
 			else
+			{
 				Game.Players.CtrlJoinLocalNoNetwork(szPlayerFilename, Game.Clients.getLocalID(), Game.Clients.getLocalName());
+			}
+		}
+	}
 }
 
 #ifdef _WIN32

@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2013-2018, The OpenClonk Team and contributors
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -430,8 +430,8 @@ private:
 	PacketLink *pPackets;
 
 public:
-	const uint32_t getConnID() const { return iConnID; }
-	const uint32_t getPacketCount() const { return iPacketCount; }
+	uint32_t getConnID() const { return iConnID; }
+	uint32_t getPacketCount() const { return iPacketCount; }
 	void SetConnID(uint32_t inConnID) { iConnID = inConnID; }
 
 	const C4NetIOPacket *getPacket(uint32_t iNumber) const;

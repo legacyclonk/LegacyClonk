@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2005, Günther
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -151,7 +151,7 @@ struct _GIOChannel;
 #define K_F11 SDL_SCANCODE_F11
 #define K_F12 SDL_SCANCODE_F12
 #define K_ADD SDL_SCANCODE_KP_PLUS
-#define K_SUBTRACT SDL_SCANCODE_MINUS
+#define K_SUBTRACT SDL_SCANCODE_KP_MINUS
 #define K_MULTIPLY SDL_SCANCODE_KP_MULTIPLY
 #define K_ESCAPE SDL_SCANCODE_ESCAPE
 #define K_PAUSE SDL_SCANCODE_PAUSE

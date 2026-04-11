@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2005, Sven2
- * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -226,16 +226,22 @@ void C4StartupOptionsDlg::KeySelButton::DrawElement(C4FacetEx &cgo)
 	if (!fDoHightlight)
 	{
 		uint32_t dwModClr = 0x7f7f7f;
-		if (fHadBlitMod = lpDDraw->GetBlitModulation(dwOldBlitModClr))
+		if ((fHadBlitMod = lpDDraw->GetBlitModulation(dwOldBlitModClr)))
 			ModulateClr(dwModClr, dwOldBlitModClr);
 		lpDDraw->ActivateBlitModulation(dwModClr);
 	}
 	Game.GraphicsResource.fctCommand.Draw(cgoDraw, true, iKeyID, 0);
 	if (!fDoHightlight)
+	{
 		if (fHadBlitMod)
+		{
 			lpDDraw->ActivateBlitModulation(dwOldBlitModClr);
+		}
 		else
+		{
 			lpDDraw->DeactivateBlitModulation();
+		}
+	}
 	// draw the labels - beside the key
 	float fZoom;
 	CStdFont &rUseFont = C4Startup::Get()->Graphics.GetBlackFontByHeight(cgoDraw.Hgt / 2 + 5, &fZoom);
@@ -1348,7 +1354,7 @@ void C4StartupOptionsDlg::OnFEMusicCheck(C4GUI::Element *pCheckBox)
 {
 	// option change is reflected immediately
 	bool fIsOn = static_cast<C4GUI::CheckBox *>(pCheckBox)->GetChecked();
-	if (Config.Sound.FEMusic = fIsOn)
+	if ((Config.Sound.FEMusic = fIsOn))
 	{
 		Application.MusicSystem->PlayFrontendMusic();
 	}

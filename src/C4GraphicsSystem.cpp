@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2025, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -314,12 +314,11 @@ bool C4GraphicsSystem::InitLoaderScreen(const char *szLoaderSpec)
 bool C4GraphicsSystem::CloseViewport(int32_t iPlayer, bool fSilent)
 {
 	// Close all matching viewports
-	if (const auto it = std::remove_if(Viewports.begin(), Viewports.end(), [iPlayer](const auto &viewport)
+	if (std::erase_if(Viewports, [iPlayer](const auto &viewport)
 		{
 			return viewport->Player == iPlayer || (iPlayer == NO_OWNER && viewport->fIsNoOwnerViewport);
-		}); it != Viewports.end())
+		}))
 	{
-		Viewports.erase(it, Viewports.end());
 		// Recalculate viewports
 		RecalculateViewports();
 		if (!fSilent)
@@ -720,7 +719,7 @@ void C4GraphicsSystem::DrawHelp()
 			   "<c ffff00>{}</c> - {}\n",
 
 			   GetKeyboardInputName("GameSpeedUp"), LoadResStr(C4ResStrTableKey::IDS_CTL_GAMESPEEDUP),
-			   GetKeyboardInputName("GameSpeedDown"), LoadResStr(C4ResStrTableKey::IDS_CTL_GAMESPEEDDOWN),
+			   GetKeyboardInputName("GameSlowDown"), LoadResStr(C4ResStrTableKey::IDS_CTL_GAMESPEEDDOWN),
 			   GetKeyboardInputName("DbgModeToggle"), LoadResStr(C4ResStrTableKey::IDS_CTL_DEBUGMODE),
 			   GetKeyboardInputName("DbgShowVtxToggle"), "Entrance+Vertices",
 			   GetKeyboardInputName("DbgShowActionToggle"), "Actions/Commands/Pathfinder",

@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -392,6 +392,7 @@ bool Edit::KeyCursorOp(C4KeyCodeEx key, CursorOperation op)
 	{
 		// evaluate move length? (not home+end)
 		if (iMoveDir)
+		{
 			if (fCtrl)
 			{
 				// move one word
@@ -415,7 +416,10 @@ bool Edit::KeyCursorOp(C4KeyCodeEx key, CursorOperation op)
 						iMoveLength += iMoveDir;
 					}
 			}
-			else iMoveLength = iMoveDir;
+			else
+			{
+				iMoveLength = iMoveDir;
+			}
 			// delete stuff
 			if (op == COP_BACK || op == COP_DELETE)
 			{
@@ -437,6 +441,7 @@ bool Edit::KeyCursorOp(C4KeyCodeEx key, CursorOperation op)
 				if (iSelectionStart != iSelectionEnd) Deselect();
 			// adjust cursor pos
 			iCursorPos += iMoveLength;
+		}
 	}
 	// show cursor
 	dwLastInputTime = timeGetTime();
@@ -685,7 +690,7 @@ bool Edit::GetCurrentWord(char *szTargetBuf, int32_t iMaxTargetBufLen)
 
 // RenameEdit
 
-RenameEdit::RenameEdit(Label *pLabel) : Edit(pLabel->GetBounds(), true), pForLabel(pLabel), fFinishing(false)
+RenameEdit::RenameEdit(Label *pLabel) : Edit(pLabel->GetBounds(), true), fFinishing(false), pForLabel(pLabel)
 {
 	// construct for label
 	assert(pForLabel);

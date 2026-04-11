@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -26,9 +26,10 @@
 
 #define C4MatOv_Default    0
 #define C4MatOv_Exact      1
-#define C4MatOv_None       2
+#define C4MatOv_NoConsole  2
 #define C4MatOv_HugeZoom   4
 #define C4MatOv_Monochrome 8
+#define C4MatOv_None       16
 
 enum MaterialInteractionEvent
 {

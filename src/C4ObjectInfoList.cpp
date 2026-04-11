@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -119,7 +119,7 @@ C4ObjectInfo *C4ObjectInfoList::GetIdle(C4ID c_id, C4DefList &rDefs)
 	// Search list
 	for (pInfo = First; pInfo; pInfo = pInfo->Next)
 		// Valid only
-		if (pDef = rDefs.ID2Def(pInfo->id))
+		if ((pDef = rDefs.ID2Def(pInfo->id)))
 			// Use standard crew or matching id
 			if ((!c_id && !pDef->NativeCrew) || (pInfo->id == c_id))
 				// Participating and not in action

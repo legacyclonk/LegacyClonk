@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2023, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -145,13 +145,14 @@ public:
 	void SetFrameDeco(FrameDecoration *pNewDeco) // change border decoration
 	{
 		if (pFrameDeco) pFrameDeco->Deref();
-		if (pFrameDeco = pNewDeco) pNewDeco->Ref();
+		if ((pFrameDeco = pNewDeco)) pNewDeco->Ref();
 		UpdateOwnPos(); // margin may have changed; might need to reposition stuff
 	}
 
 	void ClearFrameDeco() // clear border decoration; no own pos update!
 	{
-		if (pFrameDeco) pFrameDeco->Deref(); pFrameDeco = nullptr;
+		if (pFrameDeco) pFrameDeco->Deref();
+		pFrameDeco = nullptr;
 	}
 
 	FrameDecoration *GetFrameDecoration() const { return pFrameDeco; }

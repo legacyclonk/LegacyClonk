@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -417,7 +417,7 @@ bool CStdGL::SaveDefaultGammaRampToMonitor(CStdWindow *pWindow)
 #include <stdexcept>
 #include <string>
 
-CStdGLCtx::CStdGLCtx() : pWindow{}, cx{}, cy{}, ctx{} {}
+CStdGLCtx::CStdGLCtx() : pWindow{}, ctx{}, cx{}, cy{} {}
 
 void CStdGLCtx::Clear()
 {

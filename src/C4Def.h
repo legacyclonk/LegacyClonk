@@ -406,7 +406,7 @@ public:
 	void Remove(C4Def *def);
 	bool Remove(C4ID id);
 	bool Reload(C4Def *pDef, uint32_t dwLoadWhat, const char *szLanguage, C4SoundSystem *pSoundSystem = nullptr);
-	bool Add(C4Def *ndef, bool fOverload);
+	bool Add(std::unique_ptr<C4Def> def, bool fOverload);
 	void ResetIncludeDependencies(); // resets all pointers into foreign definitions caused by include chains
 	void SortByID();
 	void Synchronize();
