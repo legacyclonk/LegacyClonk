@@ -30,15 +30,14 @@
 #include <gtk/gtk.h>
 #endif
 
-const int32_t C4TLS_Brush  = 0,
-              C4TLS_Line   = 1,
-              C4TLS_Rect   = 2,
-              C4TLS_Fill   = 3,
-              C4TLS_Picker = 4;
-
-const int32_t C4TLS_GradeMax     = 50,
-              C4TLS_GradeMin     = 1,
-              C4TLS_GradeDefault = 5;
+enum class ToolMode
+{
+	Brush = 0,
+	Line = 1,
+	Rect = 2,
+	Fill = 3,
+	Picker = 4
+};
 
 #define C4TLS_MatSky "Sky"
 
@@ -54,6 +53,11 @@ public:
 
 public:
 	bool Active;
+
+	static constexpr auto GradeMin = 1;
+	static constexpr auto GradeMax = 50;
+	static constexpr auto GradeDefault = 5;
+
 #ifdef _WIN32
 	HWND hDialog;
 #ifndef USE_CONSOLE
@@ -115,11 +119,11 @@ public:
 	static void OnGrade(GtkWidget *widget, gpointer data);
 	static void OnWindowHide(GtkWidget *widget, gpointer data);
 #endif
-	int32_t Tool, SelectedTool;
-	int32_t Grade;
-	bool ModeIFT;
-	char Material[C4M_MaxName + 1];
-	char Texture[C4M_MaxName + 1];
+	ToolMode tool, selectedTool;
+	int32_t grade;
+	bool modeIft;
+	char material[C4M_MaxName + 1];
+	char texture[C4M_MaxName + 1];
 
 protected:
 #ifdef _WIN32
@@ -144,11 +148,11 @@ public:
 	void UpdatePreview();
 	bool Open();
 	bool SetGrade(int32_t iGrade);
-	bool SetTool(int32_t iTool, bool fTemp);
-	bool ToggleTool() { return !!SetTool((Tool + 1) % 4, false); }
+	bool SetTool(ToolMode iTool, bool fTemp);
+	bool ToggleTool();
 	bool SetLandscapeMode(int32_t iMode, bool fThroughControl = false);
 	bool SetIFT(bool fIFT);
-	bool ToggleIFT() { return !!SetIFT(!ModeIFT); }
+	bool ToggleIFT() { return !!SetIFT(!modeIft); }
 	bool SelectTexture(const char *szTexture);
 	bool SelectMaterial(const char *szMaterial);
 	void SetAlternateTool();

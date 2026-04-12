@@ -20,10 +20,18 @@
 
 #include "C4ObjectList.h"
 #include "C4Control.h"
+#include "C4ForwardDeclarations.h"
 
 #ifdef WITH_DEVELOPER_MODE
 #include <gtk/gtk.h>
 #endif
+
+enum class ConsoleMode
+{
+	Play,
+	Edit,
+	Draw
+};
 
 class C4EditCursor
 {
@@ -34,10 +42,12 @@ public:
 protected:
 	bool fAltWasDown;
 	bool fSelectionChanged;
-	int32_t Mode;
-	int32_t X, Y, X2, Y2;
-	bool Hold, DragFrame, DragLine;
-	C4Object *Target, *DropTarget;
+	ConsoleMode mode;
+	int32_t X, Y, X2, Y2; // Cursor position in map space
+	int32_t viewSpaceX, viewSpaceY; // Cursor position in viewport space
+	bool holdLeft, holdRight;
+	bool dragFrame, dragLine, dragViewport;
+	C4Object *target, *dropTarget;
 #ifdef _WIN32
 	HMENU hMenu;
 #elif defined(WITH_DEVELOPER_MODE)
@@ -48,7 +58,7 @@ protected:
 	GtkWidget *itemGrabContents;
 	GtkWidget *itemProperties;
 #endif // _WIN32/WITH_DEVELOPER_MODE
-	C4ObjectList Selection;
+	C4ObjectList selection;
 
 public:
 	void Default();
@@ -57,9 +67,9 @@ public:
 	void ClearPointers(C4Object *pObj);
 	bool ToggleMode();
 	void Draw(C4FacetEx &cgo);
-	int32_t GetMode();
+	ConsoleMode GetMode() const;
 	C4Object *GetTarget();
-	bool SetMode(int32_t iMode);
+	bool SetMode(ConsoleMode iMode);
 	bool In(const char *szText);
 	bool Duplicate();
 	bool OpenPropTools();
@@ -69,14 +79,15 @@ public:
 	bool RightButtonUp();
 	bool RightButtonDown(bool fControl);
 	void MiddleButtonUp();
-	bool Move(int32_t iX, int32_t iY, uint16_t wKeyFlags);
+	bool Move(C4Viewport *const cvp, int32_t iX, int32_t iY, uint16_t wKeyFlags);
 	bool Init();
 	bool EditingOK();
-	C4ObjectList &GetSelection() { return Selection; }
-	void SetHold(bool fToState) { Hold = fToState; }
+	C4ObjectList &GetSelection() { return selection; }
+	void SetHold(bool fToState) { holdLeft = fToState; }
 	void OnSelectionChanged();
 	bool AltDown();
 	bool AltUp();
+	void MoveSelection(int32_t iXOff, int32_t iYOff);
 
 protected:
 	bool UpdateStatusBar();
@@ -91,7 +102,6 @@ protected:
 	void ApplyToolBrush();
 	void DrawSelectMark(C4Facet &cgo);
 	void FrameSelection();
-	void MoveSelection(int32_t iXOff, int32_t iYOff);
 	void EMMoveObject(enum C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj, const C4ObjectList *pObjs = nullptr, const char *szScript = nullptr);
 	void EMControl(enum C4PacketType eCtrlType, class C4ControlPacket *pCtrl);
 
