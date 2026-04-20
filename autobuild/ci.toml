@@ -95,3 +95,11 @@ runner = 'macos-15-intel'
 arch = 'x64'
 platform-suffix = 'mac'
 itch-manifest = 'mac'
+
+[matrix.mac-arm64]
+runner = 'macos-latest'
+
+[[matrix.mac-arm64.config]]
+arch = 'arm64'
+platform-suffix = 'mac-arm64'
+itch-manifest = 'mac-arm64'
