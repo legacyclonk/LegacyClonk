@@ -26,7 +26,7 @@ def transform_matrix(matrix: dict) -> list:
 
             new_matrix.append({
                 **config,
-                "runner": runner["runner"],
+                "runner": config.get("runner", runner["runner"]),
                 "os": os.capitalize(),
                 "config-suffix": config_suffix,
                 "platform-suffix": platform_suffix
@@ -39,7 +39,7 @@ def transform_matrix_itch(matrix: dict) -> list:
         for config in runner["config"]:
             if "itch-manifest" in config:
                 new_matrix.append({
-                    "runner": runner["runner"],
+                    "runner": config.get("runner", runner["runner"]),
                     "os": os.capitalize(),
                     **config
                 })
