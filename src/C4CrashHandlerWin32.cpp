@@ -199,7 +199,7 @@ namespace
 
 		for (const auto [index, contents] : exc->ContextRecord->X | std::views::take(29) | std::views::enumerate)
 		{
-			LOG_DYNAMIC_TEXT("X%ld: " POINTER_FORMAT "\n", index, contents);
+			LOG_DYNAMIC_TEXT("X%zd: " POINTER_FORMAT "\n", index, contents);
 		}
 		LOG_DYNAMIC_TEXT("Fp: " POINTER_FORMAT "\n", exc->ContextRecord->Fp);
 		LOG_DYNAMIC_TEXT("Lr: " POINTER_FORMAT "\n", exc->ContextRecord->Lr);
