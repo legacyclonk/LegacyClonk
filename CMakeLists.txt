@@ -524,10 +524,20 @@ if (WIN32)
 	target_include_directories(clonk PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/generated/cppwinrt")
 
 	if (USE_WINDOWS_RUNTIME)
-		if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+		include(GetArchitecture)
+
+		if (TARGET_ARCHITECTURE_KNOWN)
+			message(STATUS "Determined target architecture: ${TARGET_ARCHITECTURE}")
+		endif ()
+
+		if (NOT TARGET_ARCHITECTURE_KNOWN)
+			message(WARNING "Could not determine target architecture. Not applying hack for GetSystemTimePreciseAsFileTime")
+		elseif ("${TARGET_ARCHITECTURE}" STREQUAL "x86_64")
 			target_link_options(clonk PRIVATE "/alternatename:WINRT_IMPL_GetSystemTimePreciseAsFileTime=Clonk_GetSystemTimePreciseAsFileTime")
-		else ()
+		elseif ("${TARGET_ARCHITECTURE}" STREQUAL "x86")
 			target_link_options(clonk PRIVATE "/alternatename:_WINRT_IMPL_GetSystemTimePreciseAsFileTime@4=_Clonk_GetSystemTimePreciseAsFileTime@4")
+		elseif ("${TARGET_ARCHITECTURE}" STREQUAL "aarch64")
+			# Not needed, because too old Windows versions don’t support ARM
 		endif ()
 	endif ()
 endif ()
