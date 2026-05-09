@@ -36,6 +36,7 @@
 
 #else
 
+#include <unistd.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
