@@ -79,8 +79,8 @@ debugrec = true
 [[matrix.windows.config]]
 runner = 'windows-11-arm'
 arch = 'aarch64'
-platform-suffix = 'winarm64'
-itch-manifest = 'winarm64'
+platform-suffix = 'win-arm64'
+itch-manifest = 'win-arm64'
 vs_arch = 'arm64'
 
 [matrix.linux]
@@ -100,7 +100,7 @@ debugrec = true
 [[matrix.linux.config]]
 runner = 'ubuntu-22.04-arm'
 arch = 'aarch64'
-platform-suffix = 'linuxarm64'
+platform-suffix = 'linux-arm64'
 itch-manifest = 'linux'
 
 [matrix.mac]
@@ -114,5 +114,5 @@ itch-manifest = 'mac'
 [[matrix.mac.config]]
 runner = 'macos-latest'
 arch = 'aarch64'
-platform-suffix = 'macarm64'
+platform-suffix = 'mac-arm64'
 itch-manifest = 'mac'
