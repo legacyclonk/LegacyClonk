@@ -73,6 +73,7 @@ publish-groups = true
 name = 'debugrec'
 arch = 'x86'
 platform-suffix = 'win32'
+vs_arch = 'x86'
 debugrec = true
 
 [[matrix.windows.config]]
