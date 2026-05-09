@@ -7,7 +7,7 @@ set(CMAKE_C_COMPILER "$ENV{LLVM_PREFIX}/bin/clang" CACHE STRING "")
 set(CMAKE_CXX_COMPILER "$ENV{LLVM_PREFIX}/bin/clang++" CACHE STRING "")
 
 # explicit ninja path (helps CI)
-set(CMAKE_MAKE_PROGRAM "/usr/local/opt/ninja/bin/ninja" CACHE FILEPATH "Path to Ninja")
+set(CMAKE_MAKE_PROGRAM "$ENV{NINJA_PREFIX}/bin/ninja" CACHE FILEPATH "Path to Ninja")
 
 # -------------------------------------
 # macOS target + sysroot (no Xcode)
