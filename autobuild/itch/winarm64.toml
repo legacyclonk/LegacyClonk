@@ -1,6 +1,0 @@
-# [[prereqs]]
-# name = "vcredist-2019-arm64" # currently itch doesn’t have it. Apparently it only supports ARM for macOS
-
-[[actions]]
-name = "play"
-path = "clonk.exe"
