@@ -47,6 +47,8 @@ cmake --build build
 #### macOS
 Configure with CMake
 ```bash
+export LLVM_PREFIX="$(brew --prefix llvm@22)"
+export NINJA_PREFIX="$(brew --prefix ninja)"
 cmake . -B build -DCMAKE_TOOLCHAIN_FILE=$PWD/autobuild/platforms/clang_mac.cmake
 ```
 
