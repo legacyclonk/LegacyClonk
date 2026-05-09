@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-LINUXDEPLOY_VERSION=1-alpha-20220822-1
+LINUXDEPLOY_VERSION=1-alpha-20251107-1
 
-curl -L -o linuxdeploy "https://github.com/linuxdeploy/linuxdeploy/releases/download/$LINUXDEPLOY_VERSION/linuxdeploy-x86_64.AppImage"
+curl -L -o linuxdeploy "https://github.com/linuxdeploy/linuxdeploy/releases/download/$LINUXDEPLOY_VERSION/linuxdeploy-$GCC_ARCH.AppImage"
 curl -L -O "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh"
 chmod +x linuxdeploy linuxdeploy-plugin-gtk.sh
 
