@@ -19,6 +19,10 @@ jobs:
   build-binaries:
     name: Build Binaries
     runs-on: ${{ matrix.runner }}
+    env:
+      DEPS_VERSION: '2026-05-09'
+      GCC_VERSION: '16.1.0'
+      LLVM_VERSION: 22
     strategy:
       fail-fast: false
       matrix:
@@ -33,24 +37,15 @@ jobs:
 
       - name: "Configure Platform"
         run: |
-          autobuild/${{ matrix.os }}.sh
+          autobuild/platforms/${{ matrix.os }}.sh
 
       - name: "Configure Platform Architecture"
         run: |
-          autobuild/${{ matrix.os }}-${{ matrix.arch }}.sh
+          autobuild/platforms/${{ matrix.os }}-${{ matrix.arch }}.sh
 
       - name: "Linux: Setup"
         if: ${{ matrix.os == 'Linux' }}
-        run: $CHROOT autobuild/setup_linux.sh
-
-      - name: "Mac: Work around libpng mess"
-        if: ${{ matrix.os == 'Mac' }}
-        run: |
-          if [ -d /Library/Frameworks/Mono.framework/Headers ]; then
-            sudo rm -r /Library/Frameworks/Mono.framework/Headers
-          else
-            echo "Mono headers not found, skipping."
-          fi
+        run: $CHROOT autobuild/platforms/setup_linux.sh
 
       - name: "Windows: Setup VS Dev Environment"
         if: ${{ matrix.os == 'Windows' }}
@@ -62,7 +57,7 @@ jobs:
         run: |
           mkdir deps
           cd deps
-          curl -L https://github.com/legacyclonk/deps/releases/download/2025-09-13/lc_deps-${{ matrix.os }}-${{ matrix.arch }}.tar.gz | tar -xz
+          curl -L "https://github.com/legacyclonk/deps/releases/download/$DEPS_VERSION/lc_deps-${{ matrix.os }}-${{ matrix.arch }}.tar.gz" | tar -xz
           ./fix_paths.sh
 
       - name: Configure
