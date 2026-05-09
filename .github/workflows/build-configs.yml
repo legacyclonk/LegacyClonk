@@ -63,6 +63,9 @@ jobs:
             windowing: SDL
     env:
       PLATFORM: ${{ matrix.arch }}
+      DEPS_VERSION: '2026-05-09'
+      GCC_VERSION: '16.1.0'
+      LLVM_VERSION: 22
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -73,19 +76,15 @@ jobs:
       - name: "Configure Platform"
         run: |
           echo "CONFIG_SUFFIX=${{ matrix.env }}-${{ matrix.arch }}" >> $GITHUB_ENV
-          autobuild/${{ matrix.env }}.sh
+          autobuild/platforms/${{ matrix.env }}.sh
 
       - name: "Configure Platform Architecture"
         run: |
-          autobuild/${{ matrix.env }}-${{ matrix.arch }}.sh
+          autobuild/platforms/${{ matrix.env }}-${{ matrix.arch }}.sh
 
       - name: "Linux: Setup"
         if: ${{ matrix.env == 'Linux' }}
-        run: $CHROOT autobuild/setup_linux.sh
-
-      - name: "Mac: Work around libpng mess"
-        if: ${{ matrix.env == 'Mac' }}
-        run: sudo rm -r /Library/Frameworks/Mono.framework/Headers
+        run: $CHROOT autobuild/platforms/setup_linux.sh
 
       - name: "Windows: Setup VS Dev Environment"
         if: ${{ matrix.env == 'Windows' }}
@@ -97,7 +96,7 @@ jobs:
         run: |
           mkdir deps
           cd deps
-          curl -L https://github.com/legacyclonk/deps/releases/download/2025-09-13/lc_deps-$CONFIG_SUFFIX.tar.gz | tar -xz
+          curl -L "https://github.com/legacyclonk/deps/releases/download/$DEPS_VERSION/lc_deps-$CONFIG_SUFFIX.tar.gz" | tar -xz
           ./fix_paths.sh
 
       - name: "Configuration setup: No Sound"

@@ -47,7 +47,7 @@ cmake --build build
 #### macOS
 Configure with CMake
 ```bash
-cmake . -B build -DCMAKE_TOOLCHAIN_FILE=$PWD/autobuild/clang_mac.cmake
+cmake . -B build -DCMAKE_TOOLCHAIN_FILE=$PWD/autobuild/platforms/clang_mac.cmake
 ```
 
 Compile with CMake

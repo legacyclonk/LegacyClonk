@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.20)
 # -------------------------------
 # COMPILERS (from Homebrew LLVM)
 # -------------------------------
-set(CMAKE_C_COMPILER "/usr/local/opt/llvm/bin/clang" CACHE STRING "")
-set(CMAKE_CXX_COMPILER "/usr/local/opt/llvm/bin/clang++" CACHE STRING "")
+set(CMAKE_C_COMPILER "$ENV{LLVM_PREFIX}/bin/clang" CACHE STRING "")
+set(CMAKE_CXX_COMPILER "$ENV{LLVM_PREFIX}/bin/clang++" CACHE STRING "")
 
 # explicit ninja path (helps CI)
 set(CMAKE_MAKE_PROGRAM "/usr/local/opt/ninja/bin/ninja" CACHE FILEPATH "Path to Ninja")
@@ -18,8 +18,8 @@ set(CMAKE_OSX_SYSROOT "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk" CACH
 # -------------------------------------
 # libc++ include + linker setup
 # -------------------------------------
-set(LLVM_CXX_INCLUDE "/usr/local/opt/llvm/include/c++/v1")
-set(LLVM_CXX_LIB     "/usr/local/opt/llvm/lib/c++")
+set(LLVM_CXX_INCLUDE "$ENV{LLVM_PREFIX}/include/c++/v1")
+set(LLVM_CXX_LIB     "$ENV{LLVM_PREFIX}/lib/c++")
 
 # Disable automatic stdlib selection
 set(CMAKE_C_FLAGS_INIT "-fexperimental-library -Wno-parentheses")
