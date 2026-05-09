@@ -90,7 +90,7 @@ jobs:
         if: ${{ matrix.env == 'Windows' }}
         uses: seanmiddleditch/gha-setup-vsdevenv@v4
         with:
-          arch: ${{ env.VS_ARCH }}
+          arch: ${{ matrix.vs_arch }}
 
       - name: "Dependencies"
         run: |
