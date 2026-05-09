@@ -25,8 +25,8 @@ def transform_matrix(matrix: dict) -> list:
                 pass
 
             new_matrix.append({
-                **config,
                 "runner": runner["runner"],
+                **config,
                 "os": os.capitalize(),
                 "config-suffix": config_suffix,
                 "platform-suffix": platform_suffix
