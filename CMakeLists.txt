@@ -29,13 +29,27 @@ if (APPLE)
 	set(LANGUAGE_OBJCXX OBJCXX)
 endif ()
 
-# Target Windows 7
-if (WIN32)
-	set(CMAKE_SYSTEM_VERSION 6.1)
-	add_compile_definitions(NTDDI_VERSION=NTDDI_WIN7 _WIN32_WINNT=_WIN32_WINNT_WIN7)
-endif ()
-
 project("LegacyClonk" LANGUAGES CXX ${LANGUAGE_OBJCXX})
+
+if (WIN32)
+	include(GetArchitecture)
+
+	if (TARGET_ARCHITECTURE_KNOWN)
+		message(STATUS "Determined target architecture: ${TARGET_ARCHITECTURE}")
+	else ()
+		message(WARNING "Could not determine target architecture. Not specifying target Windows version.")
+	endif ()
+
+	if (TARGET_ARCHITECTURE STREQUAL "aarch64")
+		# Target Windows 11
+		set(CMAKE_SYSTEM_VERSION 10.0.22000)
+		add_compile_definitions(NTDDI_VERSION=NTDDI_WIN11_GE _WIN32_WINNT=_WIN32_WINNT_WIN10)
+	else ()
+		# Target Windows 7
+		set(CMAKE_SYSTEM_VERSION 6.1)
+		add_compile_definitions(NTDDI_VERSION=NTDDI_WIN7 _WIN32_WINNT=_WIN32_WINNT_WIN7)
+	endif ()
+endif ()
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -524,15 +538,7 @@ if (WIN32)
 	target_include_directories(clonk PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/generated/cppwinrt")
 
 	if (USE_WINDOWS_RUNTIME)
-		include(GetArchitecture)
-
-		if (TARGET_ARCHITECTURE_KNOWN)
-			message(STATUS "Determined target architecture: ${TARGET_ARCHITECTURE}")
-		endif ()
-
-		if (NOT TARGET_ARCHITECTURE_KNOWN)
-			message(WARNING "Could not determine target architecture. Not applying hack for GetSystemTimePreciseAsFileTime")
-		elseif ("${TARGET_ARCHITECTURE}" STREQUAL "x86_64")
+		if ("${TARGET_ARCHITECTURE}" STREQUAL "x86_64")
 			target_link_options(clonk PRIVATE "/alternatename:WINRT_IMPL_GetSystemTimePreciseAsFileTime=Clonk_GetSystemTimePreciseAsFileTime")
 		elseif ("${TARGET_ARCHITECTURE}" STREQUAL "x86")
 			target_link_options(clonk PRIVATE "/alternatename:_WINRT_IMPL_GetSystemTimePreciseAsFileTime@4=_Clonk_GetSystemTimePreciseAsFileTime@4")
