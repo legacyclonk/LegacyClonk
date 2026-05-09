@@ -30,6 +30,7 @@
 #include <tlhelp32.h>
 
 #include <cinttypes>
+#include <ranges>
 
 static bool FirstCrash = true;
 
@@ -38,12 +39,15 @@ namespace
 #define LC_MACHINE_UNKNOWN 0x0
 #define LC_MACHINE_X86     0x1
 #define LC_MACHINE_X64     0x2
+#define LC_MACHINE_ARM64   0x3
 #if defined(_M_X64) || defined(__amd64)
 #	define LC_MACHINE LC_MACHINE_X64
 #elif defined(_M_IX86) || defined(__i386__)
 #	define LC_MACHINE LC_MACHINE_X86
+#elif defined(_M_ARM64) || defined(__aarch64__)
+#	define LC_MACHINE LC_MACHINE_ARM64
 #else
-#	define LC_MACHINE LC_MACHINE_UNKNOWN
+#	error Unknown architecture
 #endif
 
 	constexpr size_t DumpBufferSize = 2048;
@@ -71,7 +75,7 @@ namespace
 #else
 #	define POINTER_FORMAT_SUFFIX "p"
 #endif
-#if LC_MACHINE == LC_MACHINE_X64
+#if LC_MACHINE == LC_MACHINE_X64 || LC_MACHINE == LC_MACHINE_ARM64
 #	define POINTER_FORMAT "0x%016" POINTER_FORMAT_SUFFIX
 #elif LC_MACHINE == LC_MACHINE_X86
 #	define POINTER_FORMAT "0x%08" POINTER_FORMAT_SUFFIX
@@ -190,6 +194,30 @@ namespace
 		LOG_DYNAMIC_TEXT("EBP: " POINTER_FORMAT ", ESP: " POINTER_FORMAT ", EIP: " POINTER_FORMAT "\n",
 						 static_cast<size_t>(exc->ContextRecord->Ebp), static_cast<size_t>(exc->ContextRecord->Esp),
 						 static_cast<size_t>(exc->ContextRecord->Eip));
+#elif LC_MACHINE == LC_MACHINE_ARM64
+		LOG_STATIC_TEXT("\nProcessor registers (arm64):\n");
+
+		for (const auto [index, contents] : exc->ContextRecord->X | std::views::take(29) | std::views::enumerate)
+		{
+			LOG_DYNAMIC_TEXT("X%ld: " POINTER_FORMAT "\n", index, contents);
+		}
+		LOG_DYNAMIC_TEXT("Fp: " POINTER_FORMAT "\n", exc->ContextRecord->Fp);
+		LOG_DYNAMIC_TEXT("Lr: " POINTER_FORMAT "\n", exc->ContextRecord->Lr);
+
+		const auto cpsr = exc->ContextRecord->Cpsr;
+		LOG_DYNAMIC_TEXT("Flags: %c%c%c%c %c%c%c\n",
+						 (cpsr >> 31) & 1 ? 'N' : '.',	// Negative
+						 (cpsr >> 30) & 1 ? 'Z' : '.',	// Zero
+						 (cpsr >> 28) & 1 ? 'V' : '.',	// Overflow
+						 (cpsr >> 24) & 1 ? 'F' : '.',	// FP exception
+
+						 // exception masks
+						 (cpsr >>  8) & 1 ? 'A' : '.',	// Asynchronous abort
+						 (cpsr >>  7) & 1 ? 'I' : '.',	// IRQ
+						 (cpsr >>  6) & 1 ? 'F' : '.');	// FIQ
+
+		LOG_DYNAMIC_TEXT("  CurrentEL:              %u\n", (cpsr >> 2) & 0x3);
+		LOG_DYNAMIC_TEXT("  SPSel:                  %u\n", (cpsr >> 0) & 1);
 #endif
 #if LC_MACHINE == LC_MACHINE_X64 || LC_MACHINE == LC_MACHINE_X86
 		LOG_DYNAMIC_TEXT("EFLAGS: 0x%08x (%c%c%c%c%c%c%c)\n", static_cast<unsigned int>(exc->ContextRecord->EFlags),
@@ -210,6 +238,8 @@ namespace
 			exc->ContextRecord->Rsp
 #elif LC_MACHINE == LC_MACHINE_X86
 			exc->ContextRecord->Esp
+#elif LC_MACHINE_ARM64
+			exc->ContextRecord->Sp
 #endif
 			;
 		if (VirtualQuery(reinterpret_cast<LPCVOID>(stackPointer), &stackInfo, sizeof(stackInfo)))
