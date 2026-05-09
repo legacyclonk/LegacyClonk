@@ -37,16 +37,16 @@ jobs:
       VERSION: ${{ needs.generate-ci-config.outputs.buildversion }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           sparse-checkout: |
             autobuild
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           repository: ${{ github.repository_owner }}/content
           path: content
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: c4group-Windows-x64
 
@@ -59,13 +59,13 @@ jobs:
           ../autobuild/MakeContentGroupsAndUpdateGroups.ps1 -OutDir output
 
       - name: Publish content
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: content
           path: content/output/*.c4[dgf]
 
       - name: Publish content updates
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: content-updates
           path: |
@@ -73,7 +73,7 @@ jobs:
             !content/output/lc_${{ env.OBJVERSIONNODOTS }}.c4u
 
       - name: Publish combined update
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: lc_${{ env.OBJVERSIONNODOTS }}.c4u
           path: content/output/lc_${{ env.OBJVERSIONNODOTS }}.c4u
@@ -89,18 +89,18 @@ jobs:
       VERSION: ${{ needs.generate-ci-config.outputs.buildversion }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           sparse-checkout: |
             autobuild
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: System.c4g
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: Graphics.c4g
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: c4group-Windows-x64
 
@@ -113,13 +113,13 @@ jobs:
         run: autobuild/MakeEngineGroupUpdateGroups.ps1 -GroupPath Graphics.c4g -OutDir output
 
       - name: Publish System.c4g.c4u
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: System.c4g.c4u
           path: output/System.c4g.c4u
 
       - name: Publish Graphics.c4g.c4u
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Graphics.c4g.c4u
           path: output/Graphics.c4g.c4u
@@ -137,21 +137,21 @@ jobs:
       VERSION: ${{ needs.generate-ci-config.outputs.buildversion }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           sparse-checkout: |
            autobuild
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: clonk-${{ matrix.config-suffix }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: c4group-${{ matrix.config-suffix }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: '*.c4g'
           merge-multiple: true
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: content
 
@@ -189,23 +189,23 @@ jobs:
           chmod +x ./clonk ./c4group
           tar czf ../lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}.tar.gz *
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ matrix.os != 'Linux' }}
         with:
           name: lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}.zip
           path: output/lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ matrix.os != 'Linux' }}
         with:
           name: lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}.zip
           path: output/lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ matrix.os == 'Linux' }}
         with:
           name: lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}.tar.gz
           path: output/lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}.tar.gz
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ matrix.os == 'Linux' }}
         with:
           name: lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}.tar.gz
@@ -227,24 +227,24 @@ jobs:
       VERSION: ${{ needs.generate-ci-config.outputs.buildversion }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           sparse-checkout: |
             autobuild
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: clonk-${{ matrix.config-suffix }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: c4group-${{ matrix.config-suffix }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: '*.c4g.c4u'
           merge-multiple: true
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: lc_${{ env.OBJVERSIONNODOTS }}.c4u
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: content-updates
 
@@ -261,7 +261,7 @@ jobs:
         run: autobuild/MakeEngineUpdateGroups.ps1 -PlatformSuffix ${{ matrix.platform-suffix }} -RequireVersion ${{ env.OBJVERSION }} -OutDir output
 
       - name: Publish Engine Update
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}.c4u
           path: output/lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}.c4u
@@ -271,14 +271,14 @@ jobs:
 
       - name: Publish Combined Update
         if: ${{ !env.MAJOR_UPDATE }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: lc_${{ env.OBJVERSIONNODOTS }}_${{ env.VERSION }}_${{ matrix.platform-suffix }}.c4u
           path: output/lc_${{ env.OBJVERSIONNODOTS }}_${{ env.VERSION }}_${{ matrix.platform-suffix }}.c4u
 
       - name: Publish Combined Major Update
         if: ${{ env.MAJOR_UPDATE }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: lc_${{ env.OBJVERSIONNODOTS }}_${{ matrix.platform-suffix }}.c4u
           path: output/lc_${{ env.OBJVERSIONNODOTS }}_${{ matrix.platform-suffix }}.c4u
@@ -295,33 +295,33 @@ jobs:
       VERSION: ${{ needs.generate-ci-config.outputs.buildversion }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           sparse-checkout: |
             licenses
             src/res
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: clonk-Windows-x64
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: c4group-Windows-x64
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: clonk-Windows-x86
           path: x86
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: c4group-Windows-x86
           path: x86
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: '*.c4g'
           merge-multiple: true
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: content
 
@@ -339,7 +339,7 @@ jobs:
             /DC4SOURCEDIR=${{ github.workspace }}
 
       - name: Publish Installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: lc_setup_win.exe
           path: Output/lc_setup_win.exe
@@ -361,28 +361,28 @@ jobs:
       matrix:
         include: ${{ fromJson(needs.generate-ci-config.outputs.matrix) }}
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         if: ${{ matrix.os != 'Linux' }}
         with:
           name: LegacyClonk-${{ matrix.config-suffix }}.zip
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         if: ${{ matrix.os == 'Linux' }}
         with:
           name: LegacyClonk-${{ matrix.config-suffix }}.tar.gz
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         if: ${{ matrix.publish-groups }}
         with:
           name: System.c4g
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         if: ${{ matrix.publish-groups }}
         with:
           name: Graphics.c4g
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         if: ${{ matrix.publish-groups }}
         with:
           name: content
           path: content
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         if: ${{ matrix.publish-groups }}
         with:
           name: lc_setup_win.exe
@@ -466,16 +466,16 @@ jobs:
       VERSION: ${{ needs.generate-ci-config.outputs.buildversion }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           sparse-checkout: |
             autobuild
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         if: ${{ matrix.os != 'Linux' }}
         with:
           name: lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}.zip
           path: lc_full
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         if: ${{ matrix.os == 'Linux' }}
         with:
           name: lc_full_${{ env.VERSION }}_${{ matrix.platform-suffix }}.tar.gz

@@ -29,7 +29,7 @@ jobs:
       matrix:
         include: ${{ fromJson(inputs.matrix) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -50,7 +50,7 @@ jobs:
 
       - name: "Windows: Setup VS Dev Environment"
         if: ${{ matrix.os == 'Windows' }}
-        uses: seanmiddleditch/gha-setup-vsdevenv@v4
+        uses: seanmiddleditch/gha-setup-vsdevenv@v5
         with:
           arch: ${{ matrix.vs_arch }}
 
@@ -97,7 +97,7 @@ jobs:
 
       - name: "Linux: Publish Engine Binary For Debugging"
         if: ${{ matrix.os == 'Linux' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: clonk-noappimage-${{ matrix.config-suffix }}
           path: output/clonk
@@ -117,14 +117,14 @@ jobs:
 
       - name: "Publish Engine"
         id: publish-engine
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: clonk-${{ matrix.config-suffix }}
           path: output/clonk*
 
       - name: "Publish c4group"
         id: publish-c4group
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: c4group-${{ matrix.config-suffix }}
           path: output/c4group*
@@ -137,14 +137,14 @@ jobs:
 
       - name: "Publish System.c4g"
         if: ${{ matrix.include-groups }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: System.c4g
           path: System.c4g
 
       - name: "Publish Graphics.c4g"
         if: ${{ matrix.include-groups }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Graphics.c4g
           path: Graphics.c4g
@@ -163,14 +163,14 @@ jobs:
 
       - name: "Publish Combined"
         if: ${{ inputs.pack-engine-and-c4group && matrix.os != 'Linux' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: LegacyClonk-${{ matrix.config-suffix }}.zip
           path: LegacyClonk-${{ matrix.config-suffix }}.zip
 
       - name: "Publish Combined"
         if: ${{ inputs.pack-engine-and-c4group && matrix.os == 'Linux' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: LegacyClonk-${{ matrix.config-suffix }}.tar.gz
           path: output/LegacyClonk-${{ matrix.config-suffix }}.tar.gz
