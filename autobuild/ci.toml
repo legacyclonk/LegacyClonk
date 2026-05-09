@@ -59,6 +59,7 @@ runner = 'windows-latest'
 arch = 'x86'
 platform-suffix = 'win32'
 itch-manifest = 'win32'
+vs_arch = 'x86'
 
 [[matrix.windows.config]]
 arch = 'x64'
