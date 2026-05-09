@@ -90,11 +90,13 @@ runner = 'ubuntu-22.04'
 arch = 'x64'
 platform-suffix = 'linux64'
 itch-manifest = 'linux'
+gcc_arch = 'x86_64'
 
 [[matrix.linux.config]]
 name = 'debugrec'
 arch = 'x64'
 platform-suffix = 'linux64'
+gcc_arch = 'x86_64'
 debugrec = true
 
 [[matrix.linux.config]]
@@ -102,6 +104,7 @@ runner = 'ubuntu-22.04-arm'
 arch = 'aarch64'
 platform-suffix = 'linux-arm64'
 itch-manifest = 'linux'
+gcc_arch = 'aarch64'
 
 [matrix.mac]
 runner = 'macos-15-intel'
