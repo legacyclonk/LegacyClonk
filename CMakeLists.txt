@@ -31,6 +31,8 @@ endif ()
 
 project("LegacyClonk" LANGUAGES CXX ${LANGUAGE_OBJCXX})
 
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 if (WIN32)
 	include(GetArchitecture)
 
@@ -59,7 +61,6 @@ if (APPLE)
 	set(CMAKE_OBJCXX_STANDARD_REQUIRED ${CMAKE_CXX_STANDARD_REQUIRED})
 endif ()
 
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include(CheckCXXSymbolExists)
 include(CheckIncludeFileCXX)
