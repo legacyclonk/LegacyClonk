@@ -25,6 +25,7 @@ Essential dependencies:
 
 Extract the [latest pre-built dependencies](https://github.com/legacyclonk/deps/releases/latest) for your platform into a folder called `deps`.
 Make sure that besides the `CMakeLists.txt` of LegacyClonk there are folders `deps/include`, `deps/lib`, etc. as extracted from the binary package.
+Then run `deps/fix_paths.sh` (use Git Bash on Windows).
 
 
 ### Configuring and compiling the engine
