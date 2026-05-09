@@ -8,7 +8,7 @@ LLVM_PREFIX="$(brew --prefix "llvm@$LLVM_VERSION")"
 
 echo "LLVM_PREFIX=$LLVM_PREFIX" >> $GITHUB_ENV
 
-echo "CMAKE_CONFIGURE_ARGS=-DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 -DCMAKE_TOOLCHAIN_FILE=$PWD/autobuild/platforms/clang_mac.cmake" >> $GITHUB_ENV
+echo "CMAKE_CONFIGURE_ARGS=-DCMAKE_TOOLCHAIN_FILE=$PWD/autobuild/platforms/clang_mac.cmake" >> $GITHUB_ENV
 
 cat autobuild/platforms/mac_any_cast.h >> src/C4InteractiveThread.h
 
