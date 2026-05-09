@@ -187,11 +187,11 @@ jobs:
 
       - name: "Merge binaries"
         run: |
-          mkdir output
+          mkdir output output/clonk # extra clonk nesting due to path flattening on upload
           lipo -create -output output/c4group c4group-Mac-*/c4group
 
-          cp -r clonk-Mac-aarch64/clonk.app output/clonk.app
-          lipo -create -output output/clonk.app/Contents/MacOS/clonk clonk-Mac-*/clonk.app/Contents/MacOS/clonk
+          cp -r clonk-Mac-aarch64/clonk.app output/clonk/clonk.app
+          lipo -create -output output/clonk/clonk.app/Contents/MacOS/clonk clonk-Mac-*/clonk.app/Contents/MacOS/clonk
 
       - name: "Upload merged c4group"
         uses: actions/upload-artifact@v7
@@ -203,4 +203,4 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: clonk-Mac-universal
-          path: output/clonk.app
+          path: output/clonk
