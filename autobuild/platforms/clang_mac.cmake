@@ -12,7 +12,6 @@ set(CMAKE_MAKE_PROGRAM "$ENV{NINJA_PREFIX}/bin/ninja" CACHE FILEPATH "Path to Ni
 # -------------------------------------
 # macOS target + sysroot (no Xcode)
 # -------------------------------------
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "")
 set(CMAKE_OSX_SYSROOT "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk" CACHE STRING "")
 
 # -------------------------------------
@@ -23,8 +22,8 @@ set(LLVM_CXX_LIB     "$ENV{LLVM_PREFIX}/lib/c++")
 
 # Disable automatic stdlib selection
 set(CMAKE_C_FLAGS_INIT "-fexperimental-library -Wno-parentheses")
-set(CMAKE_CXX_FLAGS_INIT "-nostdlib++ ${CMAKE_C_FLAGS_INIT}")
-set(CMAKE_OBJCXX_FLAGS_INIT "-nostdlib++ ${CMAKE_CXX_FLAGS_INIT}")
+set(CMAKE_CXX_FLAGS_INIT "-nostdlib++ -nostdinc++ ${CMAKE_C_FLAGS_INIT}")
+set(CMAKE_OBJCXX_FLAGS_INIT "-nostdlib++ -nostdinc++ ${CMAKE_CXX_FLAGS_INIT}")
 
 # Force static libc++ linkage
 set(STDLIB_FLAGS "-nostdlib++ ${LLVM_CXX_LIB}/libc++.a ${LLVM_CXX_LIB}/libc++abi.a ${LLVM_CXX_LIB}/libc++experimental.a")
@@ -33,7 +32,7 @@ set(CMAKE_EXE_LINKER_FLAGS_INIT "${STDLIB_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS_INIT "${STDLIB_FLAGS}")
 
 # Provide libc++ headers explicitly
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${LLVM_CXX_INCLUDE}")
+set(CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT} -I${LLVM_CXX_INCLUDE}")
 
 # -------------------------------------
 # Avoid accidental Xcode SDK usage
