@@ -14,9 +14,6 @@ echo "CMAKE_CONFIGURE_ARGS=-DCMAKE_TOOLCHAIN_FILE=$PWD/autobuild/platforms/clang
 
 cat autobuild/platforms/mac_any_cast.h >> src/C4InteractiveThread.h
 
-echo "target_include_directories(clonk BEFORE PUBLIC /usr/local/opt/llvm/include/c++/v1)" >> CMakeLists.txt
-cat CMakeLists.txt
-
 # Work around libpng mess
 if [ -d /Library/Frameworks/Mono.framework/Headers ]; then
 	sudo rm -r /Library/Frameworks/Mono.framework/Headers
