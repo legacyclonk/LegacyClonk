@@ -33,6 +33,7 @@ set(CMAKE_SHARED_LINKER_FLAGS_INIT "${STDLIB_FLAGS}")
 
 # Provide libc++ headers explicitly
 set(CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT} -I${LLVM_CXX_INCLUDE}")
+set(CMAKE_OBJCXX_FLAGS_INIT "${CMAKE_OBJCXX_FLAGS_INIT} -I${LLVM_CXX_INCLUDE}")
 
 # -------------------------------------
 # Avoid accidental Xcode SDK usage
