@@ -22,8 +22,17 @@ endif ()
 # -------------------------------------
 # libc++ include + linker setup
 # -------------------------------------
-set(LLVM_CXX_INCLUDE "$ENV{LLVM_PREFIX}/include/c++/v1")
-set(LLVM_CXX_LIB     "$ENV{LLVM_PREFIX}/lib/c++")
+if (DEFINED ENV{LLVM_CXX_INCLUDE})
+	set(LLVM_CXX_INCLUDE "$ENV{LLVM_CXX_INCLUDE}")
+else ()
+	set(LLVM_CXX_INCLUDE "$ENV{LLVM_PREFIX}/include/c++/v1")
+endif ()
+
+if (DEFINED ENV{LLVM_CXX_LIB})
+	set(LLVM_CXX_LIB "$ENV{LLVM_CXX_LIB}")
+else ()
+	set(LLVM_CXX_LIB     "$ENV{LLVM_PREFIX}/lib/c++")
+endif ()
 
 # Disable automatic stdlib selection
 set(CMAKE_C_FLAGS_INIT "-fexperimental-library -Wno-parentheses -D_LIBCPP_DISABLE_AVAILABILITY")
