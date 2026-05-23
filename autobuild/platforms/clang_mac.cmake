@@ -26,7 +26,7 @@ set(LLVM_CXX_INCLUDE "$ENV{LLVM_PREFIX}/include/c++/v1")
 set(LLVM_CXX_LIB     "$ENV{LLVM_PREFIX}/lib/c++")
 
 # Disable automatic stdlib selection
-set(CMAKE_C_FLAGS_INIT "-fexperimental-library -Wno-parentheses")
+set(CMAKE_C_FLAGS_INIT "-fexperimental-library -Wno-parentheses -D_LIBCPP_DISABLE_AVAILABILITY")
 set(CMAKE_CXX_FLAGS_INIT "-nostdlib++ -nostdinc++ ${CMAKE_C_FLAGS_INIT}")
 set(CMAKE_OBJCXX_FLAGS_INIT "-nostdlib++ -nostdinc++ ${CMAKE_CXX_FLAGS_INIT}")
 
