@@ -14,7 +14,6 @@ set(CMAKE_MAKE_PROGRAM "$ENV{NINJA_PREFIX}/bin/ninja" CACHE FILEPATH "Path to Ni
 # -------------------------------------
 if (DEFINED ENV{OSX_SDK})
 	set(CMAKE_OSX_SYSROOT "$ENV{OSX_SDK}" CACHE STRING "")
-	message (WARNING "Using OSX SDK: ${CMAKE_OSX_SYSROOT}")
 else ()
 	set(CMAKE_OSX_SYSROOT "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk" CACHE STRING "")
 endif ()
