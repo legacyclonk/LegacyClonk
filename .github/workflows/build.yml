@@ -175,6 +175,10 @@ jobs:
           name: LegacyClonk-${{ matrix.config-suffix }}.tar.gz
           path: output/LegacyClonk-${{ matrix.config-suffix }}.tar.gz
 
+      - name: Setup upterm session
+        if: ${{ matrix.os == 'Mac' && failure() }}
+        uses: owenthereal/action-upterm@v1
+
   create-universal-binaries:
     name: "Merge into universal Mac binaries"
     needs: [build-binaries]
