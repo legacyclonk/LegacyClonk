@@ -12,5 +12,6 @@ curl -L https://packages.macports.org/clang-21/clang-21-21.1.8_1+analyzer.darwin
 
 echo "LLVM_CXX_INCLUDE=$PWD/libexec/llvm-21/include/c++/v1" >> $GITHUB_ENV
 echo "LLVM_CXX_LIB=$PWD/libexec/llvm-21/lib/libc++" >> $GITHUB_ENV
+echo "LIBCLANG_RT=$PWD/libexec/llvm-21/lib/clang/21/lib/darwin/libclang_rt.profile_osx.a $PWD/libexec/llvm-21/lib/clang/21/lib/darwin/libclang_rt.fuzzer_interceptors_osx.a $PWD/libexec/llvm-21/lib/clang/21/lib/darwin/libclang_rt.fuzzer_osx.a $PWD/libexec/llvm-21/lib/clang/21/lib/darwin/libclang_rt.osx.a $PWD/libexec/llvm-21/lib/clang/21/lib/darwin/libclang_rt.cc_kext.a $PWD/libexec/llvm-21/lib/clang/21/lib/darwin/libclang_rt.fuzzer_no_main_osx.a" >> $GITHUB_ENV
 
 popd
