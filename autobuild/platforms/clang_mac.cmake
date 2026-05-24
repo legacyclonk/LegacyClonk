@@ -39,7 +39,7 @@ set(CMAKE_CXX_FLAGS_INIT "-nostdlib++ -nostdinc++ ${CMAKE_C_FLAGS_INIT}")
 set(CMAKE_OBJCXX_FLAGS_INIT "-nostdlib++ -nostdinc++ ${CMAKE_CXX_FLAGS_INIT}")
 
 # Force static libc++ linkage
-set(STDLIB_FLAGS "-nostdlib++ ${LLVM_CXX_LIB}/libc++.a ${LLVM_CXX_LIB}/libc++abi.a ${LLVM_CXX_LIB}/libc++experimental.a")
+set(STDLIB_FLAGS "-nostdlib++ ${LLVM_CXX_LIB}/libc++.a ${LLVM_CXX_LIB}/libc++abi.a ${LLVM_CXX_LIB}/libc++experimental.a $ENV{LIBCLANG_RT}")
 
 set(CMAKE_EXE_LINKER_FLAGS_INIT "${STDLIB_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS_INIT "${STDLIB_FLAGS}")
