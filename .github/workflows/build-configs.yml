@@ -63,8 +63,8 @@ jobs:
             windowing: SDL
     env:
       PLATFORM: ${{ matrix.arch }}
-      DEPS_VERSION: '2026-05-23'
-      LLVM_VERSION: 22
+      DEPS_VERSION: '2026-05-24'
+      LLVM_VERSION: 21
       GCC_VERSION: '16.1.0'
       GCC_ARCH: ${{ matrix.gcc_arch }}
 
