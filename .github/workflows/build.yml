@@ -61,6 +61,10 @@ jobs:
           curl -L "https://github.com/legacyclonk/deps/releases/download/$DEPS_VERSION/lc_deps-${{ matrix.os }}-${{ matrix.arch }}.tar.gz" | tar -xz
           ./fix_paths.sh
 
+      - name: Setup upterm session
+        if: ${{ matrix.os == 'Mac' }}
+        uses: owenthereal/action-upterm@v1
+
       - name: Configure
         run: |
           $CHROOT cmake -B build . -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_TESTS=On -DCMAKE_CTEST_ARGUMENTS=--output-on-failure $CMAKE_CONFIGURE_ARGS
