@@ -20,7 +20,7 @@ jobs:
     name: Build Binaries
     runs-on: ${{ matrix.runner }}
     env:
-      DEPS_VERSION: '2026-05-24'
+      DEPS_VERSION: '2026-05-29'
       LLVM_VERSION: 21
       GCC_VERSION: '16.1.0'
       GCC_ARCH: ${{ matrix.gcc_arch }}
