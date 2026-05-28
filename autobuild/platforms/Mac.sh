@@ -20,3 +20,5 @@ if [ -d /Library/Frameworks/Mono.framework/Headers ]; then
 else
 	echo "Mono headers not found, skipping removal."
 fi
+
+echo "BUILD_TOOL_URL=https://github.com/legacyclonk/deps/releases/download/2026-05-24-tools" >> $GITHUB_ENV
