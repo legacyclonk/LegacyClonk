@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2024, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2026, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -419,60 +419,89 @@ bool C4Surface::Read(C4Group &hGroup, bool fOwnPal)
 
 bool C4Surface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma, bool fSaveOverlayOnly, float scale)
 {
-	// Lock - WARNING - maybe locking primary surface here...
-	if (!Lock()) return false;
-
-	if (lpDDraw->Gamma.GetSize() == 0)
-		fApplyGamma = false;
-
-	int realWdt = static_cast<int32_t>(ceilf(Wdt * scale));
-	int realHgt = static_cast<int32_t>(ceilf(Hgt * scale));
-
-	// Create bitmap
-	StdBitmap bmp(realWdt, realHgt, fSaveAlpha);
-
-	// reset overlay if desired
-	C4Surface *pMainSfcBackup;
-	if (fSaveOverlayOnly) { pMainSfcBackup = pMainSfc; pMainSfc = nullptr; }
-
-#ifndef USE_CONSOLE
-	if (fPrimary && pGL)
+	const auto bmp = CloneToBitmap(fSaveAlpha, fApplyGamma, fSaveOverlayOnly, scale);
+	if (!bmp)
 	{
-		// Take shortcut. FIXME: Check Endian
-		for (int y = 0; y < realHgt; ++y)
-			glReadPixels(0, realHgt - y, realWdt, 1, fSaveAlpha ? GL_BGRA : GL_BGR, GL_UNSIGNED_BYTE, bmp.GetPixelAddr(0, y));
+		return false;
 	}
-	else
-#endif
-	{
-		// write pixel values
-		for (int y = 0; y < realHgt; ++y)
-			for (int x = 0; x < realWdt; ++x)
-			{
-				uint32_t dwClr = GetPixDw(x, y, false, scale);
-				if (fApplyGamma) dwClr = lpDDraw->Gamma.ApplyTo(dwClr);
-				bmp.SetPixel(x, y, dwClr);
-			}
-	}
-
-	// reset overlay
-	if (fSaveOverlayOnly) pMainSfc = pMainSfcBackup;
-
-	// Unlock
-	Unlock();
 
 	// Save bitmap to PNG file
 	try
 	{
-		CPNGFile(szFilename, realWdt, realHgt, fSaveAlpha).Encode(bmp.GetBytes());
+		CPNGFile{szFilename, bmp->GetWidth(), bmp->GetHeight(), fSaveAlpha}.Encode(bmp->GetBytes());
 	}
 	catch (const std::runtime_error &)
 	{
 		return false;
 	}
 
-	// Success
 	return true;
+}
+
+std::optional<StdBitmap> C4Surface::CloneToBitmap(const bool withAlpha, bool applyGamma, const bool overlayOnly, const float scale)
+{
+	// Lock - WARNING - maybe locking primary surface here...
+	if (!Lock())
+	{
+		return std::nullopt;
+	}
+
+	if (lpDDraw->Gamma.GetSize() == 0)
+	{
+		applyGamma = false;
+	}
+
+	const auto realWdt = static_cast<int>(std::ceilf(Wdt * scale));
+	const auto realHgt = static_cast<int>(std::ceilf(Hgt * scale));
+
+	// Create bitmap
+	std::optional<StdBitmap> result{std::in_place, static_cast<std::uint32_t>(realWdt), static_cast<std::uint32_t>(realHgt), withAlpha};
+
+	// reset overlay if desired
+	C4Surface *mainSfcBackup{};
+	if (overlayOnly)
+	{
+		mainSfcBackup = pMainSfc;
+		pMainSfc = nullptr;
+	}
+
+#ifndef USE_CONSOLE
+	if (fPrimary && pGL)
+	{
+		// Take shortcut. FIXME: Check Endian
+		for (int y = 0; y < realHgt; ++y)
+		{
+			glReadPixels(0, realHgt - y, realWdt, 1, withAlpha ? GL_BGRA : GL_BGR, GL_UNSIGNED_BYTE, result->GetPixelAddr(0, y));
+		}
+	}
+	else
+#endif
+	{
+		// write pixel values
+		for (int y = 0; y < realHgt; ++y)
+		{
+			for (int x = 0; x < realWdt; ++x)
+			{
+				std::uint32_t dwClr = GetPixDw(x, y, false, scale);
+				if (applyGamma)
+				{
+					dwClr = lpDDraw->Gamma.ApplyTo(dwClr);
+				}
+				result->SetPixel(x, y, dwClr);
+			}
+		}
+	}
+
+	// reset overlay
+	if (overlayOnly)
+	{
+		pMainSfc = mainSfcBackup;
+	}
+
+	// Unlock
+	Unlock();
+
+	return result;
 }
 
 bool C4Surface::Wipe()

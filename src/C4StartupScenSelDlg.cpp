@@ -387,7 +387,7 @@ void C4MapFolderData::CreateGUIElements(C4StartupScenSelDlg *pMainDlg, C4GUI::Wi
 	// create scenario info listbox
 	pSelectionInfoBox = new C4GUI::TextWindow(rcScenInfoArea,
 		C4StartupScenSel_TitlePictureWdt + 2 * C4StartupScenSel_TitleOverlayMargin, C4StartupScenSel_TitlePictureHgt + 2 * C4StartupScenSel_TitleOverlayMargin,
-		C4StartupScenSel_TitlePicturePadding, 100, 4096, nullptr, true, &C4Startup::Get()->Graphics.fctScenSelTitleOverlay, C4StartupScenSel_TitleOverlayMargin);
+		C4StartupScenSel_TitlePicturePadding, 100, 4096, nullptr, true, &C4Startup::Get()->Graphics.scenSelTitleOverlayFrame, C4StartupScenSel_TitleOverlayMargin);
 	pSelectionInfoBox->SetDecoration(false, false, &C4Startup::Get()->Graphics.sfctBookScroll, true);
 	rContainer.AddElement(pSelectionInfoBox);
 }
@@ -1373,7 +1373,7 @@ C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResSt
 
 	// right side of book: Displaying current selection
 	pSelectionInfo = new C4GUI::TextWindow(caBook.GetFromRight(iBookPageWidth), C4StartupScenSel_TitlePictureWdt + 2 * C4StartupScenSel_TitleOverlayMargin, C4StartupScenSel_TitlePictureHgt + 2 * C4StartupScenSel_TitleOverlayMargin,
-		C4StartupScenSel_TitlePicturePadding, 100, 4096, nullptr, true, &C4Startup::Get()->Graphics.fctScenSelTitleOverlay, C4StartupScenSel_TitleOverlayMargin);
+		C4StartupScenSel_TitlePicturePadding, 100, 4096, nullptr, true, &C4Startup::Get()->Graphics.scenSelTitleOverlayFrame, C4StartupScenSel_TitleOverlayMargin, false, true);
 	pSelectionInfo->SetDecoration(false, false, &C4Startup::Get()->Graphics.sfctBookScroll, true);
 	pSheetBook->AddElement(pSelectionInfo);
 
