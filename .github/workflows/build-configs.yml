@@ -64,7 +64,7 @@ jobs:
     env:
       PLATFORM: ${{ matrix.arch }}
       DEPS_VERSION: '2026-05-31'
-      LLVM_VERSION: 21
+      LLVM_VERSION: 22
       GCC_VERSION: '16.1.0'
       GCC_ARCH: ${{ matrix.gcc_arch }}
 
