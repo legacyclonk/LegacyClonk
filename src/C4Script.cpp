@@ -1354,7 +1354,7 @@ static std::optional<C4ValueInt> FnGetY(C4AulContext *cthr, C4Object *pObj)
 	return {pObj->y};
 }
 
-static std::optional<C4ValueInt> FnGetAlive(C4AulContext *cthr, C4Object *pObj)
+static std::optional<bool> FnGetAlive(C4AulContext *cthr, C4Object *pObj)
 {
 	if (!pObj) pObj = cthr->Obj;
 	if (!pObj) return {};
