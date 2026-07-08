@@ -200,6 +200,7 @@ jobs:
         with:
           name: c4group-Mac-universal
           path: output/c4group
+          archive: false
 
       - name: "Upload merged clonk"
         uses: actions/upload-artifact@v7
