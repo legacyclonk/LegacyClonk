@@ -33,7 +33,7 @@ const int32_t C4NetResDiscoverTimeout = 10, // (s)
               C4NetResMaxLoad = 20,
               C4NetResLoadTimeout = 60, // (s)
               C4NetResDeleteTime = 60, // (s)
-              C4NetResMaxBigicon = 20; // maximum size, in KB, of bigicon
+              C4NetResMaxBigicon = 100; // maximum size, in KB, of bigicon
 
 const int32_t C4NetResIDAnonymous = -2;
 

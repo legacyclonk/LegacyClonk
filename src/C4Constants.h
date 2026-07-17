@@ -76,8 +76,8 @@ const int C4SymbolSize = 35,
           C4SymbolBorder = 5,
           C4UpperBoardHeight = 50,
           C4PictureSize = 64,
-          C4MaxPictureSize = 150,
-          C4MaxBigIconSize = 64;
+          C4MaxPictureSize = 450,
+          C4MaxBigIconSize = 200;
 
 const int C4P_MaxPosition = 4;
 
