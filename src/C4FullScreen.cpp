@@ -32,7 +32,7 @@
 
 #include <format>
 
-#ifdef _WIN32
+#if FALSE // def _WIN32
 #include "res/engine_resource.h"
 
 #include <windowsx.h>
@@ -211,167 +211,9 @@ WNDCLASSEX C4FullScreen::GetWindowClass(const HINSTANCE instance) const
 	};
 }
 
-#elif defined(USE_X11)
+#endif
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/XKBlib.h>
-
-void C4FullScreen::HandleMessage(XEvent &e)
-{
-	// Parent handling
-	CStdWindow::HandleMessage(e);
-
-	switch (e.type)
-	{
-	case KeyPress:
-	{
-		// Do not take into account the state of the various modifiers and locks
-		// we don't need that for keyboard control
-		uint32_t key = XkbKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0, 0);
-		Game.DoKeyboardInput(key, KEYEV_Down, Application.IsAltDown(), Application.IsControlDown(), Application.IsShiftDown(), false, nullptr);
-		break;
-	}
-	case KeyRelease:
-	{
-		uint32_t key = XkbKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0, 0);
-		Game.DoKeyboardInput(key, KEYEV_Up, e.xkey.state & Mod1Mask, e.xkey.state & ControlMask, e.xkey.state & ShiftMask, false, nullptr);
-		break;
-	}
-	case ButtonPress:
-	{
-		static int last_left_click, last_right_click;
-		switch (e.xbutton.button)
-		{
-		case Button1:
-			if (timeGetTime() - last_left_click < 400)
-			{
-				Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDouble,
-					e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
-				last_left_click = 0;
-			}
-			else
-			{
-				Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDown,
-					e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
-				last_left_click = timeGetTime();
-			}
-			break;
-		case Button2:
-			Game.GraphicsSystem.MouseMove(C4MC_Button_MiddleDown,
-				e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
-			break;
-		case Button3:
-			if (timeGetTime() - last_right_click < 400)
-			{
-				Game.GraphicsSystem.MouseMove(C4MC_Button_RightDouble,
-					e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
-				last_right_click = 0;
-			}
-			else
-			{
-				Game.GraphicsSystem.MouseMove(C4MC_Button_RightDown,
-					e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
-				last_right_click = timeGetTime();
-			}
-			break;
-		case Button4:
-			Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel,
-				e.xbutton.x, e.xbutton.y, e.xbutton.state + (short(32) << 16), nullptr);
-			break;
-		case Button5:
-			Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel,
-				e.xbutton.x, e.xbutton.y, e.xbutton.state + (short(-32) << 16), nullptr);
-			break;
-		default:
-			break;
-		}
-	}
-	break;
-	case ButtonRelease:
-		switch (e.xbutton.button)
-		{
-		case Button1:
-			Game.GraphicsSystem.MouseMove(C4MC_Button_LeftUp, e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
-			break;
-		case Button2:
-			Game.GraphicsSystem.MouseMove(C4MC_Button_MiddleUp, e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
-			break;
-		case Button3:
-			Game.GraphicsSystem.MouseMove(C4MC_Button_RightUp, e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
-			break;
-		default:
-			break;
-		}
-		break;
-	case MotionNotify:
-		Game.GraphicsSystem.MouseMove(C4MC_Button_None, e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
-		break;
-	case FocusIn:
-		Application.Active = true;
-		break;
-	case FocusOut: case UnmapNotify:
-		Application.Active = false;
-		break;
-	case ConfigureNotify:
-		Application.SetResolution(e.xconfigure.width, e.xconfigure.height);
-		break;
-	}
-}
-
-#elif defined(USE_SDL_MAINLOOP)
-// SDL version
-
-namespace
-{
-	void sdlToC4MCBtn(const SDL_MouseButtonEvent &e,
-		int32_t &button)
-	{
-		static int lastLeftClick = 0, lastRightClick = 0;
-
-		button = C4MC_Button_None;
-
-		switch (e.button)
-		{
-		case SDL_BUTTON_LEFT:
-			if (e.state == SDL_PRESSED)
-				if (timeGetTime() - lastLeftClick < 400)
-				{
-					lastLeftClick = 0;
-					button = C4MC_Button_LeftDouble;
-				}
-				else
-				{
-					lastLeftClick = timeGetTime();
-					button = C4MC_Button_LeftDown;
-				}
-			else
-				button = C4MC_Button_LeftUp;
-			break;
-		case SDL_BUTTON_RIGHT:
-			if (e.state == SDL_PRESSED)
-				if (timeGetTime() - lastRightClick < 400)
-				{
-					lastRightClick = 0;
-					button = C4MC_Button_RightDouble;
-				}
-				else
-				{
-					lastRightClick = timeGetTime();
-					button = C4MC_Button_RightDown;
-				}
-			else
-				button = C4MC_Button_RightUp;
-			break;
-		case SDL_BUTTON_MIDDLE:
-			if (e.state == SDL_PRESSED)
-				button = C4MC_Button_MiddleDown;
-			else
-				button = C4MC_Button_MiddleUp;
-			break;
-		}
-	}
-}
+#if defined(USE_SDL_MAINLOOP)
 
 #include "StdGL.h"
 
@@ -379,87 +221,88 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 {
 	switch (e.type)
 	{
-	case SDL_TEXTINPUT:
+	case SDL_EVENT_WINDOW_MOUSE_ENTER:
+		SDL_HideCursor();
+		break;
+	case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+		SDL_ShowCursor();
+		break;
+	case SDL_EVENT_TEXT_INPUT :
 	{
 		CharIn(e.text.text);
 		break;
 	}
-	case SDL_KEYDOWN:
+	case SDL_EVENT_KEY_DOWN :
 	{
-		Game.DoKeyboardInput(e.key.keysym.scancode, KEYEV_Down,
+		Game.DoKeyboardInput(e.key.scancode, KEYEV_Down,
 			Application.IsAltDown(),
 			Application.IsControlDown(),
 			Application.IsShiftDown(),
 			false, nullptr);
 		break;
 	}
-	case SDL_KEYUP:
-		Game.DoKeyboardInput(e.key.keysym.scancode, KEYEV_Up,
+	case SDL_EVENT_KEY_UP :
+		Game.DoKeyboardInput(e.key.scancode, KEYEV_Up,
 			Application.IsAltDown(),
 			Application.IsControlDown(),
 			Application.IsShiftDown(), false, nullptr);
 		break;
-	case SDL_MOUSEMOTION:
+	case SDL_EVENT_MOUSE_MOTION :
 	{
-		const auto scale = GetInputScale();
+		const float scale{GetInputScale()};
 		Game.GraphicsSystem.MouseMove(C4MC_Button_None, e.motion.x * scale, e.motion.y * scale, Application.GetModifiers(), nullptr);
 		break;
 	}
-	case SDL_MOUSEWHEEL:
+	case SDL_EVENT_MOUSE_WHEEL :
 	{
-		const auto scale = GetInputScale();
-		int x, y;
+		const float scale{GetInputScale()};
+		float x, y;
 		SDL_GetMouseState(&x, &y);
-		Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, x * scale, y * scale, (e.wheel.y * 60) << 16, nullptr);
+		Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, x * scale, y * scale, static_cast<std::int32_t>(e.wheel.y * 60) << 16, nullptr);
 		break;
 	}
-	case SDL_MOUSEBUTTONUP:
-	case SDL_MOUSEBUTTONDOWN:
+	case SDL_EVENT_MOUSE_BUTTON_UP :
+	case SDL_EVENT_MOUSE_BUTTON_DOWN :
 	{
-		const auto scale = GetInputScale();
+		const float scale{GetInputScale()};
 		int32_t button;
-		sdlToC4MCBtn(e.button, button);
+		C4ViewportWindow::sdlToC4MCBtn(e.button, button);
 		Game.GraphicsSystem.MouseMove(button, e.button.x * scale, e.button.y * scale, Application.GetModifiers(), nullptr);
 		break;
 	}
-	case SDL_JOYAXISMOTION:
-	case SDL_JOYHATMOTION:
-	case SDL_JOYBALLMOTION:
-	case SDL_JOYBUTTONDOWN:
-	case SDL_JOYBUTTONUP:
+	case SDL_EVENT_JOYSTICK_AXIS_MOTION :
+	case SDL_EVENT_JOYSTICK_HAT_MOTION :
+	case SDL_EVENT_JOYSTICK_BALL_MOTION :
+	case SDL_EVENT_JOYSTICK_BUTTON_DOWN :
+	case SDL_EVENT_JOYSTICK_BUTTON_UP :
 		Application.pGamePadControl->FeedEvent(e);
 		break;
-	case SDL_WINDOWEVENT:
-		switch (e.window.event)
-		{
-		case SDL_WINDOWEVENT_RESIZED:
-			int width, height;
-			SDL_GL_GetDrawableSize(sdlWindow, &width, &height);
-			Application.SetResolution(width, height);
-			break;
-		case SDL_WINDOWEVENT_MINIMIZED:
-		case SDL_WINDOWEVENT_HIDDEN:
-			Application.Active = false;
-			break;
-		case SDL_WINDOWEVENT_SHOWN:
-		case SDL_WINDOWEVENT_EXPOSED:
-			Application.Active = true;
-		}
+
+	case SDL_EVENT_WINDOW_RESIZED :
+		int width, height;
+		SDL_GetWindowSizeInPixels(sdlWindow, &width, &height);
+		Application.SetResolution(width, height);
 		break;
+	case SDL_EVENT_WINDOW_MINIMIZED :
+	case SDL_EVENT_WINDOW_HIDDEN :
+		Application.Active = false;
+		break;
+	case SDL_EVENT_WINDOW_SHOWN :
+	case SDL_EVENT_WINDOW_EXPOSED :
+		Application.Active = true;
+		break;
+
 	}
 }
+#endif
 
-#endif // _WIN32, USE_X11, USE_SDL_MAINLOOP
-
-#ifndef _WIN32
 void C4FullScreen::CharIn(const char *c)
 {
 	if (Game.pGUI)
 	{
-		Game.pGUI->CharIn(TextEncodingConverter.SystemToClonk(c).c_str());
+		Game.pGUI->CharIn(TextEncodingConverter.Utf8ToClonk(c).c_str());
 	}
 }
-#endif
 
 C4FullScreen::C4FullScreen()
 {
@@ -469,15 +312,6 @@ C4FullScreen::C4FullScreen()
 C4FullScreen::~C4FullScreen()
 {
 	delete pMenu;
-}
-
-bool C4FullScreen::Init(CStdApp *const app)
-{
-#ifdef _WIN32
-	return Init(app, STD_PRODUCT);
-#else
-	return CStdWindow::Init(app, STD_PRODUCT);
-#endif
 }
 
 void C4FullScreen::Close()

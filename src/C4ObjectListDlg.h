@@ -30,14 +30,15 @@ class C4ObjectListDlg : public C4ObjectListChangeListener
 public:
 	C4ObjectListDlg();
 	virtual ~C4ObjectListDlg();
-	void Execute();
 	void Open();
-	void Update(C4ObjectList &rSelection);
+	void Draw(C4Viewport *ownerViewport);
 
 	virtual void OnObjectRemove(C4ObjectList *pList, C4ObjectLink *pLnk) override;
 	virtual void OnObjectAdded(C4ObjectList *pList, C4ObjectLink *pLnk) override;
 	virtual void OnObjectRename(C4ObjectList *pList, C4ObjectLink *pLnk) override;
 
+private:
+	bool opened{false};
 #ifdef WITH_DEVELOPER_MODE
 private:
 	GtkWidget *window;

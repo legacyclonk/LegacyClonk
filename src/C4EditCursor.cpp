@@ -16,7 +16,9 @@
 
 /* Handles viewport editing in console mode */
 
+#include <C4Include.h>
 #include <C4EditCursor.h>
+#include <C4ToolsDlg.h>
 
 #include <C4Console.h>
 #include <C4Object.h>
@@ -24,14 +26,6 @@
 #include <C4Random.h>
 #include <C4Wrappers.h>
 
-#ifdef _WIN32
-#include "StdStringEncodingConverter.h"
-#include "res/engine_resource.h"
-#endif
-
-#ifdef WITH_DEVELOPER_MODE
-#include <gtk/gtk.h>
-#endif
 
 C4EditCursor::C4EditCursor()
 {
@@ -61,16 +55,16 @@ void C4EditCursor::Execute()
 	// drawing
 	switch (Mode)
 	{
-	case C4CNS_ModeEdit:
+	case ConsoleMode::Edit:
 		// Hold selection
 		if (Hold)
 			EMMoveObject(EMMO_Move, 0, 0, nullptr, &Selection);
 		break;
 
-	case C4CNS_ModeDraw:
-		switch (Console.ToolsDlg.Tool)
+	case ConsoleMode::Draw:
+		switch (Console.ToolsDlg.tool)
 		{
-		case C4TLS_Fill:
+		case ToolMode::Fill:
 			if (Hold) if (!Game.HaltCount) if (Console.Editing) ApplyToolFill();
 			break;
 		}
@@ -80,42 +74,12 @@ void C4EditCursor::Execute()
 	if (fSelectionChanged)
 	{
 		fSelectionChanged = false;
-		UpdateStatusBar();
 		Console.PropertyDlg.Update(Selection);
-		Console.ObjectListDlg.Update(Selection);
 	}
 }
 
 bool C4EditCursor::Init()
 {
-#ifdef _WIN32
-	if (!(hMenu = LoadMenu(Application.hInstance, MAKEINTRESOURCE(IDR_CONTEXTMENUS))))
-		return false;
-#else // _WIN32
-#ifdef WITH_DEVELOPER_MODE
-	menuContext = gtk_menu_new();
-
-	itemDelete =       gtk_menu_item_new_with_label(LoadResStrGtk(C4ResStrTableKey::IDS_MNU_DELETE).c_str());
-	itemDuplicate =    gtk_menu_item_new_with_label(LoadResStrGtk(C4ResStrTableKey::IDS_MNU_DUPLICATE).c_str());
-	itemGrabContents = gtk_menu_item_new_with_label(LoadResStrGtk(C4ResStrTableKey::IDS_MNU_CONTENTS).c_str());
-	itemProperties =   gtk_menu_item_new_with_label(""); // Set dynamically in DoContextMenu
-
-	gtk_menu_shell_append(GTK_MENU_SHELL(menuContext), itemDelete);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menuContext), itemDuplicate);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menuContext), itemGrabContents);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menuContext), GTK_WIDGET(gtk_separator_menu_item_new()));
-	gtk_menu_shell_append(GTK_MENU_SHELL(menuContext), itemProperties);
-
-	g_signal_connect(G_OBJECT(itemDelete),       "activate", G_CALLBACK(OnDelete),       this);
-	g_signal_connect(G_OBJECT(itemDuplicate),    "activate", G_CALLBACK(OnDuplicate),    this);
-	g_signal_connect(G_OBJECT(itemGrabContents), "activate", G_CALLBACK(OnGrabContents), this);
-	g_signal_connect(G_OBJECT(itemProperties),   "activate", G_CALLBACK(OnProperties),   this);
-
-	gtk_widget_show_all(menuContext);
-#endif // WITH_DEVELOPER_MODe
-#endif // _WIN32
-	Console.UpdateModeCtrls(Mode);
-
 	return true;
 }
 
@@ -133,7 +97,7 @@ bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
 
 	switch (Mode)
 	{
-	case C4CNS_ModeEdit:
+	case ConsoleMode::Edit:
 		// Hold
 		if (!DragFrame && Hold)
 		{
@@ -152,50 +116,67 @@ bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
 		}
 		break;
 
-	case C4CNS_ModeDraw:
-		switch (Console.ToolsDlg.Tool)
+	case ConsoleMode::Draw:
+		switch (Console.ToolsDlg.tool)
 		{
-		case C4TLS_Brush:
+		case ToolMode::Brush:
 			if (Hold) ApplyToolBrush();
 			break;
-		case C4TLS_Line: case C4TLS_Rect:
+		case ToolMode::Line: case ToolMode::Rect:
 			break;
 		}
 		break;
 	}
 
-	// Update
-	UpdateStatusBar();
 	return true;
 }
 
-bool C4EditCursor::UpdateStatusBar()
+StdStrBuf C4EditCursor::GetStatusBarText() const
 {
-	std::string text;
 	switch (Mode)
 	{
-	case C4CNS_ModePlay:
-		if (Game.MouseControl.GetCaption())
+	case ConsoleMode::Play:
+		if (const char *const caption{Game.MouseControl.GetCaption()}; caption && *caption)
 		{
-			std::string caption{Game.MouseControl.GetCaption()};
-			text = std::move(caption).substr(0, caption.find('|'));
+			StdStrBuf text;
+			text.CopyUntil(caption, '|');
+			return text;
 		}
-		break;
+		else
+		{
+			return {};
+		}
 
-	case C4CNS_ModeEdit:
-		text = std::format("{}/{} ({})", X, Y, (Target ? (Target->GetName()) : LoadResStr(C4ResStrTableKey::IDS_CNS_NOTHING)));
-		break;
+	case ConsoleMode::Edit:
+		return StdStrBuf{std::format("{}/{} ({})", X, Y, (Target ? (Target->GetName()) : LoadResStr(C4ResStrTableKey::IDS_CNS_NOTHING))).c_str()};
 
-	case C4CNS_ModeDraw:
-		text = std::format("{}/{} ({})", X, Y, (MatValid(GBackMat(X, Y)) ? Game.Material.Map[GBackMat(X, Y)].Name : LoadResStr(C4ResStrTableKey::IDS_CNS_NOTHING)));
-		break;
+	case ConsoleMode::Draw:
+		return StdStrBuf{std::format("{}/{} ({})", X, Y, (MatValid(GBackMat(X, Y)) ? Game.Material.Map[GBackMat(X, Y)].Name : LoadResStr(C4ResStrTableKey::IDS_CNS_NOTHING))).c_str()};
+
+	default:
+#ifdef _MSC_VER
+		__assume(0);
+#else
+		__builtin_unreachable();
+#endif
 	}
-	return Console.UpdateCursorBar(text.c_str());
 }
 
 void C4EditCursor::OnSelectionChanged()
 {
 	fSelectionChanged = true;
+}
+
+void C4EditCursor::ToggleTargetSelection(C4Object* Target)
+{
+	if (Target)
+	{
+		if (!Selection.Remove(Target))
+		{
+			Selection.Add(Target, C4ObjectList::stNone);
+		}
+		OnSelectionChanged();
+	}
 }
 
 bool C4EditCursor::LeftButtonDown(bool fControl)
@@ -205,7 +186,7 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 
 	switch (Mode)
 	{
-	case C4CNS_ModeEdit:
+	case ConsoleMode::Edit:
 		if (fControl)
 		{
 			// Toggle target
@@ -228,19 +209,19 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 		}
 		break;
 
-	case C4CNS_ModeDraw:
-		switch (Console.ToolsDlg.Tool)
+	case ConsoleMode::Draw:
+		switch (Console.ToolsDlg.tool)
 		{
-		case C4TLS_Brush: ApplyToolBrush(); break;
-		case C4TLS_Line: DragLine  = true; X2 = X; Y2 = Y; break;
-		case C4TLS_Rect: DragFrame = true; X2 = X; Y2 = Y; break;
-		case C4TLS_Fill:
+		case ToolMode::Brush: ApplyToolBrush(); break;
+		case ToolMode::Line: DragLine  = true; X2 = X; Y2 = Y; break;
+		case ToolMode::Rect: DragFrame = true; X2 = X; Y2 = Y; break;
+		case ToolMode::Fill:
 			if (Game.HaltCount)
 			{
 				Hold = false; Console.Message(LoadResStr(C4ResStrTableKey::IDS_CNS_FILLNOHALT)); return false;
 			}
 			break;
-		case C4TLS_Picker: ApplyToolPicker(); break;
+		case ToolMode::Picker: ApplyToolPicker(); break;
 		}
 		break;
 	}
@@ -251,11 +232,13 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 	return true;
 }
 
+
+
 bool C4EditCursor::RightButtonDown(bool fControl)
 {
 	switch (Mode)
 	{
-	case C4CNS_ModeEdit:
+	case ConsoleMode::Edit:
 		if (!fControl)
 		{
 			// Check whether cursor is on anything in the selection
@@ -289,18 +272,18 @@ bool C4EditCursor::LeftButtonUp()
 	// Finish edit/tool
 	switch (Mode)
 	{
-	case C4CNS_ModeEdit:
+	case ConsoleMode::Edit:
 		if (DragFrame) FrameSelection();
 		if (DropTarget) PutContents();
 		break;
 
-	case C4CNS_ModeDraw:
-		switch (Console.ToolsDlg.Tool)
+	case ConsoleMode::Draw:
+		switch (Console.ToolsDlg.tool)
 		{
-		case C4TLS_Line:
+		case ToolMode::Line:
 			if (DragLine) ApplyToolLine();
 			break;
-		case C4TLS_Rect:
+		case ToolMode::Rect:
 			if (DragFrame) ApplyToolRect();
 			break;
 		}
@@ -312,41 +295,15 @@ bool C4EditCursor::LeftButtonUp()
 	DragFrame = false;
 	DragLine = false;
 	DropTarget = nullptr;
-	// Update
-	UpdateStatusBar();
 	return true;
 }
-
-#ifdef _WIN32
-
-bool SetMenuItemEnable(HMENU hMenu, WORD id, bool fEnable)
-{
-	return EnableMenuItem(hMenu, id, MF_BYCOMMAND | MF_ENABLED | (fEnable ? 0 : MF_GRAYED));
-}
-
-bool SetMenuItemText(HMENU hMenu, WORD id, const char *szText)
-{
-	std::wstring text{StdStringEncodingConverter::WinAcpToUtf16(szText)};
-	MENUITEMINFO minfo{};
-	minfo.cbSize = sizeof(minfo);
-	minfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA;
-	minfo.fType = MFT_STRING;
-	minfo.wID = id;
-	minfo.dwTypeData = text.data();
-	minfo.cch = checked_cast<UINT>(text.size());
-	return SetMenuItemInfo(hMenu, id, FALSE, &minfo);
-}
-
-#endif
 
 bool C4EditCursor::RightButtonUp()
 {
 	Target = nullptr;
 
-	DoContextMenu();
+	OpenContextMenu();
 
-	// Update
-	UpdateStatusBar();
 	return true;
 }
 
@@ -372,11 +329,11 @@ bool C4EditCursor::OpenPropTools()
 {
 	switch (Mode)
 	{
-	case C4CNS_ModeEdit: case C4CNS_ModePlay:
+	case ConsoleMode::Edit: case ConsoleMode::Play:
 		Console.PropertyDlg.Open();
 		Console.PropertyDlg.Update(Selection);
 		break;
-	case C4CNS_ModeDraw:
+	case ConsoleMode::Draw:
 		Console.ToolsDlg.Open();
 		break;
 	}
@@ -479,12 +436,9 @@ bool C4EditCursor::In(const char *szText)
 void C4EditCursor::Default()
 {
 	fAltWasDown = false;
-	Mode = C4CNS_ModePlay;
+	Mode = ConsoleMode::Play;
 	X = Y = X2 = Y2 = 0;
 	Target = DropTarget = nullptr;
-#ifdef _WIN32
-	hMenu = nullptr;
-#endif
 	Hold = DragFrame = DragLine = false;
 	Selection.Default();
 	fSelectionChanged = false;
@@ -492,47 +446,34 @@ void C4EditCursor::Default()
 
 void C4EditCursor::Clear()
 {
-#ifdef _WIN32
-	if (hMenu) DestroyMenu(hMenu); hMenu = nullptr;
-#endif
 	Selection.Clear();
 }
 
-bool C4EditCursor::SetMode(int32_t iMode)
+bool C4EditCursor::SetMode(const ConsoleMode mode)
 {
-	// Store focus
-#ifdef _WIN32
-	HWND hFocus = GetFocus();
-#endif
-	// Update console buttons (always)
-	Console.UpdateModeCtrls(iMode);
 	// No change
-	if (iMode == Mode) return true;
+	if (mode == Mode) return true;
 	// Set mode
-	Mode = iMode;
+	Mode = mode;
 	// Update prop tools by mode
 	bool fOpenPropTools = false;
 	switch (Mode)
 	{
-	case C4CNS_ModeEdit: case C4CNS_ModePlay:
-		if (Console.ToolsDlg.Active || Console.PropertyDlg.Active) fOpenPropTools = true;
+	case ConsoleMode::Play: case ConsoleMode::Edit:
+		if (Console.ToolsDlg.opened || Console.PropertyDlg.opened) fOpenPropTools = true;
 		Console.ToolsDlg.Clear();
 		if (fOpenPropTools) OpenPropTools();
 		break;
 
-	case C4CNS_ModeDraw:
-		if (Console.ToolsDlg.Active || Console.PropertyDlg.Active) fOpenPropTools = true;
+	case ConsoleMode::Draw:
+		if (Console.ToolsDlg.opened || Console.PropertyDlg.opened) fOpenPropTools = true;
 		Console.PropertyDlg.Clear();
 		if (fOpenPropTools) OpenPropTools();
 		break;
 	}
 	// Update cursor
-	if (Mode == C4CNS_ModePlay) Game.MouseControl.ShowCursor();
+	if (Mode == ConsoleMode::Play) Game.MouseControl.ShowCursor();
 	else Game.MouseControl.HideCursor();
-	// Restore focus
-#ifdef _WIN32
-	SetFocus(hFocus);
-#endif
 	// Done
 	return true;
 }
@@ -542,17 +483,16 @@ bool C4EditCursor::ToggleMode()
 	if (!EditingOK()) return false;
 
 	// Step through modes
-	int32_t iNewMode;
+	ConsoleMode newMode;
 	switch (Mode)
 	{
-	case C4CNS_ModePlay: iNewMode = C4CNS_ModeEdit; break;
-	case C4CNS_ModeEdit: iNewMode = C4CNS_ModeDraw; break;
-	case C4CNS_ModeDraw: iNewMode = C4CNS_ModePlay; break;
-	default:             iNewMode = C4CNS_ModePlay; break;
+	case ConsoleMode::Play: newMode = ConsoleMode::Edit; break;
+	case ConsoleMode::Edit: newMode = ConsoleMode::Draw; break;
+	case ConsoleMode::Draw: newMode = ConsoleMode::Play; break;
 	}
 
 	// Set new mode
-	SetMode(iNewMode);
+	SetMode(newMode);
 
 	return true;
 }
@@ -562,7 +502,7 @@ void C4EditCursor::ApplyToolBrush()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Brush, Game.Landscape.Mode, X, Y, 0, 0, pTools->Grade, !!pTools->ModeIFT, pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Brush, Game.Landscape.Mode, X, Y, 0, 0, pTools->grade, !!pTools->modeIft, pTools->material, pTools->texture));
 }
 
 void C4EditCursor::ApplyToolLine()
@@ -570,7 +510,7 @@ void C4EditCursor::ApplyToolLine()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Line, Game.Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Line, Game.Landscape.Mode, X, Y, X2, Y2, pTools->grade, !!pTools->modeIft, pTools->material, pTools->texture));
 }
 
 void C4EditCursor::ApplyToolRect()
@@ -578,7 +518,7 @@ void C4EditCursor::ApplyToolRect()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Rect, Game.Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Rect, Game.Landscape.Mode, X, Y, X2, Y2, pTools->grade, !!pTools->modeIft, pTools->material, pTools->texture));
 }
 
 void C4EditCursor::ApplyToolFill()
@@ -586,55 +526,57 @@ void C4EditCursor::ApplyToolFill()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Fill, Game.Landscape.Mode, X, Y, 0, Y2, pTools->Grade, false, pTools->Material));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Fill, Game.Landscape.Mode, X, Y, 0, Y2, pTools->grade, false, pTools->material));
 }
 
-bool C4EditCursor::DoContextMenu()
+bool C4EditCursor::OpenContextMenu()
 {
-	bool fObjectSelected = Selection.ObjectCount();
-#ifdef _WIN32
-	POINT point; GetCursorPos(&point);
-	HMENU hContext = GetSubMenu(hMenu, 0);
-	SetMenuItemEnable(hContext, IDM_VIEWPORT_DELETE,     fObjectSelected && Console.Editing);
-	SetMenuItemEnable(hContext, IDM_VIEWPORT_DUPLICATE,  fObjectSelected && Console.Editing);
-	SetMenuItemEnable(hContext, IDM_VIEWPORT_CONTENTS,   fObjectSelected && Selection.GetObject()->Contents.ObjectCount() && Console.Editing);
-	SetMenuItemEnable(hContext, IDM_VIEWPORT_PROPERTIES, Mode != C4CNS_ModePlay);
-	SetMenuItemText(hContext, IDM_VIEWPORT_DELETE,     LoadResStr(C4ResStrTableKey::IDS_MNU_DELETE));
-	SetMenuItemText(hContext, IDM_VIEWPORT_DUPLICATE,  LoadResStr(C4ResStrTableKey::IDS_MNU_DUPLICATE));
-	SetMenuItemText(hContext, IDM_VIEWPORT_CONTENTS,   LoadResStr(C4ResStrTableKey::IDS_MNU_CONTENTS));
-	SetMenuItemText(hContext, IDM_VIEWPORT_PROPERTIES, LoadResStrChoice(Mode == C4CNS_ModeEdit, C4ResStrTableKey::IDS_CNS_PROPERTIES, C4ResStrTableKey::IDS_CNS_TOOLS));
-	int32_t iItem = TrackPopupMenu(
-		hContext,
-		TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON | TPM_NONOTIFY,
-		point.x, point.y, 0,
-		Console.hWindow,
-		nullptr);
-	switch (iItem)
-	{
-	case IDM_VIEWPORT_DELETE:     Delete();        break;
-	case IDM_VIEWPORT_DUPLICATE:  Duplicate();     break;
-	case IDM_VIEWPORT_CONTENTS:   GrabContents();  break;
-	case IDM_VIEWPORT_PROPERTIES: OpenPropTools(); break;
-	}
-#elif defined(WITH_DEVELOPER_MODE)
-	gtk_widget_set_sensitive(itemDelete,       fObjectSelected && Console.Editing);
-	gtk_widget_set_sensitive(itemDuplicate,    fObjectSelected && Console.Editing);
-	gtk_widget_set_sensitive(itemGrabContents, fObjectSelected && Selection.GetObject()->Contents.ObjectCount() && Console.Editing);
-	gtk_widget_set_sensitive(itemProperties,   Mode != C4CNS_ModePlay);
-
-	GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(itemProperties)));
-	if (Mode == C4CNS_ModeEdit)
-	{
-		gtk_label_set_text(label, LoadResStrGtk(C4ResStrTableKey::IDS_CNS_PROPERTIES).c_str());
-	}
-	else
-	{
-		gtk_label_set_text(label, LoadResStrGtk(C4ResStrTableKey::IDS_CNS_TOOLS).c_str());
-	}
-
-	gtk_menu_popup_at_pointer(GTK_MENU(menuContext), nullptr);
-#endif
+	ContextMenuOpenIn = ImGui::GetCurrentContext();
 	return true;
+}
+
+void C4EditCursor::DrawContextMenu()
+{
+	// Make sure the context menu is opened in the same gui context as the right click happened.
+	if(ContextMenuOpenIn && ImGui::GetCurrentContext() && ContextMenuOpenIn == ImGui::GetCurrentContext())
+	{
+		ImGui::OpenPopup("ContextMenu");
+		ContextMenuOpenIn = nullptr;
+	}
+	if (ImGui::BeginPopup("ContextMenu"))
+	{
+		bool fObjectSelected = Selection.ObjectCount();
+		ImGui::BeginDisabled(!fObjectSelected);
+		if (ImGui::MenuItem(LoadResStr(C4ResStrTableKey::IDS_MNU_DELETE), "Delete"))
+		{
+			Delete();
+		}
+		// TODO: Make shortcut functional
+		if (ImGui::MenuItem(LoadResStr(C4ResStrTableKey::IDS_MNU_DUPLICATE), "Ctrl+D"))
+		{
+			Duplicate();
+		}
+
+		if (ImGui::MenuItem(LoadResStr(C4ResStrTableKey::IDS_MNU_CONTENTS)))
+		{
+			GrabContents();
+		}
+
+		ImGui::EndDisabled();
+
+		ImGui::Separator();
+
+		if (ImGui::MenuItem(LoadResStrV((Mode == ConsoleMode::Draw) ? C4ResStrTableKey::IDS_CNS_TOOLS : C4ResStrTableKey::IDS_CNS_PROPERTIES)))
+		{
+			OpenPropTools();
+		}
+		if (ImGui::MenuItem("Object List"))
+		{
+			Console.ObjectListDlg.Open();
+		}
+
+		ImGui::EndPopup();
+	}
 }
 
 void C4EditCursor::GrabContents()
@@ -691,7 +633,13 @@ bool C4EditCursor::EditingOK()
 	return true;
 }
 
-int32_t C4EditCursor::GetMode()
+void C4EditCursor::SelectAll()
+{
+	Selection.Copy(Game.Objects);
+	OnSelectionChanged();
+}
+
+ConsoleMode C4EditCursor::GetMode() const
 {
 	return Mode;
 }
@@ -709,23 +657,23 @@ void C4EditCursor::ApplyToolPicker()
 			const C4TexMapEntry *pTex = Game.TextureMap.GetEntry(byIndex & (IFT - 1));
 			if (pTex)
 			{
-				Console.ToolsDlg.SelectMaterial(pTex->GetMaterialName());
-				Console.ToolsDlg.SelectTexture(pTex->GetTextureName());
+				Console.ToolsDlg.SetMaterial(pTex->GetMaterialName());
+				Console.ToolsDlg.SetTexture(pTex->GetTextureName());
 				Console.ToolsDlg.SetIFT(byIndex & ~(IFT - 1));
 			}
 		}
 		else
-			Console.ToolsDlg.SelectMaterial(C4TLS_MatSky);
+			Console.ToolsDlg.SetMaterial(C4TLS_MatSky);
 		break;
 	case C4LSC_Exact:
 		// Material only from landscape
 		if (MatValid(iMaterial = GBackMat(X, Y)))
 		{
-			Console.ToolsDlg.SelectMaterial(Game.Material.Map[iMaterial].Name);
+			Console.ToolsDlg.SetMaterial(Game.Material.Map[iMaterial].Name);
 			Console.ToolsDlg.SetIFT(GBackIFT(X, Y));
 		}
 		else
-			Console.ToolsDlg.SelectMaterial(C4TLS_MatSky);
+			Console.ToolsDlg.SetMaterial(C4TLS_MatSky);
 		break;
 	}
 	Hold = false;
@@ -746,7 +694,7 @@ void C4EditCursor::EMMoveObject(C4ControlEMObjectAction eAction, int32_t tx, int
 	}
 
 	// execute control
-	EMControl(CID_EMMoveObj, new C4ControlEMMoveObject(eAction, tx, ty, pTargetObj, iObjCnt, pObjIDs, szScript, Config.Developer.ConsoleScriptStrictness));
+	EMControl(CID_EMMoveObj, new C4ControlEMMoveObject(eAction, tx, ty, pTargetObj, iObjCnt, pObjIDs, szScript));
 }
 
 void C4EditCursor::EMControl(C4PacketType eCtrlType, C4ControlPacket *pCtrl)
@@ -754,36 +702,10 @@ void C4EditCursor::EMControl(C4PacketType eCtrlType, C4ControlPacket *pCtrl)
 	Game.Control.DoInput(eCtrlType, pCtrl, CDT_Decide);
 }
 
-#ifdef WITH_DEVELOPER_MODE
-
-// GTK+ callbacks
-
-void C4EditCursor::OnDelete(GtkWidget *widget, gpointer data)
-{
-	static_cast<C4EditCursor *>(data)->Delete();
-}
-
-void C4EditCursor::OnDuplicate(GtkWidget *widget, gpointer data)
-{
-	static_cast<C4EditCursor *>(data)->Duplicate();
-}
-
-void C4EditCursor::OnGrabContents(GtkWidget *widget, gpointer data)
-{
-	static_cast<C4EditCursor *>(data)->GrabContents();
-}
-
-void C4EditCursor::OnProperties(GtkWidget *widget, gpointer data)
-{
-	static_cast<C4EditCursor *>(data)->OpenPropTools();
-}
-
-#endif
-
 bool C4EditCursor::AltDown()
 {
 	// alt only has an effect in draw mode (picker)
-	if (Mode == C4CNS_ModeDraw)
+	if (Mode == ConsoleMode::Draw)
 	{
 		Console.ToolsDlg.SetAlternateTool();
 	}
@@ -793,7 +715,7 @@ bool C4EditCursor::AltDown()
 
 bool C4EditCursor::AltUp()
 {
-	if (Mode == C4CNS_ModeDraw)
+	if (Mode == ConsoleMode::Draw)
 	{
 		Console.ToolsDlg.ResetAlternateTool();
 	}

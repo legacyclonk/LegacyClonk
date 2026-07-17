@@ -161,15 +161,12 @@ public:
 	bool DisableGamma;
 	int32_t Monitor; // monitor index to play on
 	bool FireParticles; // draw extended fire particles if enabled (defualt on)
-	int32_t MaxRefreshDelay; // minimum time after which graphics should be refreshed (ms)
+	int32_t MaxRefreshDelayMS; // minimum time after which graphics should be refreshed (ms)
 	bool AutoFrameSkip; // if true, gfx frames are skipped when they would slow down the game
 	int32_t CacheTexturesInRAM; // -1 for disabled; otherwise after CacheTexturesInRAM times of Locking, Unlock(true) keeps the texture in RAM
 	DisplayMode UseDisplayMode;
-#ifdef _WIN32
-	bool Maximized;
 	int PositionX;
 	int PositionY;
-#endif
 	bool ShowFolderMaps; // if true, folder maps are shown
 	bool UseShaderGamma; // whether to use shader-based gamma correction
 

@@ -112,7 +112,7 @@ public:
 	// IRC client for global chat
 	C4Network2IRCClient IRCClient;
 	// Tick timing
-	unsigned int iLastGameTick, iGameTickDelay, iExtraGameTickDelay;
+	unsigned int iLastGameTick, iGameTickDelayMS, iExtraGameTickDelay;
 	class CStdDDraw *DDraw;
 	virtual int32_t &ScreenWidth() override { return Config.Graphics.ResX; }
 	virtual int32_t &ScreenHeight() override { return Config.Graphics.ResY; }
@@ -122,7 +122,7 @@ public:
 	// System.c4g helper funcs
 	bool OpenSystemGroup() { return SystemGroup.IsOpen() || SystemGroup.Open(C4CFN_System); }
 	void DoSec1Timers();
-	void SetGameTickDelay(int iDelay);
+	void SetGameTickDelay(int iDelayMS);
 	bool SetResolution(int32_t iNewResX, int32_t iNewResY);
 	bool SetGameFont(const char *szFontFace, int32_t iFontSize);
 

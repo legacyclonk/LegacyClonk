@@ -40,6 +40,45 @@ namespace
 	}
 }
 
+void CStdWindow::sdlToC4MCBtn(const SDL_MouseButtonEvent &e,
+	int32_t &button)
+{
+	button = C4MC_Button_None;
+
+	switch (e.button)
+	{
+	case SDL_BUTTON_LEFT:
+		if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+		{
+			button = e.clicks % 2 == 0 ? C4MC_Button_LeftDouble : C4MC_Button_LeftDown;
+		}
+		else
+		{
+			button = C4MC_Button_LeftUp;
+		}
+		break;
+	case SDL_BUTTON_RIGHT:
+		if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+		{
+			button = e.clicks % 2 == 0 ? C4MC_Button_RightDouble : C4MC_Button_RightDown;
+		}
+		else
+		{
+			button = C4MC_Button_RightUp;
+		}
+		break;
+	case SDL_BUTTON_MIDDLE:
+		if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+		{
+			button = C4MC_Button_MiddleDown;
+		}
+		else
+		{
+			button = C4MC_Button_MiddleUp;
+		}
+		break;
+	}
+}
 /* CStdWindow */
 
 CStdWindow::~CStdWindow()
@@ -47,84 +86,122 @@ CStdWindow::~CStdWindow()
 	Clear();
 }
 
-// Only set title.
 // FIXME: Read from application bundle on the Mac.
-bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
+bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent, const std::uint32_t additionalFlags, const std::int32_t minWidth, const std::int32_t minHeight)
 {
 	Active = true;
-	SetTitle(title);
 
 	width = bounds.Wdt;
 	height = bounds.Hgt;
 	displayMode = DisplayMode::Window;
 	this->app = app;
 
-	sdlWindow = SDL_CreateWindow(title, bounds.x, bounds.y, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	std::uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+	flags |= additionalFlags;
+	sdlWindow = SDL_CreateWindow(title, width, height, flags);
 	ThrowIfFailed("SDL_CreateWindow", !sdlWindow);
+	SDL_SetWindowMinimumSize(sdlWindow, minWidth, minHeight);
+	SDL_SetWindowPosition(sdlWindow, bounds.x, bounds.y);
+	SDL_StartTextInput(sdlWindow);
 
 	return true;
 }
 
-void CStdWindow::Clear() {}
+void CStdWindow::StorePosition()
+{
+	std::int32_t x, y;
+	SDL_GetWindowPosition(sdlWindow, &x, &y);
+	Config.Graphics.PositionX = x;
+	Config.Graphics.PositionY = y;
+}
+
+void CStdWindow::RestorePosition()
+{
+	// Only has an effect in windowed mode.
+	SDL_SetWindowPosition(sdlWindow, Config.Graphics.PositionX, Config.Graphics.PositionY);
+}
+
+void CStdWindow::InitImGui()
+{
+	imGui.emplace(sdlWindow);
+}
+
+void CStdWindow::Clear()
+{
+	if(sdlWindow)
+	{
+		SDL_StopTextInput(sdlWindow);
+	}
+}
 
 // Window size is automatically managed by CStdApp's display mode management.
 // Just remember the size for others to query.
 
 bool CStdWindow::GetSize(C4Rect &rect)
 {
-	SDL_GL_GetDrawableSize(sdlWindow, &width, &height);
+	SDL_GetWindowSizeInPixels(sdlWindow, &width, &height);
 	rect = {0, 0, width, height};
 	return true;
 }
 
 void CStdWindow::SetSize(const unsigned int X, const unsigned int Y)
 {
-	const auto scale = GetInputScale();
+	const float scale{GetInputScale()};
 	width = X / scale, height = Y / scale;
 	SetDisplayMode(displayMode);
 }
 
-void CStdWindow::SetTitle(const char *const Title)
+void CStdWindow::SetTitle(const char *const title)
 {
-	SDL_SetWindowTitle(sdlWindow, Title);
+	SDL_SetWindowTitle(sdlWindow, title);
 }
 
 void CStdWindow::FlashWindow()
 {
-#ifdef __APPLE__
-	void requestUserAttention();
-	requestUserAttention();
-#endif
+	SDL_FlashWindow(sdlWindow, SDL_FlashOperation::SDL_FLASH_BRIEFLY);
 }
 
 void CStdWindow::SetDisplayMode(const DisplayMode mode)
 {
 	if (mode == DisplayMode::Fullscreen)
 	{
-		ThrowIfFailed("SDL_SetWindowFullscreen", SDL_SetWindowFullscreen(sdlWindow, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0);
+		ThrowIfFailed("SDL_SetWindowFullscreen", !SDL_SetWindowFullscreen(sdlWindow, true));
 	}
 	else
 	{
 		if (displayMode == DisplayMode::Fullscreen)
 		{
-			const auto currentDisplay = SDL_GetWindowDisplayIndex(sdlWindow);
-			ThrowIfFailed("SDL_GetWindowDisplayIndex", currentDisplay < 0);
-			SDL_DisplayMode mode;
-			ThrowIfFailed("SDL_GetCurrentDisplayMode", SDL_GetCurrentDisplayMode(currentDisplay, &mode) != 0);
-
-			width = mode.w - 100;
-			height = mode.h - 100;
+			const auto currentDisplay = SDL_GetDisplayForWindow(sdlWindow);
+			ThrowIfFailed("SDL_GetWindowDisplayIndex", currentDisplay <= 0);
+			const SDL_DisplayMode *mode = SDL_GetCurrentDisplayMode(currentDisplay);
+			ThrowIfFailed("SDL_GetCurrentDisplayMode", mode == nullptr);
+			if(mode)
+			{
+				width = mode->w - 100;
+				height = mode->h - 100;
+			}
 		}
 
-		ThrowIfFailed("SDL_SetWindowFullscreen", SDL_SetWindowFullscreen(sdlWindow, 0) != 0);
+		ThrowIfFailed("SDL_SetWindowFullscreen", !SDL_SetWindowFullscreen(sdlWindow, false));
 		SDL_SetWindowSize(sdlWindow, width, height);
 	}
 
 	displayMode = mode;
-	ThrowIfFailed("SDL_ShowCursor", SDL_ShowCursor(SDL_DISABLE) < 0);
+	ThrowIfFailed("SDL_ShowCursor", !SDL_ShowCursor());
 }
 
 void CStdWindow::SetProgress(uint32_t) {} // stub
+
+void CStdWindow::CenterMouseInWindow()
+{
+	if (sdlWindow)
+	{
+		SDL_WarpMouseInWindow(sdlWindow, width/2, height/2);
+	}
+}
 
 float CStdWindow::GetInputScale()
 {
@@ -132,7 +209,7 @@ float CStdWindow::GetInputScale()
 	SDL_GetWindowSize(sdlWindow, &width, &height);
 
 	int drawableWidth, drawableHeight;
-	SDL_GL_GetDrawableSize(sdlWindow, &drawableWidth, &drawableHeight);
+	SDL_GetWindowSizeInPixels(sdlWindow, &drawableWidth, &drawableHeight);
 
 	return static_cast<float>(drawableWidth) / static_cast<float>(width);
 }

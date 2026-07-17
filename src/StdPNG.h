@@ -29,12 +29,12 @@ class CPNGFile
 {
 public:
 	// Creates an object that can be used to write to the specified file.
-	CPNGFile(const std::string &filename, std::uint32_t width, std::uint32_t height, bool useAlpha);
+	CPNGFile(const std::string &filename, std::uint32_t width, std::uint32_t height, bool useAlpha, bool invertAlpha = true);
 	// Writes the specified image to the PNG file. Don't use this object after calling.
 	void Encode(const void *pixels);
 
 	// Creates an object that can be used to read the specified file contents.
-	CPNGFile(const void *fileContents, std::size_t fileSize);
+	CPNGFile(const void *fileContents, std::size_t fileSize, bool invertAlpha = true);
 	// Reads the PNG file into the specified buffer. Don't use this object after calling.
 	void Decode(void *pixels);
 

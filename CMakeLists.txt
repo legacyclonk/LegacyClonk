@@ -78,19 +78,16 @@ option(USE_TESTS "Enable testing" OFF)
 CMAKE_DEPENDENT_OPTION(ENABLE_SOUND "Compile with sound support" ON
 	"NOT USE_CONSOLE" OFF)
 # USE_SDL_MIXER
-CMAKE_DEPENDENT_OPTION(USE_SDL_MIXER "Whether SDL2_mixer shall be used for sound" ON
-	"ENABLE_SOUND" OFF)
+CMAKE_DEPENDENT_OPTION(USE_SDL_MIXER "Whether SDL3_mixer shall be used for sound" ON "ENABLE_SOUND" OFF)
 # USE_SDL_MAINLOOP
-if (APPLE)
-	set(USE_SDL_MAINLOOP_DEFAULT ON)
-else ()
-	set(USE_SDL_MAINLOOP_DEFAULT OFF)
-endif ()
-CMAKE_DEPENDENT_OPTION(USE_SDL_MAINLOOP "Use SDL instead of X11 or Win32" ${USE_SDL_MAINLOOP_DEFAULT}
-	"NOT USE_CONSOLE AND NOT WIN32" OFF)
+set(USE_SDL_MAINLOOP_DEFAULT ON)
+CMAKE_DEPENDENT_OPTION(USE_SDL_MAINLOOP "Use SDL when we're not a console application" ${USE_SDL_MAINLOOP_DEFAULT}
+	"NOT USE_CONSOLE" OFF)
+
+# TODO: Remove
 # USE_X11
-CMAKE_DEPENDENT_OPTION(USE_X11 "Use X11" ON
-	"NOT USE_CONSOLE AND NOT USE_SDL_MAINLOOP AND NOT APPLE AND NOT WIN32" OFF)
+set(USE_X11 OFF)
+
 # USE_WIC
 CMAKE_DEPENDENT_OPTION(USE_WIC "Use WIC instead of libjpeg and libpng" ON
 	"WIN32" OFF)
@@ -243,8 +240,34 @@ else ()
 	if (APPLE)
 		append_filelist(CLONK_SOURCES EngineApple)
 	endif ()
+endif ()
+# Also use for windows ( TODO: Rename file and maybe move to some cmake filelist )
+list(APPEND CLONK_SOURCES src/StdAppUnix.cpp)
 
-	list(APPEND CLONK_SOURCES src/StdAppUnix.cpp)
+if (NOT USE_CONSOLE)
+	set(IMGUI_SOURCES
+	    imconfig.h
+		imgui.cpp
+		imgui.h
+		imgui_demo.cpp
+		imgui_draw.cpp
+		imgui_internal.h
+		imgui_tables.cpp
+		imgui_widgets.cpp
+		imstb_rectpack.h
+		imstb_textedit.h
+		imstb_truetype.h
+		backends/imgui_impl_opengl2.cpp
+		backends/imgui_impl_opengl2.h
+		backends/imgui_impl_sdl3.cpp
+		backends/imgui_impl_sdl3.h
+	)
+
+	list(TRANSFORM IMGUI_SOURCES PREPEND src/imgui/)
+	list(APPEND IMGUI_SOURCES src/ImGuiTextselect.hpp src/ImGuiTextselect.cpp)
+	list(APPEND IMGUI_SOURCES src/ImGuiUserConfig.h)
+
+	list(APPEND CLONK_SOURCES ${IMGUI_SOURCES})
 endif ()
 
 if (USE_SDL_MAINLOOP OR USE_SDL_MIXER)
@@ -296,13 +319,12 @@ if (USE_CONSOLE)
 	target_compile_definitions(clonk PRIVATE USE_CONSOLE=1)
 else ()
 	add_executable(clonk WIN32 MACOSX_BUNDLE ${CLONK_SOURCES})
+
+	target_compile_definitions(clonk PRIVATE IMGUI_USER_CONFIG="ImGuiUserConfig.h")
+	target_include_directories(clonk PUBLIC src/imgui)
 endif ()
 target_link_libraries(clonk standard)
 target_compile_definitions(clonk PRIVATE C4ENGINE)
-
-if (USE_SDL_MIXER AND WIN32)
-	target_compile_definitions(clonk PRIVATE SDL_MAIN_HANDLED)
-endif ()
 
 set(RES_STR_TABLE_INPUT "${CMAKE_SOURCE_DIR}/src/C4ResStrTable.txt")
 set(RES_STR_TABLE_OUTPUT_CPP "${CMAKE_BINARY_DIR}/generated/C4ResStrTableGenerated.cpp")
@@ -397,6 +419,7 @@ if (NOT USE_CONSOLE)
 	set(HAVE_FREETYPE 1)
 endif ()
 
+# TODO: Remove GTK
 # Link GTK3
 if (WITH_DEVELOPER_MODE)
 	set(WITH_GLIB 1)
@@ -436,19 +459,19 @@ if (NOT USE_WIC)
 	target_link_libraries(clonk PNG::PNG)
 endif ()
 
-# Link SDL2
+# Link SDL3
 if (USE_SDL_MAINLOOP OR USE_SDL_MIXER)
-	find_package(SDL2 REQUIRED)
-	if (SDL2_FOUND AND USE_SDL_MAINLOOP)
+	find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
+	if (SDL3_FOUND AND USE_SDL_MAINLOOP)
 		set(USE_SDL_FOR_GAMEPAD ON)
 	endif ()
-	target_link_libraries(clonk SDL2::SDL2)
+	target_link_libraries(clonk SDL3::SDL3)
 endif ()
 
-# Link SDL2_mixer
+# Link SDL3_mixer
 if (USE_SDL_MIXER)
-	find_package(SDL2_mixer REQUIRED)
-	target_link_libraries(clonk SDL2_mixer::SDL2_mixer)
+	find_package(SDL3_mixer REQUIRED)
+	target_link_libraries(clonk SDL3_mixer::SDL3_mixer)
 endif ()
 
 # Link spdlog
@@ -537,6 +560,7 @@ if (APPLE)
 	target_link_libraries(standard "-framework Foundation")
 endif ()
 
+# TODO: Remove
 # Link X11
 if (USE_X11)
 	find_package(X11 REQUIRED)

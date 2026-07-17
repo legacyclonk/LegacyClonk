@@ -29,7 +29,7 @@
 #endif
 
 #ifdef USE_SDL_MAINLOOP
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #endif
 
 // Key maps
@@ -73,7 +73,7 @@ struct C4KeyCodeMapEntry
 	const char *szShortName;
 };
 
-#ifdef _WIN32
+#if FALSE //def _WIN32
 const C4KeyCodeMapEntry KeyCodeMap[] =
 {
 	{ VK_CANCEL, "Cancel", nullptr },
@@ -299,7 +299,7 @@ C4KeyCode C4KeyCodeEx::String2KeyCode(const StdStrBuf &sName)
 		uint32_t dwRVal;
 		if (sscanf(sName.getData(), "\\x%x", &dwRVal) == 1) return dwRVal;
 		// direct gamepad code
-#ifdef _WIN32
+#ifdef _WIN32 // KEEP
 		if (!strnicmp(sName.getData(), "Joy", 3))
 #else
 		if (!strncasecmp(sName.getData(), "Joy", 3))
@@ -315,7 +315,7 @@ C4KeyCode C4KeyCodeEx::String2KeyCode(const StdStrBuf &sName)
 			if (sscanf(sName.getData(), "Joy%dAxis%dMax", &iGamepad, &iAxis) == 1) return KEY_Gamepad(iGamepad - 1, KEY_JOY_Axis(iAxis, true));
 		}
 	}
-#ifdef _WIN32
+#if FALSE //def _WIN32
 	// query map
 	const C4KeyCodeMapEntry *pCheck = KeyCodeMap;
 	while (pCheck->szName)
@@ -364,7 +364,8 @@ std::string C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bo
 			}
 		}
 	}
-#ifdef _WIN32
+// TODO: Remove unused code
+#if FALSE //def _WIN32
 	// query map
 	const C4KeyCodeMapEntry *pCheck = KeyCodeMap;
 	while (pCheck->szName)
@@ -378,7 +379,7 @@ std::string C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bo
 	std::string name;
 	if (fHumanReadable)
 	{
-		const auto key = SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(wCode));
+		const auto key = SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(wCode), SDL_KMOD_NONE, true);
 		name = TextEncodingConverter.Utf8ToClonk(SDL_GetKeyName(key));
 	}
 	else
@@ -456,7 +457,7 @@ void C4KeyCodeEx::CompileFunc(StdCompiler *pComp)
 bool C4KeyCodeEx::IsStandardAlphaNumeric() const noexcept
 {
 #ifdef USE_SDL_MAINLOOP
-	const int key{SDL_GetKeyName(SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(Key)))[0]};
+	const int key{SDL_GetKeyName(SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(Key), SDL_KMOD_NONE, true))[0]};
 #else
 	const auto key = Key;
 #endif
@@ -467,7 +468,7 @@ bool C4KeyCodeEx::IsStandardAlphaNumeric() const noexcept
 	}
 
 	const auto keyChar = static_cast<unsigned char>(Key);
-	return Inside<unsigned char>(TOUPPERIFX11(keyChar), 'A', 'Z') || Inside<unsigned char>(TOUPPERIFX11(keyChar), '0', '9');
+	return Inside<unsigned char>(C4Strings::ToUpper(keyChar), 'A', 'Z') || Inside<unsigned char>(keyChar, '0', '9');
 }
 
 // C4CustomKey

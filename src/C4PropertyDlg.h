@@ -20,10 +20,6 @@
 
 #include "C4ObjectList.h"
 
-#ifdef WITH_DEVELOPER_MODE
-#include <gtk/gtk.h>
-#endif
-
 class C4PropertyDlg
 {
 public:
@@ -33,26 +29,19 @@ public:
 	void Clear();
 	void Execute();
 	void ClearPointers(C4Object *pObj);
-	void UpdateInputCtrl(C4Object *pObj);
-	bool Open();
-	bool Update();
-	bool Update(C4ObjectList &rSelection);
-	bool Active;
-#ifdef _WIN32
-	HWND hDialog;
-	friend INT_PTR CALLBACK PropertyDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
-#elif defined(WITH_DEVELOPER_MODE)
-	GtkWidget *vbox;
-	GtkWidget *textview;
-	GtkWidget *entry;
+	void Open();
+	void Update();
+	void Update(C4ObjectList &rSelection);
+	void Draw();
 
-	gulong handlerHide;
+	static int TextEditCallbackStub(struct ImGuiInputTextCallbackData *data);
 
-	static void OnScriptActivate(GtkWidget *widget, gpointer data);
-	static void OnWindowHide(GtkWidget *widget, gpointer data);
-#endif
+public:
+	bool opened{false};
 
 protected:
 	C4ID idSelectedDef;
-	C4ObjectList Selection;
+	C4ObjectList selection;
+	StdStrBuf selectionText;
+	C4AulFunc *selectedFunction;
 };

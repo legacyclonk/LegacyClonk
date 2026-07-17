@@ -107,7 +107,7 @@ int ClonkMain(const HINSTANCE instance, const int cmdShow, const int argc, char 
 	// Init application
 	try
 	{
-		Application.Init(instance, cmdShow, commandLine);
+		Application.Init(argc, argv);
 	}
 	catch (const CStdApp::StartupException &e)
 	{
