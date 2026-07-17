@@ -71,7 +71,7 @@ public:
 	void Default();
 	virtual void Clear() override;
 	virtual void Close() override;
-	bool Init(CStdApp *app);
+	bool Init(CStdApp *app, const C4Rect &bounds);
 	bool Init(CStdApp *app, const char *title, const class C4Rect &bounds = CStdWindow::DefaultBounds, CStdWindow *parent = nullptr) override;
 	void Execute();
 	void ClearPointers(C4Object *pObj);

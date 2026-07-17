@@ -136,7 +136,7 @@ struct _GIOChannel;
 #define MK_SHIFT (1 << 0)
 #elif defined(USE_SDL_MAINLOOP)
 #include <StdSdlSubSystem.h>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <optional>
 #define K_F1 SDL_SCANCODE_F1
 #define K_F2 SDL_SCANCODE_F2
@@ -180,9 +180,9 @@ struct _GIOChannel;
 #define KEY_X SDL_SCANCODE_X
 #define KEY_A SDL_SCANCODE_A
 #define KEY_F SDL_SCANCODE_F
-#define MK_ALT KMOD_ALT
-#define MK_CONTROL KMOD_CTRL
-#define MK_SHIFT KMOD_SHIFT
+#define MK_ALT SDL_KMOD_ALT
+#define MK_CONTROL SDL_KMOD_CTRL
+#define MK_SHIFT SDL_KMOD_SHIFT
 #elif defined(USE_CONSOLE)
 #define K_F1 0
 #define K_F2 0

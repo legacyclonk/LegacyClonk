@@ -78,8 +78,7 @@ option(USE_TESTS "Enable testing" OFF)
 CMAKE_DEPENDENT_OPTION(ENABLE_SOUND "Compile with sound support" ON
 	"NOT USE_CONSOLE" OFF)
 # USE_SDL_MIXER
-CMAKE_DEPENDENT_OPTION(USE_SDL_MIXER "Whether SDL2_mixer shall be used for sound" ON
-	"ENABLE_SOUND" OFF)
+CMAKE_DEPENDENT_OPTION(USE_SDL_MIXER "Whether SDL3_mixer shall be used for sound" ON "ENABLE_SOUND" OFF)
 # USE_SDL_MAINLOOP
 if (APPLE)
 	set(USE_SDL_MAINLOOP_DEFAULT ON)
@@ -436,19 +435,19 @@ if (NOT USE_WIC)
 	target_link_libraries(clonk PNG::PNG)
 endif ()
 
-# Link SDL2
+# Link SDL3
 if (USE_SDL_MAINLOOP OR USE_SDL_MIXER)
-	find_package(SDL2 REQUIRED)
-	if (SDL2_FOUND AND USE_SDL_MAINLOOP)
+	find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
+	if (SDL3_FOUND AND USE_SDL_MAINLOOP)
 		set(USE_SDL_FOR_GAMEPAD ON)
 	endif ()
-	target_link_libraries(clonk SDL2::SDL2)
+	target_link_libraries(clonk SDL3::SDL3)
 endif ()
 
-# Link SDL2_mixer
+# Link SDL3_mixer
 if (USE_SDL_MIXER)
-	find_package(SDL2_mixer REQUIRED)
-	target_link_libraries(clonk SDL2_mixer::SDL2_mixer)
+	find_package(SDL3_mixer REQUIRED)
+	target_link_libraries(clonk SDL3_mixer::SDL3_mixer)
 endif ()
 
 # Link spdlog
