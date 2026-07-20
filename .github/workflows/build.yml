@@ -59,6 +59,7 @@ jobs:
           arch: ${{ env.VS_ARCH }}
 
       - name: "Dependencies"
+        if: ${{ env.SKIP_DEPS != '1' }}
         run: |
           mkdir deps
           cd deps

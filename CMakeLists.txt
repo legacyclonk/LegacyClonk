@@ -494,7 +494,7 @@ endif ()
 
 # Link miniupnpc
 if (USE_MINIUPNPC)
-	find_package(miniupnpc CONFIG REQUIRED)
+	find_package(miniupnpc REQUIRED)
 	target_link_libraries(clonk miniupnpc::miniupnpc)
 endif ()
 
