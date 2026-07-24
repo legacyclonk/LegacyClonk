@@ -522,7 +522,10 @@ endif ()
 
 # Link miniupnpc
 if (USE_MINIUPNPC)
+	set(PREV_PREFER "${CMAKE_FIND_PACKAGE_PREFER_CONFIG}")
+	set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
 	find_package(miniupnpc CONFIG REQUIRED)
+	set(CMAKE_FIND_PACKAGE_PREFER_CONFIG "${PREV_PREFER}")
 	target_link_libraries(clonk miniupnpc::miniupnpc)
 endif ()
 
@@ -647,23 +650,27 @@ foreach (MACRO_TARGET ${MACRO_TARGETS})
 	endif ()
 endforeach ()
 
-if (APPLE AND NOT USE_CONSOLE)
-	set(BUNDLE_RESOURCES
-		src/res/lc.icns
-		src/res/C4U.icns
-		src/res/C4P.icns
-		src/res/C4S.icns
-		src/res/C4F.icns
-		src/res/C4G.icns
-		src/res/C4D.icns
-	)
-
-	set_target_properties(clonk PROPERTIES RESOURCE "${BUNDLE_RESOURCES}")
-	set_target_properties(clonk PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/src/res/Info.plist")
-	set_target_properties(clonk PROPERTIES INSTALL_RPATH "@loader_path/../Frameworks")
-
-	install(TARGETS clonk BUNDLE DESTINATION . RESOURCE DESTINATION ./clonk.app/Contents/Resources/)
+if (APPLE)
 	install(TARGETS c4group RUNTIME DESTINATION .)
+	if (NOT USE_CONSOLE)
+		set(BUNDLE_RESOURCES
+			src/res/lc.icns
+			src/res/C4U.icns
+			src/res/C4P.icns
+			src/res/C4S.icns
+			src/res/C4F.icns
+			src/res/C4G.icns
+			src/res/C4D.icns
+		)
+
+		set_target_properties(clonk PROPERTIES RESOURCE "${BUNDLE_RESOURCES}")
+		set_target_properties(clonk PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/src/res/Info.plist")
+		set_target_properties(clonk PROPERTIES INSTALL_RPATH "@loader_path/../Frameworks")
+
+		install(TARGETS clonk BUNDLE DESTINATION . RESOURCE DESTINATION ./clonk.app/Contents/Resources/)
+	else ()
+		install(TARGETS clonk RUNTIME DESTINATION .)
+	endif ()
 endif ()
 
 # Precompile headers

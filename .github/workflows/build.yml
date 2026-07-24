@@ -116,7 +116,14 @@ jobs:
         run: |
           cd build
           DESTDIR=inst ninja install
-          mv inst/usr/local/c4group inst/usr/local/clonk.app ../output
+          USE_CONSOLE=$(cmake -B . -LA -N | grep USE_CONSOLE)
+          USE_CONSOLE=${USE_CONSOLE##*=}
+          mv inst/usr/local/c4group ../output
+          if [ "$USE_CONSOLE" = "ON" ]; then
+            mv inst/usr/local/clonk ../output
+          else
+            mv inst/usr/local/clonk.app ../output
+          fi
 
       - name: "Publish Engine"
         id: publish-engine
