@@ -25,7 +25,6 @@ runner = 'windows-latest'
 [[matrix.windows.config]]
 arch = 'x64'
 platform-suffix = 'win64'
-itch-manifest = 'win64'
 vs_arch = 'amd64'
 
 [matrix.linux]
@@ -46,11 +45,10 @@ USE_LIBNOTIFY = false
 [[matrix.linux.config]]
 arch = 'x64'
 platform-suffix = 'linux64'
-itch-manifest = 'linux'
 gcc_arch = 'x86_64'
 
 [matrix.mac]
-runner = 'macos-15-intel'
+runner = 'macos-latest'
 
 [[matrix.mac.variants]]
 
@@ -58,8 +56,6 @@ runner = 'macos-15-intel'
 USE_LIBNOTIFY = false
 
 [[matrix.mac.config]]
-runner = 'macos-latest'
 arch = 'aarch64'
 platform-suffix = 'mac-arm64'
-itch-manifest = 'mac'
 clang_arch = 'arm64'
