@@ -203,8 +203,8 @@ C4Network2::C4Network2()
 	pControl(nullptr), pLobby(nullptr), fLobbyRunning(false),
 #ifndef USE_CONSOLE
 	pLobbyCountdown(nullptr),
-#endif
 	readyCheckDialog{nullptr},
+#endif
 	pSec1Timer(nullptr),
 	iNextClientID(0),
 	iLastChaseTargetUpdate(0),
