@@ -25,6 +25,7 @@ jobs:
       GCC_VERSION: '16.1.0'
       GCC_ARCH: ${{ matrix.gcc_arch }}
       CLANG_ARCH: ${{ matrix.clang_arch }}
+      EXTRA_CONFIG_ARGS: ${{ matrix.extra-config-args }}
     strategy:
       fail-fast: false
       matrix:
@@ -64,7 +65,8 @@ jobs:
 
       - name: Configure
         run: |
-          $CHROOT cmake -B build . -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_TESTS=On -DCMAKE_CTEST_ARGUMENTS=--output-on-failure $CMAKE_CONFIGURE_ARGS
+          echo "Configuring with cmake -B build . -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_TESTS=On -DCMAKE_CTEST_ARGUMENTS=--output-on-failure $CMAKE_CONFIGURE_ARGS $EXTRA_CONFIG_ARGS"
+          $CHROOT cmake -B build . -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_TESTS=On -DCMAKE_CTEST_ARGUMENTS=--output-on-failure $CMAKE_CONFIGURE_ARGS $EXTRA_CONFIG_ARGS
 
       - name: "Enable Debugrec"
         if: ${{ matrix.debugrec }}
