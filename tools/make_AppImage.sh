@@ -9,4 +9,11 @@ chmod +x linuxdeploy linuxdeploy-plugin-gtk.sh
 
 convert -resize 512x512 src/res/lc.png legacyclonk.png
 
-OUTPUT=output/clonk.AppImage ./linuxdeploy --plugin gtk --desktop-file=src/res/io.github.legacyclonk.LegacyClonk.desktop --icon-file=legacyclonk.png --appdir=AppDir --executable=build/clonk --output=appimage
+WITH_DEVELOPER_MODE=$(cmake -B build -LA -N | grep WITH_DEVELOPER_MODE | cut -d'=' -f 2)
+if [ "$WITH_DEVELOPER_MODE" = "ON" ]; then
+	GTK_PLUGIN="--plugin=gtk"
+else
+	GTK_PLUGIN=""
+fi
+
+OUTPUT=output/clonk.AppImage ./linuxdeploy $GTK_PLUGIN --desktop-file=src/res/io.github.legacyclonk.LegacyClonk.desktop --icon-file=legacyclonk.png --appdir=AppDir --executable=build/clonk --output=appimage
