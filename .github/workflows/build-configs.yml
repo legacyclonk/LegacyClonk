@@ -1,4 +1,4 @@
-name: Autobuild
+name: 'Test Build Configurations'
 
 on:
   push:
