@@ -17,6 +17,10 @@ on:
         value: ${{ jobs.generate-ci-config.outputs.major-update }}
       matrix:
         value: ${{ jobs.generate-ci-config.outputs.matrix }}
+      matrix-release-build:
+        value: ${{ jobs.generate-ci-config.outputs.matrix-release-build }}
+      matrix-release-publish:
+        value: ${{ jobs.generate-ci-config.outputs.matrix-release-publish }}
       matrix-itch:
         value: ${{ jobs.generate-ci-config.outputs.matrix-itch }}
       objversion:
@@ -37,6 +41,8 @@ jobs:
       groups: ${{ steps.generate-ci-config.outputs.groups }}
       major-update: ${{ steps.generate-ci-config.outputs.major-update }}
       matrix: ${{ steps.generate-ci-config.outputs.matrix }}
+      matrix-release-build: ${{ steps.generate-ci-config.outputs.matrix-release-build }}
+      matrix-release-publish: ${{ steps.generate-ci-config.outputs.matrix-release-publish }}
       matrix-itch: ${{ steps.generate-ci-config.outputs.matrix-itch }}
       objversion: ${{ steps.extract-version.outputs.objversion }}
       objversionnodots: ${{ steps.extract-version.outputs.objversionnodots }}

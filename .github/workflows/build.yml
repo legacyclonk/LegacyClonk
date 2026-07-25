@@ -211,10 +211,28 @@ jobs:
         with:
           name: c4group-Mac-universal
           path: output/c4group
-          archive: false
 
       - name: "Upload merged clonk"
         uses: actions/upload-artifact@v7
         with:
           name: clonk-Mac-universal
           path: output/clonk
+
+      - name: "Fix paths for combined zip"
+        if: ${{ inputs.pack-engine-and-c4group }}
+        run: |
+          mv output/clonk/clonk.app output/
+          rmdir output/clonk
+
+      - name: "Combine Engine And C4Group"
+        if: ${{ inputs.pack-engine-and-c4group }}
+        shell: pwsh
+        run: |
+          [System.IO.Compression.ZipFile]::CreateFromDirectory("$(Join-Path $PWD output)", "LegacyClonk-Mac-universal.zip")
+
+      - name: "Publish Combined"
+        if: ${{ inputs.pack-engine-and-c4group }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: LegacyClonk-Mac-universal.zip
+          path: LegacyClonk-Mac-universal.zip

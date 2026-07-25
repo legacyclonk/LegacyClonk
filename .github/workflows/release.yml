@@ -22,7 +22,7 @@ jobs:
     needs: [generate-ci-config]
     uses: './.github/workflows/build.yml'
     with:
-      matrix: ${{ needs.generate-ci-config.outputs.matrix }}
+      matrix: ${{ needs.generate-ci-config.outputs.matrix-release-build }}
       pack-engine-and-c4group: true
 
   build-content:
@@ -131,7 +131,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJson(needs.generate-ci-config.outputs.matrix) }}
+        include: ${{ fromJson(needs.generate-ci-config.outputs.matrix-release-publish) }}
+
     env:
       OBJVERSION: ${{ needs.generate-ci-config.outputs.objversion }}
       VERSION: ${{ needs.generate-ci-config.outputs.buildversion }}
@@ -218,7 +219,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJson(needs.generate-ci-config.outputs.matrix) }}
+        include: ${{ fromJson(needs.generate-ci-config.outputs.matrix-release-publish) }}
     env:
       C4GROUP: ${{ matrix.os == 'Windows' && './c4group.exe' || './c4group' }}
       MAJOR_UPDATE: ${{ needs.generate-ci-config.outputs.major-update }}
@@ -359,7 +360,7 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix:
-        include: ${{ fromJson(needs.generate-ci-config.outputs.matrix) }}
+        include: ${{ fromJson(needs.generate-ci-config.outputs.matrix-release-publish) }}
     steps:
       - uses: actions/download-artifact@v8
         if: ${{ matrix.os != 'Linux' }}
