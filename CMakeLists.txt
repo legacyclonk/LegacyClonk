@@ -522,10 +522,7 @@ endif ()
 
 # Link miniupnpc
 if (USE_MINIUPNPC)
-	set(PREV_PREFER "${CMAKE_FIND_PACKAGE_PREFER_CONFIG}")
-	set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
 	find_package(miniupnpc CONFIG REQUIRED)
-	set(CMAKE_FIND_PACKAGE_PREFER_CONFIG "${PREV_PREFER}")
 	target_link_libraries(clonk miniupnpc::miniupnpc)
 endif ()
 
