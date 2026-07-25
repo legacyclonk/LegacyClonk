@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.25)
+
+enable_language(C)
+
+try_run(GET_ARCHITECTURE_RUN_RESULT GET_ARCHITECTURE_COMPILE_RESULT
+	SOURCES "${CMAKE_CURRENT_LIST_DIR}/GetArchitecture.c"
+	LOG_DESCRIPTION "Getting target architecture"
+	RUN_OUTPUT_STDOUT_VARIABLE TARGET_ARCHITECTURE
+)
+
+if (NOT GET_ARCHITECTURE_COMPILE_RESULT)
+	message(FATAL_ERROR "Compiling program for determining target architecture failed")
+endif ()
+
+if ("${GET_ARCHITECTURE_RUN_RESULT}" STREQUAL "0")
+	set(TARGET_ARCHITECTURE_KNOWN TRUE)
+	string(STRIP "${TARGET_ARCHITECTURE}" TARGET_ARCHITECTURE)
+else ()
+	set(TARGET_ARCHITECTURE_KNOWN FALSE)
+endif ()

@@ -1,4 +1,4 @@
-name: Test Build Configurations
+name: Autobuild
 
 on:
   push:
@@ -9,129 +9,15 @@ defaults:
     shell: bash
 
 jobs:
-  Test:
-    strategy:
-      max-parallel: 15
-      fail-fast: false
-      matrix:
-        os: [ubuntu-22.04, windows-latest, macos-15-intel]
-        env: [Linux, Windows, Mac]
-        arch: [x64, x86]
-        sound: [OFF, SDL_mixer]
-        windowing: [Console, X11, GTK, SDL, Windows]
-        debugrec: [OFF, ON]
-        exclude:
-          - os: ubuntu-22.04
-            env: Mac
-          - os: ubuntu-22.04
-            env: Windows
-          - os: windows-latest
-            env: Mac
-          - os: windows-latest
-            env: Linux
-          - os: macos-15-intel
-            env: Windows
-          - os: macos-15-intel
-            env: Linux
+  generate-ci-config:
+    name: Generate CI Configuration
+    uses: './.github/workflows/ci-config.yml'
+    with:
+      config-file: autobuild/config_tests.toml
+      generation-script: autobuild/generate_test_configs.py
 
-          - arch: x86
-            os: macos-15-intel
-
-          - arch: x86
-            os: ubuntu-22.04
-
-          - os: windows-latest
-            windowing: X11
-          - os: macos-15-intel
-            windowing: X11
-          - os: windows-latest
-            windowing: GTK
-          - os: macos-15-intel
-            windowing: GTK
-          - os: macos-15-intel
-            windowing: Windows
-          - os: ubuntu-22.04
-            windowing: Windows
-
-          - sound: SDL_mixer
-            windowing: Console
-          - debugrec: ON
-            sound: OFF
-          - debugrec: ON
-            windowing: X11
-          - debugrec: ON
-            windowing: SDL
-    env:
-      PLATFORM: ${{ matrix.arch }}
-
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - name: "Configure Platform"
-        run: |
-          echo "CONFIG_SUFFIX=${{ matrix.env }}-${{ matrix.arch }}" >> $GITHUB_ENV
-          autobuild/${{ matrix.env }}.sh
-
-      - name: "Configure Platform Architecture"
-        run: |
-          autobuild/${{ matrix.env }}-${{ matrix.arch }}.sh
-
-      - name: "Linux: Setup"
-        if: ${{ matrix.env == 'Linux' }}
-        run: $CHROOT autobuild/setup_linux.sh
-
-      - name: "Mac: Work around libpng mess"
-        if: ${{ matrix.env == 'Mac' }}
-        run: sudo rm -r /Library/Frameworks/Mono.framework/Headers
-
-      - name: "Windows: Setup VS Dev Environment"
-        if: ${{ matrix.env == 'Windows' }}
-        uses: seanmiddleditch/gha-setup-vsdevenv@v4
-        with:
-          arch: ${{ env.VS_ARCH }}
-
-      - name: "Dependencies"
-        run: |
-          mkdir deps
-          cd deps
-          curl -L https://github.com/legacyclonk/deps/releases/download/2025-09-13/lc_deps-$CONFIG_SUFFIX.tar.gz | tar -xz
-          ./fix_paths.sh
-
-      - name: "Configuration setup: No Sound"
-        if: ${{ matrix.sound == 'OFF' }}
-        run: echo "CONFIG_ARGS=$CONFIG_ARGS -DENABLE_SOUND=Off" >> $GITHUB_ENV
-
-      - name: "Configuration setup: SDL_mixer"
-        if: ${{ matrix.sound == 'SDL_mixer' }}
-        run: echo "CONFIG_ARGS=$CONFIG_ARGS -DUSE_SDL_MIXER=On" >> $GITHUB_ENV
-
-      - name: "Configuration setup: Console"
-        if: ${{ matrix.windowing == 'Console' }}
-        run: echo "CONFIG_ARGS=$CONFIG_ARGS -DUSE_CONSOLE=On" >> $GITHUB_ENV
-
-      - name: "Configuration setup: GTK"
-        if: ${{ matrix.windowing == 'GTK' }}
-        run: echo "CONFIG_ARGS=$CONFIG_ARGS -DWITH_DEVELOPER_MODE=On" >> $GITHUB_ENV
-
-      - name: "Configuration setup: SDL"
-        if: ${{ matrix.windowing == 'SDL' }}
-        run: echo "CONFIG_ARGS=$CONFIG_ARGS -DUSE_SDL_MAINLOOP=On -DWITH_DEVELOPER_MODE=Off" >> $GITHUB_ENV
-
-      - name: "Configuration setup: X11"
-        if: ${{ matrix.windowing == 'X11' }}
-        run: echo "CONFIG_ARGS=$CONFIG_ARGS -DWITH_DEVELOPER_MODE=Off" >> $GITHUB_ENV
-
-      - name: Configure
-        run: |
-          $CHROOT cmake -B build . -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_TESTS=On -DCMAKE_CTEST_ARGUMENTS=--output-on-failure $CMAKE_CONFIGURE_ARGS $CONFIG_ARGS
-
-      - name: Build
-        run: |
-          $CHROOT cmake --build build -v $CMAKE_BUILD_ARGS
-
-      - name: Test
-        run: |
-          $CHROOT cmake --build build --target test
+  Autobuild:
+    needs: [generate-ci-config]
+    uses: './.github/workflows/build.yml'
+    with:
+      matrix: ${{ needs.generate-ci-config.outputs.matrix }}

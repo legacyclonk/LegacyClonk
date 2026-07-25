@@ -1,6 +1,15 @@
 name: Generate CI Configuration
 on:
   workflow_call:
+    inputs:
+      config-file:
+        type: string
+        description: "Config TOML used to generate matrix"
+        default: autobuild/ci.toml
+      generation-script:
+        type: string
+        description: "Script used to convert the config-file to the needed format"
+        default: autobuild/generate_ci_config.py
     outputs:
       groups:
         value: ${{ jobs.generate-ci-config.outputs.groups }}
@@ -34,18 +43,18 @@ jobs:
       buildversion: ${{ steps.extract-version.outputs.buildversion }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           sparse-checkout: |
             autobuild
             src
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Generate CI config
         id: generate-ci-config
         run: |
-          python3 autobuild/generate_ci_config.py autobuild/ci.toml >> $GITHUB_OUTPUT
+          python3 "${{ inputs.generation-script }}" "${{ inputs.config-file }}" >> $GITHUB_OUTPUT
       - name: Extract version numbers
         id: extract-version
         run: |

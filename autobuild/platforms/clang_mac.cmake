@@ -1,0 +1,58 @@
+cmake_minimum_required(VERSION 3.20)
+
+# -------------------------------
+# COMPILERS (from Homebrew LLVM)
+# -------------------------------
+set(CMAKE_C_COMPILER "$ENV{LLVM_PREFIX}/bin/clang" CACHE STRING "")
+set(CMAKE_CXX_COMPILER "$ENV{LLVM_PREFIX}/bin/clang++" CACHE STRING "")
+
+# explicit ninja path (helps CI)
+set(CMAKE_MAKE_PROGRAM "$ENV{NINJA_PREFIX}/bin/ninja" CACHE FILEPATH "Path to Ninja")
+
+# -------------------------------------
+# macOS target + sysroot (no Xcode)
+# -------------------------------------
+if (DEFINED ENV{OSX_SDK})
+	set(CMAKE_OSX_SYSROOT "$ENV{OSX_SDK}" CACHE STRING "")
+else ()
+	set(CMAKE_OSX_SYSROOT "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk" CACHE STRING "")
+endif ()
+
+# -------------------------------------
+# libc++ include + linker setup
+# -------------------------------------
+if (DEFINED ENV{LLVM_CXX_INCLUDE})
+	set(LLVM_CXX_INCLUDE "$ENV{LLVM_CXX_INCLUDE}")
+else ()
+	set(LLVM_CXX_INCLUDE "$ENV{LLVM_PREFIX}/include/c++/v1")
+endif ()
+
+if (DEFINED ENV{LLVM_CXX_LIB})
+	set(LLVM_CXX_LIB "$ENV{LLVM_CXX_LIB}")
+else ()
+	set(LLVM_CXX_LIB     "$ENV{LLVM_PREFIX}/lib/c++")
+endif ()
+
+# Disable automatic stdlib selection
+set(CMAKE_C_FLAGS_INIT "-fexperimental-library -Wno-parentheses -D_LIBCPP_DISABLE_AVAILABILITY")
+set(CMAKE_CXX_FLAGS_INIT "-nostdlib++ -nostdinc++ ${CMAKE_C_FLAGS_INIT}")
+set(CMAKE_OBJCXX_FLAGS_INIT "-nostdlib++ -nostdinc++ ${CMAKE_CXX_FLAGS_INIT}")
+
+# Force static libc++ linkage
+set(STDLIB_FLAGS "-nostdlib++ ${LLVM_CXX_LIB}/libc++.a ${LLVM_CXX_LIB}/libc++abi.a ${LLVM_CXX_LIB}/libc++experimental.a $ENV{LIBCLANG_RT}")
+
+set(CMAKE_EXE_LINKER_FLAGS_INIT "${STDLIB_FLAGS}")
+set(CMAKE_SHARED_LINKER_FLAGS_INIT "${STDLIB_FLAGS}")
+
+# Provide libc++ headers explicitly
+set(CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT} -I${LLVM_CXX_INCLUDE}")
+set(CMAKE_OBJCXX_FLAGS_INIT "${CMAKE_OBJCXX_FLAGS_INIT} -I${LLVM_CXX_INCLUDE}")
+
+# -------------------------------------
+# Avoid accidental Xcode SDK usage
+# -------------------------------------
+set(CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH OFF)
+set(CMAKE_FIND_FRAMEWORK LAST)
+set(CMAKE_FIND_APPBUNDLE NEVER)
+
+set(CMAKE_AR "$ENV{LLVM_PREFIX}/bin/llvm-ar")
