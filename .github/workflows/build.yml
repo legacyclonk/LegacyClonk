@@ -52,9 +52,11 @@ jobs:
 
       - name: "Windows: Setup VS Dev Environment"
         if: ${{ matrix.os == 'Windows' }}
-        uses: seanmiddleditch/gha-setup-vsdevenv@v5
-        with:
-          arch: ${{ matrix.vs_arch }}
+        run: |
+          TOOLCHAIN_VERSION=0.14.0
+          curl -L "https://github.com/MarkSchofield/WindowsToolchain/archive/refs/tags/v$TOOLCHAIN_VERSION.tar.gz" | tar -xz
+          patch -p1 < autobuild/platforms/Windows.MSVC.toolchain.cmake.patch
+          echo "CMAKE_CONFIGURE_ARGS=$CMAKE_CONFIGURE_ARGS -DCMAKE_TOOLCHAIN_FILE=$PWD/WindowsToolchain-$TOOLCHAIN_VERSION/Windows.MSVC.toolchain.cmake -DVS_PLATFORM_TOOLSET_VERSION=14.44.35207 -DCMAKE_POLICY_VERSION_MINIMUM=3.24 -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.vs_arch }}" >> $GITHUB_ENV
 
       - name: "Dependencies"
         run: |

@@ -59,13 +59,13 @@ runner = 'windows-latest'
 arch = 'x86'
 platform-suffix = 'win32'
 itch-manifest = 'win32'
-vs_arch = 'x86'
+vs_arch = 'X86'
 
 [[matrix.windows.config]]
 arch = 'x64'
 platform-suffix = 'win64'
 itch-manifest = 'win64'
-vs_arch = 'amd64'
+vs_arch = 'AMD64'
 include-groups = true
 publish-groups = true
 
@@ -73,7 +73,7 @@ publish-groups = true
 name = 'debugrec'
 arch = 'x86'
 platform-suffix = 'win32'
-vs_arch = 'x86'
+vs_arch = 'X86'
 debugrec = true
 
 [[matrix.windows.config]]
@@ -81,7 +81,7 @@ runner = 'windows-11-arm'
 arch = 'aarch64'
 platform-suffix = 'win-arm64'
 itch-manifest = 'win-arm64'
-vs_arch = 'arm64'
+vs_arch = 'ARM64'
 
 [matrix.linux]
 runner = 'ubuntu-22.04'

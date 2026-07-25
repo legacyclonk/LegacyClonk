@@ -25,7 +25,7 @@ runner = 'windows-latest'
 [[matrix.windows.config]]
 arch = 'x64'
 platform-suffix = 'win64'
-vs_arch = 'amd64'
+vs_arch = 'AMD64'
 
 [matrix.linux]
 runner = 'ubuntu-22.04'
