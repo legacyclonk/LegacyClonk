@@ -27,18 +27,18 @@ $osLower = $OS.ToLower()
 
 Copy-Item -Path $Manifest -Destination lc_full/.itch.toml
 
-$osForButler = $OS -eq "Mac" ? "darwin" : $osLower
-
-$archForButler = switch ($Arch) {
-    'x64' { 'amd64' }
-    'x86' { '386' }
+$butlerRelease = switch ("$osLower-$Arch") {
+    { $_ -like 'windows-*' } { 'windows-amd64'; break }
+    'mac-universal' { 'darwin-universal'; break }
+    'linux-x64' { 'linux-amd64'; break }
+    'linux-aarch64' { 'linux-arm64'; break }
     default {
         Write-Error "Invalid architecture"
         exit 1
     }
 }
 
-Invoke-WebRequest -Uri "https://broth.itch.zone/butler/$osForButler-$archForButler/LATEST/archive/default" -OutFile butler.zip
+Invoke-WebRequest -Uri "https://broth.itch.zone/butler/$butlerRelease/LATEST/archive/default" -OutFile butler.zip
 [System.IO.Compression.ZipFile]::ExtractToDirectory('butler.zip', 'butler')
 
 if (!$IsWindows) {
