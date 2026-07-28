@@ -51,5 +51,7 @@ if ($Tag -ne "v${Env:VERSION}") {
     $channelName = "${Tag}-${channelName}"
 }
 
+$dryRun = [bool]::Parse($env:BUTLER_DRY_RUN) ? '--dry-run' : ''
+
 butler/butler login
-butler/butler push --fix-permissions lc_full fulgen/legacyclonk:$channelName --userversion "$Env:OBJVERSION [$Env:VERSION]"
+butler/butler push $dryRun --fix-permissions lc_full fulgen/legacyclonk:$channelName --userversion "$Env:OBJVERSION [$Env:VERSION]"

@@ -462,6 +462,7 @@ jobs:
         include: ${{ fromJson(needs.generate-ci-config.outputs.matrix-itch) }}
     env:
       BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+      BUTLER_DRY_RUN: ${{ needs.generate-ci-config.outputs.butler-dry-run }}
       MAJOR_UPDATE: ${{ needs.generate-ci-config.outputs.major-update }}
       OBJVERSION: ${{ needs.generate-ci-config.outputs.objversion }}
       OBJVERSIONNODOTS: ${{ needs.generate-ci-config.outputs.objversionnodots }}
