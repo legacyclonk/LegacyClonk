@@ -1,3 +1,6 @@
+['itch.io']
+dry-run = true
+
 [groups.'System.c4g']
 parts = [
     'v360',

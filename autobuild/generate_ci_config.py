@@ -68,6 +68,7 @@ if __name__ == "__main__":
     toml = tomllib.load(open(sys.argv[1], "rb"))
     print_output(toml, "groups")
     print_output(toml, "major-update", default=False)
+    print(f"butler-dry-run={json.dumps(toml.get('itch.io', {}).get('dry-run', False))}")
     print(f"matrix-itch={json.dumps(transform_matrix_itch(toml["matrix"]))}")
     print_filtered_matrix(toml, "matrix", lambda entry: not entry.get("publish-only", False))
     print_filtered_matrix(toml, "matrix-release-build",

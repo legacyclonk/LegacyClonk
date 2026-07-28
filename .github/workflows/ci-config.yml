@@ -29,6 +29,8 @@ on:
         value: ${{ jobs.generate-ci-config.outputs.objversionnodots }}
       buildversion:
         value: ${{ jobs.generate-ci-config.outputs.buildversion }}
+      butler-dry-run:
+        value: ${{ jobs.generate-ci-config.outputs.butler-dry-run }}
 
 defaults:
   run:
@@ -47,6 +49,7 @@ jobs:
       objversion: ${{ steps.extract-version.outputs.objversion }}
       objversionnodots: ${{ steps.extract-version.outputs.objversionnodots }}
       buildversion: ${{ steps.extract-version.outputs.buildversion }}
+      butler-dry-run: ${{ steps.generate-ci-config.outputs.butler-dry-run }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
