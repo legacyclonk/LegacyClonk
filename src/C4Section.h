@@ -349,9 +349,10 @@ public:
 	static void AdjustEnumerationIndex(std::uint32_t newIndex) noexcept;
 
 	static inline constexpr std::uint32_t NoSectionSentinel{std::numeric_limits<std::uint32_t>::max()};
+	static inline constexpr std::uint32_t FirstSectionEnumerationIndex{1};
 
 private:
-	static inline std::uint32_t enumerationIndex{0};
+	static inline std::uint32_t enumerationIndex{FirstSectionEnumerationIndex};
 
 private:
 	std::string name;

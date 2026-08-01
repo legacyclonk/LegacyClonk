@@ -47,6 +47,7 @@ C4Section::C4Section(std::string name)
 C4Section::C4Section(std::string name, const std::uint32_t number) noexcept
 	: Weather{*this}, TextureMap{this}, Landscape{*this}, MassMover{*this}, PXS{*this}, Particles{*this}, Number{number}, name{std::move(name)}, numberAsString{std::format("{}", number)}
 {
+	assert(number != 0);
 	Default();
 }
 
@@ -1593,7 +1594,7 @@ void C4Section::ObjectRemovalCheck() // Every Tick255 by ExecObjects
 void C4Section::ResetEnumerationIndex() noexcept
 {
 	assert(!Game.IsRunning);
-	enumerationIndex = 0;
+	enumerationIndex = FirstSectionEnumerationIndex;
 }
 
 std::uint32_t C4Section::AcquireEnumerationIndex() noexcept

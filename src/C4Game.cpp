@@ -398,7 +398,7 @@ bool C4Game::OpenScenario()
 
 bool C4Game::LoadSections()
 {
-	bool hasSectionZero{!C4S.Head.SaveGame};
+	bool hasFirstSection{!C4S.Head.SaveGame};
 
 	if (C4S.Head.SaveGame)
 	{
@@ -413,10 +413,10 @@ bool C4Game::LoadSections()
 				LogFatal(C4ResStrTableKey::IDS_ERR_SECTION); return false;
 			}
 
-			if (section->Number == 0)
+			if (section->Number == C4Section::FirstSectionEnumerationIndex)
 			{
-				assert(!hasSectionZero);
-				hasSectionZero = true;
+				assert(!hasFirstSection);
+				hasFirstSection = true;
 			}
 
 			Sections.emplace_back(std::move(section));
@@ -425,14 +425,14 @@ bool C4Game::LoadSections()
 		// Compile runtime data|
 		if (!CompileRuntimeData(
 					GameText,
-					[hasSectionZero, this](StdCompiler &comp) -> C4Section &
+					[hasFirstSection, this](StdCompiler &comp) -> C4Section &
 					{
-						if (hasSectionZero)
+						if (hasFirstSection)
 						{
-							comp.excCorrupt("section 0 was saved separately");
+							comp.excCorrupt("section {} was saved separately", C4Section::FirstSectionEnumerationIndex);
 						}
 
-						auto section = std::make_unique<C4Section>(C4Section::Main, 0);
+						auto section = std::make_unique<C4Section>(C4Section::Main, C4Section::FirstSectionEnumerationIndex);
 						if (!section->InitFromTemplate(ScenarioFile) || !section->AssumeGroupAsSaveGameGroup())
 						{
 							comp.excCorrupt("Failed to open savegame group");

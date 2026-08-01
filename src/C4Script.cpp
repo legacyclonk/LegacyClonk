@@ -2158,7 +2158,7 @@ C4FindObject *CreateCriterionsFromPars(const C4Value *pPars, C4FindObject **pFOs
 								if (section)
 								{
 									result.emplace_back(section);
-									if (sectionNumber == 0)
+									if (sectionNumber == C4Section::FirstSectionEnumerationIndex)
 									{
 										includesMainSection = true;
 									}
