@@ -118,7 +118,7 @@ bool C4Section::InitFromTemplate(C4Group &scenario, const bool savegame)
 	return true;
 }
 
-bool C4Section::InitFromEmptyLandscape(C4Group &scenario, const C4SLandscape &landscape)
+bool C4Section::InitFromScript(C4Group &scenario, const C4SLandscape &landscape, const std::string_view mapS2Script)
 {
 	if (!Group.Open(scenario.GetFullName().getData()))
 	{
@@ -139,7 +139,16 @@ bool C4Section::InitFromEmptyLandscape(C4Group &scenario, const C4SLandscape &la
 	C4S.Disasters = Game.C4S.Disasters;
 	C4S.Environment = Game.C4S.Environment;
 
-	emptyLandscape = true;
+	createdByScript = true;
+	if (mapS2Script.empty())
+	{
+		this->mapS2Script.clear();
+	}
+	else
+	{
+		this->mapS2Script = mapS2Script;
+	}
+
 	return true;
 }
 
@@ -180,7 +189,7 @@ bool C4Section::LoadSaveGame(C4Group &scenario, std::string_view entryName)
 
 bool C4Section::InitFromSaveGameAfterLoad(C4Group &scenario)
 {
-	if (emptyLandscape)
+	if (createdByScript)
 	{
 		if (!Group.Open(scenario.GetFullName().getData()))
 		{
@@ -219,7 +228,7 @@ bool C4Section::InitMaterialTexture(std::optional<std::tuple<C4MaterialMap &, C4
 
 	// Check for scenario local materials
 	const bool isMainSection{IsMain()};
-	bool haveSectionMaterials{!emptyLandscape && Group.FindEntry(C4CFN_Material)};
+	bool haveSectionMaterials{!createdByScript && Group.FindEntry(C4CFN_Material)};
 
 	if (fallback && (isMainSection || !haveSectionMaterials))
 	{
@@ -254,7 +263,7 @@ bool C4Section::InitMaterialTexture(std::optional<std::tuple<C4MaterialMap &, C4
 	}
 	else
 	{
-		if (!Game.LoadMaterialsAndTextures(Material, TextureMap, emptyLandscape || IsMain() ? nullptr : &Group, SaveGameGroup ? &*SaveGameGroup : nullptr))
+		if (!Game.LoadMaterialsAndTextures(Material, TextureMap, createdByScript || IsMain() ? nullptr : &Group, SaveGameGroup ? &*SaveGameGroup : nullptr))
 		{
 			return false;
 		}
@@ -277,7 +286,7 @@ bool C4Section::InitMaterialTexture(std::optional<std::tuple<C4MaterialMap &, C4
 bool C4Section::InitSecondPart(C4Random &random, const bool allowScript)
 {
 	LandscapeLoaded = false;
-	if (!(emptyLandscape ? Landscape.InitEmpty(random, true, LandscapeLoaded) : Landscape.Init(Group, SaveGameGroup ? &*SaveGameGroup : nullptr, random, allowScript, false, true, LandscapeLoaded, C4S.Head.SaveGame)))
+	if (!(createdByScript ? Landscape.InitFromScript(mapS2Script, random, true, true, LandscapeLoaded) : Landscape.Init(Group, SaveGameGroup ? &*SaveGameGroup : nullptr, random, allowScript, false, true, LandscapeLoaded, C4S.Head.SaveGame)))
 	{
 		LogFatal(C4ResStrTableKey::IDS_ERR_GBACK);
 		return false;
@@ -336,7 +345,7 @@ bool C4Section::InitSecondPart(C4Random &random, const bool allowScript)
 		objectsLoaded = Objects.Load(*this, *SaveGameGroup, "");
 	}
 
-	if (!objectsLoaded && !emptyLandscape)
+	if (!objectsLoaded && !createdByScript)
 	{
 		objectsLoaded = Objects.Load(*this, Group, "");
 	}
@@ -1511,8 +1520,8 @@ void C4Section::CompileFunc(StdCompiler *const comp, const bool mainSection, con
 	if (!mainSection)
 	{
 		auto name = comp->Name("Section");
-		comp->Value(mkNamingAdapt(emptyLandscape, "EmptyLandscape"));
-		if (emptyLandscape)
+		comp->Value(mkNamingAdapt(createdByScript, "CreatedByScript"));
+		if (createdByScript)
 		{
 			comp->Value(mkNamingAdapt(mkParAdapt(C4S, false), "Scenario"));
 		}

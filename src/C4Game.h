@@ -388,7 +388,7 @@ public:
 	bool InitKeyboard(); // register main keyboard input functions
 
 	std::uint32_t CreateSection(const char *name, std::string callback, C4Section &sourceSection, C4Object *target, const C4Value &value);
-	std::uint32_t CreateEmptySection(const C4SLandscape &landscape, std::string callback, C4Section &sourceSection, C4Object *target, const C4Value &value);
+	std::uint32_t CreateEmptySection(const C4SLandscape &landscape, std::string mapS2Script, std::string callback, C4Section &sourceSection, C4Object *target, const C4Value &value);
 	void OnSectionLoaded(std::uint32_t sectionNumber, std::int32_t byClient, bool success);
 	void OnSectionLoadFinished(std::uint32_t sectionNumber, bool success);
 
@@ -493,6 +493,7 @@ protected:
 		SectionGLCtx Context;
 #endif
 		std::optional<C4SLandscape> Landscape;
+		std::optional<std::string> MapS2Script;
 		std::optional<C4Random> Random;
 	};
 

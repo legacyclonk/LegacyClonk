@@ -588,6 +588,19 @@ std::unique_ptr<CSurface8> C4Landscape::CreateMapS2(C4Group &ScenFile, C4Random 
 	return pMapCreator->Render(nullptr);
 }
 
+std::unique_ptr<CSurface8> C4Landscape::CreateMapS2FromScript(const char *const script, C4Random &random, bool allowScript)
+{
+	// create map creator
+	if (!pMapCreator)
+		pMapCreator = new C4MapCreatorS2(Section, random, &Section.C4S.Landscape, &Section.TextureMap, &Section.Material, Game.Parameters.StartupPlayerCount);
+
+	// read string
+	pMapCreator->ReadScript(script, random, allowScript);
+	// render landscape
+	// keep map creator until script callbacks have been done
+	return pMapCreator->Render(nullptr);
+}
+
 bool C4Landscape::PostInitMap()
 {
 	// map creator present?
@@ -725,17 +738,29 @@ bool C4Landscape::AssignMap(std::unique_ptr<CSurface8> map, C4Random &random, co
 	return true;
 }
 
-bool C4Landscape::InitEmpty(C4Random &random, const bool loadSky, bool &landscapeLoaded)
+bool C4Landscape::InitFromScript(const std::string &mapS2Script, C4Random &random, const bool allowScript, const bool loadSky, bool &landscapeLoaded)
 {
 	assert(!Section.C4S.Landscape.ExactLandscape);
 	PrepareInit(random, false);
 
-	std::int32_t width{0};
-	std::int32_t height{0};
+	std::unique_ptr<CSurface8> map;
 
-	// Create map surface
-	Section.C4S.Landscape.GetMapSize(width, height, Game.Parameters.StartupPlayerCount, random);
-	if (!AssignMap(std::make_unique<CSurface8>(width, height), random, false, loadSky, false))
+	if (mapS2Script.empty())
+	{
+		std::int32_t width{0};
+		std::int32_t height{0};
+
+		// Create map surface
+		Section.C4S.Landscape.GetMapSize(width, height, Game.Parameters.StartupPlayerCount, random);
+
+		map = std::make_unique<CSurface8>(width, height);
+	}
+	else
+	{
+		map = CreateMapS2FromScript(mapS2Script.c_str(), random, allowScript);
+	}
+
+	if (!AssignMap(std::move(map), random, false, loadSky, false))
 	{
 		return false;
 	}
@@ -3113,7 +3138,7 @@ bool C4Landscape::DrawMap(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, co
 	{
 		mapCreator.emplace(Section, C4Random::Default, &FakeLS, &Section.TextureMap, &Section.Material, Game.Parameters.StartupPlayerCount);
 	}
-	mapCreator->ReadScript(szMapDef, C4Random::Default);
+	mapCreator->ReadScript(szMapDef, C4Random::Default, true);
 	// render map
 	const auto sfcMap = mapCreator->Render(nullptr);
 	if (!sfcMap) return false;

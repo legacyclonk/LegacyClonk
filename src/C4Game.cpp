@@ -3006,7 +3006,7 @@ std::uint32_t C4Game::CreateSection(const char *const name, std::string callback
 	const std::lock_guard lock{SectionLoadMutex};
 
 #ifndef USE_CONSOLE
-	SectionLoadQueue.emplace(section, SectionGLCtx{lpDDraw->CreateContext(Application.pWindow, &Application)}, std::nullopt, C4Random::Default.Clone());
+	SectionLoadQueue.emplace(section, SectionGLCtx{lpDDraw->CreateContext(Application.pWindow, &Application)}, std::nullopt, std::nullopt, C4Random::Default.Clone());
 #else
 	SectionLoadQueue.emplace(section, std::nullopt);
 #endif
@@ -3016,16 +3016,16 @@ std::uint32_t C4Game::CreateSection(const char *const name, std::string callback
 	return section->Number;
 }
 
-std::uint32_t C4Game::CreateEmptySection(const C4SLandscape &landscape, std::string callback, C4Section &sourceSection, C4Object *const	target, const C4Value &value)
+std::uint32_t C4Game::CreateEmptySection(const C4SLandscape &landscape, std::string mapS2Script, std::string callback, C4Section &sourceSection, C4Object *const target, const C4Value &value)
 {
 	C4Section *const section{SectionsLoading.emplace_back(std::make_unique<C4Section>(), std::move(callback), sourceSection.Number, target ? target->Number : 0, value).Section.get()};
 
 	const std::lock_guard lock{SectionLoadMutex};
 
 #ifndef USE_CONSOLE
-	SectionLoadQueue.emplace(section, SectionGLCtx{lpDDraw->CreateContext(Application.pWindow, &Application)}, landscape, C4Random::Default.Clone());
+	SectionLoadQueue.emplace(section, SectionGLCtx{lpDDraw->CreateContext(Application.pWindow, &Application)}, landscape, std::move(mapS2Script), C4Random::Default.Clone());
 #else
-	SectionLoadQueue.emplace(section, landscape);
+	SectionLoadQueue.emplace(section, landscape, std::move(mapS2Script));
 #endif
 
 	SectionLoadSemaphore.release();
@@ -3188,7 +3188,7 @@ void C4Game::SectionLoadProc(std::stop_token stopToken)
 #endif
 
 		const bool success{(sectionLoadArgs.Landscape
-				? sectionLoadArgs.Section->InitFromEmptyLandscape(ScenarioFile, *sectionLoadArgs.Landscape)
+				? sectionLoadArgs.Section->InitFromScript(ScenarioFile, *sectionLoadArgs.Landscape, sectionLoadArgs.MapS2Script ? *sectionLoadArgs.MapS2Script : std::string_view{})
 				: sectionLoadArgs.Section->InitFromTemplate(ScenarioFile))
 				&& sectionLoadArgs.Section->InitMaterialTexture({{Material, TextureMap}})
 				&& sectionLoadArgs.Section->InitSecondPart(*sectionLoadArgs.Random, false)};

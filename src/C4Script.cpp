@@ -6543,7 +6543,14 @@ static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data, C4String *cal
 		assign(landscape.ShadeMaterials, "ShadeMaterials");
 	}
 
-	return static_cast<C4ValueInt>(Game.CreateEmptySection(landscape, FnStringPar(callback), ctx->GetSection(), obj ? obj : ctx->Obj, value));
+	std::string mapS2Script;
+
+	if (C4String *const mapDef{map[C4VString("Map")].getStr()})
+	{
+		mapS2Script = {mapDef->Data.getData(), mapDef->Data.getLength()};
+	}
+
+	return static_cast<C4ValueInt>(Game.CreateEmptySection(landscape, std::move(mapS2Script), FnStringPar(callback), ctx->GetSection(), obj ? obj : ctx->Obj, value));
 }
 
 static C4ValueInt FnGetSectionCount(C4AulContext *ctx)

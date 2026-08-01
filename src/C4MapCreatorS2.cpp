@@ -763,12 +763,12 @@ bool C4MapCreatorS2::ReadFile(const char *szFilename, C4Group *pGrp, C4Random &r
 	return true;
 }
 
-bool C4MapCreatorS2::ReadScript(const char *szScript, C4Random &random)
+bool C4MapCreatorS2::ReadScript(const char *szScript, C4Random &random, const bool allowScript)
 {
 	// create parser and read
 	try
 	{
-		C4MCParser(this, random, true).Parse(szScript);
+		C4MCParser(this, random, allowScript).Parse(szScript);
 	}
 	catch (const C4MCParserErr &err)
 	{

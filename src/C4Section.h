@@ -98,7 +98,7 @@ public:
 	std::string_view GetNumberAsString() const { return numberAsString; }
 
 	bool InitFromTemplate(C4Group &scenario, bool savegame = false);
-	bool InitFromEmptyLandscape(C4Group &scenario, const C4SLandscape &landscape);
+	bool InitFromScript(C4Group &scenario, const C4SLandscape &landscape, std::string_view mapS2Script);
 
 	bool AssumeGroupAsSaveGameGroup(); // for main section: open group as savegame group
 	bool LoadSaveGame(C4Group &scenario, std::string_view entryName);
@@ -357,6 +357,7 @@ private:
 private:
 	std::string name;
 	std::string numberAsString; // NoSave
-	bool emptyLandscape{false};
+	bool createdByScript{false};
+	std::string mapS2Script;
 	Status status{Status::Active};
 };

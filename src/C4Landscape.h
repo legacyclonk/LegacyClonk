@@ -142,7 +142,7 @@ public:
 	bool SaveInitial();
 	bool SaveTextures(C4Group &hGroup);
 	bool Init(C4Group &hGroup, C4Group *const saveGameGroup, C4Random &random, bool allowScript, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame);
-	bool InitEmpty(C4Random &random, bool loadSky, bool &landscapeLoaded);
+	bool InitFromScript(const std::string &mapS2Script, C4Random &random, bool allowScript, bool loadSky, bool &landscapeLoaded);
 	bool MapToLandscape();
 	bool ApplyDiff(C4Group &hGroup);
 	bool SetMode(int32_t iMode);
@@ -314,6 +314,7 @@ protected:
 	bool FinalizeInit(bool &landscapeLoaded, C4Group *groupForDiff);
 	std::unique_ptr<CSurface8> CreateMap(C4Random &random); // create map by landscape attributes
 	std::unique_ptr<CSurface8> CreateMapS2(C4Group &ScenFile, C4Random &random, bool allowScript); // create map by def file
+	std::unique_ptr<CSurface8> CreateMapS2FromScript(const char *script, C4Random &random, bool allowScript); // create map by def file
 	CSurface8 *CreateEmptyMap(std::int32_t width, std::int32_t height);
 	bool Relight(C4Rect To);
 	bool ApplyLighting(C4Rect To);

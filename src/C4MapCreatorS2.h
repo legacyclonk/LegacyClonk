@@ -359,7 +359,7 @@ public:
 	void Default(C4Random &random); // set default data
 	void Clear(); // clear any data
 	bool ReadFile(const char *szFilename, C4Group *pGrp, C4Random &random, bool allowScript); // read defs of file
-	bool ReadScript(const char *szScript, C4Random &random); // reads def directly from mem
+	bool ReadScript(const char *szScript, C4Random &random, bool allowScript); // reads def directly from mem
 
 public:
 	C4MCMap *GetMap(const char *szMapName); // get map by name
