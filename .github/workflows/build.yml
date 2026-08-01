@@ -19,12 +19,19 @@ jobs:
   build-binaries:
     name: Build Binaries
     runs-on: ${{ matrix.runner }}
+    env:
+      DEPS_VERSION: '2026-07-25'
+      LLVM_VERSION: 22
+      GCC_VERSION: '16.1.0'
+      GCC_ARCH: ${{ matrix.gcc_arch }}
+      CLANG_ARCH: ${{ matrix.clang_arch }}
+      EXTRA_CONFIG_ARGS: ${{ matrix.extra-config-args }}
     strategy:
       fail-fast: false
       matrix:
         include: ${{ fromJson(inputs.matrix) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -33,41 +40,35 @@ jobs:
 
       - name: "Configure Platform"
         run: |
-          autobuild/${{ matrix.os }}.sh
+          autobuild/platforms/${{ matrix.os }}.sh
 
       - name: "Configure Platform Architecture"
         run: |
-          autobuild/${{ matrix.os }}-${{ matrix.arch }}.sh
+          autobuild/platforms/${{ matrix.os }}-${{ matrix.arch }}.sh
 
       - name: "Linux: Setup"
         if: ${{ matrix.os == 'Linux' }}
-        run: $CHROOT autobuild/setup_linux.sh
-
-      - name: "Mac: Work around libpng mess"
-        if: ${{ matrix.os == 'Mac' }}
-        run: |
-          if [ -d /Library/Frameworks/Mono.framework/Headers ]; then
-            sudo rm -r /Library/Frameworks/Mono.framework/Headers
-          else
-            echo "Mono headers not found, skipping."
-          fi
+        run: $CHROOT autobuild/platforms/setup_linux.sh
 
       - name: "Windows: Setup VS Dev Environment"
         if: ${{ matrix.os == 'Windows' }}
-        uses: seanmiddleditch/gha-setup-vsdevenv@v4
-        with:
-          arch: ${{ env.VS_ARCH }}
+        run: |
+          TOOLCHAIN_VERSION=0.14.0
+          curl -L "https://github.com/MarkSchofield/WindowsToolchain/archive/refs/tags/v$TOOLCHAIN_VERSION.tar.gz" | tar -xz
+          patch -p1 < autobuild/platforms/Windows.MSVC.toolchain.cmake.patch
+          echo "CMAKE_CONFIGURE_ARGS=$CMAKE_CONFIGURE_ARGS -DCMAKE_TOOLCHAIN_FILE=$PWD/WindowsToolchain-$TOOLCHAIN_VERSION/Windows.MSVC.toolchain.cmake -DVS_PLATFORM_TOOLSET_VERSION=14.44.35207 -DCMAKE_POLICY_VERSION_MINIMUM=3.24 -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.vs_arch }}" >> $GITHUB_ENV
 
       - name: "Dependencies"
         run: |
           mkdir deps
           cd deps
-          curl -L https://github.com/legacyclonk/deps/releases/download/2025-09-13/lc_deps-${{ matrix.os }}-${{ matrix.arch }}.tar.gz | tar -xz
+          curl -L "https://github.com/legacyclonk/deps/releases/download/$DEPS_VERSION/lc_deps-${{ matrix.os }}-${{ matrix.arch }}.tar.gz" | tar -xz
           ./fix_paths.sh
 
       - name: Configure
         run: |
-          $CHROOT cmake -B build . -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_TESTS=On -DCMAKE_CTEST_ARGUMENTS=--output-on-failure $CMAKE_CONFIGURE_ARGS
+          echo "Configuring with cmake -B build . -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_TESTS=On -DCMAKE_CTEST_ARGUMENTS=--output-on-failure $CMAKE_CONFIGURE_ARGS $EXTRA_CONFIG_ARGS"
+          $CHROOT cmake -B build . -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_TESTS=On -DCMAKE_CTEST_ARGUMENTS=--output-on-failure $CMAKE_CONFIGURE_ARGS $EXTRA_CONFIG_ARGS
 
       - name: "Enable Debugrec"
         if: ${{ matrix.debugrec }}
@@ -101,7 +102,7 @@ jobs:
 
       - name: "Linux: Publish Engine Binary For Debugging"
         if: ${{ matrix.os == 'Linux' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: clonk-noappimage-${{ matrix.config-suffix }}
           path: output/clonk
@@ -117,18 +118,25 @@ jobs:
         run: |
           cd build
           DESTDIR=inst ninja install
-          mv inst/usr/local/c4group inst/usr/local/clonk.app ../output
+          USE_CONSOLE=$(cmake -B . -LA -N | grep USE_CONSOLE)
+          USE_CONSOLE=${USE_CONSOLE##*=}
+          mv inst/usr/local/c4group ../output
+          if [ "$USE_CONSOLE" = "ON" ]; then
+            mv inst/usr/local/clonk ../output
+          else
+            mv inst/usr/local/clonk.app ../output
+          fi
 
       - name: "Publish Engine"
         id: publish-engine
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: clonk-${{ matrix.config-suffix }}
           path: output/clonk*
 
       - name: "Publish c4group"
         id: publish-c4group
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: c4group-${{ matrix.config-suffix }}
           path: output/c4group*
@@ -141,14 +149,14 @@ jobs:
 
       - name: "Publish System.c4g"
         if: ${{ matrix.include-groups }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: System.c4g
           path: System.c4g
 
       - name: "Publish Graphics.c4g"
         if: ${{ matrix.include-groups }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Graphics.c4g
           path: Graphics.c4g
@@ -167,14 +175,64 @@ jobs:
 
       - name: "Publish Combined"
         if: ${{ inputs.pack-engine-and-c4group && matrix.os != 'Linux' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: LegacyClonk-${{ matrix.config-suffix }}.zip
           path: LegacyClonk-${{ matrix.config-suffix }}.zip
 
       - name: "Publish Combined"
         if: ${{ inputs.pack-engine-and-c4group && matrix.os == 'Linux' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: LegacyClonk-${{ matrix.config-suffix }}.tar.gz
           path: output/LegacyClonk-${{ matrix.config-suffix }}.tar.gz
+
+  create-universal-binaries:
+    name: "Merge into universal Mac binaries"
+    needs: [build-binaries]
+    if: always()
+    runs-on: macos-latest
+    steps:
+      - name: "Download Mac binaries"
+        uses: actions/download-artifact@v8
+        with:
+          pattern: '*-Mac-*'
+
+      - name: "Merge binaries"
+        run: |
+          mkdir output output/clonk # extra clonk nesting due to path flattening on upload
+          lipo -create -output output/c4group c4group-Mac-*/c4group
+
+          cp -r clonk-Mac-aarch64/clonk.app output/clonk/clonk.app
+          lipo -create -output output/clonk/clonk.app/Contents/MacOS/clonk clonk-Mac-*/clonk.app/Contents/MacOS/clonk
+
+      - name: "Upload merged c4group"
+        uses: actions/upload-artifact@v7
+        with:
+          name: c4group-Mac-universal
+          path: output/c4group
+
+      - name: "Upload merged clonk"
+        uses: actions/upload-artifact@v7
+        with:
+          name: clonk-Mac-universal
+          path: output/clonk
+
+      - name: "Fix paths for combined zip"
+        if: ${{ inputs.pack-engine-and-c4group }}
+        run: |
+          mv output/clonk/clonk.app output/
+          rmdir output/clonk
+
+      - name: "Combine Engine And C4Group"
+        if: ${{ inputs.pack-engine-and-c4group }}
+        shell: pwsh
+        run: |
+          [System.IO.Compression.ZipFile]::CreateFromDirectory("$(Join-Path $PWD output)", "LegacyClonk-Mac-universal.zip")
+
+      - name: "Publish Combined"
+        if: ${{ inputs.pack-engine-and-c4group }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: LegacyClonk-Mac-universal.zip
+          path: LegacyClonk-Mac-universal.zip

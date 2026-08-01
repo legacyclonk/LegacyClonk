@@ -1006,7 +1006,7 @@ bool StdCompilerINIRead::TestStringEnd(RawCompileType eType)
 char StdCompilerINIRead::ReadEscapedChar()
 {
 	// Catch some no-noes like \0, \n etc.
-	if (*pPos >= 0 && iscntrl(static_cast<unsigned char>(*pPos)))
+	if (static_cast<signed char>(*pPos) >= 0 && iscntrl(static_cast<unsigned char>(*pPos)))
 	{
 		Warn("Nonprintable character found in string: {:02x}", static_cast<unsigned char>(*pPos));
 		return *pPos++;

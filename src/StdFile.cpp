@@ -890,7 +890,7 @@ int ForEachFile(const char *szDirName, bool(*fnCallback)(const char *))
 bool ReadFileLine(FILE *fhnd, char *tobuf, int maxlen)
 {
 	int cread;
-	char inc;
+	int inc;
 	if (!fhnd || !tobuf) return 0;
 	for (cread = 0; cread < maxlen; cread++)
 	{
@@ -901,7 +901,7 @@ bool ReadFileLine(FILE *fhnd, char *tobuf, int maxlen)
 		}
 		if (inc == 0x0A) break; // Text file line feed
 		if (!inc || (inc == EOF)) break; // End of file
-		*tobuf = inc; tobuf++;
+		*tobuf = static_cast<char>(inc); tobuf++;
 	}
 	*tobuf = 0;
 	if (inc == EOF) return 0;

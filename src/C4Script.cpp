@@ -1354,7 +1354,7 @@ static std::optional<C4ValueInt> FnGetY(C4AulContext *cthr, C4Object *pObj)
 	return {pObj->y};
 }
 
-static std::optional<C4ValueInt> FnGetAlive(C4AulContext *cthr, C4Object *pObj)
+static std::optional<bool> FnGetAlive(C4AulContext *cthr, C4Object *pObj)
 {
 	if (!pObj) pObj = cthr->Obj;
 	if (!pObj) return {};
@@ -3261,7 +3261,7 @@ static std::optional<C4ValueInt> FnGetSelectCount(C4AulContext *cthr, C4ValueInt
 	return {Game.Players.Get(iPlr)->SelectCount};
 }
 
-static C4ValueInt FnSetCrewStatus(C4AulContext *cthr, C4ValueInt iPlr, bool fInCrew, C4Object *pObj)
+static bool FnSetCrewStatus(C4AulContext *cthr, C4ValueInt iPlr, bool fInCrew, C4Object *pObj)
 {
 	// validate player
 	C4Player *pPlr = Game.Players.Get(iPlr);

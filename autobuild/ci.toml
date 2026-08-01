@@ -12,6 +12,7 @@ parts = [
 [groups.content]
 parts = [
     'https://update.clonkspot.org/lc/lc_49110.zip',
+    'https://github.com/legacyclonk/LegacyClonk/releases/download/v363/content.zip',
 ]
 
 [groups.content.'Fantasy.c4d']
@@ -59,12 +60,13 @@ runner = 'windows-latest'
 arch = 'x86'
 platform-suffix = 'win32'
 itch-manifest = 'win32'
+vs_arch = 'X86'
 
 [[matrix.windows.config]]
 arch = 'x64'
 platform-suffix = 'win64'
 itch-manifest = 'win64'
-vs_arch = 'amd64'
+vs_arch = 'AMD64'
 include-groups = true
 publish-groups = true
 
@@ -72,7 +74,16 @@ publish-groups = true
 name = 'debugrec'
 arch = 'x86'
 platform-suffix = 'win32'
+vs_arch = 'X86'
 debugrec = true
+exclude-release = true
+
+[[matrix.windows.config]]
+runner = 'windows-11-arm'
+arch = 'aarch64'
+platform-suffix = 'win-arm64'
+itch-manifest = 'win-arm64'
+vs_arch = 'ARM64'
 
 [matrix.linux]
 runner = 'ubuntu-22.04'
@@ -81,12 +92,22 @@ runner = 'ubuntu-22.04'
 arch = 'x64'
 platform-suffix = 'linux64'
 itch-manifest = 'linux'
+gcc_arch = 'x86_64'
 
 [[matrix.linux.config]]
 name = 'debugrec'
 arch = 'x64'
 platform-suffix = 'linux64'
+gcc_arch = 'x86_64'
 debugrec = true
+exclude-release = true
+
+[[matrix.linux.config]]
+runner = 'ubuntu-22.04-arm'
+arch = 'aarch64'
+platform-suffix = 'linux-arm64'
+itch-manifest = 'linux'
+gcc_arch = 'aarch64'
 
 [matrix.mac]
 runner = 'macos-15-intel'
@@ -94,4 +115,19 @@ runner = 'macos-15-intel'
 [[matrix.mac.config]]
 arch = 'x64'
 platform-suffix = 'mac'
+clang_arch = 'x86_64'
+build-only = true
+
+[[matrix.mac.config]]
+runner = 'macos-latest'
+arch = 'aarch64'
+platform-suffix = 'mac-arm64'
+clang_arch = 'arm64'
+build-only = true
+
+[[matrix.mac.config]]
+runner = 'macos-latest'
+arch = 'universal'
+platform-suffix = 'mac'
 itch-manifest = 'mac'
+publish-only = true

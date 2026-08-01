@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
-set(CMAKE_C_COMPILER x86_64-linux-gnu-x86_64-linux-gnu-gcc-15)
-set(CMAKE_CXX_COMPILER x86_64-linux-gnu-x86_64-linux-gnu-g++-15)
+set(CMAKE_C_COMPILER "$ENV{GCC_ARCH}-linux-gnu-gcc-$ENV{GCC_MAJOR}")
+set(CMAKE_CXX_COMPILER "$ENV{GCC_ARCH}-linux-gnu-g++-$ENV{GCC_MAJOR}")
 
 set(CMAKE_C_FLAGS_INIT "-static-libgcc")
 set(CMAKE_CXX_FLAGS_INIT "-static-libgcc -static-libstdc++")

@@ -25,8 +25,8 @@ def transform_matrix(matrix: dict) -> list:
                 pass
 
             new_matrix.append({
-                **config,
                 "runner": runner["runner"],
+                **config,
                 "os": os.capitalize(),
                 "config-suffix": config_suffix,
                 "platform-suffix": platform_suffix
@@ -55,9 +55,27 @@ def print_output(toml: dict, name: str, *, transform: collections.abc.Callable[[
     print(f"{name}={json.dumps(transform(value))}")
 
 
+def print_filtered_matrix(toml: dict, output_name: str, filter_func: collections.abc.Callable[[dict], bool]):
+    result = transform_matrix(toml["matrix"])
+    result = list(filter(filter_func, result))
+    print(f"{output_name}={json.dumps(result)}")
+
 if __name__ == "__main__":
+    isRelease = False
+    if len(sys.argv) > 2:
+        isRelease = sys.argv[2] == "true"
+
     toml = tomllib.load(open(sys.argv[1], "rb"))
     print_output(toml, "groups")
     print_output(toml, "major-update", default=False)
-    print_output(toml, "matrix", transform=transform_matrix)
+    print(f"butler-dry-run={json.dumps(toml.get('itch.io', {}).get('dry-run', False))}")
     print(f"matrix-itch={json.dumps(transform_matrix_itch(toml["matrix"]))}")
+    print_filtered_matrix(toml, "matrix", lambda entry: not entry.get("publish-only", False))
+    print_filtered_matrix(toml, "matrix-release-build",
+                          lambda entry:
+                              not entry.get("exclude-release", False)
+                              and not entry.get("publish-only", False))
+    print_filtered_matrix(toml, "matrix-release-publish",
+                          lambda entry:
+                              not entry.get("exclude-release", False)
+                              and not entry.get("build-only", False))

@@ -1,0 +1,61 @@
+[general]
+USE_PCH = false
+
+[[general.variants]]
+ENABLE_SOUND = false
+USE_WINDOWS_RUNTIME = false
+
+[[general.variants]]
+DEBUGREC = true
+SOLIDMASK_DEBUG = true
+USE_STAT = true
+USE_MINIUPNPC = false
+
+[[general.variants]]
+USE_CONSOLE = true
+USE_LTO = false
+
+[[general.variants]]
+USE_CONSOLE = true
+DEBUGREC = true
+
+[matrix.windows]
+runner = 'windows-latest'
+
+[[matrix.windows.config]]
+arch = 'x64'
+platform-suffix = 'win64'
+vs_arch = 'AMD64'
+
+[matrix.linux]
+runner = 'ubuntu-22.04'
+
+[[matrix.linux.variants]]
+USE_SDL_MAINLOOP = true
+USE_X11 = false
+WITH_DEVELOPER_MODE = false
+
+[[matrix.linux.variants]]
+USE_X11 = true
+WITH_DEVELOPER_MODE = false
+
+[[matrix.linux.variants]]
+USE_LIBNOTIFY = false
+
+[[matrix.linux.config]]
+arch = 'x64'
+platform-suffix = 'linux64'
+gcc_arch = 'x86_64'
+
+[matrix.mac]
+runner = 'macos-latest'
+
+[[matrix.mac.variants]]
+
+[[matrix.mac.variants]]
+USE_LIBNOTIFY = false
+
+[[matrix.mac.config]]
+arch = 'aarch64'
+platform-suffix = 'mac-arm64'
+clang_arch = 'arm64'

@@ -104,10 +104,9 @@ bool ValidateString(StdStrBuf &rsString, ValidationOption eOption)
 		// excess '{' will break the team chat, remove
 		{
 			std::string str{rsString.getData()};
-			if (const auto it = std::remove(str.begin(), str.end(), '{'); it != str.end())
+			if (std::erase(str, '{'))
 			{
 				fValid = false;
-				str.erase(it, str.end());
 				rsString.Copy(str.c_str());
 			}
 		}

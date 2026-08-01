@@ -1,7 +1,7 @@
 /*
  * LegacyClonk
  *
- * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2026, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -53,8 +53,13 @@ public:
 	// Sets the color of the pixel at the specified position, assuming the bitmap is in B8G8R8A8 format.
 	void SetPixel32(std::uint32_t x, std::uint32_t y, std::uint32_t value);
 
+	std::uint32_t GetWidth() const noexcept;
+	std::uint32_t GetHeight() const noexcept;
+
+	StdBitmap Scaled(std::uint32_t targetWidth, std::uint32_t targetHeight) const;
+
 private:
 	std::uint32_t width, height;
 	bool useAlpha;
-	const std::unique_ptr<std::uint8_t[]> bytes;
+	std::unique_ptr<std::uint8_t[]> bytes;
 };

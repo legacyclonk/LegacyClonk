@@ -947,14 +947,9 @@ int32_t C4DefList::Load(C4Group &hGroup, uint32_t dwLoadWhat,
 
 	auto def = std::make_unique<C4Def>();
 	// Load primary definition
-	if (def->Load(hGroup, dwLoadWhat, szLanguage, pSoundSystem) && Add(def.get(), fOverload))
+	if (def->Load(hGroup, dwLoadWhat, szLanguage, pSoundSystem) && Add(std::move(def), fOverload))
 	{
 		iResult++; fPrimaryDef = true;
-		def.release();
-	}
-	else
-	{
-		def.reset();
 	}
 
 	// Load sub definitions
@@ -1026,39 +1021,6 @@ int32_t C4DefList::Load(const char *szSearch,
 		return iResult;
 	}
 
-	// Wildcard items
-	if (SCharCount('*', szSearch))
-	{
-#ifdef _WIN32
-		struct _finddata_t fdt; intptr_t fdthnd;
-		if ((fdthnd = _findfirst(szSearch, &fdt)) < 0) return false;
-		do
-		{
-			iResult += Load(fdt.name, dwLoadWhat, szLanguage, pSoundSystem, fOverload);
-		} while (_findnext(fdthnd, &fdt) == 0);
-		_findclose(fdthnd);
-		// progress
-		if (iMinProgress != iMaxProgress) Game.SetInitProgress(float(iMaxProgress));
-#else
-		fputs("FIXME: C4DefList::Load\n", stderr);
-#endif
-		return iResult;
-	}
-
-	// File specified with creation (currently not used)
-	char szCreation[25 + 1];
-	int32_t iCreation = 0;
-	if (SCopyEnclosed(szSearch, '(', ')', szCreation, 25))
-	{
-		// Scan creation
-		SClearFrontBack(szCreation);
-		sscanf(szCreation, "%i", &iCreation);
-		// Extract filename
-		SCopyUntil(szSearch, szSegment, '(', _MAX_PATH);
-		SClearFrontBack(szSegment);
-		szSearch = szSegment;
-	}
-
 	// Load from specified file
 	C4Group hGroup;
 	if (!hGroup.Open(szSearch))
@@ -1077,12 +1039,12 @@ int32_t C4DefList::Load(const char *szSearch,
 	return iResult;
 }
 
-bool C4DefList::Add(C4Def *pDef, bool fOverload)
+bool C4DefList::Add(std::unique_ptr<C4Def> def, bool fOverload)
 {
-	if (!pDef) return false;
+	if (!def) return false;
 
 	// Check old def to overload
-	const auto old = FindDefByID(pDef->id);
+	auto old = FindDefByID(def->id);
 	const auto hasOld = (old != Defs.end());
 	if (hasOld && !fOverload) return false;
 
@@ -1090,23 +1052,23 @@ bool C4DefList::Add(C4Def *pDef, bool fOverload)
 	if (Config.Graphics.VerboseObjectLoading >= 1)
 		if (hasOld)
 		{
-			Log(C4ResStrTableKey::IDS_PRC_DEFOVERLOAD, pDef->GetName(), C4IdText((*old)->id));
+			Log(C4ResStrTableKey::IDS_PRC_DEFOVERLOAD, def->GetName(), C4IdText((*old)->id));
 			if (Config.Graphics.VerboseObjectLoading >= 2)
 			{
 				LogNTr("      Old def at {}", +(*old)->Filename);
-				LogNTr("     Overload by {}", +pDef->Filename);
+				LogNTr("     Overload by {}", +def->Filename);
 			}
 		}
 
 	if (hasOld)
 	{
 		// Replace old def
-		old->reset(pDef);
+		*old = std::move(def);
 	}
 	else
 	{
 		// Add new def
-		Defs.emplace_back(pDef);
+		Defs.emplace_back(std::move(def));
 	}
 
 	return true;
@@ -1124,10 +1086,7 @@ bool C4DefList::Remove(C4ID id)
 
 void C4DefList::Remove(C4Def *def)
 {
-	if (const auto it = std::find_if(Defs.begin(), Defs.end(), [def](const auto &check)
-		{
-			return check.get() == def;
-		}); it != Defs.end())
+	if (const auto it = std::ranges::find(Defs, def, &std::unique_ptr<C4Def>::get); it != Defs.end())
 	{
 		Defs.erase(it);
 	}
@@ -1195,17 +1154,10 @@ C4Def *C4DefList::GetByPath(const char *szPath)
 
 int32_t C4DefList::CheckEngineVersion(int32_t ver1, int32_t ver2, int32_t ver3, int32_t ver4, int32_t ver5)
 {
-	int32_t rcount = 0;
-	Defs.erase(std::remove_if(Defs.begin(), Defs.end(), [ver1, ver2, ver3, ver4, ver5, &rcount](const auto &def)
+	return std::erase_if(Defs, [ver1, ver2, ver3, ver4, ver5](const auto &def)
 	{
-		if (CompareVersion(def->rC4XVer[0], def->rC4XVer[1], def->rC4XVer[2], def->rC4XVer[3], def->rC4XVer[4], ver1, ver2, ver3, ver4, ver5) > 0)
-		{
-			++rcount;
-			return true;
-		}
-		return false;
-	}), Defs.end());
-	return rcount;
+		return CompareVersion(def->rC4XVer[0], def->rC4XVer[1], def->rC4XVer[2], def->rC4XVer[3], def->rC4XVer[4], ver1, ver2, ver3, ver4, ver5) > 0;
+	});
 }
 
 int32_t C4DefList::CheckRequireDef()
@@ -1225,7 +1177,7 @@ int32_t C4DefList::CheckRequireDef()
 
 int32_t C4DefList::ColorizeByMaterial(C4MaterialMap &rMats, uint8_t bGBM)
 {
-	return std::count_if(Defs.begin(), Defs.end(), [bGBM, &rMats](const auto &def)
+	return std::ranges::count_if(Defs, [bGBM, &rMats](const auto &def)
 	{
 		return def->ColorizeByMaterial(rMats, bGBM);
 	});
@@ -1412,34 +1364,26 @@ void C4DefList::SortByID()
 	//  within the same object pack and multiple appendtos with function overloads that depend on their
 	//  order.)
 
-	std::sort(Defs.begin(), Defs.end(), [](const auto &a, const auto &b)
-	{
-		return a->id < b->id;
-	});
+	std::ranges::sort(Defs, std::ranges::less{}, &C4Def::id);
 
 	Sorted = true;
 }
 
 void C4DefList::Synchronize()
 {
-	for (const auto &it : Defs)
-		it->Synchronize();
+	std::ranges::for_each(Defs, &C4Def::Synchronize);
 }
 
 void C4DefList::ResetIncludeDependencies()
 {
-	for (const auto &it : Defs)
-		it->ResetIncludeDependencies();
+	std::ranges::for_each(Defs, &C4Def::ResetIncludeDependencies);
 }
 
 std::vector<std::unique_ptr<C4Def>>::iterator C4DefList::FindDefByID(C4ID id)
 {
 	if (Sorted)
 	{
-		const auto it = std::lower_bound(Defs.begin(), Defs.end(), id, [](const auto &def, C4ID id)
-		{
-			return def->id < id;
-		});
+		const auto it = std::ranges::lower_bound(Defs, id, std::ranges::less{}, &C4Def::id);
 		if (it != Defs.end() && (*it)->id != id)
 		{
 			return Defs.end();
@@ -1447,8 +1391,5 @@ std::vector<std::unique_ptr<C4Def>>::iterator C4DefList::FindDefByID(C4ID id)
 		return it;
 	}
 
-	return std::find_if(Defs.begin(), Defs.end(), [id](const auto &def)
-	{
-		return def->id == id;
-	});
+	return std::ranges::find(Defs, id, &C4Def::id);
 }

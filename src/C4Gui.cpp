@@ -98,12 +98,106 @@ void DynBarFacet::SetHorizontal(C4Surface &rBySfc, int iHeight, int iBorderWidth
 	fctEnd.Set(&rBySfc, rBySfc.Wdt - iBorderWidth, 0, iBorderWidth, iHeight);
 }
 
-void DynBarFacet::SetHorizontal(C4Facet &rByFct, int32_t iBorderWidth)
+void DynBarFacet::SetHorizontal(const C4Facet &fromFacet, std::int32_t iBorderWidth)
 {
-	if (!iBorderWidth) iBorderWidth = rByFct.Hgt;
-	fctBegin.Set(rByFct.Surface, rByFct.X, rByFct.Y, iBorderWidth, rByFct.Hgt);
-	fctMiddle.Set(rByFct.Surface, rByFct.Hgt, rByFct.X, rByFct.Y + rByFct.Wdt - 2 * iBorderWidth, rByFct.Hgt);
-	fctEnd.Set(rByFct.Surface, rByFct.X + rByFct.Wdt - iBorderWidth, rByFct.Y, iBorderWidth, rByFct.Hgt);
+	if (!iBorderWidth)
+	{
+		iBorderWidth = fromFacet.Hgt;
+	}
+
+	fctBegin.Set(fromFacet.Surface, fromFacet.X, fromFacet.Y, iBorderWidth, fromFacet.Hgt);
+	fctMiddle.Set(fromFacet.Surface, iBorderWidth, fromFacet.Y, fromFacet.X + fromFacet.Wdt - 2 * iBorderWidth, fromFacet.Hgt);
+	fctEnd.Set(fromFacet.Surface, fromFacet.X + fromFacet.Wdt - iBorderWidth, fromFacet.Y, iBorderWidth, fromFacet.Hgt);
+}
+
+void DynBarFacet::Draw(C4FacetEx &cgo)
+{
+	if (cgo.Hgt == fctMiddle.Hgt)
+	{
+		// exact bar
+		const std::int32_t x0{cgo.TargetX + cgo.X};
+		const std::int32_t y0{cgo.TargetY + cgo.Y};
+		const std::int32_t w{fctMiddle.Wdt};
+		const std::int32_t endWidth{fctEnd.Wdt};
+		const std::int32_t iRightShowLength = endWidth;
+
+		std::int32_t x{fctBegin.Wdt};
+
+		{
+			const std::int32_t beginWidth{fctBegin.Wdt};
+			const bool overflows{beginWidth > cgo.Wdt};
+			if (overflows)
+			{
+				fctBegin.Wdt = cgo.Wdt;
+			}
+
+			fctBegin.Draw(cgo.Surface, x0, y0);
+
+			if (overflows)
+			{
+				fctBegin.Wdt = beginWidth;
+			}
+		}
+
+		while (x < cgo.Wdt - iRightShowLength)
+		{
+			const std::int32_t w2{std::min(w, cgo.Wdt - iRightShowLength - x)};
+			fctMiddle.Wdt = w2;
+			fctMiddle.Draw(cgo.Surface, x0 + x, y0);
+			x += w2;
+
+			if (w2 <= 0)
+			{
+				break;
+			}
+		}
+		fctMiddle.Wdt = w;
+
+		{
+			const bool overflows{endWidth > cgo.Wdt};
+			if (overflows)
+			{
+				fctEnd.X += endWidth - cgo.Wdt;
+				fctEnd.Wdt = cgo.Wdt;
+			}
+
+			fctEnd.Draw(cgo.Surface, x0 + cgo.Wdt - fctEnd.Wdt, y0);
+
+			if (overflows)
+			{
+				fctEnd.X -= endWidth - cgo.Wdt;
+				fctEnd.Wdt = endWidth;
+			}
+		}
+	}
+	else
+	{
+		// zoomed bar
+		const auto scale = static_cast<float>(cgo.Hgt) / fctMiddle.Hgt;
+		const std::int32_t x0{cgo.TargetX + cgo.X};
+		const std::int32_t y0{cgo.TargetY + cgo.Y};
+		const auto w = static_cast<std::int32_t>(scale * fctMiddle.Wdt);
+		const auto wOld = fctMiddle.Wdt;
+		const std::int32_t iRightShowLength{fctEnd.Wdt};
+
+		auto x = static_cast<std::int32_t>(scale * fctBegin.Wdt);
+
+		fctBegin.DrawX(cgo.Surface, x0, y0, static_cast<std::int32_t>(scale * fctBegin.Wdt), cgo.Hgt);
+		while (x < cgo.Wdt - (scale * iRightShowLength))
+		{
+			std::int32_t w2 = std::min(w, cgo.Wdt - static_cast<std::int32_t>(scale * iRightShowLength) - x);
+			fctMiddle.Wdt = static_cast<std::int32_t>(w2 / scale);
+			fctMiddle.DrawX(cgo.Surface, x0 + x, y0, w2, cgo.Hgt);
+			x += w2;
+
+			if (w2 <= 0)
+			{
+				break;
+			}
+		}
+		fctMiddle.Wdt = wOld;
+		fctEnd.DrawX(cgo.Surface, x0 + cgo.Wdt - static_cast<std::int32_t>(scale * fctEnd.Wdt), y0, static_cast<std::int32_t>(scale * fctEnd.Wdt), cgo.Hgt);
+	}
 }
 
 void ScrollBarFacets::Set(const C4Facet &rByFct, int32_t iPinIndex)

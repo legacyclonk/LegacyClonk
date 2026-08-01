@@ -18,8 +18,10 @@
 #include <charconv>
 #include <concepts>
 #include <format>
+#include <limits>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <utility>
 
 template <typename T>

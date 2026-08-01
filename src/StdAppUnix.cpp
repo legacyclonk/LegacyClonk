@@ -24,6 +24,7 @@
 
 #include <poll.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 #ifdef USE_X11
 #include <string_view>

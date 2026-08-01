@@ -176,11 +176,11 @@ int32_t C4IDList::GetNumberOfIDs(C4DefList &defs, int32_t category) const
 
 void C4IDList::ConsolidateValids(C4DefList &defs, int32_t category)
 {
-	content.erase(std::remove_if(content.begin(), content.end(), [&defs, category](const auto &entry)
+	std::erase_if(content, [&defs, category](const auto &entry)
 	{
 		const auto def = defs.ID2Def(entry.id);
 		return !def || (category && !(def->Category & category));
-	}), content.end());
+	});
 }
 
 void C4IDList::SortByValue(C4DefList &defs)

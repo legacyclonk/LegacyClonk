@@ -355,6 +355,12 @@ void C4MaterialMap::CrossMapMaterials(C4Section &section) // Called after load
 			{
 				szTextureOverlay = Map[cnt].sTextureOverlay.getData();
 				// backwards compatibility: if a pattern was specified although the no-pattern flag was set, overwrite that flag
+				if (Map[cnt].OverlayType & C4MatOv_NoConsole)
+				{
+					DebugLog(spdlog::level::err, "Error in overlay of material {}: Flag C4MatOv_NoConsole ignored because a custom overlay ({}) was specified!", +Map[cnt].Name, szTextureOverlay);
+					Map[cnt].OverlayType &= ~C4MatOv_NoConsole;
+				}
+
 				if (Map[cnt].OverlayType & C4MatOv_None)
 				{
 					DebugLog(spdlog::level::err, "Error in overlay of material {}: Flag C4MatOv_None ignored because a custom overlay ({}) was specified!", +Map[cnt].Name, szTextureOverlay);
@@ -367,14 +373,18 @@ void C4MaterialMap::CrossMapMaterials(C4Section &section) // Called after load
 		// search/create entry in texmap
 		Map[cnt].DefaultMatTex = section.TextureMap.GetIndex(Map[cnt].Name, szTextureOverlay, true,
 			std::format("DefaultMatTex of mat {}", +Map[cnt].Name).c_str());
-		const C4TexMapEntry *pTex = section.TextureMap.GetEntry(Map[cnt].DefaultMatTex);
-		if (pTex)
+		if (section.C4S.Landscape.EnableTextureOverlays && !(Map[cnt].OverlayType & C4MatOv_None))
 		{
-			// take pattern
-			Map[cnt].MatPattern = pTex->getPattern();
-			// special zooming for overlay
-			Map[cnt].MatPattern.SetZoom((Map[cnt].OverlayType & C4MatOv_Exact) ? 1 : 2);
+			const C4TexMapEntry *pTex = section.TextureMap.GetEntry(Map[cnt].DefaultMatTex);
+			if (pTex)
+			{
+				// take pattern
+				Map[cnt].MatPattern = pTex->getPattern();
+				// special zooming for overlay
+				Map[cnt].MatPattern.SetZoom((Map[cnt].OverlayType & C4MatOv_Exact) ? 1 : 2);
+			}
 		}
+
 		// init PXS facet
 		C4Surface *sfcTexture;
 		C4Texture *Texture;

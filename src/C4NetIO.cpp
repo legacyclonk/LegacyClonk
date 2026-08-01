@@ -36,6 +36,7 @@
 
 #else
 
+#include <unistd.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -2893,7 +2894,7 @@ void C4NetIOUDP::Peer::OnRecv(const C4NetIOPacket &rPacket) // (mt-safe)
 		}
 		// set packet counter
 		if (fBroadcasted)
-			iRIMCPacketCounter = iRIMCPacketCounter = pPkt->Nr;
+			iRIMCPacketCounter = iIMCPacketCounter = pPkt->Nr;
 		else
 			iRIPacketCounter = iIPacketCounter = pPkt->Nr;
 		// clear incoming packets
