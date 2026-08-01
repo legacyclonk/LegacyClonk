@@ -16,7 +16,7 @@ if (!(Test-Path $EngineUpdatePath)) {
     exit 1
 }
 
-$updatePath = $Env:MAJOR_UPDATE ? "lc_${Env:OBJVERSIONNODOTS}_${PlatformSuffix}.c4u" : "lc_${Env:OBJVERSIONNODOTS}_${Env:VERSION}_${PlatformSuffix}.c4u"
+$updatePath = [bool]::Parse($Env:MAJOR_UPDATE) ? "lc_${Env:OBJVERSIONNODOTS}_${PlatformSuffix}.c4u" : "lc_${Env:OBJVERSIONNODOTS}_${Env:VERSION}_${PlatformSuffix}.c4u"
 
 if ($OutDir) {
     $updatePath = Join-Path $OutDir $updatePath
