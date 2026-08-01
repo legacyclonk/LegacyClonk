@@ -271,15 +271,15 @@ jobs:
       - name: Build Combined Update
         run: autobuild/MakeCombinedUpdateGroups.ps1 -PlatformSuffix ${{ matrix.platform-suffix }} -EngineUpdatePath output/lc_${{ env.VERSION }}_${{ matrix.platform-suffix }}.c4u -OutDir output
 
-      - name: Publish Combined Update
-        if: ${{ !env.MAJOR_UPDATE }}
+      - name: Publish Combined Minor Update
+        if: ${{ !fromJson(env.MAJOR_UPDATE) }}
         uses: actions/upload-artifact@v7
         with:
           name: lc_${{ env.OBJVERSIONNODOTS }}_${{ env.VERSION }}_${{ matrix.platform-suffix }}.c4u
           path: output/lc_${{ env.OBJVERSIONNODOTS }}_${{ env.VERSION }}_${{ matrix.platform-suffix }}.c4u
 
       - name: Publish Combined Major Update
-        if: ${{ env.MAJOR_UPDATE }}
+        if: ${{ fromJson(env.MAJOR_UPDATE) }}
         uses: actions/upload-artifact@v7
         with:
           name: lc_${{ env.OBJVERSIONNODOTS }}_${{ matrix.platform-suffix }}.c4u
