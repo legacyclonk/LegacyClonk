@@ -117,7 +117,7 @@ public:
 	C4Effect *Get(int32_t iNumber, bool fIncludeDead, int32_t iMaxPriority = 0); // get effect by number
 	int32_t GetCount(const char *szMask, int32_t iMaxPriority = 0); // count effects that match the mask
 	int32_t Check(C4Object *pForObj, const char *szCheckEffect, int32_t iPrio, int32_t iTimer, const C4Value &rVal1 = C4VNull, const C4Value &rVal2 = C4VNull, const C4Value &rVal3 = C4VNull, const C4Value &rVal4 = C4VNull, bool passErrors = false); // do some effect callbacks
-	C4AulScript *GetCallbackScript(); // get script context for effect callbacks
+	C4AulScript &GetCallbackScript(); // get script context for effect callbacks
 	C4AulScriptFunc *GetContextCallback() const { return pFnContext; }
 
 	void Execute(C4Object *pObj); // execute all effects

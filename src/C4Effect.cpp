@@ -28,15 +28,15 @@
 
 void C4Effect::AssignCallbackFunctions()
 {
-	C4AulScript *pSrcScript = GetCallbackScript();
+	C4AulScript &srcScript{GetCallbackScript()};
 	// compose function names and search them
-	pFnStart  = pSrcScript->GetFuncRecursive(std::format(PSF_FxStart, +Name).c_str());
-	pFnStop   = pSrcScript->GetFuncRecursive(std::format(PSF_FxStop, +Name).c_str());
-	pFnTimer  = pSrcScript->GetFuncRecursive(std::format(PSF_FxTimer, +Name).c_str());
-	pFnEffect = pSrcScript->GetFuncRecursive(std::format(PSF_FxEffect, +Name).c_str());
-	pFnDamage = pSrcScript->GetFuncRecursive(std::format(PSF_FxDamage, +Name).c_str());
+	pFnStart  = srcScript.GetFuncRecursive(std::format(PSF_FxStart, +Name).c_str());
+	pFnStop   = srcScript.GetFuncRecursive(std::format(PSF_FxStop, +Name).c_str());
+	pFnTimer  = srcScript.GetFuncRecursive(std::format(PSF_FxTimer, +Name).c_str());
+	pFnEffect = srcScript.GetFuncRecursive(std::format(PSF_FxEffect, +Name).c_str());
+	pFnDamage = srcScript.GetFuncRecursive(std::format(PSF_FxDamage, +Name).c_str());
 
-	if (auto *const fnContext = pSrcScript->GetFuncRecursive(std::format(PSF_FxContext, +Name).c_str()))
+	if (auto *const fnContext = srcScript.GetFuncRecursive(std::format(PSF_FxContext, +Name).c_str()))
 	{
 		pFnContext = fnContext->SFunc();
 	}
@@ -46,21 +46,24 @@ void C4Effect::AssignCallbackFunctions()
 	}
 }
 
-C4AulScript *C4Effect::GetCallbackScript()
+C4AulScript &C4Effect::GetCallbackScript()
 {
 	// def script or global only?
-	C4AulScript *pSrcScript; C4Def *pDef;
+	C4Def *pDef;
 	if (pCommandTarget)
 	{
-		pSrcScript = &pCommandTarget->Def->Script;
 		// overwrite ID for sync safety in runtime join
 		idCommandTarget = pCommandTarget->id;
+		return pCommandTarget->Def->Script;
 	}
 	else if (idCommandTarget && (pDef = Game.Defs.ID2Def(idCommandTarget)))
-		pSrcScript = &pDef->Script;
+	{
+		return pDef->Script;
+	}
 	else
-		pSrcScript = &Game.ScriptEngine;
-	return pSrcScript;
+	{
+		return Game.ScriptEngine;
+	}
 }
 
 C4Effect::C4Effect(C4Object *pForObj, const char *szName, int32_t iPrio, int32_t iTimerIntervall, C4Object *pCmdTarget, C4ID idCmdTarget, const C4Value &rVal1, const C4Value &rVal2, const C4Value &rVal3, const C4Value &rVal4, bool fDoCalls, int32_t &riStoredAsNumber, bool passErrors)

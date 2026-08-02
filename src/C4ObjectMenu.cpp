@@ -587,35 +587,31 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 	{
 		if (C4AulScriptFunc *const pFunction{pEff->GetContextCallback()}; pFunction && pEff->IsActive())
 		{
-			C4AulScript *pEffScript = pEff->GetCallbackScript();
-			if (pEffScript)
+			if (!pFunction->Condition || pFunction->Condition->Exec(pEff->pCommandTarget, {C4VObj(pTarget), C4VInt(pEff->iNumber), C4VObj(Object), C4VID(pFunction->idImage)}))
 			{
-				if (!pFunction->Condition || pFunction->Condition->Exec(pEff->pCommandTarget, {C4VObj(pTarget), C4VInt(pEff->iNumber), C4VObj(Object), C4VID(pFunction->idImage)}))
+				if (!fCountOnly)
 				{
-					if (!fCountOnly)
+					if (pEff->pCommandTarget)
 					{
-						if (pEff->pCommandTarget)
-						{
-							command = std::format("ProtectedCall(Object({}),\"{}\",Object({}),{},Object({}),{})", pEff->pCommandTarget->Number, +pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
-						}
-						else if (pEff->idCommandTarget)
-						{
-							std::string commandTargetId{C4IdText(pEff->idCommandTarget)};
-							command = std::format("DefinitionCall({}, \"{}\", Object({}),{},Object({}),{})", commandTargetId, +pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
-						}
-						else
-						{
-							command = std::format("global->~{}(Object({}),{},Object({}),{})", +pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
-						}
-						if ((pDef = C4Id2Def(pFunction->idImage))) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
-						Add(pFunction->DescText.getData(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
-						fctSymbol.Default();
-						iResult++;
+						command = std::format("ProtectedCall(Object({}),\"{}\",Object({}),{},Object({}),{})", pEff->pCommandTarget->Number, +pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
+					}
+					else if (pEff->idCommandTarget)
+					{
+						std::string commandTargetId{C4IdText(pEff->idCommandTarget)};
+						command = std::format("DefinitionCall({}, \"{}\", Object({}),{},Object({}),{})", commandTargetId, +pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
 					}
 					else
 					{
-						iResult++;
+						command = std::format("global->~{}(Object({}),{},Object({}),{})", +pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
 					}
+					if ((pDef = C4Id2Def(pFunction->idImage))) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
+					Add(pFunction->DescText.getData(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
+					fctSymbol.Default();
+					iResult++;
+				}
+				else
+				{
+					iResult++;
 				}
 			}
 		}
