@@ -420,28 +420,29 @@ bool Edit::KeyCursorOp(C4KeyCodeEx key, CursorOperation op)
 			{
 				iMoveLength = iMoveDir;
 			}
-			// delete stuff
-			if (op == COP_BACK || op == COP_DELETE)
-			{
-				// delete: make backspace command of it
-				if (op == COP_DELETE) { iCursorPos += iMoveLength; iMoveLength = -iMoveLength; }
-				// move end of string up
-				char *c; for (c = Text + iCursorPos; *c; ++c) *(c + iMoveLength) = *c;
-				// terminate string
-				*(c + iMoveLength) = 0;
-			}
-			else if (fShift)
-			{
-				// shift+arrow key: make/adjust selection
-				if (iSelectionStart == iSelectionEnd) iSelectionStart = iCursorPos;
-				iSelectionEnd = iCursorPos + iMoveLength;
-			}
-			else
-				// simple cursor movement: clear any selection
-				if (iSelectionStart != iSelectionEnd) Deselect();
-			// adjust cursor pos
-			iCursorPos += iMoveLength;
 		}
+
+		// delete stuff
+		if (op == COP_BACK || op == COP_DELETE)
+		{
+			// delete: make backspace command of it
+			if (op == COP_DELETE) { iCursorPos += iMoveLength; iMoveLength = -iMoveLength; }
+			// move end of string up
+			char *c; for (c = Text + iCursorPos; *c; ++c) *(c + iMoveLength) = *c;
+			// terminate string
+			*(c + iMoveLength) = 0;
+		}
+		else if (fShift)
+		{
+			// shift+arrow key: make/adjust selection
+			if (iSelectionStart == iSelectionEnd) iSelectionStart = iCursorPos;
+			iSelectionEnd = iCursorPos + iMoveLength;
+		}
+		else
+			// simple cursor movement: clear any selection
+			if (iSelectionStart != iSelectionEnd) Deselect();
+		// adjust cursor pos
+		iCursorPos += iMoveLength;
 	}
 	// show cursor
 	dwLastInputTime = timeGetTime();
