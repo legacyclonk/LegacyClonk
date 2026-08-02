@@ -32,6 +32,7 @@
 #include <span>
 
 #include <fmt/printf.h>
+#include <spdlog/common.h> // IWYU pragma: export
 #include <spdlog/spdlog.h>
 #include <spdlog/pattern_formatter.h>
 #include <spdlog/sinks/base_sink.h>
