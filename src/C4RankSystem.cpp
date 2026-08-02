@@ -16,7 +16,6 @@
 
 /* Rank list for players or crew members */
 
-#include <C4Include.h>
 #include <C4RankSystem.h>
 
 #include <C4Log.h>

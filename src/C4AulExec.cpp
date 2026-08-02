@@ -17,7 +17,6 @@
 
 // executes script functions
 
-#include <C4Include.h>
 #include <C4Aul.h>
 
 #include <C4Object.h>

@@ -18,7 +18,6 @@
 // permanent player information management
 // see header for some additional information
 
-#include <C4Include.h>
 #include <C4PlayerInfo.h>
 
 #include <C4Game.h>

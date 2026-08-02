@@ -17,7 +17,6 @@
 
 // scenario record functionality
 
-#include <C4Include.h>
 #include <C4Record.h>
 
 #include <C4Console.h>

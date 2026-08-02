@@ -17,7 +17,6 @@
 
 // game object lists
 
-#include <C4Include.h>
 #include <C4GameObjects.h>
 
 #include <C4Object.h>

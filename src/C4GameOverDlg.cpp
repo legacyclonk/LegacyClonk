@@ -18,7 +18,6 @@
 // game over dialog showing winners and losers
 
 #include "C4GuiResource.h"
-#include <C4Include.h>
 #include <C4GameOverDlg.h>
 
 #include <C4Game.h>

@@ -18,7 +18,6 @@
 // Keyboard input mapping to engine functions
 
 #include "C4TextEncoding.h"
-#include <C4Include.h>
 #include <C4KeyboardInput.h>
 
 #include <C4Game.h>

@@ -17,7 +17,6 @@
 
 // parses scripts
 
-#include <C4Include.h>
 #include <C4Aul.h>
 
 #include <C4Def.h>

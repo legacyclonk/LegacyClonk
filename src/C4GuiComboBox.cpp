@@ -21,7 +21,6 @@
 
 #include "C4GuiComboBox.h"
 #include "C4GuiResource.h"
-#include <C4Include.h>
 #include <C4Gui.h>
 #include <C4FacetEx.h>
 #include <C4Wrappers.h>

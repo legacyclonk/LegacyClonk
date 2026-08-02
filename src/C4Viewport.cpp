@@ -16,7 +16,6 @@
 
 /* A viewport to each player */
 
-#include <C4Include.h>
 #include <C4Viewport.h>
 
 #include <C4Console.h>

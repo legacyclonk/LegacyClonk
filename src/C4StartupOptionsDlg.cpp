@@ -22,7 +22,6 @@
 #include "C4GuiResource.h"
 #include "C4GuiTabular.h"
 
-#include <C4Include.h>
 #include <C4StartupOptionsDlg.h>
 #include <C4StartupOptionsAdvancedConfigDialog.h>
 

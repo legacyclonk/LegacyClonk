@@ -17,7 +17,6 @@
 
 // C4Aul script engine CP conversion
 
-#include <C4Include.h>
 #include <C4Aul.h>
 
 #include <C4Config.h>

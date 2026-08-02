@@ -18,7 +18,6 @@
 // HTTP download dialog; downloads a file
 
 #include "C4GuiResource.h"
-#include "C4Include.h"
 #include "C4DownloadDlg.h"
 
 #include "C4Log.h"

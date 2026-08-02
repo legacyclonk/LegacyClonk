@@ -16,7 +16,6 @@
 
 /* Dynamic list to hold runtime player data */
 
-#include <C4Include.h>
 #include <C4PlayerList.h>
 
 #include <C4Components.h>

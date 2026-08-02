@@ -18,7 +18,6 @@
 // generic user interface
 // eye candy
 
-#include <C4Include.h>
 #include <C4Gui.h>
 #include <C4FullScreen.h>
 #include <C4LoaderScreen.h>

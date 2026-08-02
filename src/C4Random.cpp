@@ -16,7 +16,6 @@
 
 /* Buffered fast and network-safe random */
 
-#include <C4Include.h>
 #include <C4Random.h>
 
 // Random3

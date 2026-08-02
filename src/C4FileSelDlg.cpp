@@ -20,7 +20,6 @@
 #include "C4GuiComboBox.h"
 #include "C4GuiListBox.h"
 #include "C4GuiResource.h"
-#include <C4Include.h>
 #include <C4FileSelDlg.h>
 
 #include <C4Game.h> // only for single use of Game.GraphicsResource.fctOKCancel below...

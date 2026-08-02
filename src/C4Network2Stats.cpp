@@ -17,7 +17,6 @@
 
 // network statistics and information dialogs
 
-#include <C4Include.h>
 #include <C4Network2Stats.h>
 
 #include <C4Game.h>

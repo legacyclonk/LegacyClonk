@@ -20,7 +20,6 @@
 
 #include "C4GuiEdit.h"
 #include "C4GuiListBox.h"
-#include <C4Include.h>
 #include <C4StartupPlrSelDlg.h>
 
 #include <C4StartupMainDlg.h>

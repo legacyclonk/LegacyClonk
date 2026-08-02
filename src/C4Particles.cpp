@@ -17,7 +17,6 @@
 
 // newgfx particle system for smoke, sparks, ...
 
-#include <C4Include.h>
 #include <C4Particles.h>
 
 #include <C4Physics.h>

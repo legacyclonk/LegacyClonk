@@ -16,8 +16,6 @@
 
 /* control management */
 
-#include "C4Include.h"
-
 #include <C4Application.h>
 #include <C4Game.h>
 #include <C4GameControl.h>

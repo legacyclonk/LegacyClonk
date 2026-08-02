@@ -16,7 +16,6 @@
 
 /* Main class to initialize configuration and execute the game */
 
-#include <C4Include.h>
 #include <C4Application.h>
 #include <C4Version.h>
 #ifdef _WIN32

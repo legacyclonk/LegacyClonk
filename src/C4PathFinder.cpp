@@ -41,7 +41,6 @@
    move-to's on crawl-zone-entries).
 */
 
-#include <C4Include.h>
 #include <C4PathFinder.h>
 
 #include <C4FacetEx.h>

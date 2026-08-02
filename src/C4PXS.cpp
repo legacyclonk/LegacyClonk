@@ -16,7 +16,6 @@
 
 /* Pixel Sprite system for tiny bits of moving material */
 
-#include <C4Include.h>
 #include <C4PXS.h>
 
 #include <C4Physics.h>

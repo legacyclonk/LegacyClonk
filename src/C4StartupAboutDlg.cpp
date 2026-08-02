@@ -19,7 +19,6 @@
 
 #include "C4GuiListBox.h"
 #include "C4GuiResource.h"
-#include "C4Include.h"
 #include "C4StartupAboutDlg.h"
 
 #include "C4Version.h"

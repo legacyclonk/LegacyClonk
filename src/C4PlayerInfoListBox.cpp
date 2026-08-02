@@ -19,7 +19,6 @@
 
 #include "C4GuiComboBox.h"
 #include "C4GuiResource.h"
-#include <C4Include.h>
 #include <C4PlayerInfoListBox.h>
 
 #include <C4PlayerInfo.h>

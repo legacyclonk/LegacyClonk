@@ -17,7 +17,6 @@
 
 // engine font loading
 
-#include <C4Include.h>
 #include <C4Fonts.h>
 
 #include <C4Config.h>

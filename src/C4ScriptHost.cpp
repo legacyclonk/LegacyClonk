@@ -16,7 +16,6 @@
 
 /* Handles script file components (calls, inheritance, function maps) */
 
-#include <C4Include.h>
 #include <C4ScriptHost.h>
 
 #include <C4Console.h>

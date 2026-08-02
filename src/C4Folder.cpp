@@ -16,7 +16,6 @@
 
 /* Core component of a folder */
 
-#include <C4Include.h>
 #include <C4Folder.h>
 
 #include <C4Random.h>

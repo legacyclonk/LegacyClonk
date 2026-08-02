@@ -18,7 +18,6 @@
 // main game dialogs (abort game dlg, observer dlg)
 
 #include "C4GuiResource.h"
-#include <C4Include.h>
 #include <C4GameDialogs.h>
 
 #include <C4Viewport.h>

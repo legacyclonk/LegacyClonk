@@ -16,7 +16,6 @@
 
 /* Some useful wrappers to globals */
 
-#include <C4Include.h>
 #include <C4Wrappers.h>
 
 #include <C4Random.h>

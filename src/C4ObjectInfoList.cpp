@@ -16,7 +16,6 @@
 
 /* Dynamic list for crew member info */
 
-#include <C4Include.h>
 #include <C4ObjectInfoList.h>
 
 #include <C4ObjectInfo.h>

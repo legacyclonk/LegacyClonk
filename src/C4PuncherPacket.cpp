@@ -14,7 +14,6 @@
  * for the above references.
  */
 
-#include "C4Include.h"
 #include "C4PuncherPacket.h"
 
 #include "C4Network2Address.h"

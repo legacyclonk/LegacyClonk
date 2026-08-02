@@ -16,7 +16,6 @@
 
 /* string table: holds all strings used by script engine */
 
-#include <C4Include.h>
 #include <C4StringTable.h>
 
 #include <C4Group.h>

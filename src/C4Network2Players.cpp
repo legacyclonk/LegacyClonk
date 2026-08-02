@@ -20,7 +20,6 @@
 // 2do: Handle client joins after game go but before runtime join (Frame 0)?
 //      Those will not receive a player info list right in time
 
-#include "C4Include.h"
 #include "C4Network2Players.h"
 #include "C4PlayerInfo.h"
 #include "C4GameLobby.h"

@@ -16,7 +16,6 @@
 
 /* Create map from dynamic landscape data in scenario */
 
-#include <C4Include.h>
 #include <C4Map.h>
 
 #include <C4Random.h>

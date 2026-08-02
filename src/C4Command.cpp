@@ -16,7 +16,6 @@
 
 /* The command stack controls an object's complex and independent behavior */
 
-#include <C4Include.h>
 #include <C4Command.h>
 
 #include <C4Object.h>

@@ -16,7 +16,6 @@
 
 /* Move liquids in the landscape using individual transport spots */
 
-#include <C4Include.h>
 #include <C4MassMover.h>
 
 #include <C4Random.h>

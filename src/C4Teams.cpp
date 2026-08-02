@@ -17,7 +17,6 @@
 
 // player team management for teamwork melees
 
-#include <C4Include.h>
 #include <C4Teams.h>
 
 #include <C4Game.h>

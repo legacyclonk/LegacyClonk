@@ -21,7 +21,6 @@
 #include "C4GuiListBox.h"
 #include "C4GuiResource.h"
 #include "C4GuiTabular.h"
-#include "C4Include.h"
 #include "C4ChatDlg.h"
 #include "C4Game.h"
 #include "C4InputValidation.h"

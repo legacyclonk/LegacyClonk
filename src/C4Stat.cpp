@@ -17,7 +17,6 @@
 // statistics
 //  by peter
 
-#include <C4Include.h>
 #include <C4Stat.h>
 
 #include <C4Game.h>

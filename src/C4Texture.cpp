@@ -16,7 +16,6 @@
 
 /* Textures used by the landscape */
 
-#include <C4Include.h>
 #include <C4Texture.h>
 
 #include <C4SurfaceFile.h>

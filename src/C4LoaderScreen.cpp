@@ -18,7 +18,6 @@
 // startup screen
 
 #include "C4GuiResource.h"
-#include <C4Include.h>
 #include <C4LoaderScreen.h>
 
 #include <C4LogBuf.h>

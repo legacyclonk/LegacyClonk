@@ -16,7 +16,6 @@
 
 /* Text messages drawn inside the viewport */
 
-#include <C4Include.h>
 #include <C4GameMessage.h>
 
 #include <C4Object.h>

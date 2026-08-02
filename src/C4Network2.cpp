@@ -16,7 +16,6 @@
  */
 
 #include "C4GuiResource.h"
-#include <C4Include.h>
 #include <C4Network2.h>
 #include <C4Version.h>
 

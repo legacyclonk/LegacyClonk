@@ -18,8 +18,6 @@
 
  // Crash handler, Win32 version
 
-#include "C4Include.h"
-
 // Dump generation on crash
 #include "C4Config.h"
 #include "C4Log.h"

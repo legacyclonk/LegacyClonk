@@ -16,7 +16,6 @@
 
 /* Core component of a scenario file */
 
-#include <C4Include.h>
 #include <C4Scenario.h>
 #include <C4InputValidation.h>
 

@@ -16,7 +16,6 @@
 
 /* Fullscreen startup log and chat type-in */
 
-#include <C4Include.h>
 #include <C4MessageBoard.h>
 
 #include <C4Object.h>

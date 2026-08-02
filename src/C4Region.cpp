@@ -16,7 +16,6 @@
 
 /* Screen area marked for mouse interaction */
 
-#include <C4Include.h>
 #include <C4Region.h>
 
 #include <C4Facet.h>

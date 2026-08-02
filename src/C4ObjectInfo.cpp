@@ -16,7 +16,6 @@
 
 /* Holds crew member information */
 
-#include <C4Include.h>
 #include <C4ObjectInfo.h>
 
 #include <C4Wrappers.h>

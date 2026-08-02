@@ -16,7 +16,6 @@
 
 /* Main program entry point */
 
-#include <C4Include.h>
 #include <C4Application.h>
 
 #include <C4Console.h>

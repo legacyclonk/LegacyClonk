@@ -14,7 +14,6 @@
  * for the above references.
  */
 
-#include "C4Include.h"
 #include "C4InteractiveThread.h"
 #include "C4Application.h"
 #include "C4Log.h"

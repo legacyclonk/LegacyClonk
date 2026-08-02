@@ -17,7 +17,6 @@
 
 // complex dynamic landscape creator
 
-#include <C4Include.h>
 #include <C4MapCreatorS2.h>
 #include <C4Random.h>
 

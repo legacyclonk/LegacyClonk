@@ -17,7 +17,6 @@
 
 // graphics used by object definitions (object and portraits)
 
-#include <C4Include.h>
 #include <C4DefGraphics.h>
 
 #include <C4SurfaceFile.h>

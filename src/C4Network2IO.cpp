@@ -15,7 +15,6 @@
  * for the above references.
  */
 
-#include <C4Include.h>
 #include <C4Network2IO.h>
 #include <C4Network2Reference.h>
 

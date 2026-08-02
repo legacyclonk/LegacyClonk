@@ -19,7 +19,6 @@
 
 /* Functions mapped by C4Script */
 
-#include <C4Include.h>
 #include <C4Script.h>
 #include <C4Version.h>
 

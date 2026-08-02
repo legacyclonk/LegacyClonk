@@ -16,7 +16,6 @@
 
 /* Handles landscape and sky */
 
-#include <C4Include.h>
 #include <C4Landscape.h>
 #include <C4SolidMask.h>
 

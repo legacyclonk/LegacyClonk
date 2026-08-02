@@ -17,7 +17,6 @@
 
 // links aul scripts; i.e. resolves includes & appends, etc
 
-#include <C4Include.h>
 #include <C4Aul.h>
 
 #include <C4Def.h>

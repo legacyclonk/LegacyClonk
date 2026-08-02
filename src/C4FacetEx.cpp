@@ -16,7 +16,6 @@
 
 /* A facet that can hold its own surface and also target coordinates */
 
-#include <C4Include.h>
 #include <C4FacetEx.h>
 
 #include <C4Random.h>

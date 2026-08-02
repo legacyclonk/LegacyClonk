@@ -16,7 +16,6 @@
 
 /* Basic class for vertex outlines */
 
-#include <C4Include.h>
 #include <C4Shape.h>
 
 #include <C4Physics.h>

@@ -16,7 +16,6 @@
 
 /* Control packets contain all player input in the message queue */
 
-#include <C4Include.h>
 #include <C4Control.h>
 
 #include <C4Object.h>

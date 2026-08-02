@@ -17,7 +17,6 @@
 
 // user-customizable multimedia package Extra.c4g
 
-#include <C4Include.h>
 #include <C4Extra.h>
 
 #include <C4Config.h>

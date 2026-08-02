@@ -15,8 +15,6 @@
  * for the above references.
  */
 
-#include "C4Include.h"
-
 #include "C4Game.h"
 #include "C4Network2Res.h"
 #include "C4Version.h"

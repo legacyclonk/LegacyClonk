@@ -19,7 +19,6 @@
 // tab control
 
 #include "C4GuiResource.h"
-#include <C4Include.h>
 #include <C4GuiTabular.h>
 #include <C4FacetEx.h>
 #include <C4Game.h>

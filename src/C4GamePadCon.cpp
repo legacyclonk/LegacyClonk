@@ -16,7 +16,6 @@
 
 /* Gamepad control */
 
-#include <C4Include.h>
 #include <C4GamePadCon.h>
 
 #include <C4ObjectCom.h>

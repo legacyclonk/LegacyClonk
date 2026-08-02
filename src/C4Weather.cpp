@@ -16,7 +16,6 @@
 
 /* Controls temperature, wind, and natural disasters */
 
-#include <C4Include.h>
 #include <C4Weather.h>
 
 #include <C4Object.h>

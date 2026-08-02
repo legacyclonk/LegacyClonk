@@ -16,7 +16,6 @@
 
 /* Special regions to extend the pathfinder */
 
-#include <C4Include.h>
 #include <C4TransferZone.h>
 
 #include <C4Game.h>

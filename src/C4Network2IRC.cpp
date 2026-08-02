@@ -15,7 +15,6 @@
  * for the above references.
  */
 
-#include "C4Include.h"
 #include "C4Network2IRC.h"
 #include "C4Config.h"
 #include "C4Version.h"

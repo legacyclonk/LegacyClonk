@@ -16,7 +16,6 @@
 
 /* Player data at runtime */
 
-#include <C4Include.h>
 #include <C4Player.h>
 
 #include <C4Application.h>

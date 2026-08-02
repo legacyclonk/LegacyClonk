@@ -19,7 +19,6 @@
 // e.g., changing colors if two players have the same
 // "There must be some easier way to do it"(tm)
 
-#include <C4Include.h>
 #include <C4PlayerInfo.h>
 #include <C4GraphicsSystem.h>
 #include <C4Game.h>

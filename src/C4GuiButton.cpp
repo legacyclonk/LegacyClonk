@@ -19,7 +19,6 @@
 // that which can be pressed
 
 #include "C4GuiResource.h"
-#include <C4Include.h>
 #include <C4Gui.h>
 #include <C4FullScreen.h>
 #include <C4LoaderScreen.h>

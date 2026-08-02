@@ -16,7 +16,6 @@
 
 /* Mouse input */
 
-#include <C4Include.h>
 #include <C4MouseControl.h>
 
 #include <C4Viewport.h>

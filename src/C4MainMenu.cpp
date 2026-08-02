@@ -17,7 +17,6 @@
 
 // Engine internal C4Menus: Main menu, Options, Player join, Hostility, etc.
 
-#include <C4Include.h>
 #include <C4MainMenu.h>
 
 #include <C4FullScreen.h>

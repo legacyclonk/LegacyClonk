@@ -16,7 +16,6 @@
 
 /* Main class to execute the game fullscreen mode */
 
-#include <C4Include.h>
 #include <C4FullScreen.h>
 
 #include <C4Application.h>

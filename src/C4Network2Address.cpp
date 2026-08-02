@@ -15,7 +15,6 @@
  * for the above references.
  */
 
-#include "C4Include.h"
 #ifndef _WIN32
 #include <arpa/inet.h>
 #include <ifaddrs.h>

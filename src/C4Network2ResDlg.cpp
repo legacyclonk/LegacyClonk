@@ -18,7 +18,6 @@
 // resource display list box
 
 #include "C4GuiResource.h"
-#include "C4Include.h"
 #include "C4GameLobby.h"
 #include "C4FullScreen.h"
 #include "C4Game.h"

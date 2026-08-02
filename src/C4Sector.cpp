@@ -17,7 +17,6 @@
 
 // landscape sector base class
 
-#include <C4Include.h>
 #include <C4Sector.h>
 
 #include <C4Game.h>

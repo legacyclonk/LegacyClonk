@@ -17,7 +17,6 @@
 
 // RTF file parsing functionality
 
-#include "C4Include.h"
 #include "C4RTF.h"
 
 #include <algorithm>

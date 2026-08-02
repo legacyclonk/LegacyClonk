@@ -16,7 +16,6 @@
 
 /* At static list of C4IDs */
 
-#include <C4Include.h>
 #include <C4IDList.h>
 
 #include <C4Def.h>

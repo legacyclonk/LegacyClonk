@@ -14,7 +14,6 @@
  * for the above references.
  */
 
-#include <C4Include.h>
 #include "C4Update.h"
 #include "C4Version.h"
 #include "C4Config.h"

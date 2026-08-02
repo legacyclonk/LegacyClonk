@@ -17,7 +17,6 @@
 
 // Startup screen for non-parameterized engine start
 
-#include <C4Include.h>
 #include <C4Startup.h>
 
 #include <C4StartupMainDlg.h>

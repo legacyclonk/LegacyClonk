@@ -17,7 +17,6 @@
 
 // Round result information to be displayed in game over dialog
 
-#include <C4Include.h>
 #include <C4RoundResults.h>
 
 #include <C4Player.h>

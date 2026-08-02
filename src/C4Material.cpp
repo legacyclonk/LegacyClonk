@@ -16,7 +16,6 @@
 
 /* Material definitions used by the landscape */
 
-#include <C4Include.h>
 #include <C4Material.h>
 #include <C4Components.h>
 

@@ -16,7 +16,6 @@
 
 /* Lots of handler functions for object action */
 
-#include <C4Include.h>
 #include <C4ObjectCom.h>
 
 #include <C4Object.h>

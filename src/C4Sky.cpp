@@ -16,7 +16,6 @@
 
 /* Small member of the landscape class to handle the sky background */
 
-#include <C4Include.h>
 #include <C4Sky.h>
 
 #include <C4Game.h>
