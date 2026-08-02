@@ -2,17 +2,20 @@
 parts = [
     'v360',
     'v363',
+    'v364',
 ]
 
 [groups.'Graphics.c4g']
 parts = [
     'v360',
+    'v364',
 ]
 
 [groups.content]
 parts = [
     'https://update.clonkspot.org/lc/lc_49110.zip',
     'https://github.com/legacyclonk/LegacyClonk/releases/download/v363/content.zip',
+    'https://update.clonkspot.org/lc/lc_49112.zip',
 ]
 
 [groups.content.'Fantasy.c4d']
