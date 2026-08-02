@@ -879,7 +879,7 @@ bool C4GraphicsSystem::ToggleShowHelp()
 bool C4GraphicsSystem::ViewportNextPlayer()
 {
 	// safety: switch valid?
-	if ((!Game.C4S.Head.Film || !Game.C4S.Head.Replay) && !Game.GraphicsSystem.GetViewport(NO_OWNER)) return false;
+	if ((!Game.GameC4S.Head.Film || !Game.GameC4S.Head.Replay) && !Game.GraphicsSystem.GetViewport(NO_OWNER)) return false;
 	// do switch then
 	if (Viewports.empty()) return false;
 	Viewports.front()->NextPlayer();
@@ -889,7 +889,7 @@ bool C4GraphicsSystem::ViewportNextPlayer()
 bool C4GraphicsSystem::FreeScroll(C4Vec2D vScrollBy)
 {
 	// safety: move valid?
-	if ((!Game.C4S.Head.Replay || !Game.C4S.Head.Film) && !Game.GraphicsSystem.GetViewport(NO_OWNER)) return false;
+	if ((!Game.GameC4S.Head.Replay || !Game.GameC4S.Head.Film) && !Game.GraphicsSystem.GetViewport(NO_OWNER)) return false;
 	if (Viewports.empty()) return false;
 	const auto &vp = Viewports.front();
 	// move then (old static code crap...)

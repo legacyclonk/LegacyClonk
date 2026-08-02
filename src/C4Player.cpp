@@ -195,12 +195,12 @@ void C4Player::Execute()
 						if (iPlrStartIndex && Inside<int32_t>(iPlrStartIndex, 1, C4S_MaxPlayer))
 						{
 							// FIXME
-							if (Game.C4S.PlrStart[iPlrStartIndex - 1].Position[0] > -1)
+							if (Game.GameC4S.PlrStart[iPlrStartIndex - 1].Position[0] > -1)
 							{
 								// player has selected a team that has a valid start position assigned
 								// set view to this position!
-								ViewX = Game.C4S.PlrStart[iPlrStartIndex - 1].Position[0] * Game.GetActiveSections().begin()->get()->Landscape.MapZoom;
-								ViewY = Game.C4S.PlrStart[iPlrStartIndex - 1].Position[1] * Game.GetActiveSections().begin()->get()->Landscape.MapZoom;
+								ViewX = Game.GameC4S.PlrStart[iPlrStartIndex - 1].Position[0] * Game.GetActiveSections().begin()->get()->Landscape.MapZoom;
+								ViewY = Game.GameC4S.PlrStart[iPlrStartIndex - 1].Position[1] * Game.GetActiveSections().begin()->get()->Landscape.MapZoom;
 							}
 						}
 					}
@@ -373,7 +373,7 @@ bool C4Player::Init(int32_t iNumber, int32_t iAtClient, const char *szAtClientNa
 			// for script players in non-savegames, this is OK - it means they get restored using default values
 			// this happens when the users saves a scenario using the "Save scenario"-option while a script player
 			// was joined
-			if (!Game.C4S.Head.SaveGame && pInfo->GetType() == C4PT_Script)
+			if (!Game.GameC4S.Head.SaveGame && pInfo->GetType() == C4PT_Script)
 			{
 				Number = pInfo->GetInGameNumber();
 				ColorDw = pInfo->GetColor();
@@ -965,7 +965,7 @@ void C4Player::Evaluate()
 	LastRound.Duration = Game.Time;
 	LastRound.Won = !Eliminated;
 	// Melee: personal value gain score ...check Game.Objects(C4D_Goal)
-	if (Game.C4S.Game.IsMelee()) LastRound.Score = std::max<int32_t>(ValueGain, 0);
+	if (Game.GameC4S.Game.IsMelee()) LastRound.Score = std::max<int32_t>(ValueGain, 0);
 	// Cooperative: shared score
 	else LastRound.Score = (std::max)(Game.Players.AverageValueGain(), 0);
 	LastRound.Level = 0; // unknown...

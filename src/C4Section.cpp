@@ -91,7 +91,7 @@ bool C4Section::InitFromTemplate(C4Group &scenario, const bool savegame)
 {
 	spdlog::debug("C4Section::InitFromTemplate({}, {}), Number = {}", scenario.GetFullName().getData(), savegame, Number);
 
-	C4S = Game.C4S;
+	C4S = Game.GameC4S;
 
 	if (IsMain())
 	{
@@ -128,16 +128,16 @@ bool C4Section::InitFromScript(C4Group &scenario, const C4SLandscape &landscape,
 
 	name = std::format("Empty{}", Number);
 
-	C4S = Game.C4S;
-	C4S.Head = Game.C4S.Head;
-	C4S.Definitions = Game.C4S.Definitions;
-	C4S.Game = Game.C4S.Game;
-	std::ranges::copy(Game.C4S.PlrStart, C4S.PlrStart);
+	C4S = Game.GameC4S;
+	C4S.Head = Game.GameC4S.Head;
+	C4S.Definitions = Game.GameC4S.Definitions;
+	C4S.Game = Game.GameC4S.Game;
+	std::ranges::copy(Game.GameC4S.PlrStart, C4S.PlrStart);
 	C4S.Landscape = landscape;
-	C4S.Animals = Game.C4S.Animals;
-	C4S.Weather = Game.C4S.Weather;
-	C4S.Disasters = Game.C4S.Disasters;
-	C4S.Environment = Game.C4S.Environment;
+	C4S.Animals = Game.GameC4S.Animals;
+	C4S.Weather = Game.GameC4S.Weather;
+	C4S.Disasters = Game.GameC4S.Disasters;
+	C4S.Environment = Game.GameC4S.Environment;
 
 	createdByScript = true;
 	if (mapS2Script.empty())

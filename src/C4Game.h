@@ -143,7 +143,7 @@ public:
 	C4DefList Defs;
 	C4ObjectList ObjectsInAllSections;
 	C4Group ScenarioFile;
-	C4Scenario C4S;
+	C4Scenario GameC4S;
 	std::string Loader;
 	C4RankSystem Rank;
 	C4GraphicsSystem GraphicsSystem;
