@@ -35,6 +35,15 @@ void C4Effect::AssignCallbackFunctions()
 	pFnTimer  = pSrcScript->GetFuncRecursive(std::format(PSF_FxTimer, +Name).c_str());
 	pFnEffect = pSrcScript->GetFuncRecursive(std::format(PSF_FxEffect, +Name).c_str());
 	pFnDamage = pSrcScript->GetFuncRecursive(std::format(PSF_FxDamage, +Name).c_str());
+
+	if (auto *const fnContext = pSrcScript->GetFuncRecursive(std::format(PSF_FxContext, +Name).c_str()))
+	{
+		pFnContext = fnContext->SFunc();
+	}
+	else
+	{
+		pFnContext = nullptr;
+	}
 }
 
 C4AulScript *C4Effect::GetCallbackScript()

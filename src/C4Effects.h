@@ -94,6 +94,7 @@ protected:
 	C4AulFunc *pFnStart, *pFnStop; // init/deinit-functions Fx%sStart, Fx%sStop
 	C4AulFunc *pFnEffect;          // callback if other effect tries to register
 	C4AulFunc *pFnDamage;          // callback when owned object gets damage
+	C4AulScriptFunc *pFnContext;   // context menu entry callback
 
 	void AssignCallbackFunctions(); // resolve callback function names
 
@@ -117,6 +118,7 @@ public:
 	int32_t GetCount(const char *szMask, int32_t iMaxPriority = 0); // count effects that match the mask
 	int32_t Check(C4Object *pForObj, const char *szCheckEffect, int32_t iPrio, int32_t iTimer, const C4Value &rVal1 = C4VNull, const C4Value &rVal2 = C4VNull, const C4Value &rVal3 = C4VNull, const C4Value &rVal4 = C4VNull, bool passErrors = false); // do some effect callbacks
 	C4AulScript *GetCallbackScript(); // get script context for effect callbacks
+	C4AulScriptFunc *GetContextCallback() const { return pFnContext; }
 
 	void Execute(C4Object *pObj); // execute all effects
 	void Kill(C4Object *pObj); // mark this effect deleted and do approprioate calls
