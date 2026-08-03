@@ -1326,6 +1326,9 @@ void C4MCParser::Parse(const char *szScript)
 
 // algorithms
 
+namespace
+{
+
 // helper func
 bool PreparePeek(C4MCOverlay **ppOvrl, int32_t &iX, int32_t &iY, C4MCOverlay **ppTopOvrl)
 {
@@ -1571,6 +1574,8 @@ bool AlgoPolygon(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 #undef s
 #undef z
 #undef z2
+
+}
 
 C4MCAlgorithm C4MCAlgoMap[] =
 {
