@@ -29,10 +29,13 @@
 #include <C4Id.h>
 #include "C4Log.h"
 #include <C4Script.h>
+#include <C4Strings.h>
 #include <C4StringTable.h>
 
 #include <cstdint>
 #include <list>
+#include <string>
+#include <string_view>
 #include <vector>
 
 // class predefs
@@ -61,35 +64,35 @@ class C4DefList;
 // generic C4Aul error class
 class C4AulError
 {
-protected:
-	std::string message;
-	bool isWarning{false};
-
 public:
-	C4AulError();
-	C4AulError(const C4AulError &Error) : message{Error.message}, isWarning{Error.isWarning} {}
-	virtual ~C4AulError() {}
-	virtual void show() const; // present error message
+	virtual ~C4AulError() = default;
+	virtual void show() const;
+
+protected:
+	C4AulError(std::string message, bool isWarning = false) : message{std::move(message)}, isWarning{isWarning} {}
+
+	std::string message;
+	bool isWarning;
 };
 
 // parse error
 class C4AulParseError : public C4AulError
 {
-	C4AulParseError(std::string_view message, const char *identifier, bool warn);
+	C4AulParseError(std::string_view message, C4NullableStringView identifier, bool isWarning);
 
 public:
-	C4AulParseError(C4AulScript *pScript, std::string_view msg, const char *pIdtf = nullptr, bool Warn = false);
-	C4AulParseError(class C4AulParseState *state, std::string_view msg, const char *pIdtf = nullptr, bool Warn = false);
+	C4AulParseError(C4AulScript *script, std::string_view message, C4NullableStringView identifier = {}, bool isWarning = false);
+	C4AulParseError(class C4AulParseState *state, std::string_view message, C4NullableStringView identifier = {}, bool isWarning = false);
 };
 
 // execution error
 class C4AulExecError : public C4AulError
 {
-	C4Object *cObj;
+	C4Object *Obj;
 
 public:
-	C4AulExecError(C4Object *pObj, std::string_view error);
-	virtual void show() const override; // present error message
+	C4AulExecError(C4Object *obj, std::string_view message);
+	void show() const override;
 };
 
 // function access
@@ -466,10 +469,8 @@ protected:
 	C4AulScript *Owner, *Prev, *Next, *Child0, *ChildL; // tree structure
 
 	StdStrBuf Script; // script
-	C4AulBCC *Code, *CPos; // compiled script (/pos)
+	std::vector<C4AulBCC> Code; // compiled script
 	C4AulScriptState State; // script state
-	int CodeSize; // current number of byte code chunks in Code
-	int CodeBufSize; // size of Code buffer
 	bool Preparsing; // set while preparse
 	bool Resolving; // set while include-resolving, to catch circular includes
 
@@ -497,8 +498,8 @@ protected:
 
 	C4AulScript *FindFirstNonStrictScript(); // find first script that is not #strict
 
-	size_t GetCodePos() const { return CPos - Code; }
-	C4AulBCC *GetCodeByPos(size_t iPos) { return Code + iPos; }
+	size_t GetCodePos() const { return Code.size(); }
+	C4AulBCC *GetCodeByPos(size_t iPos) { return &Code[iPos]; }
 
 public:
 	std::string ScriptName; // script name
