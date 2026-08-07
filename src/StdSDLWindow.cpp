@@ -59,20 +59,29 @@ bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect 
 	displayMode = DisplayMode::Window;
 	this->app = app;
 
-	sdlWindow = SDL_CreateWindow(title, bounds.x, bounds.y, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+	sdlWindow = SDL_CreateWindow(title, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 	ThrowIfFailed("SDL_CreateWindow", !sdlWindow);
+	SDL_SetWindowPosition(sdlWindow, bounds.x, bounds.y);
+	SDL_SyncWindow(sdlWindow);
+	SDL_StartTextInput(sdlWindow);
 
 	return true;
 }
 
-void CStdWindow::Clear() {}
+void CStdWindow::Clear()
+{
+	if (sdlWindow)
+	{
+		SDL_StopTextInput(sdlWindow);
+	}
+}
 
 // Window size is automatically managed by CStdApp's display mode management.
 // Just remember the size for others to query.
 
 bool CStdWindow::GetSize(C4Rect &rect)
 {
-	SDL_GL_GetDrawableSize(sdlWindow, &width, &height);
+	SDL_GetWindowSizeInPixels(sdlWindow, &width, &height);
 	rect = {0, 0, width, height};
 	return true;
 }
@@ -91,37 +100,40 @@ void CStdWindow::SetTitle(const char *const Title)
 
 void CStdWindow::FlashWindow()
 {
-#ifdef __APPLE__
-	void requestUserAttention();
-	requestUserAttention();
-#endif
+	if (sdlWindow)
+	{
+		SDL_FlashWindow(sdlWindow, SDL_FLASH_BRIEFLY);
+	}
 }
 
 void CStdWindow::SetDisplayMode(const DisplayMode mode)
 {
 	if (mode == DisplayMode::Fullscreen)
 	{
-		ThrowIfFailed("SDL_SetWindowFullscreen", SDL_SetWindowFullscreen(sdlWindow, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0);
+		ThrowIfFailed("SDL_SetWindowFullscreen", !SDL_SetWindowFullscreen(sdlWindow, true));
+		SDL_SyncWindow(sdlWindow);
 	}
 	else
 	{
 		if (displayMode == DisplayMode::Fullscreen)
 		{
-			const auto currentDisplay = SDL_GetWindowDisplayIndex(sdlWindow);
-			ThrowIfFailed("SDL_GetWindowDisplayIndex", currentDisplay < 0);
-			SDL_DisplayMode mode;
-			ThrowIfFailed("SDL_GetCurrentDisplayMode", SDL_GetCurrentDisplayMode(currentDisplay, &mode) != 0);
-
-			width = mode.w - 100;
-			height = mode.h - 100;
+			const auto currentDisplay = SDL_GetDisplayForWindow(sdlWindow);
+			ThrowIfFailed("SDL_GetWindowDisplayIndex", currentDisplay <= 0);
+			const SDL_DisplayMode *mode = SDL_GetCurrentDisplayMode(currentDisplay);
+			ThrowIfFailed("SDL_GetCurrentDisplayMode", mode == nullptr);
+			if(mode)
+			{
+				width = mode->w - 100;
+				height = mode->h - 100;
+			}
 		}
 
-		ThrowIfFailed("SDL_SetWindowFullscreen", SDL_SetWindowFullscreen(sdlWindow, 0) != 0);
+		ThrowIfFailed("SDL_SetWindowFullscreen", !SDL_SetWindowFullscreen(sdlWindow, false));
 		SDL_SetWindowSize(sdlWindow, width, height);
+		SDL_SyncWindow(sdlWindow);
 	}
 
 	displayMode = mode;
-	ThrowIfFailed("SDL_ShowCursor", SDL_ShowCursor(SDL_DISABLE) < 0);
 }
 
 void CStdWindow::SetProgress(uint32_t) {} // stub
@@ -132,7 +144,7 @@ float CStdWindow::GetInputScale()
 	SDL_GetWindowSize(sdlWindow, &width, &height);
 
 	int drawableWidth, drawableHeight;
-	SDL_GL_GetDrawableSize(sdlWindow, &drawableWidth, &drawableHeight);
+	SDL_GetWindowSizeInPixels(sdlWindow, &drawableWidth, &drawableHeight);
 
 	return static_cast<float>(drawableWidth) / static_cast<float>(width);
 }

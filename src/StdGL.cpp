@@ -793,7 +793,7 @@ CStdGLCtx *CStdGL::CreateContext(CStdWindow *const pWindow, CStdApp *const pApp)
 	if (!pWindow) return nullptr;
 
 #ifdef USE_SDL_MAINLOOP
-	if (SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1) != 0)
+	if (!SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1))
 	{
 		logger->error("SDL: Enabling context sharing failed: {}", SDL_GetError());
 	}
@@ -996,7 +996,8 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool force)
 		return true;
 	}
 
-	return ApplyGammaRampToMonitor(ramp, force);
+	// TODO: Remove
+	//return ApplyGammaRampToMonitor(ramp, force);
 }
 
 bool CStdGL::SaveDefaultGammaRamp(CStdWindow *window)

@@ -424,7 +424,7 @@ void CStdGLCtx::Clear()
 	Deselect();
 	if (ctx)
 	{
-		SDL_GL_DeleteContext(ctx);
+		SDL_GL_DestroyContext(ctx);
 		ctx = nullptr;
 	}
 	pWindow = nullptr;
@@ -435,6 +435,7 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 {
 	// safety
 	if (!pGL) return false;
+
 	ctx = SDL_GL_CreateContext(pWindow->sdlWindow);
 	if (!ctx)
 	{
@@ -466,7 +467,10 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 
 bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 {
-	SDL_GL_MakeCurrent(this->pWindow->sdlWindow, ctx);
+	if (!SDL_GL_MakeCurrent(this->pWindow->sdlWindow, ctx))
+	{
+		throw std::runtime_error{std::string{"SDL_GL_MakeCurrent failed: "} + SDL_GetError()};
+	}
 	if (!selectOnly)
 	{
 		pGL->pCurrCtx = this;
@@ -494,7 +498,7 @@ bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 
 void CStdGLCtx::DoDeselect()
 {
-	if (SDL_GL_MakeCurrent(this->pWindow->sdlWindow, nullptr) != 0)
+	if (!SDL_GL_MakeCurrent(this->pWindow->sdlWindow, nullptr))
 	{
 		throw std::runtime_error{std::string{"SDL_GL_MakeCurrent failed: "} + SDL_GetError()};
 	}
@@ -530,14 +534,12 @@ bool CStdGLCtx::PageFlip()
 
 bool CStdGL::ApplyGammaRampToMonitor(CGammaControl &ramp, bool fForce)
 {
-	assert(ramp.size == 256);
-	return SDL_SetWindowGammaRamp(MainCtx.pWindow->sdlWindow, ramp.red, ramp.green, ramp.blue) == 0;
+	return false;
 }
 
 bool CStdGL::SaveDefaultGammaRampToMonitor(CStdWindow *pWindow)
 {
-	assert(DefRamp.size == 256);
-	return SDL_GetWindowGammaRamp(MainCtx.pWindow->sdlWindow, DefRamp.red, DefRamp.green, DefRamp.blue) == 0;
+	return false;
 }
 
 #endif // USE_X11/USE_SDL_MAINLOOP

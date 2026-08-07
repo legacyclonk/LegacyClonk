@@ -242,7 +242,7 @@ protected:
 	typedef struct __GLXcontextRec *GLXContext;
 	GLXContext ctx;
 #elif defined(USE_SDL_MAINLOOP)
-	/*SDL_GLContext*/ void *ctx;
+	SDL_GLContext ctx;
 #endif
 	int cx, cy; // context window size
 
