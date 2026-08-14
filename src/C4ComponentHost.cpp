@@ -69,11 +69,10 @@ bool C4ComponentHost::Load(const char *szName,
 	{
 		// Try to insert all language codes provided into the filename
 		char strCode[3] = "";
-		const char *const strCodePtr{strCode};
 		for (int iLang = 0; SCopySegment(szLanguage ? szLanguage : "", iLang, strCode, ',', 2); iLang++)
 		{
 			// Insert language code
-			entryWithLanguage = std::vformat(strEntry, std::make_format_args(strCodePtr));
+			entryWithLanguage = std::vformat(strEntry, std::make_format_args(strCode));
 			if (hGroup.LoadEntryString(entryWithLanguage.c_str(), Data))
 			{
 				if (Config.General.fUTF8) Data.EnsureUnicode();
@@ -111,11 +110,10 @@ bool C4ComponentHost::Load(const char *szName,
 	{
 		// Try to insert all language codes provided into the filename
 		char strCode[3] = "";
-		const char *const strCodePtr{strCode};
 		for (int iLang = 0; SCopySegment(szLanguage ? szLanguage : "", iLang, strCode, ',', 2); iLang++)
 		{
 			// Insert language code
-			entryWithLanguage = std::vformat(strEntry, std::make_format_args(strCodePtr));
+			entryWithLanguage = std::vformat(strEntry, std::make_format_args(strCode));
 			if (hGroupSet.LoadEntryString(entryWithLanguage.c_str(), Data))
 			{
 				if (Config.General.fUTF8) Data.EnsureUnicode();
@@ -169,10 +167,9 @@ bool C4ComponentHost::LoadAppend(const char *szName,
 	for (size_t cseg = 0; SCopySegment(Filename, cseg, str1, '|', _MAX_FNAME); cseg++)
 	{
 		char szLang[3] = "";
-		const char *const szLangPtr{szLang};
 		for (size_t clseg = 0; SCopySegment(szLanguage ? szLanguage : "", clseg, szLang, ',', 2); clseg++)
 		{
-			entry = std::vformat(str1, std::make_format_args(szLangPtr));
+			entry = std::vformat(str1, std::make_format_args(szLang));
 			// Check existance
 			size_t iFileSize;
 			if (hGroup.FindEntry(entry.c_str(), nullptr, &iFileSize))
@@ -196,10 +193,9 @@ bool C4ComponentHost::LoadAppend(const char *szName,
 	for (size_t cseg = 0; SCopySegment(Filename, cseg, str1, '|', _MAX_FNAME); cseg++)
 	{
 		char szLang[3] = "";
-		const char *const szLangPtr{szLang};
 		for (size_t clseg = 0; SCopySegment(szLanguage ? szLanguage : "", clseg, szLang, ',', 2); clseg++)
 		{
-			entry = std::vformat(str1, std::make_format_args(szLangPtr));
+			entry = std::vformat(str1, std::make_format_args(szLang));
 			// Load data
 			char *pTemp;
 			if (hGroup.LoadEntry(entry.c_str(), &pTemp, nullptr, 1))

@@ -30,13 +30,13 @@ void C4Effect::AssignCallbackFunctions()
 {
 	C4AulScript &srcScript{GetCallbackScript()};
 	// compose function names and search them
-	pFnStart  = srcScript.GetFuncRecursive(std::format(PSF_FxStart, +Name).c_str());
-	pFnStop   = srcScript.GetFuncRecursive(std::format(PSF_FxStop, +Name).c_str());
-	pFnTimer  = srcScript.GetFuncRecursive(std::format(PSF_FxTimer, +Name).c_str());
-	pFnEffect = srcScript.GetFuncRecursive(std::format(PSF_FxEffect, +Name).c_str());
-	pFnDamage = srcScript.GetFuncRecursive(std::format(PSF_FxDamage, +Name).c_str());
+	pFnStart  = srcScript.GetFuncRecursive(std::format(PSF_FxStart, Name).c_str());
+	pFnStop   = srcScript.GetFuncRecursive(std::format(PSF_FxStop, Name).c_str());
+	pFnTimer  = srcScript.GetFuncRecursive(std::format(PSF_FxTimer, Name).c_str());
+	pFnEffect = srcScript.GetFuncRecursive(std::format(PSF_FxEffect, Name).c_str());
+	pFnDamage = srcScript.GetFuncRecursive(std::format(PSF_FxDamage, Name).c_str());
 
-	if (auto *const fnContext = srcScript.GetFuncRecursive(std::format(PSF_FxContext, +Name).c_str()))
+	if (auto *const fnContext = srcScript.GetFuncRecursive(std::format(PSF_FxContext, Name).c_str()))
 	{
 		pFnContext = fnContext->SFunc();
 	}
@@ -474,7 +474,7 @@ C4Value C4Effect::DoCall(C4Object *pObj, const char *szFn, const C4Value &rVal1,
 	else
 		pSrcScript = &Game.ScriptEngine;
 	// call it
-	C4AulFunc *pFn = pSrcScript->GetFuncRecursive(std::format(PSF_FxCustom, +Name, szFn).c_str());
+	C4AulFunc *pFn = pSrcScript->GetFuncRecursive(std::format(PSF_FxCustom, Name, szFn).c_str());
 	if (!pFn) return C4Value();
 	return pFn->Exec(pCommandTarget, {C4VObj(pObj), C4VInt(iNumber), rVal1, rVal2, rVal3, rVal4, rVal5, rVal6, rVal7}, passErrors, true, convertNilToIntBool);
 }

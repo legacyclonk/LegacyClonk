@@ -360,7 +360,7 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 
 				if (Map[cnt].OverlayType & C4MatOv_None)
 				{
-					DebugLog(spdlog::level::err, "Error in overlay of material {}: Flag C4MatOv_None ignored because a custom overlay ({}) was specified!", +Map[cnt].Name, szTextureOverlay);
+					DebugLog(spdlog::level::err, "Error in overlay of material {}: Flag C4MatOv_None ignored because a custom overlay ({}) was specified!", Map[cnt].Name, szTextureOverlay);
 					Map[cnt].OverlayType &= ~C4MatOv_None;
 				}
 			}
@@ -369,7 +369,7 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 			szTextureOverlay = "Smooth";
 		// search/create entry in texmap
 		Map[cnt].DefaultMatTex = Game.TextureMap.GetIndex(Map[cnt].Name, szTextureOverlay, true,
-			std::format("DefaultMatTex of mat {}", +Map[cnt].Name).c_str());
+			std::format("DefaultMatTex of mat {}", Map[cnt].Name).c_str());
 
 		if (Game.C4S.Landscape.EnableTextureOverlays && !(Map[cnt].OverlayType & C4MatOv_None))
 		{
@@ -482,13 +482,13 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 	for (cnt = 0; cnt < Num; cnt++)
 	{
 		if (Map[cnt].sBlastShiftTo.getLength())
-			Map[cnt].BlastShiftTo = Game.TextureMap.GetIndexMatTex(Map[cnt].sBlastShiftTo.getData(), nullptr, true, std::format("BlastShiftTo of mat {}", +Map[cnt].Name).c_str());
+			Map[cnt].BlastShiftTo = Game.TextureMap.GetIndexMatTex(Map[cnt].sBlastShiftTo.getData(), nullptr, true, std::format("BlastShiftTo of mat {}", Map[cnt].Name).c_str());
 		if (Map[cnt].sInMatConvertTo.getLength())
 			Map[cnt].InMatConvertTo = Get(Map[cnt].sInMatConvertTo.getData());
 		if (Map[cnt].sBelowTempConvertTo.getLength())
-			Map[cnt].BelowTempConvertTo = Game.TextureMap.GetIndexMatTex(Map[cnt].sBelowTempConvertTo.getData(), nullptr, true, std::format("BelowTempConvertTo of mat {}", +Map[cnt].Name).c_str());
+			Map[cnt].BelowTempConvertTo = Game.TextureMap.GetIndexMatTex(Map[cnt].sBelowTempConvertTo.getData(), nullptr, true, std::format("BelowTempConvertTo of mat {}", Map[cnt].Name).c_str());
 		if (Map[cnt].sAboveTempConvertTo.getLength())
-			Map[cnt].AboveTempConvertTo = Game.TextureMap.GetIndexMatTex(Map[cnt].sAboveTempConvertTo.getData(), nullptr, true, std::format("AboveTempConvertTo of mat {}", +Map[cnt].Name).c_str());
+			Map[cnt].AboveTempConvertTo = Game.TextureMap.GetIndexMatTex(Map[cnt].sAboveTempConvertTo.getData(), nullptr, true, std::format("AboveTempConvertTo of mat {}", Map[cnt].Name).c_str());
 	}
 }
 
