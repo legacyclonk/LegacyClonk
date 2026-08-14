@@ -28,7 +28,7 @@
 #endif
 
 #ifdef USE_SDL_MAINLOOP
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #endif
 
 // Key maps
@@ -377,7 +377,7 @@ std::string C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bo
 	std::string name;
 	if (fHumanReadable)
 	{
-		const auto key = SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(wCode));
+		const auto key = SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(wCode), SDL_KMOD_NONE, true);
 		name = TextEncodingConverter.Utf8ToClonk(SDL_GetKeyName(key));
 	}
 	else
@@ -455,7 +455,7 @@ void C4KeyCodeEx::CompileFunc(StdCompiler *pComp)
 bool C4KeyCodeEx::IsStandardAlphaNumeric() const noexcept
 {
 #ifdef USE_SDL_MAINLOOP
-	const int key{SDL_GetKeyName(SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(Key)))[0]};
+	const int key{SDL_GetKeyName(SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(Key), SDL_KMOD_NONE, true))[0]};
 #else
 	const auto key = Key;
 #endif

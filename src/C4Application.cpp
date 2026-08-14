@@ -174,12 +174,12 @@ void C4Application::DoInit()
 	// Init carrier window
 	if (isFullScreen)
 	{
-		if (!FullScreen.Init(this))
+		const C4Rect bounds{0, 0, static_cast<int32_t>(Config.Graphics.ResX * GetScale()), static_cast<int32_t>(Config.Graphics.ResY * GetScale())};
+		if (!FullScreen.Init(this, bounds))
 		{
 			Clear(); return;
 		}
 		pWindow = &FullScreen;
-		pWindow->SetSize(static_cast<int32_t>(Config.Graphics.ResX * GetScale()), static_cast<int32_t>(Config.Graphics.ResY * GetScale()));
 		SetDisplayMode(Config.Graphics.UseDisplayMode);
 
 #ifdef _WIN32
@@ -192,7 +192,8 @@ void C4Application::DoInit()
 	}
 	else
 	{
-		if (!Console.Init(this))
+		const C4Rect bounds{25, 200, 450, 450};
+		if (!Console.Init(this, bounds))
 		{
 			Clear(); return;
 		}
