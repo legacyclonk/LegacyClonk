@@ -19,7 +19,7 @@
 #include <Standard.h>
 #include <StdRegistry.h>
 
-#include <stdio.h>
+#include <cstdio>
 
 bool GetRegistryDWord(HKEY hKey, const char *szSubKey, const char *szValueName, DWORD *lpdwValue)
 {

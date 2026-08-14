@@ -647,8 +647,8 @@ bool C4Network2::RetrieveScenario(char *szScenario)
 		return false;
 
 	// unpack Material.c4g if materials need to be merged
-	const std::string materialScenario{std::format("{}" DirSep C4CFN_Material, +szScenario)};
-	const std::string materialDynamic{std::format("{}" DirSep C4CFN_Material, +szTempDynamic)};
+	const std::string materialScenario{std::format("{}" DirSep C4CFN_Material, szScenario)};
+	const std::string materialDynamic{std::format("{}" DirSep C4CFN_Material, szTempDynamic)};
 	if (FileExists(materialScenario.c_str()) && FileExists(materialDynamic.c_str()))
 		if (!C4Group_UnpackDirectory(materialScenario.c_str()) ||
 			!C4Group_UnpackDirectory(materialDynamic.c_str()))
@@ -1966,7 +1966,7 @@ bool C4Network2::CreateDynamic(bool fInit)
 	Log(C4ResStrTableKey::IDS_NET_SAVING);
 	// compose file name
 	char szDynamicBase[_MAX_PATH + 1], szDynamicFilename[_MAX_PATH + 1];
-	FormatWithNull(szDynamicBase, "{}Dyn{}", +Config.Network.WorkPath, GetFilename(Game.ScenarioFilename));
+	FormatWithNull(szDynamicBase, "{}Dyn{}", Config.Network.WorkPath, GetFilename(Game.ScenarioFilename));
 	if (!ResList.FindTempResFileName(szDynamicBase, szDynamicFilename))
 		Log(C4ResStrTableKey::IDS_NET_SAVE_ERR_CREATEDYNFILE);
 	// save dynamic data

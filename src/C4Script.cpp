@@ -40,6 +40,7 @@
 
 #include <array>
 #include <cinttypes>
+#include <concepts>
 #include <numbers>
 #include <optional>
 #include <type_traits>
@@ -1660,14 +1661,14 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 			if (iExtra & C4MN_Add_PassValue)
 			{
 				// with value
-				command = std::format("{}({},{},0,{})", szScriptCom, C4IdText(idItem), +parameter, iValue);
-				command2 = std::format("{}({},{},1,{})", szScriptCom, C4IdText(idItem), +parameter, iValue);
+				command = std::format("{}({},{},0,{})", szScriptCom, C4IdText(idItem), parameter, iValue);
+				command2 = std::format("{}({},{},1,{})", szScriptCom, C4IdText(idItem), parameter, iValue);
 			}
 			else
 			{
 				// without value
-				command = std::format("{}({},{})", szScriptCom, C4IdText(idItem), +parameter);
-				command2 = std::format("{}({},{},1)", szScriptCom, C4IdText(idItem), +parameter);
+				command = std::format("{}({},{})", szScriptCom, C4IdText(idItem), parameter);
+				command2 = std::format("{}({},{},1)", szScriptCom, C4IdText(idItem), parameter);
 			}
 		}
 		else
@@ -1987,17 +1988,21 @@ static std::optional<bool> FnComponentAll(C4AulContext *cthr, C4Object *pObj, C4
 }
 
 static C4Object *FnCreateObject(C4AulContext *cthr,
-	C4ID id, C4ValueInt iXOffset, C4ValueInt iYOffset, C4ValueInt iOwner)
+	C4ID id, C4ValueInt iXOffset, C4ValueInt iYOffset, std::optional<C4ValueInt> iOwner)
 {
-	if (cthr->Obj) // Local object calls override
+	const auto obj = cthr->Obj;
+	const auto strictness = cthr->Caller ? cthr->Caller->Func->pOrgScript->Strict : C4AulScriptStrict::NONSTRICT;
+	const auto fallbackOwner = (strictness >= C4AulScriptStrict::STRICT3 ? (obj ? obj->Owner : NO_OWNER) : 0);
+	auto owner = iOwner.value_or(fallbackOwner);
+	if (obj) // Local object calls override
 	{
 		iXOffset += cthr->Obj->x;
 		iYOffset += cthr->Obj->y;
-		if (!cthr->Caller || cthr->Caller->Func->Owner->Strict == C4AulScriptStrict::NONSTRICT)
-			iOwner = cthr->Obj->Owner;
+		if (strictness == C4AulScriptStrict::NONSTRICT)
+			owner = obj->Owner;
 	}
 
-	C4Object *pNewObj = Game.CreateObject(id, cthr->Obj, iOwner, iXOffset, iYOffset);
+	C4Object *pNewObj = Game.CreateObject(id, obj, owner, iXOffset, iYOffset);
 
 	// Set initial controller to creating controller, so more complicated cause-effect-chains can be traced back to the causing player
 	if (pNewObj && cthr->Obj && cthr->Obj->Controller > NO_OWNER) pNewObj->Controller = cthr->Obj->Controller;
@@ -3359,20 +3364,14 @@ static C4ValueInt FnPow(C4AulContext *cthr, C4ValueInt iVal1, C4ValueInt iVal2)
 	return Pow(iVal1, iVal2);
 }
 
-static C4ValueInt FnSin(C4AulContext *cthr, C4ValueInt iAngle, C4ValueInt iRadius, C4ValueInt iPrec)
+template<C4Fixed Function(const C4Fixed &)>
+static C4ValueInt FnCircle(C4AulContext *const context, C4ValueInt angle, const C4ValueInt radius, C4ValueInt precision)
 {
-	if (!iPrec) iPrec = 1;
-	// Precalculate the modulo operation so the C4Fixed argument to Sin does not overflow
-	iAngle %= 360 * iPrec;
+	if (!precision) precision = 1;
+	// Precalculate the modulo operation so the C4Fixed argument does not overflow
+	angle %= 360 * precision;
 	// Let itofix and fixtoi handle the division and multiplication because that can handle higher ranges
-	return fixtoi(Sin(itofix(iAngle, iPrec)), iRadius);
-}
-
-static C4ValueInt FnCos(C4AulContext *cthr, C4ValueInt iAngle, C4ValueInt iRadius, C4ValueInt iPrec)
-{
-	if (!iPrec) iPrec = 1;
-	iAngle %= 360 * iPrec;
-	return fixtoi(Cos(itofix(iAngle, iPrec)), iRadius);
+	return fixtoi(Function(itofix(angle, precision)), radius);
 }
 
 static C4ValueInt FnSqrt(C4AulContext *cthr, C4ValueInt iValue)
@@ -3432,28 +3431,14 @@ static C4ValueInt FnAngle(C4AulContext *cthr, C4ValueInt iX1, C4ValueInt iY1, C4
 	return iAngle;
 }
 
-static C4ValueInt FnArcSin(C4AulContext *cthr, C4ValueInt iVal, C4ValueInt iRadius)
+template<double Function(double)>
+static C4ValueInt FnArcus(C4AulContext *const ctx, const C4ValueInt value, const C4ValueInt radius)
 {
-	// safety
-	if (!iRadius) return 0;
-	if (iVal > iRadius) return 0;
-	// calc arcsin
-	double f1 = iVal;
-	f1 = asin(f1 / iRadius) * 180.0 * std::numbers::inv_pi;
-	// return rounded angle
-	return static_cast<C4ValueInt>(floor(f1 + 0.5));
-}
+	if (radius == 0 || value > radius) return 0;
 
-static C4ValueInt FnArcCos(C4AulContext *cthr, C4ValueInt iVal, C4ValueInt iRadius)
-{
-	// safety
-	if (!iRadius) return 0;
-	if (iVal > iRadius) return 0;
-	// calc arccos
-	double f1 = iVal;
-	f1 = acos(f1 / iRadius) * 180.0 * std::numbers::inv_pi;
+	const double result{Function(static_cast<double>(value) / radius) * 180.0 * std::numbers::inv_pi};
 	// return rounded angle
-	return static_cast<C4ValueInt>(floor(f1 + 0.5));
+	return static_cast<C4ValueInt>(std::floor(result + 0.5));
 }
 
 static C4ValueInt FnMin(C4AulContext *cthr, C4ValueInt iVal1, C4ValueInt iVal2)
@@ -4721,16 +4706,16 @@ static bool FnLocateFunc(C4AulContext *cthr, C4String *funcname, C4Object *pObj,
 			C4AulScriptFunc *pSFunc = pFunc->SFunc();
 			if (!pSFunc)
 			{
-				LogNTr("{}{} (engine)", szPrefix, +pFunc->Name);
+				LogNTr("{}{} (engine)", szPrefix, pFunc->Name);
 			}
 			else if (!pSFunc->pOrgScript)
 			{
-				LogNTr("{}{} (no owner)", szPrefix, +pSFunc->Name);
+				LogNTr("{}{} (no owner)", szPrefix, pSFunc->Name);
 			}
 			else
 			{
 				int32_t iLine = SGetLine(pSFunc->pOrgScript->GetScript(), pSFunc->Script);
-				LogNTr("{}{} ({}:{})", szPrefix, +pFunc->Name, pSFunc->pOrgScript->ScriptName.c_str(), static_cast<int>(iLine));
+				LogNTr("{}{} ({}:{})", szPrefix, pFunc->Name, pSFunc->pOrgScript->ScriptName.c_str(), static_cast<int>(iLine));
 			}
 			// next func in overload chain
 			pFunc = pSFunc ? pSFunc->OwnerOverloaded : nullptr;
@@ -6863,11 +6848,11 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "Div",                             FnDiv,                             false);
 	AddFunc(pEngine, "Mod",                             FnMod,                             false);
 	AddFunc(pEngine, "Pow",                             FnPow,                             false);
-	AddFunc(pEngine, "Sin",                             FnSin);
-	AddFunc(pEngine, "Cos",                             FnCos);
+	AddFunc(pEngine, "Sin",                             FnCircle<Sin>);
+	AddFunc(pEngine, "Cos",                             FnCircle<Cos>);
 	AddFunc(pEngine, "Sqrt",                            FnSqrt);
-	AddFunc(pEngine, "ArcSin",                          FnArcSin);
-	AddFunc(pEngine, "ArcCos",                          FnArcCos);
+	AddFunc(pEngine, "ArcSin",                          FnArcus<std::asin>);
+	AddFunc(pEngine, "ArcCos",                          FnArcus<std::acos>);
 	AddFunc(pEngine, "LessThan",                        FnLessThan,                        false);
 	AddFunc(pEngine, "GreaterThan",                     FnGreaterThan,                     false);
 	AddFunc(pEngine, "BoundBy",                         FnBoundBy);

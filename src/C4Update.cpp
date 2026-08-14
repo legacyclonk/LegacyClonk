@@ -56,7 +56,7 @@ bool C4Group_ApplyUpdate(C4Group &hGroup)
 			{
 			// Bad version - checks against version of the applying executable (major version must match, minor version must be equal or higher)
 			case C4UpdatePackage::CheckResult::BadVersion:
-				std::println(stderr, "This update {} can only be applied using version {}.{}.{}.{} or higher.", +Upd.Name, Upd.RequireVersion[0], Upd.RequireVersion[1], Upd.RequireVersion[2], Upd.RequireVersion[3]);
+				std::println(stderr, "This update {} can only be applied using version {}.{}.{}.{} or higher.", Upd.Name, Upd.RequireVersion[0], Upd.RequireVersion[1], Upd.RequireVersion[2], Upd.RequireVersion[3]);
 				return false;
 			// Bad OS version
 			case C4UpdatePackage::CheckResult::BadOSVersion:
@@ -64,19 +64,19 @@ bool C4Group_ApplyUpdate(C4Group &hGroup)
 				return false;
 			// Target not found: keep going
 			case C4UpdatePackage::CheckResult::NoSource:
-				std::println(stderr, "Target {} for update {} not found. Ignoring.", +Upd.DestPath, +Upd.Name);
+				std::println(stderr, "Target {} for update {} not found. Ignoring.", Upd.DestPath, Upd.Name);
 				return true;
 			// Target mismatch: abort updating
 			case C4UpdatePackage::CheckResult::BadSource:
-				std::println(stderr, "Target {} incorrect version for update {}. Ignoring.", +Upd.DestPath, +Upd.Name);
+				std::println(stderr, "Target {} incorrect version for update {}. Ignoring.", Upd.DestPath, Upd.Name);
 				return true;
 			// Target already updated: keep going
 			case C4UpdatePackage::CheckResult::AlreadyUpdated:
-				std::println(stderr, "Target {} already up-to-date at {}.", +Upd.DestPath, +Upd.Name);
+				std::println(stderr, "Target {} already up-to-date at {}.", Upd.DestPath, Upd.Name);
 				return true;
 			// Ok to perform update
 			case C4UpdatePackage::CheckResult::Ok:
-				std::print("Updating {} to {}... ", +Upd.DestPath, +Upd.Name);
+				std::print("Updating {} to {}... ", Upd.DestPath, Upd.Name);
 				// Make sure the user sees the message while the work is in progress
 				fflush(stdout);
 				// Execute update
@@ -118,7 +118,7 @@ bool C4Group_ApplyUpdate(C4Group &hGroup)
 			for (int i = 0; SGetModule(strList.getData(), i, strEntry); i++)
 				if (C4Group_IsGroup(strEntry))
 				{
-					std::println("Exploding: {}", +strEntry);
+					std::println("Exploding: {}", strEntry);
 					if (!C4Group_ExplodeDirectory(strEntry))
 						return false;
 				}

@@ -1335,7 +1335,7 @@ bool C4Group::RewindFilePtr()
 #ifdef C4ENGINE
 	if (szCurrAccessedEntry && !iC4GroupRewindFilePtrNoWarn)
 	{
-		LogNTr(spdlog::level::debug, "C4Group::RewindFilePtr() for {} ({})", szCurrAccessedEntry ? szCurrAccessedEntry : "???", +FileName);
+		LogNTr(spdlog::level::debug, "C4Group::RewindFilePtr() for {} ({})", szCurrAccessedEntry ? szCurrAccessedEntry : "???", FileName);
 		szCurrAccessedEntry = nullptr;
 	}
 #endif
@@ -1616,7 +1616,7 @@ bool C4Group::DeleteEntry(const char *szFilename, bool fRecycle)
 	case GRPF_Folder:
 		StdFile.Close();
 		char szPath[_MAX_FNAME + 1];
-		FormatWithNull(szPath, "{}" DirSep "{}", +FileName, szFilename);
+		FormatWithNull(szPath, "{}" DirSep "{}", FileName, szFilename);
 
 		if (fRecycle)
 		{
@@ -1702,7 +1702,7 @@ bool C4Group::Extract(const char *szFiles, const char *szExtractTo, const char *
 			// skip?
 			if (C4Group_IsExcluded(tentry->FileName, szExclude)) continue;
 			// Process data & output
-			if (StdOutput) std::println("{}", +tentry->FileName);
+			if (StdOutput) std::println("{}", tentry->FileName);
 			cbytes += tentry->Size;
 			if (fnProcessCallback)
 				fnProcessCallback(tentry->FileName, 100 * cbytes / (std::max)(tbytes, 1));
@@ -1787,7 +1787,7 @@ bool C4Group::ExtractEntry(const char *szFilename, const char *szExtractTo)
 		break;
 	case GRPF_Folder: // Copy item from folder to target
 		char szPath[_MAX_FNAME + 1];
-		FormatWithNull(szPath, "{}" DirSep "{}", +FileName, szFilename);
+		FormatWithNull(szPath, "{}" DirSep "{}", FileName, szFilename);
 		if (!CopyItem(szPath, szTargetFName))
 			return Error("ExtractEntry: Cannot copy item");
 		break;
@@ -2200,7 +2200,7 @@ uint32_t C4Group::EntryTime(const char *szFilename)
 		break;
 	case GRPF_Folder:
 		char szPath[_MAX_FNAME + 1];
-		FormatWithNull(szPath, "{}" DirSep "{}", +FileName, szFilename);
+		FormatWithNull(szPath, "{}" DirSep "{}", FileName, szFilename);
 		iTime = FileTime(szPath);
 		break;
 	}
@@ -2396,7 +2396,7 @@ bool C4Group::EnsureChildFilePtr(C4Group *pChild)
 
 	// Open standard file is not the child file ...or StdFile ptr does not match pChild->FilePtr
 	char szChildPath[_MAX_PATH + 1];
-	FormatWithNull(szChildPath, "{}" DirSep "{}", +FileName, GetFilename(pChild->FileName));
+	FormatWithNull(szChildPath, "{}" DirSep "{}", FileName, GetFilename(pChild->FileName));
 	if (!ItemIdentical(StdFile.Name, szChildPath))
 	{
 		// Reopen correct child stdfile
@@ -2577,16 +2577,16 @@ bool C4Group::OpenMother()
 void C4Group::PrintInternals(const char *szIndent)
 {
 	if (!szIndent) szIndent = "";
-	std::println("{}Head.id: '{}'", szIndent, +Head.id);
+	std::println("{}Head.id: '{}'", szIndent, Head.id);
 	std::println("{}Head.Ver1: {}", szIndent, Head.Ver1);
 	std::println("{}Head.Ver2: {}", szIndent, Head.Ver2);
 	std::println("{}Head.Entries: {}", szIndent, Head.Entries);
-	std::println("{}Head.Maker: '{}'", szIndent, +Head.Maker);
+	std::println("{}Head.Maker: '{}'", szIndent, Head.Maker);
 	std::println("{}Head.Creation: {}", szIndent, Head.Creation);
 	std::println("{}Head.Original: {}", szIndent, Head.Original);
 	for (C4GroupEntry *p = FirstEntry; p; p = p->Next)
 	{
-		std::println("{}Entry '{}':", szIndent, +p->FileName);
+		std::println("{}Entry '{}':", szIndent, p->FileName);
 		std::println("{}  Packed: {}", szIndent, p->Packed);
 		std::println("{}  ChildGroup: {}", szIndent, p->ChildGroup);
 		std::println("{}  Size: {}", szIndent, p->Size);
