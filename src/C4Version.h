@@ -29,7 +29,7 @@
 #define C4XVER2 9
 #define C4XVER3 11
 #define C4XVER4 2
-#define C4XVERBUILD 365
+#define C4XVERBUILD 366
 #define C4VERSIONEXTRA ""
 /* These values are now controlled by the file source/version - DO NOT MODIFY DIRECTLY */
 
