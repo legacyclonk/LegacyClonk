@@ -16,18 +16,14 @@
 
 #include <Standard.h>
 
-#ifdef WITH_GLIB
-#include <glib.h>
-#endif
-
 #ifdef _WIN32
 #include "C4Windows.h"
 #include <shellapi.h>
-#endif
+#else
+#include <system_error>
 
-#ifdef __APPLE__
-#include <cstdlib>
-#include <string>
+#include "C4Log.h"
+#include "C4PosixSpawn.h"
 #endif
 
 // open a weblink in an external browser
@@ -36,30 +32,21 @@ bool OpenURL(const char *szURL)
 #ifdef _WIN32
 	if (reinterpret_cast<intptr_t>(ShellExecuteA(nullptr, "open", szURL, nullptr, nullptr, SW_SHOW)) > 32)
 		return true;
-#endif
-#ifdef WITH_GLIB
-	const char *argv[][3] =
+#else
+	try
 	{
-		{ "xdg-open",         szURL, nullptr },
-		{ "sensible-browser", szURL, nullptr },
-		{ "firefox",          szURL, nullptr },
-		{ "mozilla",          szURL, nullptr },
-		{ "konqueror",        szURL, nullptr },
-		{ "epiphany",         szURL, nullptr },
-		{ nullptr, nullptr, nullptr }
-	};
-	for (int i = 0; argv[i][0]; ++i)
-	{
-		GError *error = nullptr;
-		if (g_spawn_async(g_get_home_dir(), const_cast<gchar **>(argv[i]), nullptr, G_SPAWN_SEARCH_PATH, nullptr, nullptr, nullptr, &error))
-			return true;
-		else fprintf(stderr, "%s\n", error->message);
-	}
-#endif
 #ifdef __APPLE__
-	std::string command = std::string("open ") + '"' + szURL + '"';
-	std::system(command.c_str());
-	return true;
+		C4PosixSpawn::SpawnP({"open", szURL});
+#else
+		C4PosixSpawn::SpawnP({"xdg-open", szURL});
+#endif
+		return true;
+	}
+	catch (const std::system_error &e)
+	{
+		LogNTr(spdlog::level::err, "OpenURL failed: {}\n", e.what());
+		return false;
+	}
 #endif
 	// operating system not supported, or all opening method(s) failed
 	return false;
