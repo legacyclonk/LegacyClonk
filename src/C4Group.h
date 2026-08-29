@@ -68,7 +68,7 @@ bool C4Group_MoveItem(const char *szSource, const char *szTarget, bool fNoSort =
 bool C4Group_DeleteItem(const char *szItem, bool fRecycle = false);
 bool C4Group_PackDirectoryTo(const char *szFilename, const char *szFilenameTo, bool overwriteTarget = false);
 bool C4Group_PackDirectory(const char *szFilename);
-bool C4Group_UnpackDirectory(const char *szFilename);
+bool C4Group_UnpackDirectory(const char *szFilename, bool explode = false);
 bool C4Group_ExplodeDirectory(const char *szFilename);
 bool C4Group_ReadFile(const char *szFilename, char **pData, size_t *iSize);
 bool C4Group_GetFileCRC(const char *szFilename, uint32_t *pCRC32);
