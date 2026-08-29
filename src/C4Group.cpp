@@ -23,6 +23,7 @@
 #include <C4Components.h>
 #include <C4InputValidation.h>
 #include "StdConfig.h"
+#include "StdFile.h"
 
 #ifdef C4ENGINE
 #include "C4Log.h"
@@ -338,7 +339,42 @@ bool C4Group_PackDirectory(const char *szFilename)
 	return EraseDirectory(szTempFilename2);
 }
 
-bool C4Group_UnpackDirectory(const char *szFilename)
+static bool C4Group_UnpackRecursively(C4Group &group, std::string targetDirectory, bool createDirectory = true)
+{
+	if (createDirectory)
+	{
+		if (!MakeDirectory(targetDirectory.c_str(), nullptr))
+		{
+			return false;
+		}
+	}
+
+	group.ResetSearch();
+	char entryName[sizeof(C4GroupEntryCore::FileName) / sizeof(char) + 1];
+	bool isChild;
+	while (group.FindNextEntry("*", entryName, nullptr, &isChild))
+	{
+		if (!isChild)
+		{
+			if (!group.ExtractEntry(entryName, targetDirectory.c_str()))
+			{
+				return false;
+			}
+		}
+		else
+		{
+			C4Group child;
+			child.OpenAsChild(&group, entryName);
+			if (!C4Group_UnpackRecursively(child, targetDirectory + DirectorySeparator + entryName))
+			{
+				return false;
+			}
+		}
+	}
+	return true;
+};
+
+bool C4Group_UnpackDirectory(const char *szFilename, bool explode)
 {
 	// Already unpacked: success
 	if (DirectoryExists(szFilename)) return true;
@@ -364,8 +400,23 @@ bool C4Group_UnpackDirectory(const char *szFilename)
 	MakeTempFilename(szFoldername);
 	if (!MakeDirectory(szFoldername, nullptr)) { hGroup.Close(); return false; }
 
-	// Extract files to folder
-	if (!hGroup.Extract("*", szFoldername)) { hGroup.Close(); return false; }
+	if (explode)
+	{
+		if (!C4Group_UnpackRecursively(hGroup, szFoldername, false))
+		{
+			hGroup.Close();
+			return false;
+		}
+	}
+	else
+	{
+		// Extract files to folder
+		if (!hGroup.Extract("*", szFoldername))
+		{
+			hGroup.Close();
+			return false;
+		}
+	}
 
 	// Close group
 	hGroup.Close();
@@ -389,10 +440,7 @@ bool C4Group_ExplodeDirectory(const char *szFilename)
 	if (C4Group_TestIgnore(szFilename)) return true;
 
 	// Unpack this directory
-	if (!C4Group_UnpackDirectory(szFilename)) return false;
-
-	// Explode all children
-	ForEachFile(szFilename, C4Group_ExplodeDirectory);
+	if (!C4Group_UnpackDirectory(szFilename, true)) return false;
 
 	// Success
 	return true;
