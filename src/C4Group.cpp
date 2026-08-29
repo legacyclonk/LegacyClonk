@@ -1086,21 +1086,26 @@ bool C4Group::AppendEntry2StdFile(C4GroupEntry *centry, CStdFile &hTarget)
 {
 	CStdFile hSource;
 	long csize;
-	uint8_t fbuf;
+	static constexpr long chunkSize{1024};
+	std::uint8_t buffer[chunkSize];
 
 	switch (centry->Status)
 	{
 	case C4GRES_InGroup: // Copy from group to std file
+	{
 		if (!SetFilePtr(centry->Offset))
 			return Error("AE2S: Cannot set file pointer");
-		for (csize = centry->Size; csize > 0; csize--)
+
+		for (csize = centry->Size; csize > 0; csize -= chunkSize)
 		{
-			if (!Read(&fbuf, 1))
+			const auto currentChunk = std::min(chunkSize, csize);
+			if (!Read(buffer, currentChunk))
 				return Error("AE2S: Cannot read entry from group file");
-			if (!hTarget.Write(&fbuf, 1))
+			if (!hTarget.Write(buffer, currentChunk))
 				return Error("AE2S: Cannot write to target file");
 		}
 		break;
+	}
 
 	case C4GRES_OnDisk: // Copy/move from disk item to std file
 	{
@@ -1136,13 +1141,14 @@ bool C4Group::AppendEntry2StdFile(C4GroupEntry *centry, CStdFile &hTarget)
 		// Append disk source to target file
 		if (!hSource.Open(szFileSource, !!centry->ChildGroup))
 			return Error("AE2S: Cannot open on-disk file");
-		for (csize = centry->Size; csize > 0; csize--)
+		for (csize = centry->Size; csize > 0; csize -= chunkSize)
 		{
-			if (!hSource.Read(&fbuf, 1))
+			const auto currentChunk = std::min(chunkSize, csize);
+			if (!hSource.Read(buffer, currentChunk))
 			{
 				hSource.Close(); return Error("AE2S: Cannot read on-disk file");
 			}
-			if (!hTarget.Write(&fbuf, 1))
+			if (!hTarget.Write(buffer, currentChunk))
 			{
 				hSource.Close(); return Error("AE2S: Cannot write to target file");
 			}
