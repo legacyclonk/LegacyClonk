@@ -69,6 +69,7 @@ public:
 	GtkWidget *h_scrollbar;
 	GtkWidget *v_scrollbar;
 	GtkWidget *drawing_area;
+	bool processScrollSignal = true;
 #elif defined(USE_X11) && !defined(WITH_DEVELOPER_MODE)
 	bool HideCursor() const override { return true; }
 	virtual void HandleMessage(XEvent &) override;
@@ -112,6 +113,7 @@ public:
 	bool IsViewportMenu(class C4Menu *pMenu);
 	int32_t GetPlayer() { return Player; }
 	void CenterPosition();
+	bool ScrollBarsByViewPosition();
 
 protected:
 	int32_t Player;
@@ -134,7 +136,7 @@ protected:
 	void AdjustPosition();
 	bool UpdateOutputSize();
 	bool ViewPositionByScrollBars();
-	bool ScrollBarsByViewPosition();
+	void IncrementBrushSize(std::int32_t direction);
 
 	friend class C4ViewportWindow;
 };

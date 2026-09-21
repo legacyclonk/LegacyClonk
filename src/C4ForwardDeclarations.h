@@ -34,6 +34,7 @@ class C4PathFinder;
 class C4Player;
 class C4Surface;
 class C4TextureMap;
+class C4Viewport;
 class CMarkup;
 class CStdFont;
 class CStdGLCtx;

@@ -373,6 +373,8 @@ public:
 	void DrawVerticalLine(C4Surface *sfcDest, int x, int y1, int y2, uint8_t col);
 	void DrawFrame(C4Surface *sfcDest, int x1, int y1, int x2, int y2, uint8_t col);
 	void DrawFrameDw(C4Surface *sfcDest, int x1, int y1, int x2, int y2, uint32_t dwClr);
+	void DrawCircleOutline(C4Surface *sfcDest, int32_t x1, int32_t y1, int32_t r, uint8_t byCol, bool half = false, float additionalAngleRad = 0);
+	void DrawCapsuleOutline(C4Surface *sfcDest, int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t r, uint8_t byCol);
 
 	virtual void DrawLine(C4Surface *sfcTarget, int x1, int y1, int x2, int y2, uint8_t byCol)
 	{
