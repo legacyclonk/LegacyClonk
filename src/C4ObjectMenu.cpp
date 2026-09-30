@@ -567,7 +567,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 					{
 						if (!fCountOnly)
 						{
-							command = std::format("ProtectedCall(Object({}),\"{}\",this,Object({}))", cObj->Number, +pFunction->Name, pTarget->Number);
+							command = std::format("ProtectedCall(Object({}),\"{}\",this,Object({}))", cObj->Number, pFunction->Name, pTarget->Number);
 							if ((pDef = C4Id2Def(pFunction->idImage))) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
 							Add(pFunction->DescText.getData(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 							iResult++;
@@ -593,16 +593,16 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 				{
 					if (pEff->pCommandTarget)
 					{
-						command = std::format("ProtectedCall(Object({}),\"{}\",Object({}),{},Object({}),{})", pEff->pCommandTarget->Number, +pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
+						command = std::format("ProtectedCall(Object({}),\"{}\",Object({}),{},Object({}),{})", pEff->pCommandTarget->Number, pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
 					}
 					else if (pEff->idCommandTarget)
 					{
 						std::string commandTargetId{C4IdText(pEff->idCommandTarget)};
-						command = std::format("DefinitionCall({}, \"{}\", Object({}),{},Object({}),{})", commandTargetId, +pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
+						command = std::format("DefinitionCall({}, \"{}\", Object({}),{},Object({}),{})", commandTargetId, pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
 					}
 					else
 					{
-						command = std::format("global->~{}(Object({}),{},Object({}),{})", +pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
+						command = std::format("global->~{}(Object({}),{},Object({}),{})", pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
 					}
 					if ((pDef = C4Id2Def(pFunction->idImage))) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
 					Add(pFunction->DescText.getData(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
@@ -634,7 +634,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 							{
 								if (!fCountOnly)
 								{
-									command = std::format("ProtectedCall(Object({}),\"{}\",this,Object({}))", cObj->Number, +pFunction->Name, pTarget->Number);
+									command = std::format("ProtectedCall(Object({}),\"{}\",this,Object({}))", cObj->Number, pFunction->Name, pTarget->Number);
 									if ((pDef = C4Id2Def(pFunction->idImage))) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
 									Add(pFunction->DescText.getData(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 									fctSymbol.Default();
@@ -684,7 +684,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 						// Count only: don't actually add
 						if (fCountOnly) continue;
 						// Command
-						command = std::format("ProtectedCall(Object({}),\"{}\",this)", pTarget->Number, +pFunction->Name);
+						command = std::format("ProtectedCall(Object({}),\"{}\",this)", pTarget->Number, pFunction->Name);
 						// Symbol
 						if ((pDef = C4Id2Def(pFunction->idImage)))
 						{
@@ -718,7 +718,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 					{
 						if (!fCountOnly)
 						{
-							command = std::format("ProtectedCall(Object({}),\"{}\",this)", pTarget->Number, +pFunction->Name);
+							command = std::format("ProtectedCall(Object({}),\"{}\",this)", pTarget->Number, pFunction->Name);
 							if ((pDef = C4Id2Def(pFunction->idImage))) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
 							Add(pFunction->DescText.getData(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 							fctSymbol.Default();

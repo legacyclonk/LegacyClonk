@@ -20,13 +20,13 @@
 #include "res/engine_resource.h"
 
 #include <array>
+#include <cctype>
+#include <cstdio>
 #include <mutex>
 #include <stdexcept>
 
 #include <mmsystem.h>
-#include <stdio.h>
 #include <io.h>
-#include <ctype.h>
 #include <conio.h>
 
 CStdApp::CStdApp() : Active(false), hInstance(nullptr), fQuitMsgReceived(false),
@@ -282,7 +282,7 @@ bool CStdApp::ReadStdInCommand()
 				OnCommand(CmdBuf.getData()); CmdBuf.Clear();
 			}
 		}
-		else if (isprint((unsigned char)c))
+		else if (std::isprint((unsigned char)c))
 			CmdBuf.AppendChar(c);
 	}
 	return true;

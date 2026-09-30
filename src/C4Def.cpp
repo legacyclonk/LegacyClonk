@@ -822,7 +822,7 @@ bool C4Def::ColorizeByMaterial(C4MaterialMap &rMats, uint8_t bGBM)
 	if (ColorByMaterial[0])
 	{
 		int32_t mat = rMats.Get(ColorByMaterial);
-		if (mat == MNone) { LogNTr(spdlog::level::err, "C4Def::ColorizeByMaterial: mat {} not defined", +ColorByMaterial); return false; }
+		if (mat == MNone) { LogNTr(spdlog::level::err, "C4Def::ColorizeByMaterial: mat {} not defined", ColorByMaterial); return false; }
 		if (!Graphics.ColorizeByMaterial(mat, rMats, bGBM)) return false;
 	}
 	// success
@@ -1053,8 +1053,8 @@ bool C4DefList::Add(std::unique_ptr<C4Def> def, bool fOverload)
 			Log(C4ResStrTableKey::IDS_PRC_DEFOVERLOAD, def->GetName(), C4IdText((*old)->id));
 			if (Config.Graphics.VerboseObjectLoading >= 2)
 			{
-				LogNTr("      Old def at {}", +(*old)->Filename);
-				LogNTr("     Overload by {}", +def->Filename);
+				LogNTr("      Old def at {}", (*old)->Filename);
+				LogNTr("     Overload by {}", def->Filename);
 			}
 		}
 

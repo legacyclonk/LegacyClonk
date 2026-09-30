@@ -22,16 +22,17 @@
 #include <StdFile.h>
 #include <StdBuf.h>
 
-#include <stdio.h>
+#include <cctype>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+
 #ifdef _WIN32
 #include <direct.h>
 #endif
 #ifndef _WIN32
 #include <unistd.h>
 #endif
-#include <errno.h>
-#include <stdlib.h>
-#include <ctype.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -89,7 +90,7 @@ int GetTrailingNumber(const char *strString)
 	// Walk back while number
 	while ((cpPos > strString) && Inside(*(cpPos - 1), '0', '9')) cpPos--;
 	// Scan number
-	sscanf(cpPos, "%d", &iNumber);
+	std::sscanf(cpPos, "%d", &iNumber);
 	// Return result
 	return iNumber;
 }
@@ -428,7 +429,7 @@ bool EraseFile(const char *szFilename)
 	SetFileAttributesA(szFilename, FILE_ATTRIBUTE_NORMAL);
 #endif
 	// either unlink or remove could be used. Well, stick to ANSI C where possible.
-	if (remove(szFilename))
+	if (std::remove(szFilename))
 	{
 		if (errno == ENOENT)
 		{
@@ -466,7 +467,7 @@ bool CopyFileTo(const char *szSource, const char *szTarget, bool FailIfExists)
 
 bool RenameFile(const char *szFilename, const char *szNewFilename)
 {
-	if (rename(szFilename, szNewFilename) < 0)
+	if (std::rename(szFilename, szNewFilename) < 0)
 	{
 		if (CopyFileTo(szFilename, szNewFilename, false))
 		{
@@ -663,8 +664,8 @@ bool CreateItem(const char *szItemname)
 	EraseItem(szItemname);
 	// Create dummy item
 	FILE *fhnd;
-	if (!(fhnd = fopen(szItemname, "wb"))) return false;
-	fclose(fhnd);
+	if (!(fhnd = std::fopen(szItemname, "wb"))) return false;
+	std::fclose(fhnd);
 	// Success
 	return true;
 }
@@ -894,10 +895,10 @@ bool ReadFileLine(FILE *fhnd, char *tobuf, int maxlen)
 	if (!fhnd || !tobuf) return 0;
 	for (cread = 0; cread < maxlen; cread++)
 	{
-		inc = fgetc(fhnd);
+		inc = std::fgetc(fhnd);
 		if (inc == 0x0D) // Binary text file line feed
 		{
-			fgetc(fhnd); break;
+			std::fgetc(fhnd); break;
 		}
 		if (inc == 0x0A) break; // Text file line feed
 		if (!inc || (inc == EOF)) break; // End of file
@@ -914,7 +915,7 @@ void AdvanceFileLine(FILE *fhnd)
 	if (!fhnd) return;
 	do
 	{
-		cread = fgetc(fhnd);
-		if (cread == EOF) { rewind(fhnd); loops++; }
+		cread = std::fgetc(fhnd);
+		if (cread == EOF) { std::rewind(fhnd); loops++; }
 	} while ((cread != 0x0A) && (loops < 2));
 }
