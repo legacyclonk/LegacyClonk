@@ -53,6 +53,9 @@ protected:
 	// main traffic net i/o classes
 	C4NetIO *pNetIO_TCP, *pNetIO_UDP;
 
+	// ports
+	uint16_t portTCP, portUDP;
+
 	// discovery net i/o
 	class C4Network2IODiscover *pNetIODiscover;
 
@@ -106,6 +109,9 @@ protected:
 public:
 	bool hasTCP() const { return !!pNetIO_TCP; }
 	bool hasUDP() const { return !!pNetIO_UDP; }
+
+	uint16_t GetPortTCP() const { return portTCP; }
+	uint16_t GetPortUDP() const { return portUDP; }
 
 	// initialization
 	bool Init(std::uint16_t iPortTCP, std::uint16_t iPortUDP, std::uint16_t iPortDiscovery = 0, std::uint16_t iPortRefServer = 0); // by main thread
