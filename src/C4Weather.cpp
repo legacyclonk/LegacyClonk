@@ -16,11 +16,11 @@
 
 /* Controls temperature, wind, and natural disasters */
 
-#include <C4Weather.h>
+#include "C4Weather.h"
 
-#include <C4Object.h>
-#include <C4Random.h>
-#include <C4Wrappers.h>
+#include "C4Object.h"
+#include "C4Random.h"
+#include "C4Wrappers.h"
 
 C4Weather::C4Weather()
 {

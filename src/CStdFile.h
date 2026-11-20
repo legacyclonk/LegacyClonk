@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include <StdFile.h>
-#include <StdGzCompressedFile.h>
+#include "StdFile.h"
+#include "StdGzCompressedFile.h"
 
 #include <memory>
 #include <cstdio>

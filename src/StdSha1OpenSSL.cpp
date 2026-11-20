@@ -15,9 +15,9 @@
 
 // SHA-1 calculation using OpenSSL
 
-#include <Standard.h>
-#include <StdHelpers.h>
-#include <StdSha1.h>
+#include "Standard.h"
+#include "StdHelpers.h"
+#include "StdSha1.h"
 
 #include <openssl/err.h>
 #include <openssl/evp.h>

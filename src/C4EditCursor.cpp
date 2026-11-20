@@ -16,13 +16,13 @@
 
 /* Handles viewport editing in console mode */
 
-#include <C4EditCursor.h>
+#include "C4EditCursor.h"
 
-#include <C4Console.h>
-#include <C4Object.h>
-#include <C4Application.h>
-#include <C4Random.h>
-#include <C4Wrappers.h>
+#include "C4Console.h"
+#include "C4Object.h"
+#include "C4Application.h"
+#include "C4Random.h"
+#include "C4Wrappers.h"
 
 #ifdef _WIN32
 #include "StdStringEncodingConverter.h"

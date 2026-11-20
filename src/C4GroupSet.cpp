@@ -18,16 +18,16 @@
 // a set of group files
 // manages system file overwriting by scearios or folders
 
-#include <C4GroupSet.h>
+#include "C4GroupSet.h"
 
 #ifndef USE_CONSOLE
-#include <C4Game.h>
+#include "C4Game.h"
 #else
 #include "C4Components.h"
 #include "C4Group.h"
 #endif
 
-#include <C4Log.h>
+#include "C4Log.h"
 #include "C4ResStrTable.h"
 
 C4GroupSetNode::C4GroupSetNode(C4GroupSet &rParent, C4GroupSetNode *pPrev, C4Group &rGroup, bool fGrpOwned, int32_t id)

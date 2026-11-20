@@ -135,7 +135,7 @@ struct _GIOChannel;
 #define MK_CONTROL (1 << 2)
 #define MK_SHIFT (1 << 0)
 #elif defined(USE_SDL_MAINLOOP)
-#include <StdSdlSubSystem.h>
+#include "StdSdlSubSystem.h"
 #include <SDL.h>
 #include <optional>
 #define K_F1 SDL_SCANCODE_F1

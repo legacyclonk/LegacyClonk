@@ -19,7 +19,7 @@
 #pragma once
 
 #include "C4ForwardDeclarations.h"
-#include <C4Material.h>
+#include "C4Material.h"
 #include "Fixed.h"
 
 class C4PXS

@@ -14,11 +14,11 @@
  * for the above references.
  */
 
-#include <C4ValueList.h>
+#include "C4ValueList.h"
 #include <stdexcept>
 
-#include <C4Aul.h>
-#include <C4FindObject.h>
+#include "C4Aul.h"
+#include "C4FindObject.h"
 
 #include <format>
 #include <compare>

@@ -18,10 +18,10 @@
 
 /* Needs to be compiles as Objective C++ on OS X */
 
-#include <C4Group.h>
+#include "C4Group.h"
 
-#include <C4Components.h>
-#include <C4InputValidation.h>
+#include "C4Components.h"
+#include "C4InputValidation.h"
 #include "StdConfig.h"
 
 #ifdef C4ENGINE
@@ -39,7 +39,7 @@
 #include <unistd.h>
 #endif
 
-#include <StdSha1.h>
+#include "StdSha1.h"
 #include <fcntl.h>
 
 #include <cstring>

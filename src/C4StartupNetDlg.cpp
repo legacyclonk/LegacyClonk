@@ -18,12 +18,12 @@
 
 // Startup screen for non-parameterized engine start: Network game selection dialog
 
-#include <C4StartupNetDlg.h>
+#include "C4StartupNetDlg.h"
 
-#include <C4StartupScenSelDlg.h>
-#include <C4StartupMainDlg.h>
-#include <C4Game.h>
-#include <C4Log.h>
+#include "C4StartupScenSelDlg.h"
+#include "C4StartupMainDlg.h"
+#include "C4Game.h"
+#include "C4Log.h"
 #include "C4ChatDlg.h"
 #include "C4GuiEdit.h"
 #include "C4GuiListBox.h"

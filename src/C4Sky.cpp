@@ -16,13 +16,13 @@
 
 /* Small member of the landscape class to handle the sky background */
 
-#include <C4Sky.h>
+#include "C4Sky.h"
 
-#include <C4Game.h>
-#include <C4Random.h>
-#include <C4SurfaceFile.h>
-#include <C4Components.h>
-#include <C4Wrappers.h>
+#include "C4Game.h"
+#include "C4Random.h"
+#include "C4SurfaceFile.h"
+#include "C4Components.h"
+#include "C4Wrappers.h"
 
 static bool SurfaceEnsureSize(C4Surface **ppSfc, int iMinWdt, int iMinHgt)
 {

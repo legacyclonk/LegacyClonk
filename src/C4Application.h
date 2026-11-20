@@ -17,19 +17,19 @@
 #pragma once
 
 #include "C4Application.h"
-#include <C4AudioSystem.h>
-#include <C4Config.h>
+#include "C4AudioSystem.h"
+#include "C4Config.h"
 #include "C4CurlSystem.h"
-#include <C4Group.h>
+#include "C4Group.h"
 #include "C4Log.h"
-#include <C4MusicSystem.h>
-#include <C4SoundSystem.h>
-#include <C4Components.h>
-#include <C4InteractiveThread.h>
-#include <C4Network2IRC.h>
+#include "C4MusicSystem.h"
+#include "C4SoundSystem.h"
+#include "C4Components.h"
+#include "C4InteractiveThread.h"
+#include "C4Network2IRC.h"
 #include "C4ThreadPool.h"
 #include "StdApp.h"
-#include <StdWindow.h>
+#include "StdWindow.h"
 
 #include <optional>
 

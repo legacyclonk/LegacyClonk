@@ -17,7 +17,7 @@
 #include "C4Application.h"
 #include "C4ResStrTable.h"
 
-#include <Standard.h>
+#include "Standard.h"
 
 #include <format>
 #include <optional>

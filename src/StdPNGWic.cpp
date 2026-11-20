@@ -15,10 +15,10 @@
 
 // PNG encoding/decoding using Windows Imaging Component
 
-#include <Standard.h>
-#include <StdHelpers.h>
-#include <StdPNG.h>
-#include <StdWic.h>
+#include "Standard.h"
+#include "StdHelpers.h"
+#include "StdPNG.h"
+#include "StdWic.h"
 
 #include <cstring>
 #include <memory>

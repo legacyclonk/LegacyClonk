@@ -17,9 +17,9 @@
 // statistics
 //  by peter
 
-#include <C4Stat.h>
+#include "C4Stat.h"
 
-#include <C4Game.h>
+#include "C4Game.h"
 
 // ** implemetation of C4MainStat
 

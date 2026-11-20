@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <StdWindow.h>
+#include "StdWindow.h"
 
 #include <gtk/gtk.h>
 

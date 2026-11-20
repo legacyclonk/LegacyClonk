@@ -18,9 +18,9 @@
 
 /* Lots of file helpers */
 
-#include <Standard.h>
-#include <StdFile.h>
-#include <StdBuf.h>
+#include "Standard.h"
+#include "StdFile.h"
+#include "StdBuf.h"
 
 #include <stdio.h>
 #ifdef _WIN32

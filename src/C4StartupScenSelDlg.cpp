@@ -17,24 +17,24 @@
 
 // Startup screen for non-parameterized engine start: Scenario selection dialog
 
-#include <C4StartupScenSelDlg.h>
+#include "C4StartupScenSelDlg.h"
 
-#include <C4Network2Dialogs.h>
-#include <C4StartupMainDlg.h>
-#include <C4StartupNetDlg.h>
+#include "C4Network2Dialogs.h"
+#include "C4StartupMainDlg.h"
+#include "C4StartupNetDlg.h"
 #include "C4GuiEdit.h"
 #include "C4GuiListBox.h"
 #include "C4GuiResource.h"
 #include "C4GuiTabular.h"
 #include "StdMarkup.h"
-#include <C4ComponentHost.h>
-#include <C4Components.h>
-#include <C4RTF.h>
-#include <C4Wrappers.h>
-#include <C4Log.h>
-#include <C4Game.h>
-#include <C4GameDialogs.h>
-#include <C4FileSelDlg.h>
+#include "C4ComponentHost.h"
+#include "C4Components.h"
+#include "C4RTF.h"
+#include "C4Wrappers.h"
+#include "C4Log.h"
+#include "C4Game.h"
+#include "C4GameDialogs.h"
+#include "C4FileSelDlg.h"
 #include "C4TextEncoding.h"
 
 #include <format>

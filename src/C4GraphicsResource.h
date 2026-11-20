@@ -18,10 +18,10 @@
 
 #pragma once
 
-#include <C4Group.h>
-#include <C4GroupSet.h>
-#include <C4Surface.h>
-#include <C4FacetEx.h>
+#include "C4Group.h"
+#include "C4GroupSet.h"
+#include "C4Surface.h"
+#include "C4FacetEx.h"
 #include "StdFont.h"
 
 namespace C4GUI { class Resource; }

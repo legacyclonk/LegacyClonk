@@ -19,8 +19,8 @@
 #pragma once
 
 #include "C4ForwardDeclarations.h"
-#include <C4NameList.h>
-#include <C4IDList.h>
+#include "C4NameList.h"
+#include "C4IDList.h"
 
 #include <string>
 

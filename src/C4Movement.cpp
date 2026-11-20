@@ -16,11 +16,11 @@
 
 /* Object motion, collision, friction */
 
-#include <C4Object.h>
+#include "C4Object.h"
 
-#include <C4Physics.h>
-#include <C4SolidMask.h>
-#include <C4Wrappers.h>
+#include "C4Physics.h"
+#include "C4SolidMask.h"
+#include "C4Wrappers.h"
 
 /* Some physical constants */
 

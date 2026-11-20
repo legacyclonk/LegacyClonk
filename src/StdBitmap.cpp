@@ -13,8 +13,8 @@
  * for the above references.
  */
 
-#include <Standard.h>
-#include <StdBitmap.h>
+#include "Standard.h"
+#include "StdBitmap.h"
 
 StdBitmap::StdBitmap(const std::uint32_t width, const std::uint32_t height, const bool useAlpha)
 	: width(width), height(height), useAlpha(useAlpha),

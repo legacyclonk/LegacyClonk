@@ -18,10 +18,10 @@
 
 #pragma once
 
-#include <C4Surface.h>
-#include <C4InfoCore.h>
-#include <C4DefGraphics.h>
-#include <C4FacetEx.h>
+#include "C4Surface.h"
+#include "C4InfoCore.h"
+#include "C4DefGraphics.h"
+#include "C4FacetEx.h"
 #include "StdFile.h"
 
 class C4Object;

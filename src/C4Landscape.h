@@ -22,7 +22,7 @@
 #include "C4Sky.h"
 #include "C4Shape.h"
 
-#include <StdSurface8.h>
+#include "StdSurface8.h"
 
 #include <cstdint>
 

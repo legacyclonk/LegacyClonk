@@ -14,11 +14,11 @@
  * for the above references.
  */
 
-#include <C4UpperBoard.h>
+#include "C4UpperBoard.h"
 
-#include <C4Game.h>
-#include <C4Config.h>
-#include <C4Application.h>
+#include "C4Game.h"
+#include "C4Config.h"
+#include "C4Application.h"
 
 C4UpperBoard::C4UpperBoard()
 {

@@ -17,17 +17,17 @@
 
 // Startup screen for non-parameterized engine start
 
-#include <C4Startup.h>
+#include "C4Startup.h"
 
-#include <C4StartupMainDlg.h>
-#include <C4StartupScenSelDlg.h>
-#include <C4StartupNetDlg.h>
-#include <C4StartupOptionsDlg.h>
-#include <C4StartupAboutDlg.h>
-#include <C4StartupPlrSelDlg.h>
-#include <C4Game.h>
-#include <C4Application.h>
-#include <C4Log.h>
+#include "C4StartupMainDlg.h"
+#include "C4StartupScenSelDlg.h"
+#include "C4StartupNetDlg.h"
+#include "C4StartupOptionsDlg.h"
+#include "C4StartupAboutDlg.h"
+#include "C4StartupPlrSelDlg.h"
+#include "C4Game.h"
+#include "C4Application.h"
+#include "C4Log.h"
 
 bool C4StartupGraphics::LoadFile(C4FacetExID &rToFct, const char *szFilename)
 {

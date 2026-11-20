@@ -19,7 +19,7 @@
 #pragma once
 
 #include "C4ForwardDeclarations.h"
-#include <C4TransferZone.h>
+#include "C4TransferZone.h"
 
 class C4PathFinderRay
 {

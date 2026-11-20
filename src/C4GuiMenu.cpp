@@ -19,12 +19,12 @@
 // context menu
 
 #include "C4GuiResource.h"
-#include <C4Gui.h>
-#include <C4FacetEx.h>
-#include <C4Wrappers.h>
-#include <C4MouseControl.h>
+#include "C4Gui.h"
+#include "C4FacetEx.h"
+#include "C4Wrappers.h"
+#include "C4MouseControl.h"
 
-#include <StdWindow.h>
+#include "StdWindow.h"
 
 namespace C4GUI
 {

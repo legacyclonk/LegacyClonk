@@ -16,14 +16,14 @@
 
 /* Dynamic list to hold runtime player data */
 
-#include <C4PlayerList.h>
+#include "C4PlayerList.h"
 
-#include <C4Components.h>
-#include <C4FullScreen.h>
-#include <C4Console.h>
-#include <C4Log.h>
-#include <C4Player.h>
-#include <C4Object.h>
+#include "C4Components.h"
+#include "C4FullScreen.h"
+#include "C4Console.h"
+#include "C4Log.h"
+#include "C4Player.h"
+#include "C4Object.h"
 
 C4PlayerList::C4PlayerList()
 {

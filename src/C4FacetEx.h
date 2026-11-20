@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include <C4Facet.h>
-#include <C4Surface.h>
+#include "C4Facet.h"
+#include "C4Surface.h"
 
 const int C4FCT_Full   = -1,
           C4FCT_Height = -2,

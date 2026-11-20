@@ -17,14 +17,14 @@
 
 // newgfx particle system for smoke, sparks, ...
 
-#include <C4Particles.h>
+#include "C4Particles.h"
 
-#include <C4Physics.h>
-#include <C4Object.h>
-#include <C4Random.h>
-#include <C4Game.h>
-#include <C4Components.h>
-#include <C4Wrappers.h>
+#include "C4Physics.h"
+#include "C4Object.h"
+#include "C4Random.h"
+#include "C4Game.h"
+#include "C4Components.h"
+#include "C4Wrappers.h"
 
 void C4ParticleDefCore::CompileFunc(StdCompiler *pComp)
 {

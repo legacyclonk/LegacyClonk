@@ -17,14 +17,14 @@
 
 // Engine internal C4Menus: Main menu, Options, Player join, Hostility, etc.
 
-#include <C4MainMenu.h>
+#include "C4MainMenu.h"
 
-#include <C4FullScreen.h>
-#include <C4Viewport.h>
-#include <C4Wrappers.h>
-#include <C4Player.h>
-#include <C4GameOverDlg.h>
-#include <C4Object.h>
+#include "C4FullScreen.h"
+#include "C4Viewport.h"
+#include "C4Wrappers.h"
+#include "C4Player.h"
+#include "C4GameOverDlg.h"
+#include "C4Object.h"
 
 #include <format>
 

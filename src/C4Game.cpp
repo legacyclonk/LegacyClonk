@@ -17,42 +17,42 @@
 
 /* Main class to run the game */
 
-#include <C4Game.h>
-#include <C4Version.h>
-#include <C4Network2Reference.h>
-#include <C4FileMonitor.h>
+#include "C4Game.h"
+#include "C4Version.h"
+#include "C4Network2Reference.h"
+#include "C4FileMonitor.h"
 
-#include <C4GameSave.h>
-#include <C4Record.h>
-#include <C4Application.h>
-#include <C4Object.h>
-#include <C4ObjectInfo.h>
-#include <C4Random.h>
-#include <C4ObjectCom.h>
-#include <C4SurfaceFile.h>
-#include <C4FullScreen.h>
-#include <C4Startup.h>
-#include <C4Viewport.h>
-#include <C4Command.h>
-#include <C4Stat.h>
-#include <C4PlayerInfo.h>
-#include <C4LoaderScreen.h>
-#include <C4Network2Dialogs.h>
-#include <C4Console.h>
-#include <C4Network2Stats.h>
-#include <C4Log.h>
-#include <C4Wrappers.h>
-#include <C4Player.h>
-#include <C4GameOverDlg.h>
-#include <C4ObjectMenu.h>
-#include <C4GameLobby.h>
-#include <C4ChatDlg.h>
+#include "C4GameSave.h"
+#include "C4Record.h"
+#include "C4Application.h"
+#include "C4Object.h"
+#include "C4ObjectInfo.h"
+#include "C4Random.h"
+#include "C4ObjectCom.h"
+#include "C4SurfaceFile.h"
+#include "C4FullScreen.h"
+#include "C4Startup.h"
+#include "C4Viewport.h"
+#include "C4Command.h"
+#include "C4Stat.h"
+#include "C4PlayerInfo.h"
+#include "C4LoaderScreen.h"
+#include "C4Network2Dialogs.h"
+#include "C4Console.h"
+#include "C4Network2Stats.h"
+#include "C4Log.h"
+#include "C4Wrappers.h"
+#include "C4Player.h"
+#include "C4GameOverDlg.h"
+#include "C4ObjectMenu.h"
+#include "C4GameLobby.h"
+#include "C4ChatDlg.h"
 #include "C4KeyboardInput.h"
 #include "C4Thread.h"
 
-#include <StdFile.h>
-#include <StdGL.h>
-#include <StdPNG.h>
+#include "StdFile.h"
+#include "StdGL.h"
+#include "StdPNG.h"
 
 #include <format>
 #include <iterator>

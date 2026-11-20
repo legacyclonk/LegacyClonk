@@ -18,13 +18,13 @@
 // startup screen
 
 #include "C4GuiResource.h"
-#include <C4LoaderScreen.h>
+#include "C4LoaderScreen.h"
 
-#include <C4LogBuf.h>
-#include <C4Log.h>
-#include <C4Game.h>
-#include <C4Random.h>
-#include <C4GroupSet.h>
+#include "C4LogBuf.h"
+#include "C4Log.h"
+#include "C4Game.h"
+#include "C4Random.h"
+#include "C4GroupSet.h"
 
 C4LoaderScreen::C4LoaderScreen() : TitleFont(Game.GraphicsResource.FontTitle), LogFont(Game.GraphicsResource.FontTiny)
 {}

@@ -20,9 +20,9 @@
 #pragma once
 
 #include "C4ForwardDeclarations.h"
-#include <C4Group.h>
-#include <C4Scenario.h>
-#include <C4Surface.h>
+#include "C4Group.h"
+#include "C4Scenario.h"
+#include "C4Surface.h"
 
 #include <format>
 

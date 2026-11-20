@@ -27,8 +27,8 @@
 #endif
 
 #ifdef USE_SDL_FOR_GAMEPAD
-#include <C4KeyboardInput.h>
-#include <StdSdlSubSystem.h>
+#include "C4KeyboardInput.h"
+#include "StdSdlSubSystem.h"
 #include <optional>
 #include <set>
 #endif

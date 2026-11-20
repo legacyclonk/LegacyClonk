@@ -16,11 +16,11 @@
 
 /* A facet that can hold its own surface and also target coordinates */
 
-#include <C4FacetEx.h>
+#include "C4FacetEx.h"
 
-#include <C4Random.h>
-#include <C4Shape.h>
-#include <C4Group.h>
+#include "C4Random.h"
+#include "C4Shape.h"
+#include "C4Group.h"
 
 void C4FacetEx::Set(C4Surface *nsfc, int nx, int ny, int nwdt, int nhgt, int ntx, int nty)
 {

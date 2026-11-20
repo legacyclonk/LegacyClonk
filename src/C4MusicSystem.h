@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include <C4AudioSystem.h>
-#include <C4Group.h>
+#include "C4AudioSystem.h"
+#include "C4Group.h"
 
 #include <cstdint>
 #include <list>

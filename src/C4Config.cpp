@@ -16,24 +16,24 @@
 
 /* Game configuration as stored in registry */
 
-#include <C4Config.h>
+#include "C4Config.h"
 
 #include "C4Version.h"
 #ifdef C4ENGINE
-#include <C4Application.h>
+#include "C4Application.h"
 #include "C4GameControl.h"
-#include <C4Log.h>
-#include <C4Network2.h>
+#include "C4Log.h"
+#include "C4Network2.h"
 #include "C4Network2IO.h"
 #include "C4Network2Reference.h"
 #include "C4Network2UPnP.h"
 #include "C4Record.h"
 #include "C4ResStrTable.h"
-#include <C4UpperBoard.h>
+#include "C4UpperBoard.h"
 #include "StdPNG.h"
 #endif
 
-#include <StdFile.h>
+#include "StdFile.h"
 
 #ifdef _WIN32
 #include "StdRegistry.h"

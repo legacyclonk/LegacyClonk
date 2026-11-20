@@ -16,17 +16,17 @@
 
 /* Main class to execute the game fullscreen mode */
 
-#include <C4FullScreen.h>
+#include "C4FullScreen.h"
 
-#include <C4Application.h>
-#include <C4UserMessages.h>
-#include <C4Viewport.h>
-#include <C4Gui.h>
-#include <C4Network2.h>
-#include <C4GameDialogs.h>
-#include <C4GamePadCon.h>
-#include <C4Player.h>
-#include <C4GameOverDlg.h>
+#include "C4Application.h"
+#include "C4UserMessages.h"
+#include "C4Viewport.h"
+#include "C4Gui.h"
+#include "C4Network2.h"
+#include "C4GameDialogs.h"
+#include "C4GamePadCon.h"
+#include "C4Player.h"
+#include "C4GameOverDlg.h"
 #include "C4TextEncoding.h"
 
 #include <format>

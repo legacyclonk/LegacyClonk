@@ -17,14 +17,14 @@
 
 /* A wrapper class to OS dependent event and window interfaces, WIN32 version */
 
-#include <Standard.h>
+#include "Standard.h"
 #include "StdApp.h"
-#include <StdRegistry.h>
+#include "StdRegistry.h"
 #include "StdStringEncodingConverter.h"
 #ifndef USE_CONSOLE
-#include <StdGL.h>
+#include "StdGL.h"
 #endif
-#include <StdWindow.h>
+#include "StdWindow.h"
 
 #include <mutex>
 #include <stdexcept>

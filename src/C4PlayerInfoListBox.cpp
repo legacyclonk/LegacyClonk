@@ -19,14 +19,14 @@
 
 #include "C4GuiComboBox.h"
 #include "C4GuiResource.h"
-#include <C4PlayerInfoListBox.h>
+#include "C4PlayerInfoListBox.h"
 
-#include <C4PlayerInfo.h>
-#include <C4Network2Dialogs.h>
-#include <C4GameDialogs.h>
-#include <C4Teams.h>
-#include <C4Game.h>
-#include <C4FileSelDlg.h>
+#include "C4PlayerInfo.h"
+#include "C4Network2Dialogs.h"
+#include "C4GameDialogs.h"
+#include "C4Teams.h"
+#include "C4Game.h"
+#include "C4FileSelDlg.h"
 
 #include <format>
 

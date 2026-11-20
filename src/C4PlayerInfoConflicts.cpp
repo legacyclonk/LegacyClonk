@@ -19,12 +19,12 @@
 // e.g., changing colors if two players have the same
 // "There must be some easier way to do it"(tm)
 
-#include <C4PlayerInfo.h>
-#include <C4GraphicsSystem.h>
-#include <C4Game.h>
-#include <C4Log.h>
+#include "C4PlayerInfo.h"
+#include "C4GraphicsSystem.h"
+#include "C4Game.h"
+#include "C4Log.h"
 
-#include <C4Random.h>
+#include "C4Random.h"
 
 // number of times trying new player colors
 const int32_t C4MaxPlayerColorChangeTries = 100;

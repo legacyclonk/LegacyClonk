@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <StdDDraw2.h>
+#include "StdDDraw2.h"
 
 class CStdNoGfx : public CStdDDraw
 {

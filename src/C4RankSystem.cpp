@@ -16,13 +16,13 @@
 
 /* Rank list for players or crew members */
 
-#include <C4RankSystem.h>
+#include "C4RankSystem.h"
 
-#include <C4Log.h>
-#include <C4Group.h>
-#include <C4ComponentHost.h>
-#include <C4FacetEx.h>
-#include <C4Game.h>
+#include "C4Log.h"
+#include "C4Group.h"
+#include "C4ComponentHost.h"
+#include "C4FacetEx.h"
+#include "C4Game.h"
 
 #ifdef _WIN32
 #include "StdRegistry.h"

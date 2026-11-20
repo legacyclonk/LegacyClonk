@@ -16,11 +16,11 @@
 
 /* Special regions to extend the pathfinder */
 
-#include <C4TransferZone.h>
+#include "C4TransferZone.h"
 
-#include <C4Game.h>
-#include <C4FacetEx.h>
-#include <C4Wrappers.h>
+#include "C4Game.h"
+#include "C4FacetEx.h"
+#include "C4Wrappers.h"
 
 C4TransferZone::C4TransferZone()
 {

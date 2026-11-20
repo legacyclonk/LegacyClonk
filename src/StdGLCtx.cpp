@@ -19,13 +19,13 @@
 
 /* OpenGL implementation of NewGfx, the context */
 
-#include <Standard.h>
+#include "Standard.h"
 #include "StdApp.h"
-#include <StdGL.h>
-#include <C4Log.h>
+#include "StdGL.h"
+#include "C4Log.h"
 #include "C4Rect.h"
-#include <C4Surface.h>
-#include <StdWindow.h>
+#include "C4Surface.h"
+#include "StdWindow.h"
 
 #ifndef _WIN32
 #include "C4Config.h"

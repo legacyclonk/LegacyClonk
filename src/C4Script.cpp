@@ -19,24 +19,24 @@
 
 /* Functions mapped by C4Script */
 
-#include <C4Script.h>
-#include <C4Version.h>
+#include "C4Script.h"
+#include "C4Version.h"
 
-#include <C4Application.h>
-#include <C4Object.h>
-#include <C4ObjectInfo.h>
-#include <C4ObjectCom.h>
-#include <C4Random.h>
-#include <C4Command.h>
-#include <C4Console.h>
-#include <C4Viewport.h>
-#include <C4Wrappers.h>
-#include <C4ObjectInfoList.h>
-#include <C4Player.h>
-#include <C4ObjectMenu.h>
-#include <C4ValueHash.h>
-#include <C4NetworkRestartInfos.h>
-#include <C4SoundSystem.h>
+#include "C4Application.h"
+#include "C4Object.h"
+#include "C4ObjectInfo.h"
+#include "C4ObjectCom.h"
+#include "C4Random.h"
+#include "C4Command.h"
+#include "C4Console.h"
+#include "C4Viewport.h"
+#include "C4Wrappers.h"
+#include "C4ObjectInfoList.h"
+#include "C4Player.h"
+#include "C4ObjectMenu.h"
+#include "C4ValueHash.h"
+#include "C4NetworkRestartInfos.h"
+#include "C4SoundSystem.h"
 
 #include <array>
 #include <cinttypes>

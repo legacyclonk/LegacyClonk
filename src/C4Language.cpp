@@ -21,12 +21,12 @@
 	- loads and sets a language string table (ResStrTable) based on a specified language sequence
 */
 
-#include <C4Language.h>
+#include "C4Language.h"
 
-#include <C4Components.h>
-#include <C4Log.h>
-#include <C4Config.h>
-#include <C4Game.h>
+#include "C4Components.h"
+#include "C4Log.h"
+#include "C4Config.h"
+#include "C4Game.h"
 #include "C4TextEncoding.h"
 
 C4Language Languages;

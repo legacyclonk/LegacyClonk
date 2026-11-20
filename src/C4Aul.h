@@ -23,13 +23,13 @@
 
 #pragma once
 
-#include <C4AulScriptStrict.h>
-#include <C4ValueList.h>
-#include <C4ValueMap.h>
-#include <C4Id.h>
+#include "C4AulScriptStrict.h"
+#include "C4ValueList.h"
+#include "C4ValueMap.h"
+#include "C4Id.h"
 #include "C4Log.h"
-#include <C4Script.h>
-#include <C4StringTable.h>
+#include "C4Script.h"
+#include "C4StringTable.h"
 
 #include <cstdint>
 #include <list>

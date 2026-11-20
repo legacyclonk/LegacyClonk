@@ -16,13 +16,13 @@
 
 /* Console mode dialog for object properties and script interface */
 
-#include <C4PropertyDlg.h>
+#include "C4PropertyDlg.h"
 
-#include <C4Console.h>
-#include <C4Application.h>
-#include <C4Object.h>
-#include <C4Wrappers.h>
-#include <C4Player.h>
+#include "C4Console.h"
+#include "C4Application.h"
+#include "C4Object.h"
+#include "C4Wrappers.h"
+#include "C4Player.h"
 
 #include <format>
 
@@ -33,7 +33,7 @@
 #endif
 
 #ifdef WITH_DEVELOPER_MODE
-#include <C4DevmodeDlg.h>
+#include "C4DevmodeDlg.h"
 
 #include <gtk/gtk.h>
 #endif

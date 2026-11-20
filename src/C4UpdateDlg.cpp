@@ -20,7 +20,7 @@
 #include "C4UpdateDlg.h"
 #include "C4DownloadDlg.h"
 
-#include <C4Log.h>
+#include "C4Log.h"
 
 #include <format>
 

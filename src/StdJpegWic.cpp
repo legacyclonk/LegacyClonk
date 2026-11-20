@@ -15,9 +15,9 @@
 
 // JPEG decoding using Windows Imaging Component
 
-#include <Standard.h>
-#include <StdJpeg.h>
-#include <StdWic.h>
+#include "Standard.h"
+#include "StdJpeg.h"
+#include "StdWic.h"
 
 #include <cassert>
 #include <cstdint>

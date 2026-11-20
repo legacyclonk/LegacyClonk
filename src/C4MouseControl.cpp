@@ -16,16 +16,16 @@
 
 /* Mouse input */
 
-#include <C4MouseControl.h>
+#include "C4MouseControl.h"
 
-#include <C4Viewport.h>
-#include <C4Object.h>
-#include <C4Command.h>
-#include <C4Application.h>
-#include <C4FullScreen.h>
-#include <C4Gui.h>
-#include <C4Wrappers.h>
-#include <C4Player.h>
+#include "C4Viewport.h"
+#include "C4Object.h"
+#include "C4Command.h"
+#include "C4Application.h"
+#include "C4FullScreen.h"
+#include "C4Gui.h"
+#include "C4Wrappers.h"
+#include "C4Player.h"
 #include "C4ChatDlg.h"
 
 #include <format>

@@ -16,15 +16,15 @@
 
 /* In-game menu as used by objects, players, and fullscreen options */
 
-#include <C4Menu.h>
+#include "C4Menu.h"
 
-#include <C4Object.h>
+#include "C4Object.h"
 #include "StdMarkup.h"
-#include <C4FullScreen.h>
-#include <C4ObjectCom.h>
-#include <C4Viewport.h>
-#include <C4Wrappers.h>
-#include <C4Player.h>
+#include "C4FullScreen.h"
+#include "C4ObjectCom.h"
+#include "C4Viewport.h"
+#include "C4Wrappers.h"
+#include "C4Player.h"
 
 const int32_t C4MN_DefInfoWdt          = 270, // default width of info windows
               C4MN_DlgWdt              = 270, // default width of dialog windows
@@ -38,7 +38,7 @@ const int32_t C4MN_InfoCaption_Delay = 90;
 
 /* Obsolete helper function still used by CreateMenu(iSymbol) */
 
-#include <C4ObjectMenu.h> // only needed for menu symbol constants below
+#include "C4ObjectMenu.h" // only needed for menu symbol constants below
 
 void DrawMenuSymbol(int32_t iMenu, C4Facet &cgo, int32_t iOwner, C4Object *cObj)
 {

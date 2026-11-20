@@ -19,18 +19,18 @@
 
 #include "C4GuiEdit.h"
 #include "C4GuiResource.h"
-#include <C4MessageInput.h>
+#include "C4MessageInput.h"
 
-#include <C4Game.h>
-#include <C4Object.h>
-#include <C4Script.h>
-#include <C4Gui.h>
-#include <C4Console.h>
-#include <C4Application.h>
-#include <C4Network2Dialogs.h>
-#include <C4Log.h>
-#include <C4Player.h>
-#include <C4GameLobby.h>
+#include "C4Game.h"
+#include "C4Object.h"
+#include "C4Script.h"
+#include "C4Gui.h"
+#include "C4Console.h"
+#include "C4Application.h"
+#include "C4Network2Dialogs.h"
+#include "C4Log.h"
+#include "C4Player.h"
+#include "C4GameLobby.h"
 
 // C4ChatInputDialog
 

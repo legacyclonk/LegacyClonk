@@ -16,21 +16,21 @@
  */
 
 #include "C4GuiResource.h"
-#include <C4Network2.h>
-#include <C4Version.h>
+#include "C4Network2.h"
+#include "C4Version.h"
 
-#include <C4Log.h>
-#include <C4Application.h>
-#include <C4Console.h>
-#include <C4GameSave.h>
-#include <C4RoundResults.h>
+#include "C4Log.h"
+#include "C4Application.h"
+#include "C4Console.h"
+#include "C4GameSave.h"
+#include "C4RoundResults.h"
 
 // lobby
-#include <C4Gui.h>
-#include <C4GameLobby.h>
+#include "C4Gui.h"
+#include "C4GameLobby.h"
 
-#include <C4Network2Dialogs.h>
-#include <C4League.h>
+#include "C4Network2Dialogs.h"
+#include "C4League.h"
 
 #ifndef USE_CONSOLE
 #include "C4Toast.h"

@@ -17,11 +17,11 @@
 
 // parses scripts
 
-#include <C4Aul.h>
+#include "C4Aul.h"
 
-#include <C4Def.h>
-#include <C4Game.h>
-#include <C4Wrappers.h>
+#include "C4Def.h"
+#include "C4Game.h"
+#include "C4Wrappers.h"
 
 #include <cinttypes>
 

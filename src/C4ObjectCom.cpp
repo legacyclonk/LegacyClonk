@@ -16,17 +16,17 @@
 
 /* Lots of handler functions for object action */
 
-#include <C4ObjectCom.h>
+#include "C4ObjectCom.h"
 
-#include <C4Object.h>
-#include <C4Physics.h>
-#include <C4Command.h>
-#include <C4Random.h>
-#include <C4Game.h>
-#include <C4Wrappers.h>
-#include <C4ObjectMenu.h>
-#include <C4Player.h>
-#include <C4SoundSystem.h>
+#include "C4Object.h"
+#include "C4Physics.h"
+#include "C4Command.h"
+#include "C4Random.h"
+#include "C4Game.h"
+#include "C4Wrappers.h"
+#include "C4ObjectMenu.h"
+#include "C4Player.h"
+#include "C4SoundSystem.h"
 
 bool SimFlightHitsLiquid(C4Fixed fcx, C4Fixed fcy, C4Fixed xdir, C4Fixed ydir);
 

@@ -17,12 +17,12 @@
 
 // C4Aul script engine CP conversion
 
-#include <C4Aul.h>
+#include "C4Aul.h"
 
-#include <C4Config.h>
-#include <C4Def.h>
-#include <C4Log.h>
-#include <C4Components.h>
+#include "C4Config.h"
+#include "C4Def.h"
+#include "C4Log.h"
+#include "C4Components.h"
 
 #include <format>
 

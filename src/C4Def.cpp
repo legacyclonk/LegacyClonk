@@ -16,18 +16,18 @@
 
 /* Object definition */
 
-#include <C4Def.h>
-#include <C4Version.h>
-#include <C4GameVersion.h>
-#include <C4FileMonitor.h>
+#include "C4Def.h"
+#include "C4Version.h"
+#include "C4GameVersion.h"
+#include "C4FileMonitor.h"
 
-#include <C4SurfaceFile.h>
-#include <C4Log.h>
-#include <C4Components.h>
-#include <C4Config.h>
-#include <C4ValueList.h>
-#include <C4Wrappers.h>
-#include <C4Object.h>
+#include "C4SurfaceFile.h"
+#include "C4Log.h"
+#include "C4Components.h"
+#include "C4Config.h"
+#include "C4ValueList.h"
+#include "C4Wrappers.h"
+#include "C4Object.h"
 #include "C4Network2Res.h"
 
 #include <algorithm>

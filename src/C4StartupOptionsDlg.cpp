@@ -22,17 +22,17 @@
 #include "C4GuiResource.h"
 #include "C4GuiTabular.h"
 
-#include <C4StartupOptionsDlg.h>
-#include <C4StartupOptionsAdvancedConfigDialog.h>
+#include "C4StartupOptionsDlg.h"
+#include "C4StartupOptionsAdvancedConfigDialog.h"
 
-#include <C4StartupMainDlg.h>
-#include <C4Language.h>
-#include <C4GamePadCon.h>
-#include <C4Game.h>
-#include <C4Log.h>
-#include <C4Wrappers.h>
+#include "C4StartupMainDlg.h"
+#include "C4Language.h"
+#include "C4GamePadCon.h"
+#include "C4Game.h"
+#include "C4Log.h"
+#include "C4Wrappers.h"
 
-#include <StdGL.h>
+#include "StdGL.h"
 
 class C4StartupOptionsDlg::ScaleEdit : public C4GUI::SpinBox<int32_t>
 {

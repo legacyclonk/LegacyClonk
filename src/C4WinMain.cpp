@@ -16,11 +16,11 @@
 
 /* Main program entry point */
 
-#include <C4Application.h>
+#include "C4Application.h"
 
-#include <C4Console.h>
-#include <C4FullScreen.h>
-#include <C4Log.h>
+#include "C4Console.h"
+#include "C4FullScreen.h"
+#include "C4Log.h"
 
 #ifdef WITH_DEVELOPER_MODE
 #include <gtk/gtk.h>

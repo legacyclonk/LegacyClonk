@@ -14,12 +14,12 @@
  * for the above references.
  */
 
-#include <C4FindObject.h>
+#include "C4FindObject.h"
 
-#include <C4Object.h>
-#include <C4Game.h>
-#include <C4Wrappers.h>
-#include <C4Random.h>
+#include "C4Object.h"
+#include "C4Game.h"
+#include "C4Wrappers.h"
+#include "C4Random.h"
 
 #include <algorithm>
 #include <numeric>

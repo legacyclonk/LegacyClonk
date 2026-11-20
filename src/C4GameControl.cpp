@@ -16,13 +16,13 @@
 
 /* control management */
 
-#include <C4Application.h>
-#include <C4Game.h>
-#include <C4GameControl.h>
-#include <C4GameOverDlg.h>
-#include <C4Record.h>
-#include <C4Log.h>
-#include <C4Network2Stats.h>
+#include "C4Application.h"
+#include "C4Game.h"
+#include "C4GameControl.h"
+#include "C4GameOverDlg.h"
+#include "C4Record.h"
+#include "C4Log.h"
+#include "C4Network2Stats.h"
 
 #include <cassert>
 

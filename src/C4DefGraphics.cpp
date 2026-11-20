@@ -17,19 +17,19 @@
 
 // graphics used by object definitions (object and portraits)
 
-#include <C4DefGraphics.h>
+#include "C4DefGraphics.h"
 
-#include <C4SurfaceFile.h>
-#include <C4Object.h>
-#include <C4ObjectInfo.h>
-#include <C4Config.h>
-#include <C4Components.h>
-#include <C4Application.h>
-#include <C4Game.h>
-#include <C4Menu.h>
-#include <C4ObjectMenu.h>
-#include <C4Player.h>
-#include <C4Log.h>
+#include "C4SurfaceFile.h"
+#include "C4Object.h"
+#include "C4ObjectInfo.h"
+#include "C4Config.h"
+#include "C4Components.h"
+#include "C4Application.h"
+#include "C4Game.h"
+#include "C4Menu.h"
+#include "C4ObjectMenu.h"
+#include "C4Player.h"
+#include "C4Log.h"
 
 // C4DefGraphics
 

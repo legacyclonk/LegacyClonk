@@ -19,8 +19,8 @@
 
 #pragma once
 
-#include <C4ObjectList.h>
-#include <C4Shape.h>
+#include "C4ObjectList.h"
+#include "C4Shape.h"
 
 class C4SolidMask
 {

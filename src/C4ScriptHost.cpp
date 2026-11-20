@@ -16,12 +16,12 @@
 
 /* Handles script file components (calls, inheritance, function maps) */
 
-#include <C4ScriptHost.h>
+#include "C4ScriptHost.h"
 
-#include <C4Console.h>
-#include <C4ObjectCom.h>
-#include <C4Object.h>
-#include <C4Wrappers.h>
+#include "C4Console.h"
+#include "C4ObjectCom.h"
+#include "C4Object.h"
+#include "C4Wrappers.h"
 
 // C4ScriptHost
 

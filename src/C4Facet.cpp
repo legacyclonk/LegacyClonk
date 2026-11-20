@@ -16,8 +16,8 @@
 
 /* A piece of a DirectDraw surface */
 
-#include <C4Facet.h>
-#include <C4Game.h>
+#include "C4Facet.h"
+#include "C4Game.h"
 
 void C4Facet::Default()
 {

@@ -18,14 +18,14 @@
 // permanent player information management
 // see header for some additional information
 
-#include <C4PlayerInfo.h>
+#include "C4PlayerInfo.h"
 
-#include <C4Game.h>
-#include <C4Config.h>
-#include <C4Log.h>
-#include <C4Wrappers.h>
-#include <C4Player.h>
-#include <C4FullScreen.h>
+#include "C4Game.h"
+#include "C4Config.h"
+#include "C4Log.h"
+#include "C4Wrappers.h"
+#include "C4Player.h"
+#include "C4FullScreen.h"
 
 #include <format>
 

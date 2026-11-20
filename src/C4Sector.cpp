@@ -17,12 +17,12 @@
 
 // landscape sector base class
 
-#include <C4Sector.h>
+#include "C4Sector.h"
 
-#include <C4Game.h>
-#include <C4Object.h>
-#include <C4Log.h>
-#include <C4Record.h>
+#include "C4Game.h"
+#include "C4Object.h"
+#include "C4Log.h"
+#include "C4Record.h"
 
 /* sector */
 

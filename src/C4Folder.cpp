@@ -16,12 +16,12 @@
 
 /* Core component of a folder */
 
-#include <C4Folder.h>
+#include "C4Folder.h"
 
-#include <C4Random.h>
-#include <C4Group.h>
-#include <C4Components.h>
-#include <C4Game.h>
+#include "C4Random.h"
+#include "C4Group.h"
+#include "C4Components.h"
+#include "C4Game.h"
 
 // C4FolderHead
 

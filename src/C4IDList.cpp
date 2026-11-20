@@ -16,11 +16,11 @@
 
 /* At static list of C4IDs */
 
-#include <C4IDList.h>
+#include "C4IDList.h"
 
-#include <C4Def.h>
-#include <C4Application.h>
-#include <C4Game.h>
+#include "C4Def.h"
+#include "C4Application.h"
+#include "C4Game.h"
 
 #include <algorithm>
 

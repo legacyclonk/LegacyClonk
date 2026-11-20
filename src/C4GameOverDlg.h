@@ -19,9 +19,9 @@
 
 #pragma once
 
-#include <C4Gui.h>
-#include <C4GuiDialogs.h>
-#include <C4RoundResults.h>
+#include "C4Gui.h"
+#include "C4GuiDialogs.h"
+#include "C4RoundResults.h"
 
 // horizontal display of goal symbols; filfilled goals marked
 // maybe to be reused for a game goal dialog?
