@@ -16,17 +16,17 @@
 
 /* Holds crew member information */
 
-#include <C4ObjectInfo.h>
+#include "C4ObjectInfo.h"
 
-#include <C4Wrappers.h>
-#include <C4Random.h>
-#include <C4Components.h>
-#include <C4Game.h>
-#include <C4Config.h>
-#include <C4Application.h>
-#include <C4RankSystem.h>
-#include <C4Log.h>
-#include <C4Player.h>
+#include "C4Wrappers.h"
+#include "C4Random.h"
+#include "C4Components.h"
+#include "C4Game.h"
+#include "C4Config.h"
+#include "C4Application.h"
+#include "C4RankSystem.h"
+#include "C4Log.h"
+#include "C4Player.h"
 
 C4ObjectInfo::C4ObjectInfo()
 {

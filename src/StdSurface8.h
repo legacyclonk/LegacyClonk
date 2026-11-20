@@ -20,8 +20,8 @@
 #pragma once
 
 #include "C4ForwardDeclarations.h"
-#include <Standard.h>
-#include <StdColors.h>
+#include "Standard.h"
+#include "StdColors.h"
 
 class CSurface8
 {

@@ -16,12 +16,12 @@
 
 /* Text messages drawn inside the viewport */
 
-#include <C4GameMessage.h>
+#include "C4GameMessage.h"
 
-#include <C4Object.h>
-#include <C4Application.h>
-#include <C4Game.h>
-#include <C4Player.h>
+#include "C4Object.h"
+#include "C4Application.h"
+#include "C4Game.h"
+#include "C4Player.h"
 
 #include <algorithm>
 

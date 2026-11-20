@@ -19,9 +19,9 @@
 
 #pragma once
 
-#include <C4ObjectList.h>
-#include <C4FindObject.h>
-#include <C4Sector.h>
+#include "C4ObjectList.h"
+#include "C4FindObject.h"
+#include "C4Sector.h"
 
 class C4ObjResort;
 

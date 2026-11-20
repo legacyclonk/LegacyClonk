@@ -16,11 +16,11 @@
 
 /* Pixel Sprite system for tiny bits of moving material */
 
-#include <C4PXS.h>
+#include "C4PXS.h"
 
-#include <C4Physics.h>
-#include <C4Random.h>
-#include <C4Wrappers.h>
+#include "C4Physics.h"
+#include "C4Random.h"
+#include "C4Wrappers.h"
 
 static const C4Fixed WindDrift_Factor = itofix(1, 800);
 

@@ -19,7 +19,7 @@
 #pragma once
 
 #include "C4MainMenu.h"
-#include <StdWindow.h>
+#include "StdWindow.h"
 
 #include "C4Game.h"
 

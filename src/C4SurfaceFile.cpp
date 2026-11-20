@@ -16,10 +16,10 @@
 
 /* Another C4Group bitmap-to-surface loader and saver */
 
-#include <C4SurfaceFile.h>
+#include "C4SurfaceFile.h"
 
-#include <C4Surface.h>
-#include <C4Group.h>
+#include "C4Surface.h"
+#include "C4Group.h"
 #include "StdSurface8.h"
 
 C4Surface *GroupReadSurface(C4Group &hGroup, uint8_t *bpPalette)

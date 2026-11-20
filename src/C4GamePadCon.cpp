@@ -16,11 +16,11 @@
 
 /* Gamepad control */
 
-#include <C4GamePadCon.h>
+#include "C4GamePadCon.h"
 
-#include <C4ObjectCom.h>
-#include <C4Log.h>
-#include <C4Game.h>
+#include "C4ObjectCom.h"
+#include "C4Log.h"
+#include "C4Game.h"
 
 #ifdef _WIN32
 #include "C4Windows.h"

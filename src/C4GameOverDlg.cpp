@@ -18,13 +18,13 @@
 // game over dialog showing winners and losers
 
 #include "C4GuiResource.h"
-#include <C4GameOverDlg.h>
+#include "C4GameOverDlg.h"
 
-#include <C4Game.h>
-#include <C4FullScreen.h>
-#include <C4Player.h>
-#include <C4PlayerInfo.h>
-#include <C4PlayerInfoListBox.h>
+#include "C4Game.h"
+#include "C4FullScreen.h"
+#include "C4Player.h"
+#include "C4PlayerInfo.h"
+#include "C4PlayerInfoListBox.h"
 
 #include <format>
 

@@ -17,11 +17,11 @@
 
 // links aul scripts; i.e. resolves includes & appends, etc
 
-#include <C4Aul.h>
+#include "C4Aul.h"
 
-#include <C4Def.h>
-#include <C4Game.h>
-#include <C4Log.h>
+#include "C4Def.h"
+#include "C4Game.h"
+#include "C4Log.h"
 
 // ResolveAppends and ResolveIncludes must be called both
 // for each script. ResolveAppends has to be called first!

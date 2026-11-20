@@ -15,15 +15,15 @@
  * for the above references.
  */
 
-#include <C4Network2IO.h>
-#include <C4Network2Reference.h>
+#include "C4Network2IO.h"
+#include "C4Network2Reference.h"
 
-#include <C4Network2Discover.h>
+#include "C4Network2Discover.h"
 #include "C4Network2UPnP.h"
-#include <C4Application.h>
-#include <C4UserMessages.h>
-#include <C4Log.h>
-#include <C4Game.h>
+#include "C4Application.h"
+#include "C4UserMessages.h"
+#include "C4Log.h"
+#include "C4Game.h"
 
 #ifndef _WIN32
 #include <sys/socket.h>

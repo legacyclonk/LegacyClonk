@@ -27,9 +27,9 @@
 
 #pragma once
 
-#include <C4Scenario.h>
-#include <C4Group.h>
-#include <C4Components.h>
+#include "C4Scenario.h"
+#include "C4Group.h"
+#include "C4Components.h"
 
 class C4GameSave
 {

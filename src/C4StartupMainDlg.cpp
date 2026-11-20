@@ -18,18 +18,18 @@
 // Startup screen for non-parameterized engine start (stub)
 
 #include "C4GuiResource.h"
-#include <C4StartupMainDlg.h>
-#include <C4UpdateDlg.h>
-#include <C4Version.h>
+#include "C4StartupMainDlg.h"
+#include "C4UpdateDlg.h"
+#include "C4Version.h"
 
-#include <C4StartupNetDlg.h>
-#include <C4StartupScenSelDlg.h>
-#include <C4StartupOptionsDlg.h>
-#include <C4StartupAboutDlg.h>
-#include <C4StartupPlrSelDlg.h>
-#include <C4Startup.h>
-#include <C4Game.h>
-#include <C4Log.h>
+#include "C4StartupNetDlg.h"
+#include "C4StartupScenSelDlg.h"
+#include "C4StartupOptionsDlg.h"
+#include "C4StartupAboutDlg.h"
+#include "C4StartupPlrSelDlg.h"
+#include "C4Startup.h"
+#include "C4Game.h"
+#include "C4Log.h"
 #include "C4TextEncoding.h"
 
 #include <format>

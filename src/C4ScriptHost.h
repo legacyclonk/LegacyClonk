@@ -18,9 +18,9 @@
 
 #pragma once
 
-#include <C4ComponentHost.h>
+#include "C4ComponentHost.h"
 
-#include <C4Aul.h>
+#include "C4Aul.h"
 
 // generic script host for objects
 class C4ScriptHost : public C4AulScript, public C4ComponentHost

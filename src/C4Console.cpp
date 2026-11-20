@@ -16,17 +16,17 @@
 
 /* Handles engine execution in developer mode */
 
-#include <C4Console.h>
-#include <C4Application.h>
+#include "C4Console.h"
+#include "C4Application.h"
 
-#include <C4GameSave.h>
-#include <C4UserMessages.h>
-#include <C4Version.h>
-#include <C4Log.h>
-#include <C4Player.h>
+#include "C4GameSave.h"
+#include "C4UserMessages.h"
+#include "C4Version.h"
+#include "C4Log.h"
+#include "C4Player.h"
 #include "C4TextEncoding.h"
 
-#include <StdFile.h>
+#include "StdFile.h"
 
 #ifdef _WIN32
 #include "StdRegistry.h"
@@ -69,11 +69,11 @@ namespace
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
-#include <res/Play.h>
-#include <res/Halt.h>
-#include <res/Mouse.h>
-#include <res/Cursor.h>
-#include <res/Brush.h>
+#include "res/Play.h"
+#include "res/Halt.h"
+#include "res/Mouse.h"
+#include "res/Cursor.h"
+#include "res/Brush.h"
 
 namespace
 {

@@ -20,10 +20,10 @@
 #pragma once
 
 #include "C4Rect.h"
-#include <Standard.h>
+#include "Standard.h"
 
 #include "C4Rect.h"
-#include <StdBuf.h>
+#include "StdBuf.h"
 
 #include <tuple>
 

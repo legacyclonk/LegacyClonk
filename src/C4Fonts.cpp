@@ -17,13 +17,13 @@
 
 // engine font loading
 
-#include <C4Fonts.h>
+#include "C4Fonts.h"
 
-#include <C4Config.h>
-#include <C4Components.h>
-#include <C4Log.h>
-#include <C4Surface.h>
-#include <C4Wrappers.h>
+#include "C4Config.h"
+#include "C4Components.h"
+#include "C4Log.h"
+#include "C4Surface.h"
+#include "C4Wrappers.h"
 
 #include <stdexcept>
 

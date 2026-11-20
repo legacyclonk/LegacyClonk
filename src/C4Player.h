@@ -20,9 +20,9 @@
 
 #include "C4EnumeratedObjectPtr.h"
 #include "C4MainMenu.h"
-#include <C4ObjectInfoList.h>
-#include <C4InfoCore.h>
-#include <C4ObjectList.h>
+#include "C4ObjectInfoList.h"
+#include "C4InfoCore.h"
+#include "C4ObjectList.h"
 
 const int32_t C4PVM_Cursor    = 0,
               C4PVM_Target    = 1,

@@ -16,12 +16,12 @@
 
 /* Move liquids in the landscape using individual transport spots */
 
-#include <C4MassMover.h>
+#include "C4MassMover.h"
 
-#include <C4Random.h>
-#include <C4Material.h>
-#include <C4Game.h>
-#include <C4Wrappers.h>
+#include "C4Random.h"
+#include "C4Material.h"
+#include "C4Game.h"
+#include "C4Wrappers.h"
 
 // Note: creation optimized using advancing CreatePtr, so sequential
 // creation does not keep rescanning the complete set for a free

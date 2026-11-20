@@ -17,10 +17,10 @@
 // PNG encoding/decoding using libpng
 
 #include "C4Application.h"
-#include <Standard.h>
-#include <StdPNG.h>
+#include "Standard.h"
+#include "StdPNG.h"
 
-#include <C4Log.h>
+#include "C4Log.h"
 
 #include <png.h>
 

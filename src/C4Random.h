@@ -19,7 +19,7 @@
 #pragma once
 
 #ifdef DEBUGREC
-#include <C4Record.h>
+#include "C4Record.h"
 #endif
 
 #include <cstdint>

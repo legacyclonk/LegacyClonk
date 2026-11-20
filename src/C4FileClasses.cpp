@@ -16,9 +16,9 @@
 
 /* Some class entries in the Windows registry */
 
-#include <C4FileClasses.h>
+#include "C4FileClasses.h"
 
-#include <StdRegistry.h>
+#include "StdRegistry.h"
 
 #include <format>
 

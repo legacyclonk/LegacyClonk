@@ -16,22 +16,22 @@
 
 /* That which fills the world with life */
 
-#include <C4Object.h>
-#include <C4Version.h>
+#include "C4Object.h"
+#include "C4Version.h"
 
-#include <C4ObjectInfo.h>
-#include <C4Physics.h>
-#include <C4ObjectCom.h>
-#include <C4Command.h>
-#include <C4Viewport.h>
+#include "C4ObjectInfo.h"
+#include "C4Physics.h"
+#include "C4ObjectCom.h"
+#include "C4Command.h"
+#include "C4Viewport.h"
 #ifdef DEBUGREC
-#include <C4Record.h>
+#include "C4Record.h"
 #endif
-#include <C4SolidMask.h>
-#include <C4Random.h>
-#include <C4Wrappers.h>
-#include <C4Player.h>
-#include <C4ObjectMenu.h>
+#include "C4SolidMask.h"
+#include "C4Random.h"
+#include "C4Wrappers.h"
+#include "C4Player.h"
+#include "C4ObjectMenu.h"
 
 #include <cstring>
 #include <format>

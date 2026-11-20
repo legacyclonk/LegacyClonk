@@ -13,7 +13,7 @@
  * for the above references.
  */
 
-#include <StdGzCompressedFile.h>
+#include "StdGzCompressedFile.h"
 
 #include <algorithm>
 #include <cerrno>

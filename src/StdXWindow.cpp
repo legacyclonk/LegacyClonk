@@ -17,13 +17,13 @@
 
 /* A wrapper class to OS dependent event and window interfaces, X11 version */
 
-#include <Standard.h>
-#include <StdApp.h>
-#include <StdWindow.h>
-#include <StdGL.h>
-#include <StdDDraw2.h>
-#include <StdFile.h>
-#include <StdBuf.h>
+#include "Standard.h"
+#include "StdApp.h"
+#include "StdWindow.h"
+#include "StdGL.h"
+#include "StdDDraw2.h"
+#include "StdFile.h"
+#include "StdBuf.h"
 
 #ifdef USE_X11
 #include "res/lc.xpm"

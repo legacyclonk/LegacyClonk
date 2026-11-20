@@ -19,9 +19,9 @@
 #pragma once
 
 #include "C4ForwardDeclarations.h"
-#include <C4Id.h>
-#include <C4Shape.h>
-#include <C4Facet.h>
+#include "C4Id.h"
+#include "C4Shape.h"
+#include "C4Facet.h"
 #include <vector>
 
 #define C4MatOv_Default    0

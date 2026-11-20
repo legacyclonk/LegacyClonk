@@ -21,17 +21,17 @@
 #include "C4GuiDialogs.h"
 #include "C4GuiEdit.h"
 #include "C4GuiResource.h"
-#include <C4Gui.h>
+#include "C4Gui.h"
 
-#include <C4FullScreen.h>
-#include <C4LoaderScreen.h>
-#include <C4Application.h>
-#include <C4Viewport.h>
-#include <C4Console.h>
-#include <C4Def.h>
-#include <C4Wrappers.h>
+#include "C4FullScreen.h"
+#include "C4LoaderScreen.h"
+#include "C4Application.h"
+#include "C4Viewport.h"
+#include "C4Console.h"
+#include "C4Def.h"
+#include "C4Wrappers.h"
 
-#include <StdGL.h>
+#include "StdGL.h"
 
 #include <format>
 

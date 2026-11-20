@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <C4Id.h>
+#include "C4Id.h"
 #include "C4ObjectInfo.h"
 
 class C4ObjectInfoList

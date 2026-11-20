@@ -18,10 +18,10 @@
 // Keyboard input mapping to engine functions
 
 #include "C4TextEncoding.h"
-#include <C4KeyboardInput.h>
+#include "C4KeyboardInput.h"
 
-#include <C4Game.h>
-#include <C4Wrappers.h>
+#include "C4Game.h"
+#include "C4Wrappers.h"
 
 #ifdef USE_X11
 #include <X11/Xlib.h>

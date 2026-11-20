@@ -16,11 +16,11 @@
 
 /* Dynamic object list */
 
-#include <C4ObjectList.h>
+#include "C4ObjectList.h"
 
-#include <C4Object.h>
-#include <C4Wrappers.h>
-#include <C4Application.h>
+#include "C4Object.h"
+#include "C4Wrappers.h"
+#include "C4Application.h"
 
 #include <format>
 

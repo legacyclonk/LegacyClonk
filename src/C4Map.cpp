@@ -16,13 +16,13 @@
 
 /* Create map from dynamic landscape data in scenario */
 
-#include <C4Map.h>
+#include "C4Map.h"
 
-#include <C4Random.h>
-#include <C4Texture.h>
-#include <C4Group.h>
+#include "C4Random.h"
+#include "C4Texture.h"
+#include "C4Group.h"
 
-#include <Bitmap256.h>
+#include "Bitmap256.h"
 
 #include <numbers>
 

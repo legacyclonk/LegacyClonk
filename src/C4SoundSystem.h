@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include <C4AudioSystem.h>
-#include <C4Object.h>
+#include "C4AudioSystem.h"
+#include "C4Object.h"
 
 #include <chrono>
 #include <cstddef>

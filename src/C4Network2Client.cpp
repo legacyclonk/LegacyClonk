@@ -15,14 +15,14 @@
  * for the above references.
  */
 
-#include <C4Network2Client.h>
+#include "C4Network2Client.h"
 
-#include <C4Log.h>
-#include <C4Console.h>
-#include <C4Network2.h>
-#include <C4Network2IO.h>
-#include <C4Network2Stats.h>
-#include <C4GameLobby.h> // fullscreen network lobby
+#include "C4Log.h"
+#include "C4Console.h"
+#include "C4Network2.h"
+#include "C4Network2IO.h"
+#include "C4Network2Stats.h"
+#include "C4GameLobby.h" // fullscreen network lobby
 
 #include <algorithm>
 #include <chrono>

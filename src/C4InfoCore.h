@@ -20,9 +20,9 @@
 
 #include "C4Constants.h"
 #include "C4ForwardDeclarations.h"
-#include <C4Id.h>
-#include <C4ValueMap.h>
-#include <Fixed.h>
+#include "C4Id.h"
+#include "C4ValueMap.h"
+#include "Fixed.h"
 
 #include <vector>
 

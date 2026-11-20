@@ -14,11 +14,11 @@
  * for the above references.
  */
 
-#include <Standard.h>
-#include <StdBuf.h>
-#include <StdCompiler.h>
-#include <StdAdaptors.h>
-#include <StdFile.h>
+#include "Standard.h"
+#include "StdBuf.h"
+#include "StdCompiler.h"
+#include "StdAdaptors.h"
+#include "StdFile.h"
 
 #include <stdarg.h>
 #include <stdio.h>

@@ -17,8 +17,8 @@
 
 // user input validation functions
 
-#include <C4InputValidation.h>
-#include <C4Config.h>
+#include "C4InputValidation.h"
+#include "C4Config.h"
 
 #ifdef C4ENGINE
 #include "StdMarkup.h"

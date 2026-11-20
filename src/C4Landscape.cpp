@@ -16,27 +16,27 @@
 
 /* Handles landscape and sky */
 
-#include <C4Landscape.h>
-#include <C4SolidMask.h>
+#include "C4Landscape.h"
+#include "C4SolidMask.h"
 
-#include <C4Map.h>
-#include <C4MapCreatorS2.h>
-#include <C4SolidMask.h>
-#include <C4Object.h>
-#include <C4Physics.h>
-#include <C4Random.h>
-#include <C4SurfaceFile.h>
-#include <C4ToolsDlg.h>
+#include "C4Map.h"
+#include "C4MapCreatorS2.h"
+#include "C4SolidMask.h"
+#include "C4Object.h"
+#include "C4Physics.h"
+#include "C4Random.h"
+#include "C4SurfaceFile.h"
+#include "C4ToolsDlg.h"
 #ifdef DEBUGREC
-#include <C4Record.h>
+#include "C4Record.h"
 #endif
-#include <C4Material.h>
-#include <C4Game.h>
-#include <C4Application.h>
-#include <C4Wrappers.h>
+#include "C4Material.h"
+#include "C4Game.h"
+#include "C4Application.h"
+#include "C4Wrappers.h"
 
-#include <StdBitmap.h>
-#include <StdPNG.h>
+#include "StdBitmap.h"
+#include "StdPNG.h"
 
 #include <cmath>
 #include <memory>

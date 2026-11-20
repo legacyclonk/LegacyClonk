@@ -25,8 +25,8 @@
 #include "C4ResStrTable.h"
 
 #include "StdAdaptors.h"
-#include <StdBuf.h>
-#include <StdCompiler.h>
+#include "StdBuf.h"
+#include "StdCompiler.h"
 
 #include <mutex>
 #include <span>

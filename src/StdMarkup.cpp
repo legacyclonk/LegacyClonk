@@ -17,9 +17,9 @@
 
 // markup tags for fonts
 
-#include <StdMarkup.h>
-#include <StdColors.h>
-#include <StdDDraw2.h>
+#include "StdMarkup.h"
+#include "StdColors.h"
+#include "StdDDraw2.h"
 
 void CMarkupTagItalic::Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr)
 {

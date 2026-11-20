@@ -19,8 +19,8 @@
 #pragma once
 
 #include "C4DelegatedIterable.h"
-#include <C4Group.h>
-#include <C4GroupSet.h>
+#include "C4Group.h"
+#include "C4GroupSet.h"
 #include "C4ResStrTable.h"
 
 #include <array>

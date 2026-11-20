@@ -24,7 +24,7 @@
 #include "C4EditCursor.h"
 #include "C4Game.h"
 
-#include <StdWindow.h>
+#include "StdWindow.h"
 
 #ifdef WITH_DEVELOPER_MODE
 #include <gtk/gtk.h>
@@ -42,7 +42,7 @@ const int C4CNS_ModePlay = 0,
 #define IDM_VIEWPORT_NEW2 10500
 
 #ifdef WITH_DEVELOPER_MODE
-#include <StdGtkWindow.h>
+#include "StdGtkWindow.h"
 typedef CStdGtkWindow C4ConsoleBase;
 #else
 typedef CStdWindow C4ConsoleBase;

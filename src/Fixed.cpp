@@ -17,8 +17,8 @@
 // fixed numbers - sine functions
 // by Sven2, 2001
 
-#include <Standard.h>
-#include <Fixed.h>
+#include "Standard.h"
+#include "Fixed.h"
 
 // static table with sinus values from 0.00 degree to 90.00 degree inclusively
 long SineTable[9001] =

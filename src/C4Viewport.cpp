@@ -16,25 +16,25 @@
 
 /* A viewport to each player */
 
-#include <C4Viewport.h>
+#include "C4Viewport.h"
 
-#include <C4Console.h>
-#include <C4UserMessages.h>
-#include <C4Object.h>
-#include <C4ObjectInfo.h>
-#include <C4Wrappers.h>
-#include <C4FullScreen.h>
-#include <C4Application.h>
-#include <C4ObjectCom.h>
-#include <C4Stat.h>
-#include <C4Gui.h>
-#include <C4Network2Dialogs.h>
-#include <C4GameDialogs.h>
-#include <C4Player.h>
-#include <C4ChatDlg.h>
-#include <C4ObjectMenu.h>
+#include "C4Console.h"
+#include "C4UserMessages.h"
+#include "C4Object.h"
+#include "C4ObjectInfo.h"
+#include "C4Wrappers.h"
+#include "C4FullScreen.h"
+#include "C4Application.h"
+#include "C4ObjectCom.h"
+#include "C4Stat.h"
+#include "C4Gui.h"
+#include "C4Network2Dialogs.h"
+#include "C4GameDialogs.h"
+#include "C4Player.h"
+#include "C4ChatDlg.h"
+#include "C4ObjectMenu.h"
 
-#include <StdGL.h>
+#include "StdGL.h"
 
 #ifdef _WIN32
 #include "StdRegistry.h"

@@ -18,12 +18,12 @@
 // main game dialogs (abort game dlg, observer dlg)
 
 #include "C4GuiResource.h"
-#include <C4GameDialogs.h>
+#include "C4GameDialogs.h"
 
-#include <C4Viewport.h>
-#include <C4Network2Dialogs.h>
-#include <C4Game.h>
-#include <C4Player.h>
+#include "C4Viewport.h"
+#include "C4Network2Dialogs.h"
+#include "C4Game.h"
+#include "C4Player.h"
 
 bool C4AbortGameDialog::is_shown = false;
 

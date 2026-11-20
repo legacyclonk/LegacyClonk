@@ -18,7 +18,7 @@
 #include "C4Application.h"
 #include "C4Log.h"
 
-#include <C4Game.h>
+#include "C4Game.h"
 
 #include <cassert>
 

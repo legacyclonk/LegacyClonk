@@ -18,13 +18,13 @@
 /* A wrapper class to OS dependent event and window interfaces, SDL version */
 
 #include "C4Shape.h"
-#include <Standard.h>
-#include <StdWindow.h>
-#include <StdApp.h>
-#include <StdGL.h>
-#include <StdDDraw2.h>
-#include <StdFile.h>
-#include <StdBuf.h>
+#include "Standard.h"
+#include "StdWindow.h"
+#include "StdApp.h"
+#include "StdGL.h"
+#include "StdDDraw2.h"
+#include "StdFile.h"
+#include "StdBuf.h"
 
 #include <stdexcept>
 

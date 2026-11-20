@@ -17,16 +17,16 @@
 
 // scenario record functionality
 
-#include <C4Record.h>
+#include "C4Record.h"
 
-#include <C4Console.h>
-#include <C4PlayerInfo.h>
-#include <C4GameSave.h>
-#include <C4Log.h>
-#include <C4Wrappers.h>
-#include <C4Player.h>
+#include "C4Console.h"
+#include "C4PlayerInfo.h"
+#include "C4GameSave.h"
+#include "C4Log.h"
+#include "C4Wrappers.h"
+#include "C4Player.h"
 
-#include <StdFile.h>
+#include "StdFile.h"
 
 #include <format>
 

@@ -16,7 +16,7 @@
 
 /* A structure for handling 256-color bitmap files */
 
-#include <Standard.h>
+#include "Standard.h"
 #include <Bitmap256.h>
 
 #include <cstring>

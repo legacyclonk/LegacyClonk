@@ -20,13 +20,13 @@
 
 #include "C4ForwardDeclarations.h"
 #include "C4Rect.h"
-#include <C4Region.h>
+#include "C4Region.h"
 #include "Fixed.h"
 #include "StdColors.h"
-#include <StdWindow.h>
+#include "StdWindow.h"
 
 #ifdef WITH_DEVELOPER_MODE
-#include <StdGtkWindow.h>
+#include "StdGtkWindow.h"
 typedef CStdGtkWindow C4ViewportBase;
 #else
 typedef CStdWindow C4ViewportBase;

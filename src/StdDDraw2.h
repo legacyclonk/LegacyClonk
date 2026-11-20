@@ -20,9 +20,9 @@
 #pragma once
 
 #include "C4Log.h"
-#include <C4Surface.h>
-#include <StdSurface8.h>
-#include <StdBuf.h>
+#include "C4Surface.h"
+#include "StdSurface8.h"
+#include "StdBuf.h"
 
 #include <array>
 #include <unordered_map>

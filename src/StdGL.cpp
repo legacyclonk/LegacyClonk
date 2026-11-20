@@ -19,13 +19,13 @@
 
 #include "C4Config.h"
 
-#include <Standard.h>
+#include "Standard.h"
 #include "StdApp.h"
-#include <StdGL.h>
+#include "StdGL.h"
 #include "C4Config.h"
-#include <C4Surface.h>
-#include <C4Log.h>
-#include <StdWindow.h>
+#include "C4Surface.h"
+#include "C4Log.h"
+#include "StdWindow.h"
 
 #ifndef USE_CONSOLE
 

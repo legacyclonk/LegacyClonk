@@ -18,15 +18,15 @@
 
 #pragma once
 
-#include <C4Shape.h>
-#include <C4InfoCore.h>
-#include <C4IDList.h>
-#include <C4ValueMap.h>
-#include <C4Facet.h>
-#include <C4Surface.h>
-#include <C4ComponentHost.h>
-#include <C4ScriptHost.h>
-#include <C4DefGraphics.h>
+#include "C4Shape.h"
+#include "C4InfoCore.h"
+#include "C4IDList.h"
+#include "C4ValueMap.h"
+#include "C4Facet.h"
+#include "C4Surface.h"
+#include "C4ComponentHost.h"
+#include "C4ScriptHost.h"
+#include "C4DefGraphics.h"
 #include "C4LangStringTable.h"
 
 #include "C4DelegatedIterable.h"

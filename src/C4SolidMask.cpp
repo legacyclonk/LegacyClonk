@@ -17,10 +17,10 @@
 
 /* Solid areas of objects, put into the landscape */
 
-#include <C4SolidMask.h>
+#include "C4SolidMask.h"
 
-#include <C4Object.h>
-#include <C4Wrappers.h>
+#include "C4Object.h"
+#include "C4Wrappers.h"
 
 void C4SolidMask::Put(bool fCauseInstability, C4TargetRect *pClipRect, bool fRestoreAttachment)
 {

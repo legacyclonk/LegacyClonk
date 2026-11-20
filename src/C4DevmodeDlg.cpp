@@ -17,7 +17,7 @@
 
 /* Common window for drawing and property tool dialogs in console mode */
 
-#include <C4DevmodeDlg.h>
+#include "C4DevmodeDlg.h"
 
 #ifdef WITH_DEVELOPER_MODE
 

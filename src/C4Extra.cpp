@@ -17,12 +17,12 @@
 
 // user-customizable multimedia package Extra.c4g
 
-#include <C4Extra.h>
+#include "C4Extra.h"
 
-#include <C4Config.h>
-#include <C4Components.h>
-#include <C4Game.h>
-#include <C4Log.h>
+#include "C4Config.h"
+#include "C4Components.h"
+#include "C4Game.h"
+#include "C4Log.h"
 
 void C4Extra::Default()
 {

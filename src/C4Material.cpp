@@ -16,15 +16,15 @@
 
 /* Material definitions used by the landscape */
 
-#include <C4Material.h>
-#include <C4Components.h>
+#include "C4Material.h"
+#include "C4Components.h"
 
-#include <C4Group.h>
-#include <C4Game.h>
-#include <C4Random.h>
-#include <C4ToolsDlg.h> // For C4TLS_MatSky...
-#include <C4Wrappers.h>
-#include <C4Physics.h> // For GravAccel
+#include "C4Group.h"
+#include "C4Game.h"
+#include "C4Random.h"
+#include "C4ToolsDlg.h" // For C4TLS_MatSky...
+#include "C4Wrappers.h"
+#include "C4Physics.h" // For GravAccel
 
 #include <utility>
 

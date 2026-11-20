@@ -18,10 +18,10 @@
 
 #pragma once
 
-#include <C4Id.h>
-#include <C4Game.h>
-#include <C4Landscape.h>
-#include <C4Log.h>
+#include "C4Id.h"
+#include "C4Game.h"
+#include "C4Landscape.h"
+#include "C4Log.h"
 
 // ID2Def
 

@@ -19,8 +19,8 @@
 #pragma once
 
 #include "C4ForwardDeclarations.h"
-#include <StdSha1.h>
-#include <StdSync.h>
+#include "StdSha1.h"
+#include "StdSync.h"
 
 #include <atomic>
 

@@ -17,11 +17,11 @@
 
 // An inotify wrapper
 
-#include <C4FileMonitor.h>
-#include <C4Application.h>
-#include <C4Log.h>
+#include "C4FileMonitor.h"
+#include "C4Application.h"
+#include "C4Log.h"
 
-#include <StdFile.h>
+#include "StdFile.h"
 
 #ifdef _WIN32
 #include "StdStringEncodingConverter.h"

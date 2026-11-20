@@ -16,11 +16,11 @@
 
 /* string table: holds all strings used by script engine */
 
-#include <C4StringTable.h>
+#include "C4StringTable.h"
 
-#include <C4Group.h>
-#include <C4Components.h>
-#include <C4Aul.h>
+#include "C4Group.h"
+#include "C4Components.h"
+#include "C4Aul.h"
 
 // *** C4String
 

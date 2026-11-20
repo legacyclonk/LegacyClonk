@@ -34,10 +34,10 @@
 //         4.95.4 July      2005 PORT/HEAD mixmax
 //         4.95.4 September 2005 Unix-flavour
 
-#include <C4Group.h>
-#include <C4Version.h>
-#include <C4Update.h>
-#include <C4Config.h>
+#include "C4Group.h"
+#include "C4Version.h"
+#include "C4Update.h"
+#include "C4Config.h"
 
 #include <format>
 #include <print>

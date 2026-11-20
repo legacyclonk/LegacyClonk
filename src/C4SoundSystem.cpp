@@ -14,14 +14,14 @@
  * for the above references.
  */
 
-#include <C4SoundSystem.h>
+#include "C4SoundSystem.h"
 
-#include <C4Random.h>
-#include <C4Object.h>
-#include <C4Game.h>
-#include <C4Log.h>
-#include <C4Config.h>
-#include <C4Application.h>
+#include "C4Random.h"
+#include "C4Object.h"
+#include "C4Game.h"
+#include "C4Log.h"
+#include "C4Config.h"
+#include "C4Application.h"
 
 #include <algorithm>
 #include <iterator>

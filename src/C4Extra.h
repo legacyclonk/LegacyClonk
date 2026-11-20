@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <C4Group.h>
+#include "C4Group.h"
 
 class C4Extra
 {

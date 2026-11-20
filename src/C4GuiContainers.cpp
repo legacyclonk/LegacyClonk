@@ -19,10 +19,10 @@
 // grouping elements and control base classes
 
 #include "C4GuiResource.h"
-#include <C4Gui.h>
-#include <C4FullScreen.h>
-#include <C4LoaderScreen.h>
-#include <C4Application.h>
+#include "C4Gui.h"
+#include "C4FullScreen.h"
+#include "C4LoaderScreen.h"
+#include "C4Application.h"
 
 namespace C4GUI
 {

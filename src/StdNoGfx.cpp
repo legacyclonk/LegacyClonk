@@ -14,8 +14,8 @@
  * for the above references.
  */
 
-#include <Standard.h>
-#include <StdNoGfx.h>
+#include "Standard.h"
+#include "StdNoGfx.h"
 
 bool CStdNoGfx::CreateDirectDraw()
 {

@@ -14,12 +14,12 @@
  * for the above references.
  */
 
-#include <C4Client.h>
+#include "C4Client.h"
 
-#include <C4Config.h>
-#include <C4Network2Client.h>
-#include <C4Game.h>
-#include <C4Log.h>
+#include "C4Config.h"
+#include "C4Network2Client.h"
+#include "C4Game.h"
+#include "C4Log.h"
 
 #ifndef _WIN32
 #include <netdb.h>

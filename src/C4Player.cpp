@@ -16,21 +16,21 @@
 
 /* Player data at runtime */
 
-#include <C4Player.h>
+#include "C4Player.h"
 
-#include <C4Application.h>
-#include <C4Object.h>
-#include <C4ObjectInfo.h>
-#include <C4Command.h>
-#include <C4Network2Stats.h>
-#include <C4MessageInput.h>
-#include <C4GamePadCon.h>
-#include <C4Wrappers.h>
-#include <C4Random.h>
-#include <C4Log.h>
-#include <C4FullScreen.h>
-#include <C4GameOverDlg.h>
-#include <C4ObjectMenu.h>
+#include "C4Application.h"
+#include "C4Object.h"
+#include "C4ObjectInfo.h"
+#include "C4Command.h"
+#include "C4Network2Stats.h"
+#include "C4MessageInput.h"
+#include "C4GamePadCon.h"
+#include "C4Wrappers.h"
+#include "C4Random.h"
+#include "C4Log.h"
+#include "C4FullScreen.h"
+#include "C4GameOverDlg.h"
+#include "C4ObjectMenu.h"
 
 static constexpr std::int32_t C4FOW_Def_View_RangeX{500};
 

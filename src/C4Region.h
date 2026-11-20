@@ -20,7 +20,7 @@
 
 #include "C4Constants.h"
 #include "C4ForwardDeclarations.h"
-#include <C4Id.h>
+#include "C4Id.h"
 
 const int C4RGN_MaxCaption = 256;
 

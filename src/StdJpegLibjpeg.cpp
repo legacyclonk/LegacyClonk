@@ -16,8 +16,8 @@
 
 // JPEG decoding using libjpeg
 
-#include <Standard.h>
-#include <StdJpeg.h>
+#include "Standard.h"
+#include "StdJpeg.h"
 
 #include <stdexcept>
 

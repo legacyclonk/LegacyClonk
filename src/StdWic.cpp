@@ -13,10 +13,10 @@
  * for the above references.
  */
 
-#include <Standard.h>
-#include <StdWic.h>
+#include "Standard.h"
+#include "StdWic.h"
 
-#include <StdStringEncodingConverter.h>
+#include "StdStringEncodingConverter.h"
 
 #include <winerror.h>
 

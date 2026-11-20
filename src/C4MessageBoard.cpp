@@ -16,15 +16,15 @@
 
 /* Fullscreen startup log and chat type-in */
 
-#include <C4MessageBoard.h>
+#include "C4MessageBoard.h"
 
-#include <C4Object.h>
-#include <C4Application.h>
-#include <C4LoaderScreen.h>
-#include <C4Gui.h>
-#include <C4Console.h>
-#include <C4Network2Dialogs.h>
-#include <C4Player.h>
+#include "C4Object.h"
+#include "C4Application.h"
+#include "C4LoaderScreen.h"
+#include "C4Gui.h"
+#include "C4Console.h"
+#include "C4Network2Dialogs.h"
+#include "C4Player.h"
 
 const int C4LogSize = 30000, C4LogMaxLines = 1000;
 

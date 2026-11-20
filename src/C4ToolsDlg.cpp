@@ -16,11 +16,11 @@
 
 /* Drawing tools dialog for landscape editing in console mode */
 
-#include <C4ToolsDlg.h>
-#include <C4Console.h>
-#include <C4Application.h>
+#include "C4ToolsDlg.h"
+#include "C4Console.h"
+#include "C4Application.h"
 #ifndef USE_CONSOLE
-#include <StdGL.h>
+#include "StdGL.h"
 #endif
 
 #include "C4Wrappers.h"
@@ -33,22 +33,22 @@
 
 #ifdef WITH_DEVELOPER_MODE
 
-#include <C4DevmodeDlg.h>
+#include "C4DevmodeDlg.h"
 
 #include <gtk/gtk.h>
 
-#include <res/Brush.h>
-#include <res/Line.h>
-#include <res/Rect.h>
-#include <res/Fill.h>
-#include <res/Picker.h>
+#include "res/Brush.h"
+#include "res/Line.h"
+#include "res/Rect.h"
+#include "res/Fill.h"
+#include "res/Picker.h"
 
-#include <res/Dynamic.h>
-#include <res/Static.h>
-#include <res/Exact.h>
+#include "res/Dynamic.h"
+#include "res/Static.h"
+#include "res/Exact.h"
 
-#include <res/Ift.h>
-#include <res/NoIft.h>
+#include "res/Ift.h"
+#include "res/NoIft.h"
 
 namespace
 {

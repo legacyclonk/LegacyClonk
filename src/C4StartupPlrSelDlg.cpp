@@ -20,13 +20,13 @@
 
 #include "C4GuiEdit.h"
 #include "C4GuiListBox.h"
-#include <C4StartupPlrSelDlg.h>
+#include "C4StartupPlrSelDlg.h"
 
-#include <C4StartupMainDlg.h>
-#include <C4Random.h>
-#include <C4Game.h>
-#include <C4FileSelDlg.h>
-#include <C4Log.h>
+#include "C4StartupMainDlg.h"
+#include "C4Random.h"
+#include "C4Game.h"
+#include "C4FileSelDlg.h"
+#include "C4Log.h"
 #include "C4TextEncoding.h"
 
 #include <format>

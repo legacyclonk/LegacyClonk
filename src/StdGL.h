@@ -28,7 +28,7 @@
 #else
 #include <GL/glu.h>
 #endif
-#include <StdDDraw2.h>
+#include "StdDDraw2.h"
 
 #include <concepts>
 #include <type_traits>

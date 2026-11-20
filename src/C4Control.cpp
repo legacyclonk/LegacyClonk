@@ -16,16 +16,16 @@
 
 /* Control packets contain all player input in the message queue */
 
-#include <C4Control.h>
+#include "C4Control.h"
 
-#include <C4Object.h>
-#include <C4GameSave.h>
-#include <C4GameLobby.h>
-#include <C4Random.h>
-#include <C4Console.h>
-#include <C4Log.h>
-#include <C4Wrappers.h>
-#include <C4Player.h>
+#include "C4Object.h"
+#include "C4GameSave.h"
+#include "C4GameLobby.h"
+#include "C4Random.h"
+#include "C4Console.h"
+#include "C4Log.h"
+#include "C4Wrappers.h"
+#include "C4Player.h"
 
 #include <cassert>
 #include <cinttypes>

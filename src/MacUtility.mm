@@ -15,7 +15,7 @@
  */
 
 #import <AppKit/AppKit.h>
-#import <Standard.h>
+#import <Standard.h"
 
 #ifndef USE_CONSOLE
 

@@ -17,13 +17,13 @@
 /* Loads all standard graphics from Graphics.c4g */
 
 #include "C4GuiResource.h"
-#include <C4GraphicsResource.h>
+#include "C4GraphicsResource.h"
 
-#include <C4Gui.h>
-#include <C4Log.h>
-#include <C4Game.h>
+#include "C4Gui.h"
+#include "C4Log.h"
+#include "C4Game.h"
 
-#include <StdGL.h>
+#include "StdGL.h"
 
 #include <array>
 

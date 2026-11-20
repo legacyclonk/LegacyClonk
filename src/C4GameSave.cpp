@@ -17,16 +17,16 @@
 
 // game saving functionality
 
-#include <C4GameSave.h>
+#include "C4GameSave.h"
 
-#include <C4Components.h>
-#include <C4Game.h>
+#include "C4Components.h"
+#include "C4Game.h"
 #include "C4Version.h"
 #include "StdMarkup.h"
-#include <C4Console.h>
-#include <C4Log.h>
-#include <C4Player.h>
-#include <C4RTF.h>
+#include "C4Console.h"
+#include "C4Log.h"
+#include "C4Player.h"
+#include "C4RTF.h"
 
 #include <format>
 #include <utility>

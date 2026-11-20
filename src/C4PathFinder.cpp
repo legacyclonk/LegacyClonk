@@ -41,10 +41,10 @@
    move-to's on crawl-zone-entries).
 */
 
-#include <C4PathFinder.h>
+#include "C4PathFinder.h"
 
-#include <C4FacetEx.h>
-#include <C4Game.h>
+#include "C4FacetEx.h"
+#include "C4Game.h"
 
 const int32_t C4PF_MaxDepth  = 35,
               C4PF_MaxCrawl  = 800,

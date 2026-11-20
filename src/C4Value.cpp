@@ -14,20 +14,20 @@
  * for the above references.
  */
 
-#include <C4Value.h>
-#include <C4Aul.h>
-#include <C4StringTable.h>
-#include <C4ValueList.h>
-#include <C4ValueHash.h>
+#include "C4Value.h"
+#include "C4Aul.h"
+#include "C4StringTable.h"
+#include "C4ValueList.h"
+#include "C4ValueHash.h"
 
 #include <bit>
 #include <functional>
 #include <format>
 #include <string_view>
 
-#include <C4Game.h>
-#include <C4Object.h>
-#include <C4Log.h>
+#include "C4Game.h"
+#include "C4Object.h"
+#include "C4Log.h"
 
 const C4Value C4VNull{};
 const C4Value C4VTrue{C4VBool(true)};

@@ -16,23 +16,23 @@
 
 /* Operates viewports, message board and draws the game */
 
-#include <C4GraphicsSystem.h>
+#include "C4GraphicsSystem.h"
 
-#include <C4Viewport.h>
-#include <C4Application.h>
-#include <C4Console.h>
-#include <C4Random.h>
-#include <C4SurfaceFile.h>
-#include <C4FullScreen.h>
-#include <C4Gui.h>
-#include <C4LoaderScreen.h>
-#include <C4Wrappers.h>
-#include <C4Player.h>
-#include <C4Object.h>
-#include <C4SoundSystem.h>
+#include "C4Viewport.h"
+#include "C4Application.h"
+#include "C4Console.h"
+#include "C4Random.h"
+#include "C4SurfaceFile.h"
+#include "C4FullScreen.h"
+#include "C4Gui.h"
+#include "C4LoaderScreen.h"
+#include "C4Wrappers.h"
+#include "C4Player.h"
+#include "C4Object.h"
+#include "C4SoundSystem.h"
 
-#include <StdBitmap.h>
-#include <StdPNG.h>
+#include "StdBitmap.h"
+#include "StdPNG.h"
 
 #ifdef _WIN32
 #include "res/engine_resource.h"

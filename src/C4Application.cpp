@@ -16,21 +16,21 @@
 
 /* Main class to initialize configuration and execute the game */
 
-#include <C4Application.h>
-#include <C4Version.h>
+#include "C4Application.h"
+#include "C4Version.h"
 #ifdef _WIN32
-#include <StdRegistry.h>
-#include <C4UpdateDlg.h>
+#include "StdRegistry.h"
+#include "C4UpdateDlg.h"
 #endif
 
-#include <C4FileClasses.h>
-#include <C4FullScreen.h>
-#include <C4Language.h>
-#include <C4Console.h>
-#include <C4Startup.h>
-#include <C4Log.h>
-#include <C4GamePadCon.h>
-#include <C4GameLobby.h>
+#include "C4FileClasses.h"
+#include "C4FullScreen.h"
+#include "C4Language.h"
+#include "C4Console.h"
+#include "C4Startup.h"
+#include "C4Log.h"
+#include "C4GamePadCon.h"
+#include "C4GameLobby.h"
 #include "C4Toast.h"
 
 #ifdef _WIN32

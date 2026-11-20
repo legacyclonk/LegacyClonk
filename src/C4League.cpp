@@ -19,11 +19,11 @@
 
 #include "C4GuiEdit.h"
 #include "C4GuiResource.h"
-#include <C4League.h>
+#include "C4League.h"
 
-#include <C4Game.h>
-#include <C4RoundResults.h>
-#include <C4Wrappers.h>
+#include "C4Game.h"
+#include "C4RoundResults.h"
+#include "C4Wrappers.h"
 
 // *** C4LeagueRequestHead
 

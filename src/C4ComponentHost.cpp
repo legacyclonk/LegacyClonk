@@ -16,10 +16,10 @@
 
 /* Holds a single text file component from a group */
 
-#include <C4ComponentHost.h>
+#include "C4ComponentHost.h"
 #include "C4Config.h"
-#include <C4Application.h>
-#include <C4Language.h>
+#include "C4Application.h"
+#include "C4Language.h"
 
 #ifdef _WIN32
 #include "C4Console.h"

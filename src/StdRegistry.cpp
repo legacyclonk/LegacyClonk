@@ -16,8 +16,8 @@
 
 /* Some wrappers for easier access to the Windows registry */
 
-#include <Standard.h>
-#include <StdRegistry.h>
+#include "Standard.h"
+#include "StdRegistry.h"
 
 #include <stdio.h>
 

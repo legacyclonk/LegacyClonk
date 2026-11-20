@@ -14,14 +14,14 @@
  * for the above references.
  */
 
-#include <C4Network2Res.h>
+#include "C4Network2Res.h"
 
-#include <C4Random.h>
-#include <C4Config.h>
-#include <C4Log.h>
-#include <C4Group.h>
-#include <C4Components.h>
-#include <C4Game.h>
+#include "C4Random.h"
+#include "C4Config.h"
+#include "C4Log.h"
+#include "C4Group.h"
+#include "C4Components.h"
+#include "C4Game.h"
 #include "StdAdaptors.h"
 
 #include <fcntl.h>

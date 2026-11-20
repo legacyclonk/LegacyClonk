@@ -17,10 +17,10 @@
 
 // network statistics and information dialogs
 
-#include <C4Network2Stats.h>
+#include "C4Network2Stats.h"
 
-#include <C4Game.h>
-#include <C4Player.h>
+#include "C4Game.h"
+#include "C4Player.h"
 
 #include <format>
 

@@ -15,8 +15,8 @@
 
 // SHA-1 calculation using Microsoft CryptoAPI
 
-#include <Standard.h>
-#include <StdSha1.h>
+#include "Standard.h"
+#include "StdSha1.h"
 
 #include <wincrypt.h>
 

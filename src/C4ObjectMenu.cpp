@@ -17,13 +17,13 @@
 
 // Menus attached to objects; script created or internal
 
-#include <C4ObjectMenu.h>
+#include "C4ObjectMenu.h"
 
-#include <C4Object.h>
-#include <C4ObjectCom.h>
-#include <C4Wrappers.h>
-#include <C4Player.h>
-#include <C4Viewport.h>
+#include "C4Object.h"
+#include "C4ObjectCom.h"
+#include "C4Wrappers.h"
+#include "C4Player.h"
+#include "C4Viewport.h"
 
 #include <cassert>
 #include <format>

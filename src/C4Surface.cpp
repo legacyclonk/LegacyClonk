@@ -16,20 +16,20 @@
 
 /* a wrapper class to DirectDraw surfaces */
 
-#include <C4Config.h>
-#include <C4Group.h>
-#include <C4GroupSet.h>
-#include <C4Log.h>
-#include <C4Surface.h>
+#include "C4Config.h"
+#include "C4Group.h"
+#include "C4GroupSet.h"
+#include "C4Log.h"
+#include "C4Surface.h"
 
-#include <Bitmap256.h>
+#include "Bitmap256.h"
 #include "StdApp.h"
-#include <StdBitmap.h>
-#include <StdGL.h>
-#include <StdJpeg.h>
-#include <StdPNG.h>
+#include "StdBitmap.h"
+#include "StdGL.h"
+#include "StdJpeg.h"
+#include "StdPNG.h"
 #include "C4ResStrTable.h"
-#include <StdDDraw2.h>
+#include "StdDDraw2.h"
 
 #include <algorithm>
 #include <cstdint>

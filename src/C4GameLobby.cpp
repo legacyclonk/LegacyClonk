@@ -17,7 +17,7 @@
 
 // the ingame-lobby
 
-#include <C4GameLobby.h>
+#include "C4GameLobby.h"
 #include "C4GameControl.h"
 
 #include "C4FullScreen.h"

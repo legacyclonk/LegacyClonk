@@ -19,12 +19,12 @@
 // text drawing facility for CStdDDraw
 
 #include "C4Config.h"
-#include <Standard.h>
-#include <StdBuf.h>
+#include "Standard.h"
+#include "StdBuf.h"
 #include "StdFont.h"
-#include <StdDDraw2.h>
-#include <C4Surface.h>
-#include <StdMarkup.h>
+#include "StdDDraw2.h"
+#include "C4Surface.h"
+#include "StdMarkup.h"
 
 #include <cmath>
 #include <stdexcept>

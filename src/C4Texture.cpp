@@ -16,17 +16,17 @@
 
 /* Textures used by the landscape */
 
-#include <C4Texture.h>
+#include "C4Texture.h"
 
-#include <C4SurfaceFile.h>
-#include <C4Group.h>
-#include <C4Game.h>
-#include <C4Config.h>
-#include <C4Components.h>
-#include <C4Application.h>
-#include <C4Material.h>
-#include <C4Landscape.h>
-#include <C4Wrappers.h>
+#include "C4SurfaceFile.h"
+#include "C4Group.h"
+#include "C4Game.h"
+#include "C4Config.h"
+#include "C4Components.h"
+#include "C4Application.h"
+#include "C4Material.h"
+#include "C4Landscape.h"
+#include "C4Wrappers.h"
 
 #include <format>
 

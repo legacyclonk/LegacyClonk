@@ -16,9 +16,9 @@
 
 /* A handy wrapper class to gzio files */
 
-#include <Standard.h>
-#include <StdFile.h>
-#include <CStdFile.h>
+#include "Standard.h"
+#include "StdFile.h"
+#include "CStdFile.h"
 
 #include <stdio.h>
 #include <stdlib.h>

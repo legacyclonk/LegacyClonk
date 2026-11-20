@@ -18,17 +18,17 @@
 // generic user interface
 // all generic classes that do not fit into other C4Gui*-files
 
-#include <C4GuiDialogs.h>
+#include "C4GuiDialogs.h"
 #include "C4GuiResource.h"
-#include <C4Gui.h>
+#include "C4Gui.h"
 
-#include <C4FullScreen.h>
-#include <C4LoaderScreen.h>
-#include <C4Application.h>
-#include <C4Viewport.h>
-#include <C4Wrappers.h>
-#include <C4Log.h>
-#include <C4GamePadCon.h>
+#include "C4FullScreen.h"
+#include "C4LoaderScreen.h"
+#include "C4Application.h"
+#include "C4Viewport.h"
+#include "C4Wrappers.h"
+#include "C4Log.h"
+#include "C4GamePadCon.h"
 
 namespace C4GUI
 {

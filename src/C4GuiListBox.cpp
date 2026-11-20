@@ -18,10 +18,10 @@
 // generic user interface
 // container for a dynamic number of vertically stacked controls
 
-#include <C4GuiListBox.h>
-#include <C4FullScreen.h>
-#include <C4LoaderScreen.h>
-#include <C4Application.h>
+#include "C4GuiListBox.h"
+#include "C4FullScreen.h"
+#include "C4LoaderScreen.h"
+#include "C4Application.h"
 
 namespace C4GUI
 {

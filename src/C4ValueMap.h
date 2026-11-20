@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <C4Value.h>
+#include "C4Value.h"
 
 // implements a list of C4Values associated with a name list.
 // the list is split in the two components (data/names) to make it possible
